@@ -1,0 +1,29 @@
+{
+  "name": "any-grid-layout",
+  "version": "0.0.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "main": "./src/units/grid/AnyGridLayout.js",
+  "devDependencies": {
+    "mitt": "^2.1.0",
+    "@vitejs/plugin-vue": "^3.1.0",
+    "vite": "^3.1.0",
+    "vue": "^3.2.37"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/biggerstar"
+  },
+  "author": "BiggerStar",
+  "license": "GPL",
+  "keywords": [
+    "vue-layout",
+    "grid-layout",
+    "js-grid-layout",
+    "Screen adaptation"
+  ]
+}
