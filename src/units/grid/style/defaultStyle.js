@@ -8,6 +8,7 @@ export const defaultStyle = {
         boxSizing: 'border-box',
         backgroundColor: '#2196F3',
         position: 'relative',
+        overflow: 'hidden',
         // cursor: 'grab',
     },
     itemDefaults:{

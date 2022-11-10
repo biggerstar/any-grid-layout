@@ -14,9 +14,12 @@ export default class LayoutManager {
     //-----------不痛不痒参数----------//
     layoutPositions = []   //  栅格ITEM成员的详细信息数组,暂时没啥用,就存着玩玩
     //-----------很有用的用户参数----------//
-    minRow = null
-    row = this.minRow  //  行数,非必须
+    // minRow = null
     col = null // 列数，必须，实现自适应布局需在外层二次封装动态col的值
+    minRow = null
+    maxRow = null
+    row = null  //  行数,非必须
+    isAutoRow = false
 
     constructor() {
         // if (typeof option.col !== 'number') new Error('col是必要参数且为正整数')
@@ -29,74 +32,40 @@ export default class LayoutManager {
         return this.layoutPositions.length
     }
 
-    setColNum(col){
+    setColNum(col) {
         this.col = col
+    }
+
+    setRowNum(row) {
+        this.row = row
     }
 
     genLayout() {
 
     }
 
-
-    /** 主动添加新的ITEM到矩阵中,会自动计算排列
-     * @param {Object} posOption,ItemPos  普通的pos,在这里会转成最终grid位置的pos对象 , 对象内value参数见ItemPos类
-     * @return {Object} findItemLayout 新成员的位置信息，同 _findBlankPosition 返回一致
-     *                  该函数和_findBlankPosition的区别是 addItem 会操作布局矩阵并将新的成员记录到 layoutPositions中
-     * */
-    addItem = (posOption) => {
-        if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
-        let findItemLayout = null
-        if (posOption.static === true) {   // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-            findItemLayout = {
-                w: posOption.w,
-                h: posOption.h,
-                xStart: posOption.x,
-                yStart: posOption.y,
-                xEnd: posOption.x +  posOption.w - 1 ,
-                yEnd: posOption.y +  posOption.h - 1  ,
-            }
-        } else {
-            findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
-        }
-
-        const itemPos = {
-            ...findItemLayout,
-            iName: posOption.i,  // iName外部传入为做具名矩阵
-        }
-        // console.log(itemPos);
-        this._addSeatLayout(itemPos)
-        this.layoutPositions.push(itemPos)
-
-        ///////////////////////////////////////////////////////////
-        //  调试算法入队过程
-        if (this.isDebugger) {
-            const ColorLayoutMatrix = this._layoutMatrix.map(row => {
-                return row.map(flag => flag ? '●' : '○')
-            })
-            console.log(`[${this.count++}]`, findItemLayout);
-            console.log('       ', ColorLayoutMatrix[0].map((val, colIndex) => colIndex).join('    '));
-            ColorLayoutMatrix.forEach((val, index) => {
-                console.log(' ' + index, ':', val);
-            })
-            console.log('---------------------------------------------');
-        }
-        ///////////////////////////////////////////////////////////
-        return posOption.static ? posOption : findItemLayout
+    autoRow(isAutoRow = true) {
+        this.isAutoRow = isAutoRow
     }
 
     /**
      * @param {Number} num  添加的行数
      * */
-    addRow = (num = 1) => {
+    addRow = (num = null) => {
+        if (!num) return
         for (let i = 0; i < num; i++) {
             this._layoutMatrix.push(new Array(this.col).fill(false))
         }
+        // console.log(this.row);
         this.row = this._layoutMatrix.length
+        // console.log(this._layoutMatrix);
     }
 
-    /** 删除空白的最后一行,若已被占用不进行删除 */
+    /** 删除空白的最后一行,若已被占用不进行删除 TODO 弃用 */
     removeOneRow = () => {
-        if (this._layoutMatrix.length === this.minRow) {
+        return
+        this.row = this._layoutMatrix.length - 1 || 0
+        if (this._layoutMatrix.length === 0) {
             console.log('栅格内行数已经为空')
             return false
         }
@@ -125,6 +94,144 @@ export default class LayoutManager {
     /** 传入一个ItemPos，根据新的w和h判断是否  */
     isOverlap(pos) {
 
+    }
+
+
+    /** 计算当前最大值row情况下补充满整个矩阵空处需要再增加几行 */
+    computedNeedRow(items) {
+        // const boundary = this.computedColAndRows(items)
+        // console.log(boundary.row,this._layoutMatrix.length);
+        // return boundary.row - this._layoutMatrix.length > 0 ? boundary.row - this._layoutMatrix.length : 0
+    }
+
+
+    /** ItemPos转用于算法布局计算的ItemLayout */
+    itemPosToItemLayout(posOption) {
+        return {
+            w: posOption.w,
+            h: posOption.h,
+            x: posOption.x,
+            y: posOption.y,
+            xStart: posOption.x,
+            yStart: posOption.y,
+            xEnd: posOption.x + posOption.w - 1,
+            yEnd: posOption.y + posOption.h - 1,
+            iName: posOption.i,  // iName外部传入为做具名矩阵
+        }
+    }
+
+
+
+    addItem(itemLayout) {
+
+        this._updateSeatLayout(itemLayout)
+        this.layoutPositions.push(itemLayout)
+
+
+
+        ///////////////////////////////////////////////////////////
+        //  调试算法入队过程
+        if (this.isDebugger) {
+            const colorLayoutMatrix = this._layoutMatrix.map(row => {
+                return row.map(flag => flag ? '●' : '○')
+            })
+            console.log(`[${this.count++}]`, itemLayout);
+            console.log('       ', colorLayoutMatrix[0].map((val, colIndex) => colIndex).join('    '));
+            colorLayoutMatrix.forEach((val, index) => {
+                console.log(' ' + index, ':', val);
+            })
+            console.log('---------------------------------------------');
+        }
+        ///////////////////////////////////////////////////////////
+    }
+
+    /** 根据auto控制找响应式布局还是静态布局
+     *  @param posOption {ItemPos} XXX
+     *  @param auto {Boolean} 是否自动排列
+     *  @return findItemLayout 布局对象
+     *  */
+    findItem = (posOption, auto = false) => {
+        if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
+        let findItemLayout
+        // console.log(posOption);
+        // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
+        if (auto){
+            findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
+            // for (let i = 0; i < this._layoutMatrix.length; i++) {
+            //     console.log(this._layoutMatrix[i]);
+            // }
+            if (findItemLayout === undefined) return null
+            if (posOption.i !== undefined) findItemLayout.iName = posOption.i
+            findItemLayout.row = this._layoutMatrix.length
+        }
+        else {
+            if (this.isStaticBlank(posOption)) {
+                findItemLayout = this.itemPosToItemLayout(posOption)
+                return findItemLayout
+            }else  return null
+        }
+        // console.log(findItemLayout);
+        // console.log(this.isOverFlowMatrix(posOption));
+        if (this.isOverFlowMatrix(posOption)) return null
+        else return findItemLayout
+        // if (this.maxRow && this.maxRow < (findItemLayout.y + findItemLayout.h - 1)) {
+        //     console.error(posOption, '超出maxRow设定范围,若直接使用裸算请在外围检测保持传入的posOption对应的h+y不超过maxRow')
+        //     return
+        // }
+    }
+
+    /** 判断该pos是否超出当前的矩阵范围
+     * @return {Boolean} 超过：true  未超过：false
+     * */
+    isOverFlowMatrix(nextStaticPos) {
+        // console.log((nextStaticPos.x + nextStaticPos.w -1) > this.col
+        //     || (nextStaticPos.y + nextStaticPos.h -1) > this.row);
+        // console.log(nextStaticPos);
+        return (nextStaticPos.x + nextStaticPos.w - 1) > this.col
+            || (nextStaticPos.y + nextStaticPos.h - 1) > this.row
+    }
+
+    /** 静态布局情况下根据x,y,w,h判断是否在布局矩阵中有空位
+     *  @param {ItemPos} nextStaticPos 主要是决定判断结果的只有 x,y,w,h
+     *  @return {Boolean} isBlank
+     * */
+    isStaticBlank(nextStaticPos) {
+        if (nextStaticPos === null) return false
+        const {xStart, yStart, xEnd, yEnd} = this.itemPosToItemLayout(nextStaticPos)
+        let isBlank = true
+        const iName = nextStaticPos.i
+        const maxStartX = nextStaticPos.x + nextStaticPos.w - 1
+        const maxStartY = nextStaticPos.y + nextStaticPos.h - 1
+        if (maxStartX > this.col || maxStartY > this.row) return false  // isBlank
+        // console.log(xStart,yStart,xEnd,yEnd,iName);
+        // if (this._layoutMatrix.length !== this.row) this.addRow()
+        // const isDebugger = false
+        // if (isDebugger) {
+        //     for (let i = 0; i < this._layoutMatrix.length; i++) {
+        //         console.log(this._layoutMatrix[i]);
+        //     }
+        //     console.log('-----------------------------------------');
+        // }
+        // for (let i = 0; i < this._layoutMatrix.length; i++) {
+        //     console.log(this._layoutMatrix[i]);
+        // }
+        // console.log('--------------------------------------------');
+
+        for (let rowIndex = yStart - 1; rowIndex <= yEnd - 1; rowIndex++) {
+            for (let colIndex = xStart - 1; colIndex <= xEnd - 1; colIndex++) {
+                // console.log(this._layoutMatrix[rowIndex][colIndex]);
+                const point = this._layoutMatrix[rowIndex][colIndex]
+                // if(point === '__debugger__')continue
+                // console.log(point , iName.toString());
+
+                if (point === iName.toString()) continue
+                if (point !== false) { // 等于true是开了debugger情况，false是默认占位值
+                    isBlank = false
+                    // return false
+                }
+            }
+        }
+        return isBlank
     }
 
 
@@ -169,11 +276,14 @@ export default class LayoutManager {
         let counter = 0
         while (counter++ < 500) {  // counter 加一次索引行数加1,500表示最大500行,正常这够用了吧？
             if (this._layoutMatrix.length < (h + yPointStart)) {
-                this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行
+                // console.log(this.row,this.isAutoRow);
+                if (this.isAutoRow){
+                    this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行,不可删，响应式模式用到静态布局没用到
+                }
             }
             let findSuccess = true
             let rowFindDone = false
-            if (!this.col ) throw new Error('未找到经过引擎处理过后的col，可能是少传参数或者代码执行顺序有误，倘若这样，不用问，这就是bug')
+            if (!this.col) throw new Error('未找到经过引擎处理过后的col，可能是少传参数或者代码执行顺序有误，倘若这样，不用问，这就是bug')
             for (let j = 0; j < h; j++) { // 假设高度足够，计算整个组件占用区域是否被占用，不够addRow函数自动添加
                 // if (xPointEnd === 0 && j === 0) xPointEnd = rowPointData.length
                 rowPointData = this._layoutMatrix[yPointStart + j]
@@ -242,15 +352,18 @@ export default class LayoutManager {
      *  该网格和二维数组只差在index索引的值,变成数组只需要几个索引都减一即可
      *  iName: 外部传入为了做具名矩阵
      *  助记： 第五行其实在矩阵的索引为 4 , 自用助记,没啥大意义
-     *
+     * reName: 覆盖iName的值
      * */
-    _addSeatLayout({xStart, yStart, xEnd, yEnd, iName}) {
-        // console.log(iName);
-        if (this._layoutMatrix.length < yEnd ) this.addRow(yEnd - this._layoutMatrix.length + 1)
+    _updateSeatLayout({xStart, yStart, xEnd, yEnd, iName}, reName = null) {
+        if (iName === undefined ) iName = 'true'
+        let setName = reName !== null ? reName : iName.toString()
+        // if (this._layoutMatrix.length < yEnd) this.addRow(yEnd - this._layoutMatrix.length + 1)
+        // console.log(xStart,yStart,xEnd,yEnd,iName);
         for (let rowIndex = yStart - 1; rowIndex <= yEnd - 1; rowIndex++) {
-            for (let colIndex = xStart - 1; colIndex <= xEnd - 1 ; colIndex++) {
+            for (let colIndex = xStart - 1; colIndex <= xEnd - 1; colIndex++) {
                 try {
-                    this._layoutMatrix[rowIndex][colIndex] = this.isDebugger ? true : (iName.toString()) || true
+                    if (this.isDebugger) this._layoutMatrix[rowIndex][colIndex] = '__debugger__'
+                    else this._layoutMatrix[rowIndex][colIndex] = setName
                 } catch (e) {
                     console.log(e);
                 }
@@ -259,41 +372,3 @@ export default class LayoutManager {
     }
 }
 
-
-class LayoutDataTransform {
-    constructor() {
-    }
-
-
-    /** 网格布局数据转点阵数据  */
-    static gridToPoint(itemPos) {
-        return {
-            w: itemPos.w,
-            h: itemPos.h,
-            xStart: itemPos.x - 1,
-            yStart: itemPos.y - 1,
-            xEnd: itemPos.x - 1 + itemPos.w,
-            yEnd: itemPos.y - 1 + itemPos.h,
-        }
-    }
-
-    /** 点阵数据转网格布局数据 */
-    static pointToGrid(itemPos) {
-
-    }
-}
-
-
-// const layoutManager = new LayoutManager({
-//     el: 'container',
-//     // data: [],
-//     data: layoutData,
-//     col: 5,
-//     // row: 10,
-//     // margin: [10, 10],
-//     // size:[80,100]
-// })
-// layoutManager.gridLayout()
-
-// console.log(layoutManager._layoutMatrix);
-// console.log(layoutManager.layoutPositions);

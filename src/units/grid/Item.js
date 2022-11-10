@@ -4,9 +4,7 @@ import ItemPos from "@/units/grid/ItemPos.js";
 import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
 import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
 import EditEvent from '@/units/grid/other/EditEvent.js'
-import TempStore from "@/units/grid/other/TempStore.js";
 
-const tempStore = TempStore.containerStore
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
  * @param {Object} pos 一个包含Item位置信息的对象
@@ -35,13 +33,13 @@ export default class Item extends DomFunctionImpl {
     attr = []
     pos = {}
     parentElement = null
-
+    // dragging = false
     //----------------保持状态所用参数---------------------//
     _resizeTabEl = null
     _mounted = false
     __temp__ = {
         // -------------不可写变量--------------//
-        static: false,    //  实例化后就不能改变
+
         //------------都是可写变量--------------//
         isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
         eventRecord: {}, // 当前编辑状态开启的功能，drag || resize
@@ -78,17 +76,18 @@ export default class Item extends DomFunctionImpl {
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
             this.updateStyle(defaultStyle.itemDefaults)
+            // console.log(this._genItemStyle(),this.pos);
             this.updateStyle(this._genItemStyle())
+            // console.log(this._genItemStyle());
             this.edit({
                 draggable: this.draggable,
                 resize: this.resize,
             })
-            this.animation(false)
+            this.animation(this.transition)
             // this.__temp__.clientWidth = this.element.clientWidth
             // this.__temp__.clientHeight = this.element.clientHeight
             this.__temp__.w = this.pos.w
             this.__temp__.h = this.pos.h
-            this.__temp__.static = this.pos.static
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
@@ -101,27 +100,6 @@ export default class Item extends DomFunctionImpl {
         })
     }
 
-    _mask_(isMask = false) {
-        if (isMask) {
-            const maskEl = document.createElement('div')
-            maskEl.classList.add('item-mask')
-            this.updateStyle({
-                backgroundColor: 'transparent',
-                height: this.element.clientHeight + 'px',
-                width: this.element.clientWidth + 'px',
-                position: 'absolute',
-                left: '0',
-                top: '0',
-            }, maskEl)
-            this.__temp__.maskEl = maskEl
-            this.element.appendChild(maskEl)
-        }
-        if (this.__temp__.maskEl !== null && !isMask) {
-            try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
-                this.element.removeChild(this.__temp__.maskEl)
-            }catch (e) { }
-        }
-    }
 
     /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item  */
     unmount() {
@@ -132,9 +110,14 @@ export default class Item extends DomFunctionImpl {
         this._mounted = false
     }
 
-    /** 将自己从Items列表中移除 */
-    remove() {
+    /** 将自己从Items列表中移除
+     * @param {Boolean}  force  是否强力删除Dom节点，true为删除引用，false为不删除引用只删除Item占位
+     * */
+    remove(force = false) {
         this.container.engine.remove(this)
+        if (force) {
+            this.container.element.removeChild(this.element)
+        }
     }
 
     /** 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
@@ -165,8 +148,8 @@ export default class Item extends DomFunctionImpl {
 
         this.draggable = editOption.draggable
         this.resize = editOption.resize
-        if (!this.__temp__.eventRunning){
-            if (this.resize === true){
+        if (!this.__temp__.eventRunning) {
+            if (this.resize === true) {
                 this.handleResize(true, 'mount')
             }
         }
@@ -179,8 +162,6 @@ export default class Item extends DomFunctionImpl {
             EditEvent.removeEvent(null, this, eventRecord)
         }
         if (this.resize === false) this.handleResize(this.resize, 'mount')
-
-
 
 
     }
@@ -196,17 +177,25 @@ export default class Item extends DomFunctionImpl {
             fieldString = cloneObj.field
         }
         Sync.run(() => {
-            const style = {}
-            if (typeof transition === 'number') this.transition.time = transition   // 传入数字保存
-            else if (transition === true) {
-                transition = this.transition.time  // 传入true 使用默认动画时长和字段
-                fieldString = this.transition.field
+                const style = {}
+                if (typeof transition === 'number') this.transition.time = transition   // 传入数字保存
+                else if (transition === true || transition === undefined) {
+                    transition = this.transition.time  // 传入true 使用默认动画时长和字段
+                    fieldString = this.transition.field
+                }
+                if (fieldString === null) fieldString = this.transition.field
+                style.transitionProperty = transition ? fieldString : 'none'    //  当transition = false的时候，不会开启动画
+                style.transitionDuration = transition ? transition + 'ms' : 'none'
+                this.updateStyle(style)
+                if (transition !== false) {
+                    this.transition = {
+                        time: transition,
+                        field: fieldString,
+                    }
+                }
+
             }
-            if (fieldString === null) fieldString = this.transition.field
-            style.transitionProperty = transition ? fieldString : 'none'    //  当transition = false的时候，不会开启动画
-            style.transitionDuration = transition ? transition + 'ms' : 'none'
-            this.updateStyle(style)
-        })
+        )
     }
 
     /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
@@ -217,7 +206,8 @@ export default class Item extends DomFunctionImpl {
     handleResize(isResize = false, msg) {
         if (isResize && this._resizeTabEl === null) {
             const className = 'resizable-handle'
-            const handleResizeEls = this.element.getElementsByClassName(className)
+            const handleResizeEls = this.element.querySelectorAll('.' + className)
+            if (handleResizeEls.length > 0) return;
             const resizeTab = document.createElement('span')
             resizeTab.classList.add(className)
             resizeTab.innerHTML = '⊿'
@@ -247,15 +237,16 @@ export default class Item extends DomFunctionImpl {
     /**  @return  获取该Item 当前的宽度 */
     nowWidth = () => {
         let marginWidth = 0
-        if ((this.pos.w) > 1) marginWidth = (this.pos.w - 1) * this.margin[0]
+        if (this.pos.w > 1) marginWidth = (this.pos.w - 1) * this.margin[0]
         // console.log(this.pos.w, marginWidth);
+        // if (this.pos.i === 0) console.log(this,this.pos.x);
         return (this.pos.w * this.size[0]) + marginWidth
     }
 
     /**  @return  获取该Item 当前的高度 */
     nowHeight = () => {
         let marginHeight = 0
-        if ((this.pos.h) > 1) marginHeight = (this.pos.h - 1) * this.margin[1]
+        if (this.pos.h > 1) marginHeight = (this.pos.h - 1) * this.margin[1]
         // console.log(this.pos.h, marginHeight);
         return (this.pos.h * this.size[1]) + marginHeight
     }
@@ -264,7 +255,7 @@ export default class Item extends DomFunctionImpl {
     minWidth() {
         let marginWidth = 0
         if (this.pos.minW === Infinity) return Infinity
-        if ((this.pos.minW) > 1) marginWidth = (this.pos.minW - 1) * this.margin[0]
+        if (this.pos.minW > 1) marginWidth = (this.pos.minW - 1) * this.margin[0]
         return (this.pos.minW * this.size[0]) + marginWidth
     }
 
@@ -272,7 +263,7 @@ export default class Item extends DomFunctionImpl {
     minHeight = () => {
         let marginHeight = 0
         if (this.pos.minH === Infinity) return Infinity
-        if ((this.pos.minH) > 1) marginHeight = (this.pos.minH - 1) * this.margin[1]
+        if (this.pos.minH > 1) marginHeight = (this.pos.minH - 1) * this.margin[1]
         return (this.pos.minH * this.size[1]) + marginHeight
     }
 
@@ -299,6 +290,28 @@ export default class Item extends DomFunctionImpl {
         if (isStyle === false) return this.__temp__.styleLock = false
     }
 
+    _mask_(isMask = false) {
+        if (isMask) {
+            const maskEl = document.createElement('div')
+            maskEl.classList.add('item-mask')
+            this.updateStyle({
+                backgroundColor: 'transparent',
+                height: this.element.clientHeight + 'px',
+                width: this.element.clientWidth + 'px',
+                position: 'absolute',
+                left: '0',
+                top: '0',
+            }, maskEl)
+            this.__temp__.maskEl = maskEl
+            this.element.appendChild(maskEl)
+        }
+        if (this.__temp__.maskEl !== null && !isMask) {
+            try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
+                this.element.removeChild(this.__temp__.maskEl)
+            } catch (e) {
+            }
+        }
+    }
 
     /** 生成该ITEM的栅格放置位置样式  */
     _genItemStyle = () => {

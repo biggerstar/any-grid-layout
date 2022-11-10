@@ -6,9 +6,9 @@ import TempStore from "@/units/grid/other/TempStore.js";
 import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
 import EditEvent from '@/units/grid/other/EditEvent.js'
 import ItemPos from '@/units/grid/ItemPos.js'
+import EventCallBack from "@/units/grid/other/EventCallBack.js";
 
 
-const tempStore = TempStore.containerStore
 /** 栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  *  Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
  *  该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
@@ -19,6 +19,7 @@ const tempStore = TempStore.containerStore
  *          px:1024,
  *          size:[100,100]
  *        },
+ *    .............
  *    ]}
  *    此时该col生效数值是8，来自全局设置属性，size的生效值是[100,100],来自layout中指定的局部属性
  * */
@@ -38,29 +39,31 @@ export default class Container extends DomFunctionImpl {
     isNesting = false    // 该Container自身是否[被]嵌套
     parentItem = null
     //----------------外部传进的的参数---------------------//
-    responsive = true
-    static = true
+    responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
+    responseMode = 'exchange'  //  exchange(默认) || stream
+    // static = false
     layout = []    //  其中的px字段表示 XXX 像素以下执行指定布局方案
     col = null
     row = null    //  当前自动 暂未支持固定
     margin = [null, null]
     marginX = null
     marginY = null
-    size = [null, null]
+    size = [null, null]   //size[1]如果不传入的话长度将和size[1]一样
     sizeWidth = null
     sizeHeight = null
     minCol = null
     maxCol = null
     minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩
     maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩
-    ratio = 0.1    // 只有col的情况下margin和size自动分配margin/size的比例 1:1 ratio值为1
+    ratio = 0.1    // 只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
     data = []  // 传入后就不会再变，等于备份原数据
     global = {}
+    event = {}
     sensitivity = 0.8   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
-    itemConfig  = {  } // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
-
+    itemConfig = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
+    exchange = false
     //----------------保持状态所用参数---------------------//
     _mounted = false
     __store__ = TempStore.containerStore
@@ -68,6 +71,9 @@ export default class Container extends DomFunctionImpl {
         //----------只读变量-----------//
         exchangeLock: false,
         firstInitColNum: null,
+        firstEnterLock: true,
+        beforeOverItem: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
+        moveCount: 0,
         containerViewWidth: null,   //  container视图第一次加载时候所占用的像素宽度
         //-----内部可写外部只读变量------//
         offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
@@ -81,9 +87,10 @@ export default class Container extends DomFunctionImpl {
         this.el = option.el
         this.engine = new Engine(option)
         this.engine.setContainer(this)
+        this.event = new EventCallBack(option.event)
         if (option.itemConfig) this.itemConfig = new ItemPos(option.itemConfig)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
-
     }
+
     /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
     setColNum(col) {
         if (col > 30 || col < 0) {
@@ -134,13 +141,19 @@ export default class Container extends DomFunctionImpl {
                 if (this.element === null) throw new Error('未找到指定ID:' + this.el + '元素')
             }
             this.updateStyle(defaultStyle.containerDefaults) // 必须在engine.init之前
+            this.engine.init()   //  初始化后就能找到用户指定的 this.useLayout
+            if (!this.responsive && (!this.col || !this.row || (!this.sizeWidth && !this.size[0]))) {
+                throw new Error('使用静态布局col,row,和sizeWidth必须都指定值,sizeWidth等价于size[0]')
+            }
             if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
-            this.engine.init()   //  初始化后就能找到用户指定的 this.useLayout
+            // console.log(this.engine.data);
             this._childCollect()
             this.engine.initItems()
+            // console.log(this.engine.items);
             this.engine.mountAll()
+            this.updateLayout()
             this._isNestingContainer_()
             this.updateStyle(this.genContainerStyle())
             this.element._gridContainer_ = this
@@ -149,6 +162,9 @@ export default class Container extends DomFunctionImpl {
             this.__store__.screenWidth = window.screen.width
             this.__store__.screenHeight = window.screen.height
             this.__ownTemp__.containerViewWidth = this.element.clientWidth
+            const containerPosInfo = this.element.getBoundingClientRect()
+            this.__ownTemp__.offsetAbsolutePageLeft = containerPosInfo.left
+            this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
             this.responsiveLayout()
             this._mounted = true
         })
@@ -201,8 +217,8 @@ export default class Container extends DomFunctionImpl {
     }
 
     /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
-    updateLayout() {
-        this.engine.updateLayout()
+    updateLayout(items = [], ignoreList = []) {
+        this.engine.updateLayout(items, ignoreList)
     }
 
     /** 是否开启所有Item位置或大小变化的过渡动画
@@ -211,10 +227,13 @@ export default class Container extends DomFunctionImpl {
      * */
     animation(transition = true, fieldString = null) {
         Sync.run(() => {
+            if (!this._mounted) {
+                console.error('animation函数执行错误,Container未挂载', this)
+                return
+            }
             this.engine.items.forEach((item) => item.animation(transition, fieldString))
         })
     }
-
 
     /**  开启响应式布局 ，  非静态自动补全前面的空位，紧凑布局   */
     responsiveLayout() {
@@ -224,6 +243,7 @@ export default class Container extends DomFunctionImpl {
             // this.engine.setColNum()
             const browserViewWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
             // let browserViewHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+
 
             // containerViewWidth
             const newContainerWidth = Math.round(this.__ownTemp__.containerViewWidth * (browserViewWidth / this.__store__.screenWidth))
@@ -240,7 +260,7 @@ export default class Container extends DomFunctionImpl {
 
             // this.updateLayout(this.genContainerStyle())
             //
-            this.engine._syncLayoutConfig(this.engine._genLayoutConfig(newContainerWidth))
+            this.engine._syncLayoutConfig(this.engine.layoutConfig.genLayoutConfig(newContainerWidth))
             // this.engine.updateLayout()
 
 
@@ -296,15 +316,23 @@ export default class Container extends DomFunctionImpl {
 
     /** 生成该栅格容器布局样式  */
     genContainerStyle = () => {
-        return {
-            // gridTemplateColumns: `repeat(${this.col},${this.size[0]}px)`,
-            // gridTemplateRows: `repeat(${this.row},${this.size[1]}px)`,
-            // gridAutoRows: `${this.size[1]}px`,
-            // gap: `${this.margin[0]}px ${this.margin[1]}px`,
-            // display: 'block',
+        // console.log(this.row, this.maxRow, this.maxRow || this.row);
+        const containerStyle = {
             width: this.nowWidth() + 'px',
             height: this.nowHeight() + 'px',
         }
+        // containerStyle.overflowX = this.col > (this.maxCol || this.col) ? 'scroll' : 'hidden'
+        // containerStyle.overflowY = this.row > (this.maxRow || this.row) ? 'scroll' : 'hidden'
+
+        // return {
+        //     // gridTemplateColumns: `repeat(${this.col},${this.size[0]}px)`,
+        //     // gridTemplateRows: `repeat(${this.row},${this.size[1]}px)`,
+        //     // gridAutoRows: `${this.size[1]}px`,
+        //     // gap: `${this.margin[0]}px ${this.margin[1]}px`,
+        //     // display: 'block',
+        //
+        // }
+        return containerStyle
     }
 
     /** 开启编辑模式,只能单独调用该函数开启，不允许实例化传入
@@ -315,6 +343,10 @@ export default class Container extends DomFunctionImpl {
     edit(editOption = {}) {
         // console.log(editOption);
         Sync.run(() => {
+            if (!this._mounted) {
+                console.error('edit函数执行错误Container未挂载', this)
+                return
+            }
             if (typeof editOption === 'object') {
                 if (Object.keys(editOption).length === 0) editOption = true
             }
@@ -333,23 +365,23 @@ export default class Container extends DomFunctionImpl {
     }
 
 
-    /** 获取现在的Container宽度，只涉及宽度度，未和布局算法挂钩  */
+    /** 获取现在的Container宽度，只涉及浏览器渲染后的视图宽度，未和布局算法挂钩  */
     nowWidth = () => {
         let marginWidth = 0
         let nowCol = this.col
-        if (this.maxCol !== null && this.col > this.maxCol) nowCol = this.maxCol
-        if (this.minCol !== null && this.col < this.minCol) nowCol = this.minCol
+        // if (this.maxCol !== null && this.col > this.maxCol) nowCol = this.maxCol
+        // if (this.minCol !== null && this.col < this.minCol) nowCol = this.minCol
         if ((nowCol) > 1) marginWidth = (nowCol - 1) * this.margin[0]
         // console.log(this.col * this.size[0] + marginWidth)
         return ((nowCol) * this.size[0]) + marginWidth || 0
     }
 
-    /** 获取现在的Container高度,只涉及高度，未和布局算法挂钩  */
+    /** 获取现在的Container高度,只涉及浏览器渲染后的视图高度，未和布局算法挂钩  */
     nowHeight = () => {
         let marginHeight = 0
         let nowRow = this.row
-        if (this.maxRow !== null && this.row > this.maxRow) nowRow = this.maxRow
-        if (this.minRow !== null && this.row < this.minRow) nowRow = this.minRow
+        // if (this.maxRow !== null && this.row > this.maxRow) nowRow = this.maxRow
+        // if (this.minRow !== null && this.row < this.minRow) nowRow = this.minRow
         if ((nowRow) > 1) marginHeight = (nowRow - 1) * this.margin[1]
         // console.log(this.row * this.size[1] + marginHeight)
         // console.log(this.row);
