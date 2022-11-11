@@ -12,7 +12,6 @@ import LayoutConfig from "@/units/grid/LayoutConfig.js";
  *   所有的最新参数都会同步到这里
  *   特殊情况: Container中的事件操作没去写通信接口，里面多次直接操作对应事件监听的所指Item
  *   目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过指针进行操作，后面再改善吧
- *   TODO 开启多个容器的时候引擎合并改变成一个
  *  ##################################################################### */
 export default class Engine {
     items = []
@@ -21,10 +20,12 @@ export default class Engine {
     container = null
     layoutConfig = null
     event = {}
+    initialized = false
     mode = 'responsive'  // responsive || static
     __temp__ = {
         responsiveFunc: null,
         staticIndexCount: 0
+
     }
 
     constructor(option) {  //  posList用户初始未封装成ItemPos的数据列表
@@ -40,6 +41,7 @@ export default class Engine {
         this.layoutConfig.initLayoutInfo()
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
         this._syncLayoutConfig(useLayoutConfig)
+        this.initialized = true
     }
 
     /** 通过传入当前的useLayoutConfig直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
@@ -48,8 +50,8 @@ export default class Engine {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
         merge(this.container, useLayoutConfig)      //  更新同步当前Container中的属性值
+        // console.log(useLayoutConfig);
         // if (this.container.row === null && useLayoutConfig.responsive) this.layoutManager.autoRow()
-        if (this.container.row === null && useLayoutConfig.responsive) this.layoutManager.autoRow()
         this.autoSetColAndRows(this.container)
         this.items.forEach(item => {
             //  只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
@@ -60,45 +62,80 @@ export default class Engine {
         })
     }
 
-    /** 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row */
+    /** 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
+     * 这里Container挂载(mount)的时候会执行两次，一次是预同步容器大小信息，一次是执行最终挂载后容器信息，可以算是没架构好，
+     * 后面有机会再优化吧
+     * TODO 优化初始化执行两次问题，方案是收集所有Item后再调用该函数进行同步
+     * */
     autoSetColAndRows(container) {
-        let maxCol = 1
-        let maxRow = 1
+        let maxCol = container.col
+        let maxRow = container.row
+        let containerW = maxCol
+        let containerH = maxRow
         const items = container.engine.items
-        if (!this.layoutManager.isAutoRow) {
-            if (container.row) maxRow = container.row    // 有指定row优先row
-        }else if (container.row) {
+        const computeSmartRowAndCol = (items)=>{
+            let smartCol = 1
+            let smartRow = 1
             if (items.length > 0) {
                 items.forEach((item) => {
-                    if ((item.pos.x + item.pos.w - 1) > maxCol) maxCol = item.pos.x + item.pos.w - 1
-                    if ((item.pos.y + item.pos.h - 1) > maxRow) maxRow = item.pos.y + item.pos.h - 1
+                    if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1
+                    if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
                 })
             }
+            return { smartCol, smartRow }
         }
-        if (container.col) maxCol = container.col
-        //-----------------------------Col确定---------------------------------//
-        if (container.minCol && container.maxCol && (container.minCol > container.maxCol)) {
-            maxCol = container.maxCol
-            console.warn("minCol指定的值大于maxCol,将以maxCol指定的值为主")
-        } else if (container.maxCol && maxCol > container.maxCol) maxCol = container.maxCol
-        else if (container.minCol && maxCol < container.minCol) maxCol = container.minCol
+        const computeLimitLength = (maxCol,maxRow)=>{
+            //-----------------------------Col确定---------------------------------//
+            if (container.minCol && container.maxCol && (container.minCol > container.maxCol)) {
+                maxCol = container.maxCol
+                console.warn("minCol指定的值大于maxCol,将以maxCol指定的值为主")
+            } else if (container.maxCol && maxCol > container.maxCol) maxCol = container.maxCol
+            else if (container.minCol && maxCol < container.minCol) maxCol = container.minCol
 
-        //-----------------------------Row确定---------------------------------//
-        if (container.minRow && container.maxRow && (container.minRow > container.maxRow)) {
-            maxRow = container.maxRow
-            console.warn("minRow指定的值大于maxRow,将以maxRow指定的值为主")
-        } else if (container.maxRow && maxRow > container.maxRow) maxRow = container.maxRow
-        else if (container.minRow && maxRow < container.minRow) maxRow = container.minRow
-        // console.log(maxRow)
+            //-----------------------------Row确定---------------------------------//
+            if (container.minRow && container.maxRow && (container.minRow > container.maxRow)) {
+                maxRow = container.maxRow
+                console.warn("minRow指定的值大于maxRow,将以maxRow指定的值为主")
+            } else if (container.maxRow && maxRow > container.maxRow) maxRow = container.maxRow
+            else if (container.minRow && maxRow < container.minRow) maxRow = container.minRow
+            return {
+                limitCol:maxCol,
+                limitRow:maxRow
+            }
+        }
 
+        if (container.responsive){    // 响应模式会检测第一次给出的row进行初始容器固定
+            if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
+                if(container.row === null)  this.layoutManager.autoRow()
+                else maxRow = container.row
+            }else if(this.initialized){   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
+                this.layoutManager.autoRow()
+                const smartInfo = computeSmartRowAndCol(items)
+                // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
+                maxCol = smartInfo.smartCol
+                maxRow = smartInfo.smartRow
+                const limitInfo = computeLimitLength(maxCol,maxRow)
+                //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
+                containerW = limitInfo.limitCol
+                containerH = limitInfo.limitRow
+            }
+        }else if(!container.responsive){  // 静态模式下老老实实row多少就多少
+            const limitInfo = computeLimitLength(container.col,container.row)
+            containerW = maxCol = limitInfo.limitCol
+            containerH = maxRow = limitInfo.limitRow
+        }
         this.container.col = maxCol
         this.container.row = maxRow
+        this.container.containerW = containerW
+        this.container.containerH = containerH
         this.layoutManager.setColNum(maxCol)
         this.layoutManager.setRowNum(maxRow)
         this.layoutManager.addRow(maxRow)
         return {
             col: maxCol,
-            row: maxRow
+            row: maxRow,
+            containerW,
+            containerH
         }
     }
 
@@ -247,9 +284,19 @@ export default class Engine {
             if (!this.container._mounted) item.pos.__temp__._autoOnce = true
             // let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
             // TODO  添加成功和失败的event回调
-            if (this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)) {
-                this.items.push(item)
-            }
+            // if (this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)) {
+            //     this.items.push(item)
+            // }
+            this.push(item)
+        }
+    }
+
+    push(item){
+        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)
+        if (realLayoutPos) {
+            console.log(realLayoutPos)
+
+            this.items.push(item)
         }
     }
 

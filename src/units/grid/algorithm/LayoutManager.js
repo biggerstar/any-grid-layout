@@ -40,10 +40,6 @@ export default class LayoutManager {
         this.row = row
     }
 
-    genLayout() {
-
-    }
-
     autoRow(isAutoRow = true) {
         this.isAutoRow = isAutoRow
     }
@@ -63,14 +59,13 @@ export default class LayoutManager {
 
     /** 删除空白的最后一行,若已被占用不进行删除 TODO 弃用 */
     removeOneRow = () => {
-        return
-        this.row = this._layoutMatrix.length - 1 || 0
         if (this._layoutMatrix.length === 0) {
             console.log('栅格内行数已经为空')
             return false
         }
         if (!this._layoutMatrix[this._layoutMatrix.length - 1].includes(true)) {
             this._layoutMatrix.pop()
+            this.row = this._layoutMatrix.length
             return true
         } else {
             console.log('计划删除的栅格内存在组件,未删除包含组件的栅格')
@@ -162,7 +157,7 @@ export default class LayoutManager {
             // }
             if (findItemLayout === undefined) return null
             if (posOption.i !== undefined) findItemLayout.iName = posOption.i
-            findItemLayout.row = this._layoutMatrix.length
+            findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数
         }
         else {
             if (this.isStaticBlank(posOption)) {

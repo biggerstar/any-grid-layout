@@ -37,6 +37,7 @@ export default class Item extends DomFunctionImpl {
     //----------------保持状态所用参数---------------------//
     _resizeTabEl = null
     _mounted = false
+    _animating = false
     __temp__ = {
         // -------------不可写变量--------------//
 
@@ -186,14 +187,14 @@ export default class Item extends DomFunctionImpl {
                 if (fieldString === null) fieldString = this.transition.field
                 style.transitionProperty = transition ? fieldString : 'none'    //  当transition = false的时候，不会开启动画
                 style.transitionDuration = transition ? transition + 'ms' : 'none'
+                style.transitionTimingFunction = 'ease-out'
                 this.updateStyle(style)
                 if (transition !== false) {
                     this.transition = {
                         time: transition,
                         field: fieldString,
                     }
-                }
-
+                }else this.transition = false
             }
         )
     }

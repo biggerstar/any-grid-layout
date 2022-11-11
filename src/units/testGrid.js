@@ -9,7 +9,7 @@ const container = new Container({
     layout: {
         from: '来自layout',
         transition: true,
-        // data: layoutData,
+        data: layoutData,
         // col: 5,
         row: 5,
         ratio: 0.2,
@@ -17,8 +17,9 @@ const container = new Container({
         // size:[120,80],
         size: [90, 90],
         // minCol: 2,
-        maxCol: 8,
-        maxRow: 5,
+        // maxCol: 8,
+        minRow: 5,
+        maxRow: 8,
         itemConfig: {
             // minW:2,
             // maxH:1,
@@ -34,6 +35,7 @@ const container = new Container({
         //     opacity:'0.2',
         //     transform:'scale(1.1)',
         // }
+        // TODO  静态模式下上方拖动改变容器大小之后造成静态拖动错位
     },
     global: {
         responsive:true,
@@ -41,7 +43,7 @@ const container = new Container({
         // static:true,
         from1: '来自global',
         // transition: true,
-        data: layoutData,
+        // data: layoutData,
         // margin: [10, 10],
         // size:[160,300],
         style: {
@@ -52,8 +54,11 @@ const container = new Container({
 })
 
 container.mount()
-container.edit()
-// container.animation(220)
+container.edit({
+    draggable : true,
+    resize:true,
+})
+container.animation(200)
 
 
 const container1 = new Container({
@@ -141,9 +146,9 @@ const container3 = new Container({
     },
 })
 
-// container3.mount()
-// container3.edit()
-// container3.animation(220)
+container3.mount()
+container3.edit()
+container3.animation(220)
 
 
 // setTimeout(()=>{

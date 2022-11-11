@@ -38,13 +38,15 @@ export default class Container extends DomFunctionImpl {
     childContainer = [] // 所有该Container的直接子嵌套容器
     isNesting = false    // 该Container自身是否[被]嵌套
     parentItem = null
+    containerH = null
+    containerW = null
     //----------------外部传进的的参数---------------------//
     responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
     responseMode = 'exchange'  //  exchange(默认) || stream
     // static = false
     layout = []    //  其中的px字段表示 XXX 像素以下执行指定布局方案
     col = null
-    row = null    //  当前自动 暂未支持固定
+    row = null
     margin = [null, null]
     marginX = null
     marginY = null
@@ -53,8 +55,8 @@ export default class Container extends DomFunctionImpl {
     sizeHeight = null
     minCol = null
     maxCol = null
-    minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩
-    maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩
+    minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
+    maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     ratio = 0.1    // 只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
     data = []  // 传入后就不会再变，等于备份原数据
     global = {}
@@ -72,6 +74,7 @@ export default class Container extends DomFunctionImpl {
         exchangeLock: false,
         firstInitColNum: null,
         firstEnterLock: true,
+        moveExchangeLock : false,
         beforeOverItem: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
         moveCount: 0,
         containerViewWidth: null,   //  container视图第一次加载时候所占用的像素宽度
@@ -151,7 +154,6 @@ export default class Container extends DomFunctionImpl {
             // console.log(this.engine.data);
             this._childCollect()
             this.engine.initItems()
-            // console.log(this.engine.items);
             this.engine.mountAll()
             this.updateLayout()
             this._isNestingContainer_()
@@ -162,14 +164,15 @@ export default class Container extends DomFunctionImpl {
             this.__store__.screenWidth = window.screen.width
             this.__store__.screenHeight = window.screen.height
             this.__ownTemp__.containerViewWidth = this.element.clientWidth
-            const containerPosInfo = this.element.getBoundingClientRect()
-            this.__ownTemp__.offsetAbsolutePageLeft = containerPosInfo.left
-            this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
+            // const containerPosInfo = this.element.getBoundingClientRect()
+            // this.__ownTemp__.offsetAbsolutePageLeft = containerPosInfo.left
+            // this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
             this.responsiveLayout()
             this._mounted = true
         })
     }
 
+    /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */
     _isNestingContainer_(element = null) {
         element = element ? element : this.element
         if (!element) return
@@ -364,11 +367,10 @@ export default class Container extends DomFunctionImpl {
         })
     }
 
-
     /** 获取现在的Container宽度，只涉及浏览器渲染后的视图宽度，未和布局算法挂钩  */
     nowWidth = () => {
         let marginWidth = 0
-        let nowCol = this.col
+        let nowCol = this.containerW
         // if (this.maxCol !== null && this.col > this.maxCol) nowCol = this.maxCol
         // if (this.minCol !== null && this.col < this.minCol) nowCol = this.minCol
         if ((nowCol) > 1) marginWidth = (nowCol - 1) * this.margin[0]
@@ -379,7 +381,7 @@ export default class Container extends DomFunctionImpl {
     /** 获取现在的Container高度,只涉及浏览器渲染后的视图高度，未和布局算法挂钩  */
     nowHeight = () => {
         let marginHeight = 0
-        let nowRow = this.row
+        let nowRow = this.containerH
         // if (this.maxRow !== null && this.row > this.maxRow) nowRow = this.maxRow
         // if (this.minRow !== null && this.row < this.minRow) nowRow = this.minRow
         if ((nowRow) > 1) marginHeight = (nowRow - 1) * this.margin[1]
