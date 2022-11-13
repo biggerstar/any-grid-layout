@@ -118,14 +118,12 @@ export default class LayoutManager {
 
 
     addItem(itemLayout) {
-
         this._updateSeatLayout(itemLayout)
-        this.layoutPositions.push(itemLayout)
-
-
+        // this.layoutPositions.push(itemLayout)
 
         ///////////////////////////////////////////////////////////
         //  调试算法入队过程
+        // this.isDebugger = true
         if (this.isDebugger) {
             const colorLayoutMatrix = this._layoutMatrix.map(row => {
                 return row.map(flag => flag ? '●' : '○')
@@ -151,10 +149,12 @@ export default class LayoutManager {
         // console.log(posOption);
         // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
         if (auto){
+            // console.log(1111111111111);
             findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
             // for (let i = 0; i < this._layoutMatrix.length; i++) {
             //     console.log(this._layoutMatrix[i]);
             // }
+
             if (findItemLayout === undefined) return null
             if (posOption.i !== undefined) findItemLayout.iName = posOption.i
             findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数
@@ -167,7 +167,7 @@ export default class LayoutManager {
         }
         // console.log(findItemLayout);
         // console.log(this.isOverFlowMatrix(posOption));
-        if (this.isOverFlowMatrix(posOption)) return null
+        if (auto === false && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
         else return findItemLayout
         // if (this.maxRow && this.maxRow < (findItemLayout.y + findItemLayout.h - 1)) {
         //     console.error(posOption, '超出maxRow设定范围,若直接使用裸算请在外围检测保持传入的posOption对应的h+y不超过maxRow')
@@ -175,7 +175,7 @@ export default class LayoutManager {
         // }
     }
 
-    /** 判断该pos是否超出当前的矩阵范围
+    /** 判断该pos是否超出当前的矩阵范围,通常用于静态模式
      * @return {Boolean} 超过：true  未超过：false
      * */
     isOverFlowMatrix(nextStaticPos) {
@@ -241,7 +241,6 @@ export default class LayoutManager {
             // if (i === 1 && this.DebuggerTemp.index === 16 && this.DebuggerTemp.yPointStart === 4) debugger
 
             if (rowBlankCount === w) {  //  如果该行能放置符合w的新组件
-
                 return {
                     success: true,
                     xStart: i + 1 - w,   // 加1是起始索引假设1-6, w为2 ，所占空间只有index0,index1

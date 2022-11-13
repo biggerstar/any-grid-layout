@@ -19,8 +19,9 @@ export default class Item extends DomFunctionImpl {
     }     // time:动画过渡时长 ms, field: 要过渡的css字段 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
     draggable = false  //  自身是否可以拖动
     resize = false     //  自身是否可以调整大小
+    close = false
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-
+    className = 'grid-item'
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
@@ -49,6 +50,7 @@ export default class Item extends DomFunctionImpl {
         event: {},
         styleLock: false,
         maskEl: null,
+        closeEl: null,
         height: 0,
         width: 0,
         dragging:false,
@@ -75,7 +77,7 @@ export default class Item extends DomFunctionImpl {
             // console.log(this.element);
             if (this.element === null) this.element = document.createElement(this.tagName)
             this.container.element.appendChild(this.element)
-            // console.log(this.element);
+            this.element.classList.add(this.className)
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
             this.updateStyle(defaultStyle.itemDefaults)
@@ -85,8 +87,10 @@ export default class Item extends DomFunctionImpl {
             this.edit({
                 draggable: this.draggable,
                 resize: this.resize,
+                close: this.close,
             })
             this.animation(this.transition)
+
             // this.__temp__.clientWidth = this.element.clientWidth
             // this.__temp__.clientHeight = this.element.clientHeight
             this.__temp__.w = this.pos.w
@@ -132,14 +136,15 @@ export default class Item extends DomFunctionImpl {
         const eventRecord = {
             draggable: null,
             resize: null,
+            close: null,
         }
         if (typeof editOption === 'object') {
             if (Object.keys(editOption).length === 0) editOption = true
         }
         if (editOption === false) {
-            editOption = {draggable: false, resize: false}
+            editOption = {draggable: false, resize: false,close:false}
         } else if (editOption === true) {
-            editOption = {draggable: true, resize: true}
+            editOption = {draggable: true, resize: true, close:true}
         }
         // console.log(editOption);
         if (this.draggable && editOption.draggable) eventRecord.draggable = null    //  之前已经开了，不做操作(忽略)
@@ -148,12 +153,14 @@ export default class Item extends DomFunctionImpl {
         if (this.resize && !editOption.resize) eventRecord.resize = false
         if (!this.draggable && editOption.draggable) eventRecord.draggable = true   //  之前关闭的 ，现在要开启 (开启)
         if (!this.resize && editOption.resize) eventRecord.resize = true
-
+        //----------------------------只有这边修改edit的相关值------------------------------//
         this.draggable = editOption.draggable
         this.resize = editOption.resize
+        if (typeof editOption.close === 'boolean') this.close = editOption.close
+
         if (!this.__temp__.eventRunning) {
             if (this.resize === true) {
-                this.handleResize(true, 'mount')
+                this.handleResize(true)
             }
         }
 
@@ -164,7 +171,8 @@ export default class Item extends DomFunctionImpl {
             this.__temp__.eventRunning = false
             EditEvent.removeEvent(null, this, eventRecord)
         }
-        if (this.resize === false) this.handleResize(this.resize, 'mount')
+        if (this.resize === false) this.handleResize(this.resize)
+        if (typeof this.close === 'boolean') this._closeBtn_(this.close)
 
 
     }
@@ -213,18 +221,22 @@ export default class Item extends DomFunctionImpl {
 
     handleResize(isResize = false, msg) {
         if (isResize && this._resizeTabEl === null) {
-            const className = 'resizable-handle'
+            const className = 'grid-resizable-handle'
             const handleResizeEls = this.element.querySelectorAll('.' + className)
             if (handleResizeEls.length > 0) return;
             const resizeTab = document.createElement('span')
-            resizeTab.classList.add(className)
             resizeTab.innerHTML = '⊿'
-            this.updateStyle(defaultStyle.handleResize, resizeTab)
-            this._resizeTabEl = resizeTab
+            this.updateStyle(defaultStyle.gridHandleResize, resizeTab)
             this.element.appendChild(resizeTab)
+            resizeTab.classList.add(className)
+            this._resizeTabEl = resizeTab
         } else {
-            if (this._resizeTabEl === null) return
-            this.element.removeChild(this._resizeTabEl)
+            // console.log(this._resizeTabEl)
+            if (this._resizeTabEl){
+                this.element.removeChild(this._resizeTabEl)
+                this._resizeTabEl = null
+            }
+
         }
     }
 
@@ -298,10 +310,28 @@ export default class Item extends DomFunctionImpl {
         if (isStyle === false) return this.__temp__.styleLock = false
     }
 
+    /** 创建拖Item关闭按钮 */
+    _closeBtn_(isDisplayBtn = false) {
+        if (!this._mounted) return
+        if (isDisplayBtn) {
+            const closeEl = document.createElement('div')
+            this.updateStyle(defaultStyle.gridItemCloseBtn, closeEl)
+            this.__temp__.closeEl = closeEl
+            this.element.appendChild(closeEl)
+            closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
+            closeEl.classList.add('grid-item-close-btn')
+        }
+        if (this.__temp__.closeEl !== null && !isDisplayBtn) {
+            try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
+                this.element.removeChild(this.__temp__.closeEl)
+            } catch (e) {
+            }
+        }
+    }
+    /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩 */
     _mask_(isMask = false) {
         if (isMask) {
             const maskEl = document.createElement('div')
-            maskEl.classList.add('item-mask')
             this.updateStyle({
                 backgroundColor: 'transparent',
                 height: this.element.clientHeight + 'px',
@@ -312,6 +342,8 @@ export default class Item extends DomFunctionImpl {
             }, maskEl)
             this.__temp__.maskEl = maskEl
             this.element.appendChild(maskEl)
+            maskEl.classList.add('grid-item-mask')
+
         }
         if (this.__temp__.maskEl !== null && !isMask) {
             try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理

@@ -29,7 +29,7 @@ export const defaultStyle = {
         opacity :'1',
         zIndex: '1',
     },
-    handleResize:{
+    gridHandleResize:{
         cursor: 'nw-resize',
         height: '20px',
         width: '20px',
@@ -41,5 +41,20 @@ export const defaultStyle = {
         color:'grey',
         textAlign:'right',
     },
+    gridItemCloseBtn:{
+        backgroundColor: 'skyblue',
+        height: '20px',
+        width: '20px',
+        position: 'absolute',
+        right: '0',
+        top: '0',
+        innerHTML: `×`,
+        fontSize:'1.2rem',
+        textAlign:'center',
+        lineHeight:'20px',
+        cursor : 'pointer',
+        borderRadius: '20px'
+    }
+
 
 }

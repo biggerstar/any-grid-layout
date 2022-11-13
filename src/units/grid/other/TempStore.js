@@ -18,10 +18,11 @@ export default class TempStore {
         crossContainerItem : false,  // 当前操作的Item是否跨容器操作
         draggingLock: false,    // 拖动限制锁
         currentContainer : null,  //  当前鼠标在哪个Container
-        beforeContainer : null,  //  当前鼠标在哪个Container
+        beforeContainer : null,  //  来自上一个的Container
         fromItem: null,    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
         toItem: null,      // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
         moveItem : null,   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
+        beforeItem : null,   // 跨容器时保存的上一个Container对应的Item
         cloneElement: null,      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
         mousedownEvent:null,   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
         mousedownItemOffsetLeft: null,  // 鼠标点击某个Item的时候距离该Item左边界距离

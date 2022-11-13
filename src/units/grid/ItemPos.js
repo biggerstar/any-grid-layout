@@ -13,8 +13,8 @@ export default class ItemPos {
     maxW = Infinity   // 栅格倍数
     minH = 1          // 栅格倍数
     maxH = Infinity   // 栅格倍数
-    static = false     // 静态布局模式下指定是否可拖动
-    temporaryStatic = false   //  用于保存在resize时候和静态布局临时静态的状态
+    static = false     // 静态布局模式下指定是否可拖动  TODO 暂时无用
+    temporaryStatic = false   //  用于保存在resize时候和静态布局临时静态的状态   TODO 暂时无用
     nextStaticPos = null
     nextStaticPosDemo = {     // 静态布局下用于算法检测是否空位的缓存
         w: 1,

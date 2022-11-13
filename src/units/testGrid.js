@@ -11,11 +11,11 @@ const container = new Container({
         transition: true,
         data: layoutData,
         // col: 5,
-        row: 5,
+        // row: 5,
         ratio: 0.2,
         margin: [10, 10],
         // size:[120,80],
-        size: [90, 90],
+        size: [120, 90],
         // minCol: 2,
         // maxCol: 8,
         minRow: 5,
@@ -58,6 +58,7 @@ container.mount()
 container.edit({
     draggable : true,
     resize:true,
+    close:true
 })
 container.animation(200)
 // container.follow(false)
@@ -112,7 +113,6 @@ const container2 = new Container({
         minCol: 2,
         exchange: true,
         // responsive:true,
-
     },
     event:{
         // error(type){
@@ -140,6 +140,8 @@ const container3 = new Container({
         maxCol: 6,
         exchange: true,
         responsive:true,
+        data: layoutData,
+
     },
     event:{
         // error(type){

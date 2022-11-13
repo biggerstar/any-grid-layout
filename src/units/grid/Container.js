@@ -76,7 +76,7 @@ export default class Container extends DomFunctionImpl {
         //-----内部可写外部只读变量------//
         exchangeLock: false,
         firstInitColNum: null,
-        firstEnterLock: true,
+        firstEnterUnLock: false,   //  第一次进入的权限是否解锁
         moveExchangeLock : false,
         beforeOverItems: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
         moveCount: 0,
@@ -302,6 +302,7 @@ export default class Container extends DomFunctionImpl {
 
     /** 为dom添加新成员
      * @param { Object || Item } item 可以是一个Item实例类或者一个配置对象
+     * @return {Item|| Boolean}  添加成功返回该添加创建的Item，添加失败返回null
      * item : {
      *      el : 传入一个已经存在的 element
      *      w : 指定宽 栅格倍数,
@@ -313,8 +314,7 @@ export default class Container extends DomFunctionImpl {
         item.container = this
         item.parentElement = this.element
         if (!(item instanceof Item)) item = this.engine.createItem(item)
-        this.engine.addItem(item)
-        return item
+        return this.engine.addItem(item)
     }
 
     /** 使用css class 或者 Item的对应name, 或者 Element元素 找到该对应的Item，并返回所有符合条件的Item
@@ -364,11 +364,11 @@ export default class Container extends DomFunctionImpl {
                 if (Object.keys(editOption).length === 0) editOption = true
             }
             if (editOption === false) {
-                editOption = {draggable: false, resize: false}
+                editOption = {draggable: false, resize: false,close:false}
             } else if (editOption === true) {
-                editOption = {draggable: true, resize: true}
+                editOption = {draggable: true, resize: true, close:true}
             }
-            if (editOption.draggable || editOption.resize) {
+            if (editOption.draggable || editOption.resize || editOption.close) {
                 EditEvent.startEvent(this)
             } else {
                 EditEvent.removeEvent(this)
@@ -431,8 +431,9 @@ export default class Container extends DomFunctionImpl {
     testUnmount() {
         this.engine.getItemList().forEach((item, index) => {
             item.mount()
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 item.unmount()
+                clearTimeout(timer)
             }, index * 1000)
         })
     }

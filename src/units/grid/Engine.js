@@ -305,26 +305,33 @@ export default class Engine {
         else if (itemConfig.minH > item.pos.h) console.error(this.container, item, `itemConfig配置指定minH为:${itemConfig.minH},当前h为${item.pos.h}`)
         else if (itemConfig.maxH < item.pos.h) console.error(this.container, item, `itemConfig配置指定maxH为:${itemConfig.maxH},当前h为${item.pos.h}`)
         else {
-            let itemRealPos = null
             item.pos.i = item.i = this.__temp__.staticIndexCount++
-            if (!this.container._mounted) item.pos.__temp__._autoOnce = true
+            // console.log(item);
+            // if (!this.container._mounted)item.pos.__temp__._autoOnce = true
+            if(!this.container._mounted  || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
+            else if (!item._mounted && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
             // let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
             // TODO  添加成功和失败的event回调
             // if (this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)) {
             //     this.items.push(item)
             // }
-            this.push(item)
+            const success = this.push(item)
+            return success ? item : null  //  添加成功返回该Item，添加失败返回null
         }
     }
 
     push(item) {
+        // console.log(item.pos);
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)
+        // console.log(realLayoutPos);
+        let success = false
         if (realLayoutPos) {
             // 用于自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
             // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
             // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
             if (this.items.length <= 1) {
                 this.items.push(item)
+                success = true
             } else {
                 let nextIndexItem, nowIndexItem
                 for (let i = 0; i < this.items.length; i++) {
@@ -337,15 +344,18 @@ export default class Engine {
                         const nextPos = nextIndexItem.pos
                         if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
                             this.insert(item, i + 1)
+                            success = true
                             break
                         }
                     } else {
                         this.items.push(item)
+                        success = true
                         break
                     }
                 }
             }
         }
+        return success
     }
 
     removeItem(item) {
@@ -464,6 +474,7 @@ export default class Engine {
         nextStaticPos.i = item.i
         realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
         // console.log(realLayoutPos);
+
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)
@@ -473,13 +484,17 @@ export default class Engine {
             }
             return realLayoutPos
         } else {
-            // item.display = false
             return null
         }
     }
 
     /**  根据是否响应式布局或者静态布局更新容器内的Item布局
-     *  items是指定要更新的几个Item，否则更新全部
+     *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
+     *  @param items {Array || Boolean} Array: 要更新的对应Item ，Array方案正常用于静态模式，
+     *                                          响应式也能指定更新，用于静态优先更新(将传入的Item作为静态Item进行占位)
+     *                                  Boolean: 静态模式下只有传入true才能生效，响应式的话将全部更新
+     *                                  不传值(默认null): 静态模式不进行更新，响应式模式进行全部更新
+     *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
      * */
     updateLayout(items = null, ignoreList = []) {
         //更新响应式布局
@@ -489,25 +504,18 @@ export default class Engine {
             this._syncLayoutConfig(useLayoutConfig)
             this.renumber()
             let updateItemList = items
-            if (updateItemList === null) updateItemList = []
+            if (items === true || updateItemList === null) updateItemList = []
             items = this.items
             updateItemList = updateItemList.filter(item => items.includes(item))
             // console.log(items.length, updateItemList);
             const updateResponsiveItemLayout = (item) => {
-                // if (!this._isCanAddItemToContainer_(item, item.__temp__._autoOnce, false)){
-                //     this.layoutManager.addRow(1)
-                // }
                 const realPos = this._isCanAddItemToContainer_(item, item.__temp__._autoOnce, true)
                 if (realPos) {
-                    // this.container.row = realPos.row
                     item.updateItemLayout()
                 }
             }
-
-            // console.log(updateItemList);
             updateItemList.forEach((item) => {   // 1.先对要进行更新成员占指定静态位
                 item.__temp__._autoOnce = false
-                // console.warn(item.pos);
                 updateResponsiveItemLayout(item)
             })
 
@@ -516,21 +524,21 @@ export default class Engine {
                 item.__temp__._autoOnce = true
                 updateResponsiveItemLayout(item)
             })
-
-
             // console.log(items);
             // for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
             //     console.log(this.layoutManager._layoutMatrix[i]);
             // }
             // console.log('-----------------------------------------');
-
-
             this.container.updateStyle(this.container.genContainerStyle())
         } else if (!this.container.responsive) {
             //更新静态布局
             // this.layoutManager.autoRow(false)
-            let updateItemList = items || []
-            if (updateItemList.length === 0) return
+            const skip = false
+            let updateItemList = []
+            if (items === null) updateItemList = []
+            else if (Array.isArray(items)) updateItemList = items
+            else if (items !== true && updateItemList.length === 0) return
+
             items = this.items
             updateItemList = updateItemList.filter(item => items.includes(item))
             this.reset()
@@ -544,12 +552,10 @@ export default class Engine {
                 if (updateItemList.includes(item)) return   //  后面处理
                 updateStaticItemLayout(item)
             })
-            // console.log(updateItemList);
             updateItemList.forEach((item) => {  // 2。再对要进行更新的Item进行查询和改变位置
                 updateStaticItemLayout(item)
                 item.updateItemLayout()    //  只对要更新的Item进行更新
             })
-
         }
 
         const isDebugger = false

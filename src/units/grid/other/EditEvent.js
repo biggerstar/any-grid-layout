@@ -158,15 +158,13 @@ export default class EditEvent {
                 const moveItem = tempStore.moveItem
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 if (dragItem.container === container) return   // 非常必要，防止嵌套拖动容器互相包含
-
-                container.__ownTemp__.firstEnterLock = false
+                container.__ownTemp__.firstEnterUnLock = true
                 tempStore.moveContainer = container
             },
             mouseleave: function (ev, container = null) {
                 let fromItem = tempStore.fromItem
                 let moveItem = tempStore.moveItem
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
-
                 // if (!tempStore.isDragging || fromItem === null || !container || !tempStore.isLeftMousedown) return
                 // dragItem.container.engine.updateLayout([dragItem])
                 tempStore.crossContainerItem = true   // 和 mouseenter 同代码同效果
@@ -178,7 +176,6 @@ export default class EditEvent {
             },
             mouseup: (ev) => {   //  容器之间交换Item用
                 const container = parseContainer(ev)
-                tempStore.moveItem = null
                 if (container && container.isNesting) {
                     container.parentItem.pos.temporaryStatic = false
 
@@ -195,8 +192,8 @@ export default class EditEvent {
                 fromItem?.updateStyle(defaultStyle.itemDragUp)
                 tempStore.mousedownEvent = null
             },
-            mousemoveExchange: (ev) => {
-                let container = parseContainer(ev)
+            mousemoveExchange: (container,itemPositionMethod = null) => {
+                // let container = parseContainer(ev)
                 // if (!container && ev.target._isGridContainer_) {
                 //     ev.preventDefault()
                 //     container = ev.target._gridContainer_
@@ -212,46 +209,69 @@ export default class EditEvent {
                 let dragContainer = tempStore.moveContainer !== null ? tempStore.moveContainer : tempStore.fromContainer
                 // if (fromItem.container === container) return
                 if (!fromItem.container.exchange || !container.exchange) return
+                // console.log(33333333333333333333);
                 tempStore.crossContainerItem = true   // 进入Container时  moveItem为null，此时指定告诉这是第一次进入，下一次的Item换位使用移动到鼠标位置Item前而不是两两交换
                 try {
                     dragItem.pos.el = null   // 要将原本pos中的对应文档清除掉换克隆后的
                     let dragItemElement = fromItem.element
-                    // console.log(333333333333333333);
-                    dragItem.unmount()  // 先成功移除原来容器中Item后再在新容器新添加Item，移除不成功不添加
-                    dragItem.remove()
+
+
                     const newItem = new Item({
                         ...dragItem.pos,
                         name: dragItem.name,
                         draggable: dragItem.draggable,
                         resize: dragItem.resize,
+                        close: dragItem.close,
                         follow: dragItem.follow,
                         transition: dragItem.transition,
-                        el: dragItemElement,
+                        size:container.size,
+                        margin:container.margin,
+                        el: dragItemElement
                     })
+                    if (container.responsive) newItem.pos.__temp__._autoOnce = true
                     container.add(newItem)
-                    container.__ownTemp__.firstEnterLock = true
+
+                    if (typeof itemPositionMethod === 'function'){
+                        // 用于修改确定Item交换之后下次布局更新的位置
+                        if (itemPositionMethod(newItem) === false) return
+                    }
+
+                    // console.log(newItem.container);
+                    // console.log(newItem.pos);
                     // console.log(dragItem.pos,newItem.pos);
                     // for (let i = 0; i < container.engine.layoutManager._layoutMatrix.length; i++) {
                     //     console.log(container.engine.layoutManager._layoutMatrix[i]);
                     // }
-
+                    dragItem.unmount()  // 先成功移除原来容器中Item后再在新容器新添加Item，移除不成功不添加
+                    dragItem.remove()
                     if (container) {
-                        if (!container.responsive) {
-                            // console.log('newItem');
+                        if (!newItem.container.responsive){
                             newItem.container.engine.updateLayout([newItem])
-                            // newItem.pos.__temp__._autoOnce = false
-                            // 指定在第一次进入其他容器的时候指定动态寻找空位进行坐下，engine会进行实际处理，详情看updateLayout函数
-                            if (dragItem.container !== newItem.container) dragItem.container.engine.updateLayout([dragItem])
-                            // newItem.pos.__temp__._autoOnce = false
-                        } else {
-                            console.log('newItem');
+                        }else {
+                            // console.log(111111111111111);
                             newItem.container.engine.updateLayout()
-                            // newItem.container.engine.updateLayout([newItem])
-                            // dragItem.container.engine.updateLayout([dragItem])
                         }
+                        if (dragItem !== newItem && !dragItem.container.responsive){
+                            dragItem.container.engine.updateLayout([dragItem])
+                        }else {
+                            // console.log(222222222222222);
+                            dragItem.container.engine.updateLayout()
+                        }
+
+                        // if (!container.responsive) {
+                        //     // console.log('newItem');
+                        //     newItem.container.engine.updateLayout([newItem])
+                        //     // newItem.pos.__temp__._autoOnce = false
+                        //     // 指定在第一次进入其他容器的时候指定动态寻找空位进行坐下，engine会进行实际处理，详情看updateLayout函数
+                        //     if (dragItem.container !== newItem.container) dragItem.container.engine.updateLayout([dragItem])
+                        //     // newItem.pos.__temp__._autoOnce = false
+                        // } else {
+                        //     // newItem.container.engine.updateLayout([newItem])
+                        // }
                     }  // dragItem会跟随进入不同容器，每次离开刷新
                     newItem.mount()
                     dragItem.element.style.backgroundColor = 'red'
+                    container.__ownTemp__.firstEnterUnLock = false
                     tempStore.moveItem = newItem
                 } catch (e) {
                     console.log(e);
@@ -278,11 +298,10 @@ export default class EditEvent {
                 const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.size[0] / tempStore.fromContainer.size[0])
                 const offsetDragItemY = tempStore.mousedownItemOffsetTop * (fromItem.size[1] / tempStore.fromContainer.size[1])
                 // console.log(offsetDragItemX,offsetDragItemY);
-                const dragEl = dragItem.container.element.getBoundingClientRect()
+                const dragEl = container.element.getBoundingClientRect()
                 // Item距离容器的px
                 const offsetLeftPx = ev.pageX - offsetDragItemX - (window.scrollX + dragEl.left)
                 const offsetTopPx = ev.pageY - offsetDragItemY - (window.scrollY + dragEl.top)
-                // console.log(offsetLeftPx,offsetTopPx);
 
                 const pxToGridPosW = (offsetLeftPx) => {
                     const w = (offsetLeftPx + container.margin[0]) / (container.size[0] + container.margin[0])
@@ -351,7 +370,6 @@ export default class EditEvent {
                             toItem = updateItems[0]
                         }
                     }
-
                     const outerContentArea = ()=>{
                         // 在响应式流Items覆盖区域外的检测，为了使得鼠标拖拽超出Items覆盖区域后dragItem还能跟随鼠标位置在流区域进行移动或交换
                         // 说人话就是实现dragItem在鼠标超出边界还能跟随鼠标位置移动到边界
@@ -365,17 +383,31 @@ export default class EditEvent {
                         else outerContentArea()
                     }else innerContentArea()
 
+                    //---------------------------响应模式跨容器交换------------------------------//
+                    if (container.__ownTemp__.firstEnterUnLock) {
+                        dragItem.pos.__temp__._autoOnce = true
+                        if (toItem){
+                            EEF.itemDrag.mousemoveExchange(container,(newItem)=>{
+                                // console.log(newItem.pos,toItem.pos);
+                                container.engine.move(newItem,toItem.i)
+                            })
+                        }else {
+                            EEF.itemDrag.mousemoveExchange(container)
+                        }
+                        tempStore.dragContainer = container
+                        return   // 交换成功后直接退出
+                    }
+                    //---------------------------响应模式同容器交换------------------------------//
                     if (!toItem) return
                     const fromItemPosInfo = dragItem.element.getBoundingClientRect()
                     const proportionX = Math.abs(ev.pageX - fromItemPosInfo.left - tempStore.mousedownItemOffsetLeft) / toItem.element.clientWidth
                     const proportionY = Math.abs(ev.pageY - fromItemPosInfo.top - tempStore.mousedownItemOffsetTop) / toItem.element.clientHeight
                     const xOrY = proportionX > proportionY
-
+                    // console.log(proportionX,proportionY);
                     if (Math.abs(proportionX - proportionY) < 0.45) return
                     if (proportionX > 0.1 && proportionY > 0.1 && proportionX < 0.9 && proportionY < 0.9) return
 
                     //-------------------修复移动高频toItem和dragItem高速互换闪烁限制----------------------//
-                    // console.log(dragItem,toItem);
                     // if (dragItem === toItem ) container.__ownTemp__.exchangeLock = false
                     const contLimit = 3   //  设定限制连续不间断经过某个Item几次后执行休息
                     const beforeOverItems = container.__ownTemp__.beforeOverItems
@@ -386,14 +418,17 @@ export default class EditEvent {
                     }
                     if (continuousOverCount >= contLimit) {
                         container.__ownTemp__.exchangeLock = true
-                        setTimeout(() => {
+                        const timer = setTimeout(() => {
                             container.__ownTemp__.exchangeLock = false
+                            clearTimeout(timer)
                         }, 200)
-                    } else if (beforeOverItems.length < contLimit && toItem.draggable) {   // 前contLimit(默认是上面的3个)个连续反应时间为toItem.transition.time
+                    }
+                    else if (beforeOverItems.length < contLimit && toItem.draggable) {   // 前contLimit(默认是上面的3个)个连续反应时间为toItem.transition.time
                         if (toItem.transition && toItem.transition.time) {
                             container.__ownTemp__.exchangeLock = true
-                            setTimeout(() => {
+                            const timer =setTimeout(() => {
                                 container.__ownTemp__.exchangeLock = false
+                                clearTimeout(timer)
                             }, toItem.transition.time)
                         }
                     }
@@ -403,36 +438,19 @@ export default class EditEvent {
                         if (beforeOverItems.length > 20) container.__ownTemp__.beforeOverItems.pop()  // 最多保存20个经过的Item
                     }
                     //-----------------------------------------------------------------------------//
-                    // dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
-                    // dragItem.pos.nextStaticPos.x = nowMoveWidth < 1 ? 1 : nowMoveWidth  // 栅格索引最低1
-                    // dragItem.pos.nextStaticPos.y = nowMoveHeight < 1 ? 1 : nowMoveHeight
-                    // console.log(dragItem.pos.x,dragItem.pos.y,'',toItem.pos.x,toItem.pos.y);
-
-                    // if (container.isNesting) {    //  如果是个嵌套Item  移动进去被嵌套容器后该嵌套容器所在的父级Item变成静态,直到鼠标抬起释放
-                    //     container.parentItem.pos.temporaryStatic = container.parentItem !== tempStore.fromItem
-                    // }
-
-
-                    if (!container.__ownTemp__.firstEnterLock) {
-                        // 跨容器交换
-                        console.log('mousemoveExchange');
-                        EEF.itemDrag.mousemoveExchange(ev)
-                        // tempStore.dragContainer = container
-                    } else {
-                        // 同容器成员间交换方式
-                        if (container.responseMode === 'default') {
-                            if (xOrY) {  // X轴
-                                container.engine.move(dragItem, toItem.i)
-                            } else { // Y轴
-                                container.engine.exchange(dragItem, toItem)
-                            }
-                        } else if (container.responseMode === 'stream') {
+                    // 同容器成员间交换方式
+                    if (container.responseMode === 'default') {
+                        if (xOrY) {  // X轴
                             container.engine.move(dragItem, toItem.i)
-                        }else if (container.responseMode === 'exchange') {
+                        } else { // Y轴
                             container.engine.exchange(dragItem, toItem)
                         }
-                        container.engine.updateLayout()
+                    } else if (container.responseMode === 'stream') {
+                        container.engine.move(dragItem, toItem.i)
+                    }else if (container.responseMode === 'exchange') {
+                        container.engine.exchange(dragItem, toItem)
                     }
+                    container.engine.updateLayout()
                 }
                 const staticLayoutAlgorithm = () => {
                     // 静态布局的Item交换算法
@@ -444,13 +462,13 @@ export default class EditEvent {
                     dragItem.pos.nextStaticPos.x = nowMoveWidth < 1 ? 1 : nowMoveWidth  // 栅格索引最低1
                     dragItem.pos.nextStaticPos.y = nowMoveHeight < 1 ? 1 : nowMoveHeight
 
-                    // console.log(container.__ownTemp__.firstEnterLock);
                     if (container.engine._isCanAddItemToContainer_(dragItem, false, false)) {  // 静态纯检测
-                        // console.log(container.__ownTemp__.firstEnterLock);
-                        if (!container.__ownTemp__.firstEnterLock) {
-                            EEF.itemDrag.mousemoveExchange(ev)
+                        if (container.__ownTemp__.firstEnterUnLock) {
+                            EEF.itemDrag.mousemoveExchange(container)
                             tempStore.dragContainer = container
-                        } else container.engine.updateLayout([dragItem])
+                        } else {
+                            container.engine.updateLayout([dragItem])
+                        }
                     }
                 }
                 Sync.run(() => {
@@ -505,6 +523,7 @@ export default class EditEvent {
                 if (mousedownEvent === null || fromItem === null) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 const container = dragItem.container
+                // console.log(dragItem);
                 dragItem.__temp__.dragging = true
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = dragItem.element.cloneNode(true)
@@ -546,34 +565,26 @@ export default class EditEvent {
         item: {
             mouseenter: (ev) => {   // 主要用于处理跨Container中的Item互换,和其他事件不同的是这里fromItem 和 toItem 可能来自不同容器
                 ev.stopPropagation()
-                // console.log(ev);
                 const container = parseContainer(ev)
-                const toItem = tempStore.toItem
                 if (!container) return
                 if (ev.target._gridItem_) {
-                    // const toContainer = ev.target._gridItem_.container   // 可能是自己，也可能是其他容器
                     tempStore.toItem = parseItem(ev)
                 }
                 if (tempStore.toItem === null) return false
-                // if (tempStore.isDragging) EEF.itemDrag.mouseenter(ev)
-            },
-            onanimationend(ev) {
-                console.log(ev);
             }
-
         },
         container: {
             mousedown: (ev) => {
                 ev.stopPropagation()
                 if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
                 const container = parseContainer(ev)
-                // if (ev.target._isGridContainer_) return  //所有的操作只对于Item生效，Container只有装在Item中才能被拖动或者重置大小
+                if (!container) return   // 只有点击Container或里面元素才生效
 
-                // if (!container) return
                 // console.log(ev);
                 const downTagClassName = ev.target.className
                 if (downTagClassName === 'grid-clone-el') return
-                if (downTagClassName === 'resizable-handle') {   //   用于resize
+                if (downTagClassName === 'grid-item-close-btn') return
+                if (downTagClassName === 'grid-resizable-handle') {   //   用于resize
                     tempStore.dragOrResize = 'resize'
                     for (let i = 0; i < container.engine.items.length; i++) {
                         if (container.engine.items[i]._resizeTabEl === ev.target) {
@@ -584,7 +595,6 @@ export default class EditEvent {
                 } else {    //  用于drag
                     tempStore.dragOrResize = 'drag'
                     tempStore.fromItem = parseItem(ev)
-                    // tempStore.fromItem.dragging = true
                     if (!tempStore.fromItem) return
                     if (tempStore.fromItem.__temp__.dragging) return
                     const fromEl =  tempStore.fromItem.element.getBoundingClientRect()
@@ -610,6 +620,18 @@ export default class EditEvent {
                     clearInterval(timeOutEvent)
                 }
                 //----------------------------------------------------------------//
+            },
+            click:(ev)=>{
+                ev.stopPropagation()
+                const downTagClassName = ev.target.className
+                if (downTagClassName === 'grid-item-close-btn'){
+                    const clickItem = parseItem(ev)
+                    if (clickItem){
+                        const container = clickItem.container
+                        clickItem.remove(true)
+                        container.engine.updateLayout(true)
+                    }
+                }
             },
             mousemove: throttle((ev) => {
                 ev.stopPropagation()
@@ -665,22 +687,29 @@ export default class EditEvent {
                 //----------移除Drag或者Resize创建的克隆备份-------------//
                 const fromItem = tempStore.fromItem
                 const dragItem = tempStore.moveItem ? tempStore.moveItem : tempStore.fromItem
-                if (container) container.engine.updateLayout()
-                fromItem?.container.engine.updateLayout()
+                if (dragItem){
+                    if (container) container.engine.updateLayout()
+                    if (dragItem.container !== fromItem.container) fromItem?.container.engine.updateLayout()
+                }
                 if (tempStore.cloneElement !== null) {   //  清除对Item拖动或者调整大小产生的克隆对象
+                    let timer = null
                     const gridCloneEls = document.querySelectorAll('.grid-clone-el')
                     //------------------进行拖动归位延时动画执行和执行完毕后移除克隆元素--------------------//
                     //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
+                    const mouseUpContainer = container ? container : dragItem.container
                     for (let i = 0; i < gridCloneEls.length; i++) {
                         const gridCloneEl = gridCloneEls[i]
                         if (dragItem.transition) {
-                            const containerElOffset = dragItem.container.element.getBoundingClientRect()
+                            const dragItemElOffset = dragItem.element.getBoundingClientRect()
+
                             if (tempStore.isDragging) {
                                 dragItem.updateStyle({
                                     transitionProperty: `${dragItem.transition.field}`,
                                     transitionDuration: `${dragItem.transition.time}ms`,
-                                    left: `${window.scrollX + containerElOffset.left + dragItem.offsetLeft()}px`,
-                                    top: `${window.scrollY + containerElOffset.top + dragItem.offsetTop()}px`,
+                                    left: `${window.scrollX + dragItemElOffset.left}px`,
+                                    top: `${window.scrollY + dragItemElOffset.top  }px`,
+                                    width: `${dragItem.nowWidth()}px`,
+                                    height: `${dragItem.nowHeight()}px`,
                                 }, gridCloneEl)
                                 dragItem.updateStyle({
                                     opacity: `${dragItem.container.style.opacity}`
@@ -703,15 +732,18 @@ export default class EditEvent {
                             } catch (e) {
                             }
                             dragItem.__temp__.dragging = false
+                            fromItem.__temp__.dragging = false
+
+                            clearTimeout(timer)
                         }
                         if (dragItem.transition) {
                             // dragItem.updateStyle({ opacity: '0' })
-                            setTimeout(removeCloneEl, dragItem.transition.time)
+                            timer = setTimeout(removeCloneEl, dragItem.transition.time)
                         } else removeCloneEl()
                     }
                 }
                 //  清除Item限制操作的遮罩层
-                const maskList = document.querySelectorAll('.item-mask')
+                const maskList = document.querySelectorAll('.grid-item-mask')
                 for (let i = 0; i < maskList.length; i++) {
                     const maskEl = maskList[i]
                     maskEl.parentElement.removeChild(maskEl)
@@ -724,15 +756,14 @@ export default class EditEvent {
                 if (container && container.isNesting) {
                     container.parentItem.pos.temporaryStatic = false
                 }
-                // if (dragItem) dragItem.dragging = false
                 const dragFromContainer =  dragItem ? dragItem.container : container
                 if (dragFromContainer) {
-                    dragFromContainer.__ownTemp__.firstEnterLock = true
+                    dragFromContainer.__ownTemp__.firstEnterUnLock = false
                     dragFromContainer.__ownTemp__.exchangeLock = false
                     dragFromContainer.__ownTemp__.beforeOverItems = []
                     dragFromContainer.__ownTemp__.moveCount = 0
                     if (tempStore.fromContainer && dragFromContainer !== tempStore.fromContainer) {
-                        tempStore.fromContainer.__ownTemp__.firstEnterLock = true
+                        tempStore.fromContainer.__ownTemp__.firstEnterUnLock = false
                     }
                 }
                 tempStore.fromContainer = null
@@ -740,10 +771,10 @@ export default class EditEvent {
                 tempStore.beforeContainer = null
                 tempStore.currentContainer = null
                 tempStore.crossContainerItem = false
-                tempStore.draggingLock = false
                 tempStore.cloneElement = null
                 tempStore.fromItem = null
                 tempStore.toItem = null
+                tempStore.moveItem = null
                 tempStore.offsetPageX = null
                 tempStore.offsetPageY = null
                 tempStore.isDragging = false
@@ -771,6 +802,7 @@ export default class EditEvent {
     static startEventFromContainer(container) {
         //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
         container.element.addEventListener('mousedown', EPF.container.mousedown)
+        container.element.addEventListener('click', EPF.container.click)
         //mouseenter该事件监听在静态布局模式下必要，解决了拖拽以超慢进入另一个容器mousemove未触发进入事件导致源容器成员未卸载,新容器未挂载问题
         container.element.addEventListener('mouseenter', EEF.moveOuterContainer.mouseenter)
         container.element.addEventListener('dragstart', EEF.prevent.default)
@@ -780,6 +812,7 @@ export default class EditEvent {
 
     static removeEventFromContainer(container) {
         container.element.removeEventListener('mousedown', EPF.container.mousedown)
+        container.element.removeEventListener('click', EPF.container.click)
         container.element.removeEventListener('mouseenter', EEF.moveOuterContainer.mouseenter)
         container.element.removeEventListener('dragstart', EEF.prevent.default)
         container.element.removeEventListener('selectstart', EEF.prevent.default)
