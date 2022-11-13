@@ -24,6 +24,8 @@ export default class TempStore {
         moveItem : null,   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
         cloneElement: null,      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
         mousedownEvent:null,   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
+        mousedownItemOffsetLeft: null,  // 鼠标点击某个Item的时候距离该Item左边界距离
+        mousedownItemOffsetTop: null,  // 同上
         dragOrResize: null,  //  drag || resize
         isDragging: false,
         isResizing: false,

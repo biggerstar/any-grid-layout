@@ -65,15 +65,18 @@ export default class Engine {
     /** 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
      * 这里Container挂载(mount)的时候会执行两次，一次是预同步容器大小信息，一次是执行最终挂载后容器信息，可以算是没架构好，
      * 后面有机会再优化吧
+     * @param {Container} container 容器实例
+     * @param {Boolean} isSetConfig 是否设置最终col和row的运算结果
+     * @return {Object} 一个包含最大col和row，containerW，ContainerH的集合
      * TODO 优化初始化执行两次问题，方案是收集所有Item后再调用该函数进行同步
      * */
-    autoSetColAndRows(container) {
+    autoSetColAndRows(container,isSetConfig = true) {
         let maxCol = container.col
         let maxRow = container.row
         let containerW = maxCol
         let containerH = maxRow
         const items = container.engine.items
-        const computeSmartRowAndCol = (items)=>{
+        const computeSmartRowAndCol = (items) => {
             let smartCol = 1
             let smartRow = 1
             if (items.length > 0) {
@@ -82,9 +85,9 @@ export default class Engine {
                     if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
                 })
             }
-            return { smartCol, smartRow }
+            return {smartCol, smartRow}
         }
-        const computeLimitLength = (maxCol,maxRow)=>{
+        const computeLimitLength = (maxCol, maxRow) => {
             //-----------------------------Col确定---------------------------------//
             if (container.minCol && container.maxCol && (container.minCol > container.maxCol)) {
                 maxCol = container.maxCol
@@ -99,38 +102,40 @@ export default class Engine {
             } else if (container.maxRow && maxRow > container.maxRow) maxRow = container.maxRow
             else if (container.minRow && maxRow < container.minRow) maxRow = container.minRow
             return {
-                limitCol:maxCol,
-                limitRow:maxRow
+                limitCol: maxCol,
+                limitRow: maxRow
             }
         }
 
-        if (container.responsive){    // 响应模式会检测第一次给出的row进行初始容器固定
+        if (container.responsive) {    // 响应模式会检测第一次给出的row进行初始容器固定
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
-                if(container.row === null)  this.layoutManager.autoRow()
+                if (container.row === null) this.layoutManager.autoRow()
                 else maxRow = container.row
-            }else if(this.initialized){   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
+            } else if (this.initialized) {   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
                 this.layoutManager.autoRow()
                 const smartInfo = computeSmartRowAndCol(items)
                 // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
-                maxCol = smartInfo.smartCol
+                // maxCol = smartInfo.smartCol  这里因为当前设定col必须要有，所以col从始至终都是固定的，不进行动态调整
                 maxRow = smartInfo.smartRow
-                const limitInfo = computeLimitLength(maxCol,maxRow)
+                const limitInfo = computeLimitLength(maxCol, maxRow)
                 //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
                 containerW = limitInfo.limitCol
                 containerH = limitInfo.limitRow
             }
-        }else if(!container.responsive){  // 静态模式下老老实实row多少就多少
-            const limitInfo = computeLimitLength(container.col,container.row)
+        } else if (!container.responsive) {  // 静态模式下老老实实row多少就多少
+            const limitInfo = computeLimitLength(container.col, container.row)
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
         }
-        this.container.col = maxCol
-        this.container.row = maxRow
-        this.container.containerW = containerW
-        this.container.containerH = containerH
-        this.layoutManager.setColNum(maxCol)
-        this.layoutManager.setRowNum(maxRow)
-        this.layoutManager.addRow(maxRow)
+        if (isSetConfig){
+            this.container.col = maxCol
+            this.container.row = maxRow
+            this.container.containerW = containerW
+            this.container.containerH = containerH
+            this.layoutManager.setColNum(maxCol)
+            this.layoutManager.setRowNum(maxRow)
+            this.layoutManager.addRow(maxRow)
+        }
         return {
             col: maxCol,
             row: maxRow,
@@ -146,7 +151,7 @@ export default class Engine {
      *  @param w {Number} x坐标方向延伸宫格数量
      *  @param h {Number} y坐标方向延伸宫格数量
      * */
-    findItemFromPosition(x, y, w, h) {
+    findCoverItemFromPosition(x, y, w, h) {
         // console.log(x,y,w,h);
         const items = []
         for (let i = 0; i < this.items.length; i++) {
@@ -171,7 +176,28 @@ export default class Engine {
         }
         return items
     }
-
+    /** 响应式模式下找到在布局流在Container空白部分或者在Container外所对应容器里面可以放置的x，y位置，
+     * 并对应返回该位置的Item作为外部使用的toItem   */
+    findResponsiveItemFromPosition(x, y, w, h) {
+        let pointItem = null
+        let lastY = 1
+        if (this.items.length > 0){
+            lastY = this.items[this.items.length - 1].pos.y
+        }
+        for (let i = 0; i < this.items.length; i++) {
+            let item = this.items[i]
+            const xItemStart = item.pos.x
+            const yItemStart = item.pos.y
+            const xItemEnd = item.pos.x + item.pos.w - 1
+            const yItemEnd = item.pos.y + item.pos.h - 1
+            if (xItemStart !== x) continue
+            if (y > lastY) y = lastY
+            if (x => xItemStart && x <= xItemEnd &&  y >= yItemStart && y <= yItemEnd ){
+                if (x === xItemStart && y === yItemStart ) pointItem = item
+            }
+        }
+        return pointItem
+    }
 
     /** 更新当前配置，只有调用这里更新能同步所有的模块配置 */
     updateConfig(useLayoutConfig) {
@@ -291,12 +317,34 @@ export default class Engine {
         }
     }
 
-    push(item){
+    push(item) {
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)
         if (realLayoutPos) {
-            console.log(realLayoutPos)
-
-            this.items.push(item)
+            // 用于自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
+            // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
+            // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
+            if (this.items.length <= 1) {
+                this.items.push(item)
+            } else {
+                let nextIndexItem, nowIndexItem
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items.length > i) {
+                        nowIndexItem = this.items[i]
+                        nextIndexItem = this.items[i + 1]
+                    }
+                    if (nextIndexItem) {
+                        const nowPos = nowIndexItem.pos
+                        const nextPos = nextIndexItem.pos
+                        if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
+                            this.insert(item, i + 1)
+                            break
+                        }
+                    } else {
+                        this.items.push(item)
+                        break
+                    }
+                }
+            }
         }
     }
 
@@ -450,7 +498,7 @@ export default class Engine {
                 //     this.layoutManager.addRow(1)
                 // }
                 const realPos = this._isCanAddItemToContainer_(item, item.__temp__._autoOnce, true)
-                if (realPos){
+                if (realPos) {
                     // this.container.row = realPos.row
                     item.updateItemLayout()
                 }
@@ -470,10 +518,6 @@ export default class Engine {
             })
 
 
-
-
-
-
             // console.log(items);
             // for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
             //     console.log(this.layoutManager._layoutMatrix[i]);
@@ -482,7 +526,7 @@ export default class Engine {
 
 
             this.container.updateStyle(this.container.genContainerStyle())
-        } else if(!this.container.responsive){
+        } else if (!this.container.responsive) {
             //更新静态布局
             // this.layoutManager.autoRow(false)
             let updateItemList = items || []

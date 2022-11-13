@@ -25,6 +25,7 @@ const container = new Container({
             // maxH:1,
             // maxW:1,
         },
+        dragOut: true,
         exchange: true,
         // sizeWidth: 50,
         // sizeHeight: 80,
@@ -39,7 +40,7 @@ const container = new Container({
     },
     global: {
         responsive:true,
-        responseMode:'exchange',
+        responseMode:'default',
         // static:true,
         from1: '来自global',
         // transition: true,
@@ -59,6 +60,7 @@ container.edit({
     resize:true,
 })
 container.animation(200)
+// container.follow(false)
 
 
 const container1 = new Container({
@@ -95,7 +97,7 @@ const container1 = new Container({
 container1.mount()
 container1.edit()
 container1.animation()
-
+// container1.follow(false)
 
 const container2 = new Container({
     el: '#container2',
@@ -122,7 +124,7 @@ const container2 = new Container({
 container2.mount()
 container2.edit()
 container2.animation()
-
+// container2.follow(true)
 
 const container3 = new Container({
     el: '#container3',

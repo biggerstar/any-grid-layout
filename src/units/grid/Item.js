@@ -19,6 +19,7 @@ export default class Item extends DomFunctionImpl {
     }     // time:动画过渡时长 ms, field: 要过渡的css字段 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
     draggable = false  //  自身是否可以拖动
     resize = false     //  自身是否可以调整大小
+    follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
 
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
@@ -50,6 +51,7 @@ export default class Item extends DomFunctionImpl {
         maskEl: null,
         height: 0,
         width: 0,
+        dragging:false,
         clientWidth: 0,
         clientHeight: 0,
         resized: {
@@ -92,11 +94,11 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
-            // if (this.pos.static) this.element.innerHTML = `
+            // if (this.pos.static) this.element.innerHTML = this.element.innerHTML +  `---
             //     ${this.pos.i}</br>
             //     ${this.pos.w},${this.pos.h}</br>
             //     ${this.pos.x},${this.pos.y} `
-            // else this.element.innerHTML = this.i
+            // else this.element.innerHTML = this.element.innerHTML + '---' + this.i
 
         })
     }
@@ -197,6 +199,11 @@ export default class Item extends DomFunctionImpl {
                 }else this.transition = false
             }
         )
+    }
+
+    /**  */
+    followStatus(isFollow = true){
+        this.follow = isFollow
     }
 
     /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */

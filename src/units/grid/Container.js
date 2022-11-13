@@ -42,7 +42,7 @@ export default class Container extends DomFunctionImpl {
     containerW = null
     //----------------外部传进的的参数---------------------//
     responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
-    responseMode = 'exchange'  //  exchange(默认) || stream
+    responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
     // static = false
     layout = []    //  其中的px字段表示 XXX 像素以下执行指定布局方案
     col = null
@@ -61,6 +61,7 @@ export default class Container extends DomFunctionImpl {
     data = []  // 传入后就不会再变，等于备份原数据
     global = {}
     event = {}
+    dragOut = true
     sensitivity = 0.8   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
@@ -71,14 +72,15 @@ export default class Container extends DomFunctionImpl {
     __store__ = TempStore.containerStore
     __ownTemp__ = {
         //----------只读变量-----------//
+
+        //-----内部可写外部只读变量------//
         exchangeLock: false,
         firstInitColNum: null,
         firstEnterLock: true,
         moveExchangeLock : false,
-        beforeOverItem: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
+        beforeOverItems: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
         moveCount: 0,
         containerViewWidth: null,   //  container视图第一次加载时候所占用的像素宽度
-        //-----内部可写外部只读变量------//
         offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
         offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
         //----------可写变量-----------//
@@ -235,6 +237,14 @@ export default class Container extends DomFunctionImpl {
                 return
             }
             this.engine.items.forEach((item) => item.animation(transition, fieldString))
+        })
+    }
+
+    follow(isFollow = true){
+        Sync.run(() => {
+            this.engine.items.forEach((item)=>{
+                item.followStatus(isFollow)
+            })
         })
     }
 
