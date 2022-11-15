@@ -1,5 +1,5 @@
 import {merge} from "@/units/grid/other/tool.js";
-import ErrorTypeIndex from "@/units/grid/errorType/ErrorTypeIndex.js";
+import ErrorTypeIndex from "@/units/grid/events/errorType/ErrorTypeIndex.js";
 
 export default class EventCallBack {
     type = null

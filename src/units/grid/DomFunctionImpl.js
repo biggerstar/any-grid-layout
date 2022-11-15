@@ -21,6 +21,18 @@ export default class DomFunctionImpl {
         if (isCssText)  element.style.cssText = element.style.cssText + ';' + cssText
     }
 
+    addClass(...arg){
+        this.element.classList.add(...arg)
+    }
+
+    removeClass(...arg) {
+        this.element.classList.remove(...arg)
+    }
+
+    replaceClass(oldCls,newCls){
+        this.element.classList.replace(oldCls,newCls)
+    }
+
     /** 添加一个元素的属性
      * @param {String} attrName 一个包含元素属性名和对应值的对象
      * */

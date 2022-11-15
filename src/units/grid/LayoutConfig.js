@@ -38,7 +38,9 @@ export default class LayoutConfig {
      * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
     genLayoutConfig(containerWidth = null) {
         let useLayoutConfig = {}
+        // console.log(containerWidth);
         containerWidth = containerWidth ? containerWidth : this.container.element.clientWidth
+        // console.log(this.container.element.clientWidth);
         // if(this.option.global) merge(this.container,this.option.global)       // 合并配置到Container对象中作为全局配置
         for (let i = 0; i < this.container.layout.length; i++) {
             const layoutItem = this.container.layout[i]

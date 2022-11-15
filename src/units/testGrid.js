@@ -19,8 +19,8 @@ const container = new Container({
         // minCol: 2,
         // maxCol: 8,
         minRow: 5,
-        maxRow: 8,
-        itemConfig: {
+        // maxRow: 8,
+        itemLimit: {
             // minW:2,
             // maxH:1,
             // maxW:1,
@@ -32,11 +32,9 @@ const container = new Container({
         // marginX: 30,
         // marginY: 50,
         // isEdit: false,
-        // style:{
-        //     opacity:'0.2',
-        //     transform:'scale(1.1)',
-        // }
-        // TODO  静态模式下上方拖动改变容器大小之后造成静态拖动错位
+
+
+        // TODO 嵌套div做容器滚动条
     },
     global: {
         responsive:true,
@@ -47,10 +45,6 @@ const container = new Container({
         // data: layoutData,
         // margin: [10, 10],
         // size:[160,300],
-        style: {
-            opacity: '0.2',
-            transform: 'scale(1.1)',
-        }
     }
 })
 
@@ -60,8 +54,8 @@ container.edit({
     resize:true,
     close:true
 })
-container.animation(200)
-// container.follow(false)
+container.animation(120)
+container.follow(false)
 
 
 const container1 = new Container({
@@ -88,7 +82,7 @@ const container1 = new Container({
         //     console.log(type);
         // },
     },
-    itemConfig: {
+    itemLimit: {
         // minW:2,
         // maxH:1,
         // maxW:1,
@@ -112,6 +106,7 @@ const container2 = new Container({
         size: [60, 50],
         minCol: 2,
         exchange: true,
+        // data: layoutData,
         // responsive:true,
     },
     event:{
@@ -133,11 +128,11 @@ const container3 = new Container({
         from: '来自layout3',
         ratio: 0.1,
         col: 6,
-        row:6,
+        // row:6,
         // margin: [10, 10],
         size:[50,50],
         minCol: 2,
-        maxCol: 6,
+        // maxCol: 6,
         exchange: true,
         responsive:true,
         data: layoutData,

@@ -4,9 +4,9 @@ import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
 import Engine from "@/units/grid/Engine.js";
 import TempStore from "@/units/grid/other/TempStore.js";
 import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
-import EditEvent from '@/units/grid/other/EditEvent.js'
+import EditEvent from '@/units/grid/events/EditEvent.js'
 import ItemPos from '@/units/grid/ItemPos.js'
-import EventCallBack from "@/units/grid/other/EventCallBack.js";
+import EventCallBack from "@/units/grid/events/EventCallBack.js";
 
 
 /** 栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -22,6 +22,10 @@ import EventCallBack from "@/units/grid/other/EventCallBack.js";
  *    .............
  *    ]}
  *    此时该col生效数值是8，来自全局设置属性，size的生效值是[100,100],来自layout中指定的局部属性
+ *    注：
+ *    1.如果想获得滚动条的能力需要在Container外部套上一层标签，不能直接对Container进行overflow:scroll，
+ *    也不能或者在Container内部套一层div包裹Item，Container子元素必须是Item实例
+ *    2.暂不支持iframe嵌套
  * */
 export default class Container extends DomFunctionImpl {
     //----------------内部需要的参数---------------------//
@@ -41,6 +45,7 @@ export default class Container extends DomFunctionImpl {
     containerH = null
     containerW = null
     //----------------外部传进的的参数---------------------//
+    className = 'grid-container'
     responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
     responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
     // static = false
@@ -63,9 +68,9 @@ export default class Container extends DomFunctionImpl {
     event = {}
     dragOut = true
     sensitivity = 0.8   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
-    style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
+    // style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
-    itemConfig = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
+    itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
     exchange = false
     //----------------保持状态所用参数---------------------//
     _mounted = false
@@ -93,7 +98,7 @@ export default class Container extends DomFunctionImpl {
         this.engine = new Engine(option)
         this.engine.setContainer(this)
         this.event = new EventCallBack(option.event)
-        if (option.itemConfig) this.itemConfig = new ItemPos(option.itemConfig)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
+        if (option.itemLimit) this.itemLimit = new ItemPos(option.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
     }
 
     /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
@@ -145,7 +150,7 @@ export default class Container extends DomFunctionImpl {
                 this.element = document.querySelector(this.el)
                 if (this.element === null) throw new Error('未找到指定ID:' + this.el + '元素')
             }
-            this.updateStyle(defaultStyle.containerDefaults) // 必须在engine.init之前
+            this.updateStyle(defaultStyle.gridContainer) // 必须在engine.init之前
             this.engine.init()   //  初始化后就能找到用户指定的 this.useLayout
             if (!this.responsive && (!this.col || !this.row || (!this.sizeWidth && !this.size[0]))) {
                 throw new Error('使用静态布局col,row,和sizeWidth必须都指定值,sizeWidth等价于size[0]')
@@ -153,6 +158,7 @@ export default class Container extends DomFunctionImpl {
             if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
+            this.element.classList.add(this.className)
             // console.log(this.engine.data);
             this._childCollect()
             this.engine.initItems()
@@ -169,7 +175,7 @@ export default class Container extends DomFunctionImpl {
             // const containerPosInfo = this.element.getBoundingClientRect()
             // this.__ownTemp__.offsetAbsolutePageLeft = containerPosInfo.left
             // this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
-            this.responsiveLayout()
+            // this.responsiveLayout()
             this._mounted = true
         })
     }
@@ -196,9 +202,6 @@ export default class Container extends DomFunctionImpl {
                 })
                 this.isNesting = true
                 this.parentItem = upperItem
-                upperItem.updateStyle({
-                    overflow: 'scroll'
-                })
                 break
             }
         }
@@ -267,9 +270,6 @@ export default class Container extends DomFunctionImpl {
             console.log(newContainerWidth);
             // console.log(gridColNum, '    ')
             // this.setColNum(gridColNum)
-            // this.updateStyle({
-            //     width: this.nowWidth() + 'px'
-            // })
 
             // this.updateLayout(this.genContainerStyle())
             //
@@ -330,7 +330,8 @@ export default class Container extends DomFunctionImpl {
     /** 生成该栅格容器布局样式  */
     genContainerStyle = () => {
         // console.log(this.row, this.maxRow, this.maxRow || this.row);
-        const containerStyle = {
+        // containerStyle
+        return {
             width: this.nowWidth() + 'px',
             height: this.nowHeight() + 'px',
         }
@@ -345,7 +346,6 @@ export default class Container extends DomFunctionImpl {
         //     // display: 'block',
         //
         // }
-        return containerStyle
     }
 
     /** 开启编辑模式,只能单独调用该函数开启，不允许实例化传入
@@ -421,10 +421,6 @@ export default class Container extends DomFunctionImpl {
                 h: Math.ceil(Math.random() * 2)
             })
             item.mount()
-            item.updateStyle({
-                backgroundColor: 'yellow',
-                placeContent: 'center'
-            })
         }
     }
 

@@ -3,7 +3,7 @@ import {cloneDeep, merge, parseContainer, throttle} from "@/units/grid/other/too
 import ItemPos from "@/units/grid/ItemPos.js";
 import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
 import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
-import EditEvent from '@/units/grid/other/EditEvent.js'
+import EditEvent from '@/units/grid/events/EditEvent.js'
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
@@ -44,7 +44,7 @@ export default class Item extends DomFunctionImpl {
         // -------------不可写变量--------------//
 
         //------------都是可写变量--------------//
-        isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
+        // isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
         eventRecord: {}, // 当前编辑状态开启的功能，drag || resize
         eventRunning: false,
         event: {},
@@ -77,10 +77,10 @@ export default class Item extends DomFunctionImpl {
             // console.log(this.element);
             if (this.element === null) this.element = document.createElement(this.tagName)
             this.container.element.appendChild(this.element)
-            this.element.classList.add(this.className)
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
-            this.updateStyle(defaultStyle.itemDefaults)
+            this.element.classList.add(this.className)
+            this.updateStyle(defaultStyle.gridItem)
             // console.log(this._genItemStyle(),this.pos);
             this.updateStyle(this._genItemStyle())
             // console.log(this._genItemStyle());
@@ -221,15 +221,15 @@ export default class Item extends DomFunctionImpl {
 
     handleResize(isResize = false, msg) {
         if (isResize && this._resizeTabEl === null) {
-            const className = 'grid-resizable-handle'
+            const className = 'grid-item-resizable-handle'
             const handleResizeEls = this.element.querySelectorAll('.' + className)
             if (handleResizeEls.length > 0) return;
-            const resizeTab = document.createElement('span')
-            resizeTab.innerHTML = '⊿'
-            this.updateStyle(defaultStyle.gridHandleResize, resizeTab)
-            this.element.appendChild(resizeTab)
-            resizeTab.classList.add(className)
-            this._resizeTabEl = resizeTab
+            const resizeTabEl = document.createElement('span')
+            resizeTabEl.innerHTML = '⊿'
+            this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
+            this.element.appendChild(resizeTabEl)
+            resizeTabEl.classList.add(className)
+            this._resizeTabEl = resizeTabEl
         } else {
             // console.log(this._resizeTabEl)
             if (this._resizeTabEl){
@@ -314,12 +314,13 @@ export default class Item extends DomFunctionImpl {
     _closeBtn_(isDisplayBtn = false) {
         if (!this._mounted) return
         if (isDisplayBtn) {
+            const className = 'grid-item-close-btn'
             const closeEl = document.createElement('div')
             this.updateStyle(defaultStyle.gridItemCloseBtn, closeEl)
             this.__temp__.closeEl = closeEl
+            closeEl.classList.add(className)
             this.element.appendChild(closeEl)
             closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
-            closeEl.classList.add('grid-item-close-btn')
         }
         if (this.__temp__.closeEl !== null && !isDisplayBtn) {
             try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理

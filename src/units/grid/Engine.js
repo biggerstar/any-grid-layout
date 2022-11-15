@@ -299,11 +299,11 @@ export default class Engine {
 
     /** 添加一个Item 只添加不挂载 */
     addItem(item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
-        const itemConfig = this.container.itemConfig
-        if (itemConfig.minW > item.pos.w) console.error(this.container, item, `itemConfig配置指定minW为:${itemConfig.minW},当前w为${item.pos.w}`)
-        else if (itemConfig.maxW < item.pos.w) console.error(this.container, item, `itemConfig配置指定maxW为:${itemConfig.maxW},当前w为${item.pos.w}`)
-        else if (itemConfig.minH > item.pos.h) console.error(this.container, item, `itemConfig配置指定minH为:${itemConfig.minH},当前h为${item.pos.h}`)
-        else if (itemConfig.maxH < item.pos.h) console.error(this.container, item, `itemConfig配置指定maxH为:${itemConfig.maxH},当前h为${item.pos.h}`)
+        const itemLimit = this.container.itemLimit
+        if (itemLimit.minW > item.pos.w) console.error(this.container, item, `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`)
+        else if (itemLimit.maxW < item.pos.w) console.error(this.container, item, `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`)
+        else if (itemLimit.minH > item.pos.h) console.error(this.container, item, `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`)
+        else if (itemLimit.maxH < item.pos.h) console.error(this.container, item, `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
             // console.log(item);
@@ -439,17 +439,6 @@ export default class Engine {
         //-----------------------------------------------------------//
         itemOption.i = this.len()  // 为item自动编号，动态值，决定因素是原始html元素加上后面添加的item
         return new Item(itemOption)
-        // console.log(item);
-        // console.log(itemOption);
-        // Sync.run({
-        //     func: () => {
-        //     },
-        //     rule: () => {
-        //         console.log(this.container);
-        //         item.parentElement = this.container.element
-        //         return item.parentElement !== null
-        //     }
-        // })
     }
 
     /**  参数详情见类 Container.find 函数

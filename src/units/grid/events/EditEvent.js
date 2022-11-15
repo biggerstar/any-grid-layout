@@ -22,10 +22,10 @@ export default class EditEvent {
 
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = fromItem.element.cloneNode(true)
-                    tempStore.cloneElement.classList.add('grid-clone-el')
+                    tempStore.cloneElement.classList.add('grid-clone-el','grid-resizing-clone-el')
                     if (tempStore.cloneElement) tempStore.fromContainer.element.appendChild(tempStore.cloneElement)
                     fromItem.updateStyle({transition: 'none'}, tempStore.cloneElement)
-                    fromItem.updateStyle({opacity: tempStore.fromContainer.style.opacity})
+                    fromItem.addClass('grid-resizing-source-el')
                 }
                 //-----------------判断Item是左右平移还是上下平移---------------------//
                 const resized = {
@@ -63,7 +63,7 @@ export default class EditEvent {
                     width: width + 'px',
                     height: height + 'px',
                 }, tempStore.cloneElement)
-
+                if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w:1,h:1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
                     fromItem.__temp__.resized = resized
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
@@ -76,7 +76,6 @@ export default class EditEvent {
                 //----------------------------------------//
                 fromItem.__temp__.clientWidth = fromItem.nowWidth()
                 fromItem.__temp__.clientHeight = fromItem.nowHeight()
-                fromItem.updateStyle(fromItem._genItemStyle())
                 tempStore.isLeftMousedown = false
                 tempStore.fromContainer.engine.updateLayout()
             },
@@ -101,13 +100,14 @@ export default class EditEvent {
             grab: function (ev) {
                 const container = parseContainer(ev)
                 if (!container) return
-                container.updateStyle({cursor: 'grab'}, document.body, true)
+                document.body.classList.replace('grid-mousedown-cursor','grid-mouseup-cursor')
                 this.cursor = 'grab'
             },
             grabbing: function (ev) {
                 const container = parseContainer(ev)
                 if (!container) return
-                container.updateStyle({cursor: 'grabbing'}, document.body, true)
+                document.body.classList.remove('grid-mouseup-cursor')
+                document.body.classList.add('grid-mousedown-cursor')
                 this.cursor = 'grabbing'
             },
         },
@@ -189,7 +189,6 @@ export default class EditEvent {
                 if (!container) return
                 if (container !== tempStore.fromContainer) fromItem = tempStore.moveItem
                 tempStore.isLeftMousedown = false
-                fromItem?.updateStyle(defaultStyle.itemDragUp)
                 tempStore.mousedownEvent = null
             },
             mousemoveExchange: (container,itemPositionMethod = null) => {
@@ -270,7 +269,7 @@ export default class EditEvent {
                         // }
                     }  // dragItem会跟随进入不同容器，每次离开刷新
                     newItem.mount()
-                    dragItem.element.style.backgroundColor = 'red'
+                    // dragItem.element.style.backgroundColor = 'red'
                     container.__ownTemp__.firstEnterUnLock = false
                     tempStore.moveItem = newItem
                 } catch (e) {
@@ -404,7 +403,7 @@ export default class EditEvent {
                     const proportionY = Math.abs(ev.pageY - fromItemPosInfo.top - tempStore.mousedownItemOffsetTop) / toItem.element.clientHeight
                     const xOrY = proportionX > proportionY
                     // console.log(proportionX,proportionY);
-                    if (Math.abs(proportionX - proportionY) < 0.45) return
+                    if (Math.abs(proportionX - proportionY) < 0.3) return
                     if (proportionX > 0.1 && proportionY > 0.1 && proportionX < 0.9 && proportionY < 0.9) return
 
                     //-------------------修复移动高频toItem和dragItem高速互换闪烁限制----------------------//
@@ -527,15 +526,13 @@ export default class EditEvent {
                 dragItem.__temp__.dragging = true
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = dragItem.element.cloneNode(true)
-                    tempStore.cloneElement.classList.add('grid-clone-el')
+                    tempStore.cloneElement.classList.add('grid-clone-el','grid-dragging-clone-el')
                     document.body.appendChild(tempStore.cloneElement)    // 直接添加到body中后面定位省心省力
-                    dragItem.updateStyle({opacity: (container?.style.opacity )})
+                    dragItem.addClass('grid-dragging-source-el')
                     dragItem.updateStyle({
                         pointerEvents: 'none',
-                        transform: container?.style.transform,
                         transitionProperty: 'none',
                         transitionDuration: 'none',
-                        opacity:'1',
                     }, tempStore.cloneElement)
                 }
                 let left = ev.pageX - tempStore.mousedownItemOffsetLeft
@@ -555,7 +552,6 @@ export default class EditEvent {
                 dragItem.updateStyle({
                     left: left + 'px',
                     top: top + 'px',
-                    zIndex: '9999',
                 }, tempStore.cloneElement)
             }
         }
@@ -584,14 +580,10 @@ export default class EditEvent {
                 const downTagClassName = ev.target.className
                 if (downTagClassName === 'grid-clone-el') return
                 if (downTagClassName === 'grid-item-close-btn') return
-                if (downTagClassName === 'grid-resizable-handle') {   //   用于resize
+                if (downTagClassName === 'grid-item-resizable-handle') {   //   用于resize
                     tempStore.dragOrResize = 'resize'
-                    for (let i = 0; i < container.engine.items.length; i++) {
-                        if (container.engine.items[i]._resizeTabEl === ev.target) {
-                            tempStore.fromItem = container.engine.items[i]
-                            break
-                        }
-                    }
+                    tempStore.fromItem = parseItem(ev)
+                    if (!tempStore.fromItem) return
                 } else {    //  用于drag
                     tempStore.dragOrResize = 'drag'
                     tempStore.fromItem = parseItem(ev)
@@ -696,7 +688,6 @@ export default class EditEvent {
                     const gridCloneEls = document.querySelectorAll('.grid-clone-el')
                     //------------------进行拖动归位延时动画执行和执行完毕后移除克隆元素--------------------//
                     //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
-                    const mouseUpContainer = container ? container : dragItem.container
                     for (let i = 0; i < gridCloneEls.length; i++) {
                         const gridCloneEl = gridCloneEls[i]
                         if (dragItem.transition) {
@@ -711,9 +702,6 @@ export default class EditEvent {
                                     width: `${dragItem.nowWidth()}px`,
                                     height: `${dragItem.nowHeight()}px`,
                                 }, gridCloneEl)
-                                dragItem.updateStyle({
-                                    opacity: `${dragItem.container.style.opacity}`
-                                })
                             } else if (tempStore.isResizing) {
                                 dragItem.updateStyle({
                                     transitionProperty: `${dragItem.transition.field}`,
@@ -723,21 +711,20 @@ export default class EditEvent {
                                     left: `${dragItem.offsetLeft()}px`,
                                     top: `${dragItem.offsetTop()}px`,
                                 }, gridCloneEl)
+                                dragItem.removeClass('grid-resizing-el')
                             }
                         }
                         function removeCloneEl() {
-                            dragItem.updateStyle({ opacity: '1' })
+                            dragItem.removeClass('grid-dragging-source-el','grid-resizing-source-el')
                             try {    // 拖拽
                                 gridCloneEl.parentNode.removeChild(gridCloneEl)
                             } catch (e) {
                             }
                             dragItem.__temp__.dragging = false
                             fromItem.__temp__.dragging = false
-
                             clearTimeout(timer)
                         }
                         if (dragItem.transition) {
-                            // dragItem.updateStyle({ opacity: '0' })
                             timer = setTimeout(removeCloneEl, dragItem.transition.time)
                         } else removeCloneEl()
                     }
@@ -748,9 +735,6 @@ export default class EditEvent {
                     const maskEl = maskList[i]
                     maskEl.parentElement.removeChild(maskEl)
                 }
-                //------------------------------//
-                // tempStore.fromItem._mask_(false)
-                if (tempStore.fromContainer) tempStore?.fromContainer.updateStyle(tempStore?.fromContainer.genContainerStyle())
                 //------------------------------//
                 clearInterval(timeOutEvent)
                 if (container && container.isNesting) {
