@@ -43,26 +43,4 @@ export default class ItemPosList {
     clear() {
         this.data = []
     }
-
-    itemToData(items) {
-        return items.map((item) => {
-            // console.log(item.pos);
-            return {
-                w: item.pos.w,
-                h: item.pos.h,
-                i: item.i
-            }
-        })
-    }
-
-    // /** 转成静态优先的data布局数据,如果没转换将可能布局错乱重叠！！
-    //  * 原理是将static=true移动到前面先行布局，后面动态成员自行插入
-    //  * 如果没转的话可能静态成员指定的位置已经被前面的动态成员占用，会照成重叠
-    //  * */
-    // toStaticData(){
-    //     this.data.map((pos)=>{
-    //
-    //     })
-    //     return data
-    // }
 }

@@ -4,6 +4,8 @@ import ItemPos from "@/units/grid/ItemPos.js";
 import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
 import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
 import EditEvent from '@/units/grid/events/EditEvent.js'
+import TempStore from "@/units/grid/other/TempStore.js";
+const tempStore = TempStore.containerStore
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
@@ -21,7 +23,7 @@ export default class Item extends DomFunctionImpl {
     resize = false     //  自身是否可以调整大小
     close = false
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-    className = 'grid-item'
+    className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
@@ -35,7 +37,7 @@ export default class Item extends DomFunctionImpl {
     attr = []
     pos = {}
     parentElement = null
-    // dragging = false
+    isEdit = false   // 该Item是否正在被编辑
     //----------------保持状态所用参数---------------------//
     _resizeTabEl = null
     _mounted = false
@@ -46,7 +48,6 @@ export default class Item extends DomFunctionImpl {
         //------------都是可写变量--------------//
         // isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
         eventRecord: {}, // 当前编辑状态开启的功能，drag || resize
-        eventRunning: false,
         event: {},
         styleLock: false,
         maskEl: null,
@@ -64,10 +65,10 @@ export default class Item extends DomFunctionImpl {
 
     constructor(itemOption) {
         super()
-        // console.log(itemOption);
         merge(this, itemOption)
         if (this.el instanceof Element) this.element = this.el
         this.pos = new ItemPos(itemOption)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
+        // console.log(this.pos.static);
     }
 
     /** 渲染, 直接渲染添加到 Container 中*/
@@ -98,22 +99,28 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
-            // if (this.pos.static) this.element.innerHTML = this.element.innerHTML +  `---
-            //     ${this.pos.i}</br>
-            //     ${this.pos.w},${this.pos.h}</br>
-            //     ${this.pos.x},${this.pos.y} `
+            if (this.pos.static) this.element.innerHTML = this.element.innerHTML +  `--
+                ${this.pos.i}</br>
+                ${this.pos.w},${this.pos.h}</br>
+                ${this.pos.x},${this.pos.y} `
             // else this.element.innerHTML = this.element.innerHTML + '---' + this.i
-
         })
     }
 
 
-    /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item  */
-    unmount() {
+    /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
+     * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
+     * */
+    unmount(isForce=false) {
         Sync.run(() => {
-            EditEvent.removeEventFromItem(this)
-            this.container.element.removeChild(this.element)
+            if(this._mounted){
+                EditEvent.removeEventFromItem(this)
+                this.container.element.removeChild(this.element)
+            }else {
+                console.error('该Item对应的element未在文档中挂载，可能已经被移除',this);
+            }
         })
+        if (isForce) this.remove()
         this._mounted = false
     }
 
@@ -133,11 +140,6 @@ export default class Item extends DomFunctionImpl {
      *                              传入 布尔值 false 表示全部关闭
      * */
     edit(editOption) {
-        const eventRecord = {
-            draggable: null,
-            resize: null,
-            close: null,
-        }
         if (typeof editOption === 'object') {
             if (Object.keys(editOption).length === 0) editOption = true
         }
@@ -146,35 +148,27 @@ export default class Item extends DomFunctionImpl {
         } else if (editOption === true) {
             editOption = {draggable: true, resize: true, close:true}
         }
-        // console.log(editOption);
-        if (this.draggable && editOption.draggable) eventRecord.draggable = null    //  之前已经开了，不做操作(忽略)
-        if (this.resize && editOption.resize) eventRecord.resize = null
-        if (this.draggable && !editOption.draggable) eventRecord.draggable = false   //  之前开了 ，现在要关闭 (关闭)
-        if (this.resize && !editOption.resize) eventRecord.resize = false
-        if (!this.draggable && editOption.draggable) eventRecord.draggable = true   //  之前关闭的 ，现在要开启 (开启)
-        if (!this.resize && editOption.resize) eventRecord.resize = true
-        //----------------------------只有这边修改edit的相关值------------------------------//
-        this.draggable = editOption.draggable
-        this.resize = editOption.resize
-        if (typeof editOption.close === 'boolean') this.close = editOption.close
+        if (typeof editOption.draggable === "boolean") this.draggable = editOption.draggable
+        if (typeof editOption.resize === "boolean") this.resize = editOption.resize
+        if (typeof editOption.close === "boolean") this.close = editOption.close
 
-        if (!this.__temp__.eventRunning) {
-            if (this.resize === true) {
-                this.handleResize(true)
+        if (this._mounted){
+            if (this.draggable || this.resize || this.close) {
+                if (this.isEdit === false){
+                    EditEvent.startEvent(null, this)
+                    this.isEdit = true
+                    tempStore.editItemNum++
+                }
+            } else if (!this.draggable && !this.resize && !this.close) {
+                if (this.isEdit === true){
+                    this.isEdit = false
+                    tempStore.editItemNum--
+                    EditEvent.removeEvent(null, this)
+                }
             }
         }
-
-        if (this.draggable || this.resize) {
-            EditEvent.startEvent(null, this, eventRecord)
-            this.__temp__.eventRunning = true
-        } else if (!this.draggable && !this.resize) {
-            this.__temp__.eventRunning = false
-            EditEvent.removeEvent(null, this, eventRecord)
-        }
-        if (this.resize === false) this.handleResize(this.resize)
-        if (typeof this.close === 'boolean') this._closeBtn_(this.close)
-
-
+        this.handleResize(this.resize)
+        this._closeBtn_(this.close)
     }
 
     /** 对该Item开启位置变化过渡动画
@@ -230,12 +224,11 @@ export default class Item extends DomFunctionImpl {
             this.element.appendChild(resizeTabEl)
             resizeTabEl.classList.add(className)
             this._resizeTabEl = resizeTabEl
-        } else {
-            // console.log(this._resizeTabEl)
-            if (this._resizeTabEl){
+        } else if(isResize === false){
+            try {
                 this.element.removeChild(this._resizeTabEl)
                 this._resizeTabEl = null
-            }
+            }catch (e) { }
 
         }
     }
@@ -313,7 +306,7 @@ export default class Item extends DomFunctionImpl {
     /** 创建拖Item关闭按钮 */
     _closeBtn_(isDisplayBtn = false) {
         if (!this._mounted) return
-        if (isDisplayBtn) {
+        if (isDisplayBtn && this.__temp__.closeEl === null) {
             const className = 'grid-item-close-btn'
             const closeEl = document.createElement('div')
             this.updateStyle(defaultStyle.gridItemCloseBtn, closeEl)
@@ -325,6 +318,7 @@ export default class Item extends DomFunctionImpl {
         if (this.__temp__.closeEl !== null && !isDisplayBtn) {
             try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
                 this.element.removeChild(this.__temp__.closeEl)
+                this.__temp__.closeEl = null
             } catch (e) {
             }
         }

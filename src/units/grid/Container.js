@@ -29,12 +29,10 @@ import EventCallBack from "@/units/grid/events/EventCallBack.js";
  * */
 export default class Container extends DomFunctionImpl {
     //----------------内部需要的参数---------------------//
-    option = {}
     element = null
     classList = []
     attr = []
     engine = []
-    mode = 'pseudoStatic'  //  优先级:  pseudoStatic(伪静态= 响应式 + 静态) > responsive(响应式)  > static(全静态)
     px = null
     // a = {xl: 1920, lg: 1200, md: 992, sm: 768, xs: 480, xxs: 0}
     // _defaultStaticColNum = {xl: 12, lg: 10, md: 8, sm: 6, xs: 4, xxs: 0}
@@ -45,10 +43,9 @@ export default class Container extends DomFunctionImpl {
     containerH = null
     containerW = null
     //----------------外部传进的的参数---------------------//
-    className = 'grid-container'
+    className = 'grid-container'  // Container在文档中默认的类名,可以由外部传入重新自定义
     responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
     responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
-    // static = false
     layout = []    //  其中的px字段表示 XXX 像素以下执行指定布局方案
     col = null
     row = null
@@ -67,7 +64,7 @@ export default class Container extends DomFunctionImpl {
     global = {}
     event = {}
     dragOut = true
-    sensitivity = 0.8   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
+    sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     // style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
     itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
@@ -159,10 +156,10 @@ export default class Container extends DomFunctionImpl {
             this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
             this.element.classList.add(this.className)
-            // console.log(this.engine.data);
             this._childCollect()
             this.engine.initItems()
             this.engine.mountAll()
+            // console.log(this.data);
             this.updateLayout()
             this._isNestingContainer_()
             this.updateStyle(this.genContainerStyle())
@@ -207,9 +204,11 @@ export default class Container extends DomFunctionImpl {
         }
     }
 
-    /** 将item成员从Container中全部移除  */
-    unmount() {
-        this.engine.unmount()
+    /** 将item成员从Container中全部移除
+     * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
+     * */
+    unmount(isForce=false) {
+        this.engine.unmount(isForce)
         this._mounted = false
     }
 
@@ -225,7 +224,7 @@ export default class Container extends DomFunctionImpl {
     }
 
     /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
-    updateLayout(items = [], ignoreList = []) {
+    updateLayout(items = null, ignoreList = []) {
         this.engine.updateLayout(items, ignoreList)
     }
 
@@ -288,16 +287,6 @@ export default class Container extends DomFunctionImpl {
         })
     }
 
-    /**  开启伪静态布局, 静态 + 响应式    */
-    pseudoStaticLayout() {
-
-    }
-
-    /**  开启全静态布局 */
-    staticLayout() {
-        this.mode = "static"
-        this.engine.static()
-    }
 
 
     /** 为dom添加新成员

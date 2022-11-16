@@ -13,8 +13,7 @@ export default class ItemPos {
     maxW = Infinity   // 栅格倍数
     minH = 1          // 栅格倍数
     maxH = Infinity   // 栅格倍数
-    static = false     // 静态布局模式下指定是否可拖动  TODO 暂时无用
-    temporaryStatic = false   //  用于保存在resize时候和静态布局临时静态的状态   TODO 暂时无用
+    static = false     // 静态布局模式下指定是否可拖动【只支持静态布局】
     nextStaticPos = null
     nextStaticPosDemo = {     // 静态布局下用于算法检测是否空位的缓存
         w: 1,
@@ -41,9 +40,12 @@ export default class ItemPos {
 
     _typeCheck(pos) {
         Object.keys(pos).forEach((posKey) => {
-            if (['w', 'h', 'x', 'y', 'col', 'row', 'minW', 'maxW', 'minH', 'maxH', 'static', 'temporaryStatic'].includes(posKey)) {
+            if (['w', 'h', 'x', 'y', 'col', 'row', 'minW', 'maxW', 'minH', 'maxH'].includes(posKey)) {
                 if (pos[posKey] === Infinity) return
                 pos[posKey] = parseInt(pos[posKey])
+            }
+            if (['static'].includes(posKey)){
+                pos[posKey] = pos[posKey]
             }
         })
         // console.log(pos);

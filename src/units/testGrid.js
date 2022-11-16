@@ -1,6 +1,6 @@
 import {Container, Item} from '@/units/grid/AnyGridLayout.js'
 // import Container from 'any-grid-layout/src/units/grid/Container.js'
-import {layoutData, layoutData1} from "@/stores/layout.js";
+import {layoutData, layoutData11} from "@/stores/layout.js";
 
 
 const container = new Container({
@@ -8,8 +8,8 @@ const container = new Container({
     // el: document.getElementById('container'),
     layout: {
         from: '来自layout',
-        transition: true,
         data: layoutData,
+        // data : layoutData11,
         // col: 5,
         // row: 5,
         ratio: 0.2,
@@ -34,7 +34,7 @@ const container = new Container({
         // isEdit: false,
 
 
-        // TODO 嵌套div做容器滚动条
+        // TODO 高频闪烁问题
     },
     global: {
         responsive:true,
@@ -54,9 +54,16 @@ container.edit({
     resize:true,
     close:true
 })
-container.animation(120)
-container.follow(false)
+container.animation(180)
+container.follow()
 
+// setTimeout(()=>{
+//     container.unmount()
+// },3000)
+//
+// setTimeout(()=>{
+//     container.mount()
+// },6000)
 
 const container1 = new Container({
     el: '#container1',
@@ -71,7 +78,7 @@ const container1 = new Container({
         size: [100, 60],
         // minRow: 10,
         // maxRow:6,
-        // data: layoutData,
+        data: layoutData,
         responsive:true,
         minCol: 2,
         // maxCol:6,
@@ -106,7 +113,7 @@ const container2 = new Container({
         size: [60, 50],
         minCol: 2,
         exchange: true,
-        // data: layoutData,
+        data: layoutData11,
         // responsive:true,
     },
     event:{

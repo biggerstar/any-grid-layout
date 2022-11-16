@@ -21,11 +21,9 @@ export default class Engine {
     layoutConfig = null
     event = {}
     initialized = false
-    mode = 'responsive'  // responsive || static
     __temp__ = {
         responsiveFunc: null,
         staticIndexCount: 0
-
     }
 
     constructor(option) {  //  posList用户初始未封装成ItemPos的数据列表
@@ -34,7 +32,6 @@ export default class Engine {
 
     init() {
         this.itemPosList = new ItemPosList()
-        // this.container.setColNum(this.option.col ? this.option.col : this.container.col)
         this.layoutManager = new LayoutManager()
         this.layoutConfig = new LayoutConfig(this.option)
         this.layoutConfig.setContainer(this.container)
@@ -42,6 +39,11 @@ export default class Engine {
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
         this._syncLayoutConfig(useLayoutConfig)
         this.initialized = true
+    }
+
+    _sync() {  // 语法糖
+        let useLayoutConfig = this.layoutConfig.genLayoutConfig()
+        this._syncLayoutConfig(useLayoutConfig)
     }
 
     /** 通过传入当前的useLayoutConfig直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
@@ -54,7 +56,7 @@ export default class Engine {
         // if (this.container.row === null && useLayoutConfig.responsive) this.layoutManager.autoRow()
         this.autoSetColAndRows(this.container)
         this.items.forEach(item => {
-            //  只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
+            //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
             merge(item, {
                 margin: useLayoutConfig.margin,
                 size: useLayoutConfig.size,
@@ -70,7 +72,7 @@ export default class Engine {
      * @return {Object} 一个包含最大col和row，containerW，ContainerH的集合
      * TODO 优化初始化执行两次问题，方案是收集所有Item后再调用该函数进行同步
      * */
-    autoSetColAndRows(container,isSetConfig = true) {
+    autoSetColAndRows(container, isSetConfig = true) {
         let maxCol = container.col
         let maxRow = container.row
         let containerW = maxCol
@@ -127,7 +129,7 @@ export default class Engine {
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
         }
-        if (isSetConfig){
+        if (isSetConfig) {
             this.container.col = maxCol
             this.container.row = maxRow
             this.container.containerW = containerW
@@ -176,12 +178,13 @@ export default class Engine {
         }
         return items
     }
+
     /** 响应式模式下找到在布局流在Container空白部分或者在Container外所对应容器里面可以放置的x，y位置，
      * 并对应返回该位置的Item作为外部使用的toItem   */
     findResponsiveItemFromPosition(x, y, w, h) {
         let pointItem = null
         let lastY = 1
-        if (this.items.length > 0){
+        if (this.items.length > 0) {
             lastY = this.items[this.items.length - 1].pos.y
         }
         for (let i = 0; i < this.items.length; i++) {
@@ -192,8 +195,8 @@ export default class Engine {
             const yItemEnd = item.pos.y + item.pos.h - 1
             if (xItemStart !== x) continue
             if (y > lastY) y = lastY
-            if (x => xItemStart && x <= xItemEnd &&  y >= yItemStart && y <= yItemEnd ){
-                if (x === xItemStart && y === yItemStart ) pointItem = item
+            if (x => xItemStart && x <= xItemEnd && y >= yItemStart && y <= yItemEnd) {
+                if (x === xItemStart && y === yItemStart) pointItem = item
             }
         }
         return pointItem
@@ -234,27 +237,6 @@ export default class Engine {
     }
 
 
-    /** 为Container提供接口, 在container中调用 */
-    responsive() {
-        this.mode = "responsive"
-        // this.__temp__.responsiveFunc = (ev)=>{
-        //     console.log(ev);
-        //     // console.log(this.container.element.clientHeight,this.container.element.clientWidth);
-        //
-        // }
-        // window.addEventListener('resize',this.__temp__.responsiveFunc)
-
-
-    }
-
-    /** 为Container提供接口, 在container中调用 */
-    static() {
-        this.mode = "static"
-        if (this.__temp__.responsiveFunc !== null) {
-            window.removeEventListener('resize', this.__temp__.responsiveFunc)
-        }
-    }
-
     /** 根据当前的 i 获取对应的Item  */
     index(indexVal) {
         for (let i = 0; i < this.items.length; i++) {
@@ -270,7 +252,7 @@ export default class Engine {
         // console.log(this.items.filter(item => !item._mounted));
         this.items.forEach((item) => {
             if (!item instanceof Item || !item._mounted || item.element.parentNode === null) return
-            if (item.pos.temporaryStatic === true) staticItems.push(item)
+            if (item.pos.static === true) staticItems.push(item)
             else items.push(item)
         })
         // items.sort((itemA, itemB) => itemA.i - itemB.i)
@@ -280,15 +262,14 @@ export default class Engine {
 
     /** 将item成员全部挂载到Container  */
     mountAll() {
-        this.sortStatic()
+        // this.sortStatic()
         this.items.forEach((item) => item.mount())
         if (this.container.responsive) this.container.row = this.layoutManager.row  //静态布局的row是固定的，响应式不固定
     }
 
-    /** 将item成员从Container中全部移除  */
-    unmount() {
-        this.items.forEach((item) => item.unmount())
-        this.clear()
+    /** 将item成员从Container中全部移除,items数据还在  */
+    unmount(isForce) {
+        this.items.forEach((item) => item.unmount(isForce))
     }
 
     /** 将item成员从Container中全部移除，之后重新渲染  */
@@ -306,13 +287,9 @@ export default class Engine {
         else if (itemLimit.maxH < item.pos.h) console.error(this.container, item, `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
-            // console.log(item);
-            // if (!this.container._mounted)item.pos.__temp__._autoOnce = true
-            if(!this.container._mounted  || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
+            if (!this.container._mounted || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
             else if (!item._mounted && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
-            // let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
             // TODO  添加成功和失败的event回调
-            // if (this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)) {
             //     this.items.push(item)
             // }
             const success = this.push(item)
@@ -320,6 +297,7 @@ export default class Engine {
         }
     }
 
+    /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
         // console.log(item.pos);
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)
@@ -358,6 +336,29 @@ export default class Engine {
         return success
     }
 
+    /** 已经挂载后的情况下重新排列响应式Item的顺序，排序后的布局和原本的布局是一样的，只是顺序可能有变化，在拖动交换的时候不会出错
+     *  原理是通过遍历当前网页内Container对应的矩阵点(point),先行后列遍历,记录下所遍历到的顺序，该顺序的布局是和原本的item列表一样的
+     *  只是在Item调用engine.move时可能因为右边过宽的Item被挤压到下一行，后面的小Item会被补位到上一行，
+     *  这种情况其实大Item的index顺序是在小Item前面的，但是通过move函数交换可能会出错
+     * */
+    sortResponsiveItem() {
+        const items = []
+        for (let y = 1; y <= this.container.row; y++) {
+            for (let x = 1; x <= this.container.col; x++) {
+                for (let index = 0; index < this.items.length; index++) {
+                    const item = this.items[index]
+                    if (item.pos.x === x && item.pos.y === y) {
+                        items.push(item)
+                        break
+                    }
+                }
+            }
+        }
+        this.items = items
+    }
+
+
+    /** 移除某个存在的item */
     removeItem(item) {
         for (let i = 0; i < this.items.length; i++) {
             if (this.items[i] === item) this.items.splice(i, 1);
@@ -420,7 +421,7 @@ export default class Engine {
         }
     }
 
-    /** 为自身Container中的this.items重新编号 */
+    /** 在挂载后为自身Container中的this.items重新编号 */
     renumber(items) {
         items = items ? items : this.items
         items.forEach((item, index) => {
@@ -463,7 +464,6 @@ export default class Engine {
         nextStaticPos.i = item.i
         realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
         // console.log(realLayoutPos);
-
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)
@@ -521,13 +521,10 @@ export default class Engine {
             this.container.updateStyle(this.container.genContainerStyle())
         } else if (!this.container.responsive) {
             //更新静态布局
-            // this.layoutManager.autoRow(false)
-            const skip = false
             let updateItemList = []
             if (items === null) updateItemList = []
             else if (Array.isArray(items)) updateItemList = items
             else if (items !== true && updateItemList.length === 0) return
-
             items = this.items
             updateItemList = updateItemList.filter(item => items.includes(item))
             this.reset()
@@ -546,14 +543,13 @@ export default class Engine {
                 item.updateItemLayout()    //  只对要更新的Item进行更新
             })
         }
-
-        const isDebugger = false
-        if (isDebugger) {
-            for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
-                console.log(this.layoutManager._layoutMatrix[i]);
-            }
-            console.log('-----------------------------------------');
-        }
+        // const isDebugger = false
+        // if (isDebugger) {
+        //     for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
+        //         console.log(this.layoutManager._layoutMatrix[i]);
+        //     }
+        //     console.log('-----------------------------------------');
+        // }
     }
 
     _genItemPosArg(item) {

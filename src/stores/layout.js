@@ -4,6 +4,12 @@ export const layoutData11 = [
     { w: 1, h: 2 , x: 8, y: 2, static: true},
     { w: 2, h: 2 , x: 8, y: 12, static: true},
     { w: 1, h: 2 , x: 7, y: 10, static: true},
+    { w: 1, h: 1 },
+    { w: 1, h: 1 },
+    { w: 1, h: 1 },
+    { w: 1, h: 1 },
+    { w: 1, h: 1 },
+    { w: 1, h: 1 },
 ]
 
 
