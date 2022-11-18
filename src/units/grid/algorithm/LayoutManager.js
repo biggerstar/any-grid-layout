@@ -20,11 +20,15 @@ export default class LayoutManager {
     maxRow = null
     row = null  //  行数,非必须
     isAutoRow = false
+    iNameHash = ''   // 具名矩阵随机hash,如果没有这个跨容器时同iName会在isStaticBlank检测存在空位，导致Item重叠
 
     constructor() {
         // if (typeof option.col !== 'number') new Error('col是必要参数且为正整数')
         // this.minRow = option.minRow ? option.minRow : 1
         // this.row = option.row ? option.row : this.minRow
+        for (let i = 0; i < 4; i++) {
+            this.iNameHash = this.iNameHash + String.fromCharCode(Math.floor(Math.random() * 26) + "a".charCodeAt(0))
+        }
     }
 
     /** 获取当前成员数量*/
@@ -38,6 +42,10 @@ export default class LayoutManager {
 
     setRowNum(row) {
         this.row = row
+    }
+
+    toINameHash(i){
+        return this.iNameHash + i
     }
 
     autoRow(isAutoRow = true) {
@@ -111,10 +119,9 @@ export default class LayoutManager {
             yStart: posOption.y,
             xEnd: posOption.x + posOption.w - 1,
             yEnd: posOption.y + posOption.h - 1,
-            iName: posOption.i,  // iName外部传入为做具名矩阵
+            iName: this.toINameHash(posOption.i),  // iName外部传入加本类hash为做具名矩阵
         }
     }
-
 
 
     addItem(itemLayout) {
@@ -148,21 +155,20 @@ export default class LayoutManager {
         let findItemLayout
         // console.log(posOption);
         // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-        if (auto){
+        if (auto) {
             findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
 
             if (findItemLayout === undefined) return null
-            if (posOption.i !== undefined) findItemLayout.iName = posOption.i
+            if (posOption.i !== undefined) findItemLayout.iName = this.toINameHash(posOption.i)
             findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数
-        }
-        else {
+        } else {
             // for (let i = 0; i < this._layoutMatrix.length; i++) {
             //     console.log(this._layoutMatrix[i]);
             // }
             if (this.isStaticBlank(posOption)) {
                 findItemLayout = this.itemPosToItemLayout(posOption)
                 return findItemLayout
-            }else  return null
+            } else return null
         }
         // console.log(findItemLayout);
         // console.log(this.isOverFlowMatrix(posOption));
@@ -185,7 +191,8 @@ export default class LayoutManager {
             || (nextStaticPos.y + nextStaticPos.h - 1) > this.row
     }
 
-    /** 静态布局情况下根据x,y,w,h判断是否在布局矩阵中有空位
+    /** 静态布局情况下根据x,y,w,h判断是否在布局矩阵中有空位，[该函数不适用于静态跨容器检测]
+     * 如果要静态检测可以用 engine.findCoverItemFromPosition找范围内的Item，没啥太大区别
      *  @param {ItemPos} nextStaticPos 主要是决定判断结果的只有 x,y,w,h
      *  @return {Boolean} isBlank
      * */
@@ -193,12 +200,10 @@ export default class LayoutManager {
         if (nextStaticPos === null) return false
         const {xStart, yStart, xEnd, yEnd} = this.itemPosToItemLayout(nextStaticPos)
         let isBlank = true
-        const iName = nextStaticPos.i
+        const iName = this.toINameHash(nextStaticPos.i)
         const maxStartX = nextStaticPos.x + nextStaticPos.w - 1
         const maxStartY = nextStaticPos.y + nextStaticPos.h - 1
         if (maxStartX > this.col || maxStartY > this.row) return false  // isBlank
-        // console.log(xStart,yStart,xEnd,yEnd,iName);
-        // if (this._layoutMatrix.length !== this.row) this.addRow()
         // const isDebugger = false
         // if (isDebugger) {
         //     for (let i = 0; i < this._layoutMatrix.length; i++) {
@@ -214,6 +219,8 @@ export default class LayoutManager {
         for (let rowIndex = yStart - 1; rowIndex <= yEnd - 1; rowIndex++) {
             for (let colIndex = xStart - 1; colIndex <= xEnd - 1; colIndex++) {
                 const point = this._layoutMatrix[rowIndex][colIndex]
+                // 静态外部跨容器同iName会检测失效，存在该表达式作用时静态resize能允许忽略同iName下检测结果为有空格，该函数不适用于静态跨容器
+                if (iName.toString() === point) continue
                 if (point !== false) { // 等于true是开了debugger情况，false是默认占位值
                     isBlank = false
                     break
@@ -265,7 +272,7 @@ export default class LayoutManager {
         while (counter++ < 500) {  // counter 加一次索引行数加1,500表示最大500行,正常这够用了吧？
             if (this._layoutMatrix.length < (h + yPointStart)) {
                 // console.log(this.row,this.isAutoRow);
-                if (this.isAutoRow){
+                if (this.isAutoRow) {
                     this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行,不可删，响应式模式用到静态布局没用到
                 }
             }
@@ -338,12 +345,12 @@ export default class LayoutManager {
      *  { xStart:1 , yStart : 2, xEnd: 5, yEnd : 6  }
      *  上面这参数值可以理解成普通网格类型的第一行第二列开始,第五行第六列结束, 矩形大小为 5(xEnd-xStart) X 5(yEnd-yStart)
      *  该网格和二维数组只差在index索引的值,变成数组只需要几个索引都减一即可
-     *  iName: 外部传入为了做具名矩阵
+     *  iName: 外部传入加上本类中hash组成为了做具名矩阵
      *  助记： 第五行其实在矩阵的索引为 4 , 自用助记,没啥大意义
      * reName: 覆盖iName的值
      * */
     _updateSeatLayout({xStart, yStart, xEnd, yEnd, iName}, reName = null) {
-        if (iName === undefined ) iName = 'true'
+        if (iName === undefined) iName = 'true'
         let setName = reName !== null ? reName : iName.toString()
         // if (this._layoutMatrix.length < yEnd) this.addRow(yEnd - this._layoutMatrix.length + 1)
         // console.log(xStart,yStart,xEnd,yEnd,iName);

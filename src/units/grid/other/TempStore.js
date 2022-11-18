@@ -11,9 +11,8 @@ export default class TempStore {
         // editModeItemDragNum:0,   // 记录当前开启drag的Item个数
         // editModeItemResizeNum:0, // 记录当前开启resize的Item个数
         editItemNum : 0,
-        //----------可写变量-----------//
+        //----------通用可写变量-----------//
         belongContainer : null,
-        isLeftMousedown: false,
         fromContainer:null,
         dragContainer:null,
         crossContainerItem : false,  // 当前操作的Item是否跨容器操作
@@ -36,11 +35,18 @@ export default class TempStore {
         resizeHeight: null,
         offsetPageX:null,
         offsetPageY:null,
+
+        //----------鼠标相关-----------//
+        isLeftMousedown: false,
         mouseSpeed: {
             timestamp: 0,
             endX: 0,
             endY: 0
-        }
+        },
+        //----------触屏相关-----------//
+        deviceEventMode: 'mouse',   //   mouse || touch
+        allowTouchMoveItem: false,   // 是否允许触屏下拖动Item
+        timeOutEvent : null
     }
     static ItemStore = {  }
 

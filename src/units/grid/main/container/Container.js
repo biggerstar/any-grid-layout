@@ -63,7 +63,7 @@ export default class Container extends DomFunctionImpl {
     data = []  // 传入后就不会再变，等于备份原数据
     global = {}
     eventManager = null    // events通过封装构建的类实例
-    dragOut = true
+    dragOut = true     // 是否可以将Item拖动到容器外
     followScroll = true  // 是否在有上层滚动盒子包裹住容器的时候拖动到容器边缘时进行自动滚动
     sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     // style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换

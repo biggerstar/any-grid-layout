@@ -10,7 +10,7 @@ const container = new Container({
         from: '来自layout',
         // data: layoutData,
         // data : layoutData11,
-        // col: 5,
+        col: 3,
         // row: 5,
         ratio: 0.2,
         margin: [10, 10],
@@ -61,6 +61,7 @@ container.edit({
     resize:true,
     close:true
 })
+container.edit()
 container.animation(180)
 container.follow()
 

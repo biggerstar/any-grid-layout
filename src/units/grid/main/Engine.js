@@ -154,31 +154,34 @@ export default class Engine {
      *  @param y {Number} y坐标
      *  @param w {Number} x坐标方向延伸宫格数量
      *  @param h {Number} y坐标方向延伸宫格数量
+     *  @param items {Object} 在该Item列表中查找，默认使用this.Items
      * */
-    findCoverItemFromPosition(x, y, w, h) {
+    findCoverItemFromPosition(x, y, w, h,items=null) {
         // console.log(x,y,w,h);
-        const items = []
-        for (let i = 0; i < this.items.length; i++) {
-            let item = this.items[i]
-            const xBoundaryStart = x
-            const yBoundaryStart = y
-            const xBoundaryEnd = x + w - 1
-            const yBoundaryEnd = y + h - 1
-            const xItemStart = item.pos.x
-            const yItemStart = item.pos.y
-            const xItemEnd = item.pos.x + item.pos.w - 1
-            const yItemEnd = item.pos.y + item.pos.h - 1
+        items = items || this.items
+        const resItem = []
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i]
+            const xBoundaryStart = x       // 左边界
+            const yBoundaryStart = y       // 上边界
+            const xBoundaryEnd = x + w - 1  //  右边界
+            const yBoundaryEnd = y + h - 1  // 下边界
+            const xItemStart = item.pos.x          // Item左边界
+            const yItemStart = item.pos.y           // Item上边界
+            const xItemEnd = item.pos.x + item.pos.w - 1    // Item右边界
+            const yItemEnd = item.pos.y + item.pos.h - 1    // Item下边界
+
             if ((xItemEnd >= xBoundaryStart && xItemEnd <= xBoundaryEnd      // 左边界碰撞
                     || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd)    // 右边界碰撞
                 && (yItemEnd >= yBoundaryStart && yItemEnd <= yBoundaryEnd      // 左边界碰撞
                     || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd)      // 下边界碰撞
-                // || ( xBoundaryStart <= xItemStart && xBoundaryEnd >= yItemEnd     // 全包含
-                //     && yBoundaryStart <= yItemStart && yBoundaryEnd >= yItemEnd  )
+                || ( xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
+                    && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd  )
             ) {
-                items.push(item)
+                resItem.push(item)
             }
         }
-        return items
+        return resItem
     }
 
     /** 响应式模式下找到在布局流在Container空白部分或者在Container外所对应容器里面可以放置的x，y位置，
@@ -473,6 +476,7 @@ export default class Engine {
         let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
         nextStaticPos.i = item.i
         realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
+        // console.log(realLayoutPos);
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)
@@ -484,6 +488,20 @@ export default class Engine {
         } else {
             return null
         }
+    }
+
+    isStaticCover(item){
+        let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
+        nextStaticPos.i = item.i
+        let isCover = false
+        this.items.forEach(item=>{
+
+
+
+
+            // isCover
+        })
+        return isCover
     }
 
     /**  根据是否响应式布局或者静态布局更新容器内的Item布局

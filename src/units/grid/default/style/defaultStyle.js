@@ -9,6 +9,7 @@ export const defaultStyle = {
         display: 'block',
         boxSizing: 'border-box',
         position: 'relative',
+        // touchAction:'none'
     },
     gridItem:{   // Item初始化使用的默认样式
         height: '100%',
@@ -16,6 +17,7 @@ export const defaultStyle = {
         display:'block',
         overflow: 'hidden',
         position: 'absolute',
+        // touchAction:'none'
     },
     gridResizableHandle:{
         height: '20px',

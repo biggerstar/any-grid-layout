@@ -103,12 +103,12 @@ export const parseItem = (ev, reverse = false) => {
 }
 
 /**  */
-export const parseScrollElement = (containerEl) => {
-    let item
-    while (containerEl.parentNode !== null) {
-        if (containerEl.parentNode.clientY){
-
+export const singleTouchToCommonEvent = (touchEvent) => {
+    if (touchEvent.touches && touchEvent.touches.length){
+        for(let k in touchEvent.touches[0]){
+            if (['target'].includes(k)) continue
+            touchEvent[k] = touchEvent.touches[0][k];
         }
     }
-    return item
+    return touchEvent
 }
