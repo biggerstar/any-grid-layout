@@ -149,17 +149,16 @@ export default class LayoutManager {
         // console.log(posOption);
         // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
         if (auto){
-            // console.log(1111111111111);
             findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
-            // for (let i = 0; i < this._layoutMatrix.length; i++) {
-            //     console.log(this._layoutMatrix[i]);
-            // }
 
             if (findItemLayout === undefined) return null
             if (posOption.i !== undefined) findItemLayout.iName = posOption.i
             findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数
         }
         else {
+            // for (let i = 0; i < this._layoutMatrix.length; i++) {
+            //     console.log(this._layoutMatrix[i]);
+            // }
             if (this.isStaticBlank(posOption)) {
                 findItemLayout = this.itemPosToItemLayout(posOption)
                 return findItemLayout
@@ -214,15 +213,10 @@ export default class LayoutManager {
 
         for (let rowIndex = yStart - 1; rowIndex <= yEnd - 1; rowIndex++) {
             for (let colIndex = xStart - 1; colIndex <= xEnd - 1; colIndex++) {
-                // console.log(this._layoutMatrix[rowIndex][colIndex]);
                 const point = this._layoutMatrix[rowIndex][colIndex]
-                // if(point === '__debugger__')continue
-                // console.log(point , iName.toString());
-
-                if (point === iName.toString()) continue
                 if (point !== false) { // 等于true是开了debugger情况，false是默认占位值
                     isBlank = false
-                    // return false
+                    break
                 }
             }
         }

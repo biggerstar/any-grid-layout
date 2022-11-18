@@ -1,11 +1,11 @@
 import Sync from "@/units/grid/other/Sync.js";
-import Item from "@/units/grid/Item.js";
-import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
-import Engine from "@/units/grid/Engine.js";
+import Item from "@/units/grid/main/item/Item.js";
+import DomFunctionImpl from "@/units/grid/other/DomFunctionImpl.js";
+import Engine from "@/units/grid/main/Engine.js";
 import TempStore from "@/units/grid/other/TempStore.js";
-import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
+import {defaultStyle} from "@/units/grid/default/style/defaultStyle.js";
 import EditEvent from '@/units/grid/events/EditEvent.js'
-import ItemPos from '@/units/grid/ItemPos.js'
+import ItemPos from '@/units/grid/main/item/ItemPos.js'
 import EventCallBack from "@/units/grid/events/EventCallBack.js";
 
 
@@ -62,8 +62,9 @@ export default class Container extends DomFunctionImpl {
     ratio = 0.1    // 只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
     data = []  // 传入后就不会再变，等于备份原数据
     global = {}
-    event = {}
+    eventManager = null    // events通过封装构建的类实例
     dragOut = true
+    followScroll = true  // 是否在有上层滚动盒子包裹住容器的时候拖动到容器边缘时进行自动滚动
     sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     // style = defaultStyle.containerStyleConfigField   //  可以外部传入直接替换
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
@@ -85,6 +86,8 @@ export default class Container extends DomFunctionImpl {
         containerViewWidth: null,   //  container视图第一次加载时候所占用的像素宽度
         offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
         offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
+        exchangeLockX: false,  // 锁定Item是否可以横向移动
+        exchangeLockY: false, // 锁定Item是否可以纵向向移动
         //----------可写变量-----------//
     }
 
@@ -92,9 +95,9 @@ export default class Container extends DomFunctionImpl {
         super()
         if (option.el === null) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
         this.el = option.el
+        this.eventManager = new EventCallBack(option.events)
         this.engine = new Engine(option)
         this.engine.setContainer(this)
-        this.event = new EventCallBack(option.event)
         if (option.itemLimit) this.itemLimit = new ItemPos(option.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
     }
 
@@ -291,7 +294,7 @@ export default class Container extends DomFunctionImpl {
 
     /** 为dom添加新成员
      * @param { Object || Item } item 可以是一个Item实例类或者一个配置对象
-     * @return {Item|| Boolean}  添加成功返回该添加创建的Item，添加失败返回null
+     * @return {Item|| NonNullable}  添加成功返回该添加创建的Item，添加失败返回null
      * item : {
      *      el : 传入一个已经存在的 element
      *      w : 指定宽 栅格倍数,
@@ -360,6 +363,11 @@ export default class Container extends DomFunctionImpl {
             if (editOption.draggable || editOption.resize || editOption.close) {
                 EditEvent.startEvent(this)
             } else {
+                document.body.classList.forEach(className=>{
+                    if (className.includes('grid-cursor')){
+                        document.body.classList.remove(className)
+                    }
+                })
                 EditEvent.removeEvent(this)
             }
             this.engine.items.forEach((item) => item.edit(editOption))
@@ -396,7 +404,7 @@ export default class Container extends DomFunctionImpl {
             let posData = Object.assign({}, node.dataset)
             // console.log(posData);
             const item = this.add({el: node, ...posData})
-            item.name = item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
+            if (item) item.name = item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
         })
     }
 

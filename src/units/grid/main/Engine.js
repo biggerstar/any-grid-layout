@@ -1,10 +1,10 @@
-import Item from "@/units/grid/Item.js";
+import Item from "@/units/grid/main/item/Item.js";
 import Sync from "@/units/grid/other/Sync.js";
-import ItemPosList from "@/units/grid/ItemPosList.js";
+import ItemPosList from "@/units/grid/main/item/ItemPosList.js";
 import {cloneDeep, merge} from "@/units/grid/other/tool.js";
 import LayoutManager from "@/units/grid/algorithm/LayoutManager.js";
-import ItemPos from "@/units/grid/ItemPos.js";
-import LayoutConfig from "@/units/grid/LayoutConfig.js";
+import ItemPos from "@/units/grid/main/item/ItemPos.js";
+import LayoutConfig from "@/units/grid/algorithm/LayoutConfig.js";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -19,7 +19,6 @@ export default class Engine {
     layoutManager = null
     container = null
     layoutConfig = null
-    event = {}
     initialized = false
     __temp__ = {
         responsiveFunc: null,
@@ -34,13 +33,13 @@ export default class Engine {
         this.itemPosList = new ItemPosList()
         this.layoutManager = new LayoutManager()
         this.layoutConfig = new LayoutConfig(this.option)
+
         this.layoutConfig.setContainer(this.container)
         this.layoutConfig.initLayoutInfo()
-        let useLayoutConfig = this.layoutConfig.genLayoutConfig()
-        this._syncLayoutConfig(useLayoutConfig)
+        this._sync()
         this.initialized = true
     }
-
+    /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
         this._syncLayoutConfig(useLayoutConfig)
@@ -51,9 +50,9 @@ export default class Engine {
         if (Object.keys(useLayoutConfig).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
-        merge(this.container, useLayoutConfig)      //  更新同步当前Container中的属性值
+        merge(this.container, useLayoutConfig,false,['events'])      //  更新同步当前Container中的属性值
         // console.log(useLayoutConfig);
-        // if (this.container.row === null && useLayoutConfig.responsive) this.layoutManager.autoRow()
+        // console.log(this.container.eventManager);
         this.autoSetColAndRows(this.container)
         this.items.forEach(item => {
             //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
@@ -113,6 +112,9 @@ export default class Engine {
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
                 if (container.row === null) this.layoutManager.autoRow()
                 else maxRow = container.row
+                if (container.maxRow) console.warn("【响应式】模式中不建议使用maxRow,您如果使用该值，" +
+                    "只会限制容器盒子(Container)的高度,不能限制成员排列的row值 因为响应式设计是能自动管理容器的高度，" +
+                    "您如果想要限制Container显示区域且获得内容滚动能力，您可以在Container外部加上一层盒子并设置成overflow:scroll")
             } else if (this.initialized) {   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
                 this.layoutManager.autoRow()
                 const smartInfo = computeSmartRowAndCol(items)
@@ -214,6 +216,7 @@ export default class Engine {
         posList.forEach((pos) => {
             this.addItem(this.createItem(pos))
         })
+
     }
 
     setColNum(col) {
@@ -281,20 +284,27 @@ export default class Engine {
     /** 添加一个Item 只添加不挂载 */
     addItem(item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
         const itemLimit = this.container.itemLimit
-        if (itemLimit.minW > item.pos.w) console.error(this.container, item, `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`)
-        else if (itemLimit.maxW < item.pos.w) console.error(this.container, item, `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`)
-        else if (itemLimit.minH > item.pos.h) console.error(this.container, item, `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`)
-        else if (itemLimit.maxH < item.pos.h) console.error(this.container, item, `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`)
+        const eventManager = this.container.eventManager
+        if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError',`itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`,item,item)
+        else if (itemLimit.maxW < item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`,item,item)
+        else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`,item,item)
+        else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`,item,item)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
             if (!this.container._mounted || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
-            else if (!item._mounted && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
-            // TODO  添加成功和失败的event回调
-            //     this.items.push(item)
-            // }
+            else if (!item._mounted && item.pos.__temp__._autoOnce === null && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
             const success = this.push(item)
+            if(success){
+                eventManager._callback_('addItemSuccess',item)
+            }else {
+                if (!this.container.responsive) eventManager._error_('ContainerOverflowError',
+                    "getErrAttr=>[name|message] 容器溢出，只有静态模式下会出现此错误,您可以使用error事件函数接收该错误，" +
+                    "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
+                    ,item,item)
+            }
             return success ? item : null  //  添加成功返回该Item，添加失败返回null
         }
+        return null
     }
 
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
@@ -463,7 +473,6 @@ export default class Engine {
         let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
         nextStaticPos.i = item.i
         realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
-        // console.log(realLayoutPos);
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)

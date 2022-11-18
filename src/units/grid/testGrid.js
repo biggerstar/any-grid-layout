@@ -8,7 +8,7 @@ const container = new Container({
     // el: document.getElementById('container'),
     layout: {
         from: '来自layout',
-        data: layoutData,
+        // data: layoutData,
         // data : layoutData11,
         // col: 5,
         // row: 5,
@@ -21,7 +21,7 @@ const container = new Container({
         minRow: 5,
         // maxRow: 8,
         itemLimit: {
-            // minW:2,
+            // minW:1,
             // maxH:1,
             // maxW:1,
         },
@@ -32,9 +32,16 @@ const container = new Container({
         // marginX: 30,
         // marginY: 50,
         // isEdit: false,
+        // TODO   触屏支持
+    },
+    events : {
+        error(err,item){
+            // console.log(err,item);
+        },
+        addItemSuccess(item){
+            // console.log(item);
+        },
 
-
-        // TODO 高频闪烁问题
     },
     global: {
         responsive:true,
@@ -74,20 +81,20 @@ const container1 = new Container({
         // ratio: 0.1,
         col:6,
         row:9,
-        margin: [10, 10],
+        margin: [30, 10],
         size: [100, 60],
         // minRow: 10,
         // maxRow:6,
-        data: layoutData,
-        responsive:true,
+        // data: layoutData,
+        // responsive:true,
         minCol: 2,
         // maxCol:6,
         exchange: true,
     },
-    event:{
-        // error(type){
-        //     console.log(type);
-        // },
+    events:{
+        error(err){
+            // console.log(err);
+        },
     },
     itemLimit: {
         // minW:2,
@@ -99,7 +106,7 @@ const container1 = new Container({
 container1.mount()
 container1.edit()
 container1.animation()
-// container1.follow(false)
+container1.follow(false)
 
 const container2 = new Container({
     el: '#container2',
@@ -108,15 +115,16 @@ const container2 = new Container({
         from: '来自layout2',
         ratio: 0.1,
         col: 9,
-        row:9,
+        row:39,
         margin: [10, 10],
         size: [60, 50],
         minCol: 2,
         exchange: true,
-        data: layoutData11,
+        data: layoutData,
+        // data: layoutData11,
         // responsive:true,
     },
-    event:{
+    events:{
         // error(type){
         //     // console.log(type);
         // },
@@ -126,7 +134,7 @@ const container2 = new Container({
 container2.mount()
 container2.edit()
 container2.animation()
-// container2.follow(true)
+container2.follow(true)
 
 const container3 = new Container({
     el: '#container3',
@@ -135,17 +143,17 @@ const container3 = new Container({
         from: '来自layout3',
         ratio: 0.1,
         col: 6,
-        // row:6,
+        row:6,
         // margin: [10, 10],
         size:[50,50],
         minCol: 2,
         // maxCol: 6,
         exchange: true,
-        responsive:true,
-        data: layoutData,
+        // responsive:true,
+        // data: layoutData,
 
     },
-    event:{
+    events:{
         // error(type){
         //     // console.log(type);
         // },
@@ -155,6 +163,7 @@ const container3 = new Container({
 container3.mount()
 container3.edit()
 container3.animation(220)
+container3.follow()
 
 
 // setTimeout(()=>{
@@ -192,6 +201,18 @@ setTimeout(() => {
     window.d = ()=>container3.engine?.layoutManager?._layoutMatrix
     // console.log(a(),b());
 }, 1000)
+
+window.edit = (isEdit = true)=>{
+    container.edit(isEdit)
+    container1.edit(isEdit)
+    container2.edit(isEdit)
+    container3.edit(isEdit)
+}
+window.find = (editContainer)=>{
+    return editContainer.engine.items.filter((item)=>{
+        return item.isEdit
+    })
+}
 
 
 console.log(container);

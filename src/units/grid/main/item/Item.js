@@ -1,10 +1,11 @@
 import Sync from "@/units/grid/other/Sync.js";
 import {cloneDeep, merge, parseContainer, throttle} from "@/units/grid/other/tool.js";
-import ItemPos from "@/units/grid/ItemPos.js";
-import DomFunctionImpl from "@/units/grid/DomFunctionImpl.js";
-import {defaultStyle} from "@/units/grid/style/defaultStyle.js";
+import ItemPos from "@/units/grid/main/item/ItemPos.js";
+import DomFunctionImpl from "@/units/grid/other/DomFunctionImpl.js";
+import {defaultStyle} from "@/units/grid/default/style/defaultStyle.js";
 import EditEvent from '@/units/grid/events/EditEvent.js'
 import TempStore from "@/units/grid/other/TempStore.js";
+
 const tempStore = TempStore.containerStore
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -39,9 +40,9 @@ export default class Item extends DomFunctionImpl {
     parentElement = null
     isEdit = false   // 该Item是否正在被编辑
     //----------------保持状态所用参数---------------------//
-    _resizeTabEl = null
     _mounted = false
-    _animating = false
+    _resizeTabEl = null
+    _closeEl = null
     __temp__ = {
         // -------------不可写变量--------------//
 
@@ -49,12 +50,12 @@ export default class Item extends DomFunctionImpl {
         // isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
         eventRecord: {}, // 当前编辑状态开启的功能，drag || resize
         event: {},
+        editNumUsing: false, // 是否占用全局editItemNum的计数
         styleLock: false,
         maskEl: null,
-        closeEl: null,
         height: 0,
         width: 0,
-        dragging:false,
+        dragging: false,
         clientWidth: 0,
         clientHeight: 0,
         resized: {
@@ -99,7 +100,7 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
-            if (this.pos.static) this.element.innerHTML = this.element.innerHTML +  `--
+            if (this.pos.static) this.element.innerHTML = this.element.innerHTML + `--
                 ${this.pos.i}</br>
                 ${this.pos.w},${this.pos.h}</br>
                 ${this.pos.x},${this.pos.y} `
@@ -111,13 +112,19 @@ export default class Item extends DomFunctionImpl {
     /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
      * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
      * */
-    unmount(isForce=false) {
+    unmount(isForce = false) {
         Sync.run(() => {
-            if(this._mounted){
+            if (this._mounted) {
+                if (this.__temp__.editNumUsing) {
+                    this.__temp__.editNumUsing = false
+                    tempStore.editItemNum--   // 卸载时占用了editNum 进行释放
+                }
+                this._handleResize(false)
+                this._closeBtn(false)
                 EditEvent.removeEventFromItem(this)
                 this.container.element.removeChild(this.element)
-            }else {
-                console.error('该Item对应的element未在文档中挂载，可能已经被移除',this);
+            } else {
+                console.error('该Item对应的element未在文档中挂载，可能已经被移除', this);
             }
         })
         if (isForce) this.remove()
@@ -144,31 +151,37 @@ export default class Item extends DomFunctionImpl {
             if (Object.keys(editOption).length === 0) editOption = true
         }
         if (editOption === false) {
-            editOption = {draggable: false, resize: false,close:false}
+            editOption = {draggable: false, resize: false, close: false}
         } else if (editOption === true) {
-            editOption = {draggable: true, resize: true, close:true}
+            editOption = {draggable: true, resize: true, close: true}
         }
         if (typeof editOption.draggable === "boolean") this.draggable = editOption.draggable
         if (typeof editOption.resize === "boolean") this.resize = editOption.resize
         if (typeof editOption.close === "boolean") this.close = editOption.close
 
-        if (this._mounted){
+        if (this._mounted) {
             if (this.draggable || this.resize || this.close) {
-                if (this.isEdit === false){
+                if (this.isEdit === false) {
                     EditEvent.startEvent(null, this)
                     this.isEdit = true
-                    tempStore.editItemNum++
+                    if (!this.__temp__.editNumUsing) {
+                        this.__temp__.editNumUsing = true
+                        tempStore.editItemNum++   // 未占用editNum 进行占用
+                    }
                 }
             } else if (!this.draggable && !this.resize && !this.close) {
-                if (this.isEdit === true){
+                if (this.isEdit === true) {
                     this.isEdit = false
-                    tempStore.editItemNum--
+                    if (this.__temp__.editNumUsing) {
+                        tempStore.editItemNum--   // 占用了editNum 进行释放
+                        this.__temp__.editNumUsing = false
+                    }
                     EditEvent.removeEvent(null, this)
                 }
             }
         }
-        this.handleResize(this.resize)
-        this._closeBtn_(this.close)
+        this._handleResize(editOption.resize)
+        this._closeBtn(editOption.close)
     }
 
     /** 对该Item开启位置变化过渡动画
@@ -198,39 +211,19 @@ export default class Item extends DomFunctionImpl {
                         time: transition,
                         field: fieldString,
                     }
-                }else this.transition = false
+                } else this.transition = false
             }
         )
     }
 
     /**  */
-    followStatus(isFollow = true){
+    followStatus(isFollow = true) {
         this.follow = isFollow
     }
 
     /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
     updateItemLayout() {
         this.updateStyle(this._genItemStyle())
-    }
-
-    handleResize(isResize = false, msg) {
-        if (isResize && this._resizeTabEl === null) {
-            const className = 'grid-item-resizable-handle'
-            const handleResizeEls = this.element.querySelectorAll('.' + className)
-            if (handleResizeEls.length > 0) return;
-            const resizeTabEl = document.createElement('span')
-            resizeTabEl.innerHTML = '⊿'
-            this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
-            this.element.appendChild(resizeTabEl)
-            resizeTabEl.classList.add(className)
-            this._resizeTabEl = resizeTabEl
-        } else if(isResize === false){
-            try {
-                this.element.removeChild(this._resizeTabEl)
-                this._resizeTabEl = null
-            }catch (e) { }
-
-        }
     }
 
     /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框 */
@@ -303,26 +296,50 @@ export default class Item extends DomFunctionImpl {
         if (isStyle === false) return this.__temp__.styleLock = false
     }
 
-    /** 创建拖Item关闭按钮 */
-    _closeBtn_(isDisplayBtn = false) {
-        if (!this._mounted) return
-        if (isDisplayBtn && this.__temp__.closeEl === null) {
-            const className = 'grid-item-close-btn'
-            const closeEl = document.createElement('div')
-            this.updateStyle(defaultStyle.gridItemCloseBtn, closeEl)
-            this.__temp__.closeEl = closeEl
-            closeEl.classList.add(className)
-            this.element.appendChild(closeEl)
-            closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
-        }
-        if (this.__temp__.closeEl !== null && !isDisplayBtn) {
-            try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
-                this.element.removeChild(this.__temp__.closeEl)
-                this.__temp__.closeEl = null
-            } catch (e) {
+    _handleResize(isResize = false, msg) {
+        const className = 'grid-item-resizable-handle'
+        if (isResize && this._resizeTabEl === null) {
+            const handleResizeEls = this.element.querySelectorAll('.' + className)
+            if (handleResizeEls.length > 0) return;
+            const resizeTabEl = document.createElement('span')
+            resizeTabEl.innerHTML = '⊿'
+            this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
+            this.element.appendChild(resizeTabEl)
+            resizeTabEl.classList.add(className, 'grid-cursor-item-resize')
+            this._resizeTabEl = resizeTabEl
+        } else if (isResize === false) {
+            for (let i = 0; i < this.element.children.length; i++) {
+                const node =  this.element.children[i]
+                if(node.className.includes(className)){
+                    this.element.removeChild(node)
+                    this._resizeTabEl = null
+                }
             }
         }
     }
+
+    /** 创建拖Item关闭按钮 */
+    _closeBtn(isDisplayBtn = false) {
+        const className = 'grid-item-close-btn'
+        if (isDisplayBtn && this._closeEl === null) {
+            const _closeEl = document.createElement('div')
+            this.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
+            this._closeEl = _closeEl
+            _closeEl.classList.add(className, 'grid-cursor-item-close')
+            this.element.appendChild(_closeEl)
+            _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
+        }
+        if (this._closeEl !== null && !isDisplayBtn) {
+            for (let i = 0; i < this.element.children.length; i++) {
+                const node =  this.element.children[i]
+                if(node.className.includes(className)){
+                    this.element.removeChild(node)
+                    this._closeEl = null
+                }
+            }
+        }
+    }
+
     /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩 */
     _mask_(isMask = false) {
         if (isMask) {

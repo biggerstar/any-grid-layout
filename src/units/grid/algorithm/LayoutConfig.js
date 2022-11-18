@@ -1,5 +1,5 @@
 import {cloneDeep, merge} from "@/units/grid/other/tool.js";
-import {layoutConfig} from "@/units/grid/defaultLayoutConfig.js";
+import {layoutConfig} from "@/units/grid/default/defaultLayoutConfig.js";
 
 export default class LayoutConfig {
     container = null

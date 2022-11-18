@@ -1,5 +1,5 @@
-import Container from "@/units/grid/Container.js";
-import Item from "@/units/grid/Item.js";
+import Container from "@/units/grid/main/container/Container.js";
+import Item from "@/units/grid/main/item/Item.js";
 
 export {
     Container,

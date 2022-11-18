@@ -18,7 +18,6 @@ export const defaultStyle = {
         position: 'absolute',
     },
     gridResizableHandle:{
-        cursor: 'nw-resize',
         height: '20px',
         width: '20px',
         position: 'absolute',
@@ -39,7 +38,6 @@ export const defaultStyle = {
         fontSize:'1.2rem',
         textAlign:'center',
         lineHeight:'20px',
-        cursor : 'pointer',
         borderRadius: '50%'
     }
 

@@ -1,4 +1,4 @@
-import ItemPos from "@/units/grid/ItemPos.js";
+import ItemPos from "@/units/grid/main/item/ItemPos.js";
 
 export default class ItemPosList {
     data = []
