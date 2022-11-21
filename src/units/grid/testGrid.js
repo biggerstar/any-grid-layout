@@ -1,4 +1,5 @@
 import {Container, Item} from '@/units/grid/AnyGridLayout.js'
+import tempStore from '@/units/grid/other/TempStore.js'
 // import Container from 'any-grid-layout/src/units/grid/Container.js'
 import {layoutData, layoutData11} from "@/stores/layout.js";
 
@@ -82,7 +83,7 @@ const container1 = new Container({
         // ratio: 0.1,
         col:6,
         row:9,
-        margin: [30, 10],
+        margin: [20, 10],
         size: [100, 60],
         // minRow: 10,
         // maxRow:6,
@@ -195,6 +196,9 @@ window.container = container
 window.container1 = container1
 window.container2 = container2
 window.container3 = container3
+window.store = tempStore.containerStore
+
+
 setTimeout(() => {
     window.a = ()=>container.engine?.layoutManager?._layoutMatrix
     window.b = ()=>container1.engine?.layoutManager?._layoutMatrix

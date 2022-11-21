@@ -241,20 +241,22 @@ export default class Item extends DomFunctionImpl {
     }
 
     /**  @return  获取该Item 当前的宽度 */
-    nowWidth = () => {
+    nowWidth = (w) => {
         let marginWidth = 0
-        if (this.pos.w > 1) marginWidth = (this.pos.w - 1) * this.margin[0]
+        const nowW = w ? w : this.pos.w
+        if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
         // console.log(this.pos.w, marginWidth);
         // if (this.pos.i === 0) console.log(this,this.pos.x);
-        return (this.pos.w * this.size[0]) + marginWidth
+        return (nowW * this.size[0]) + marginWidth
     }
 
     /**  @return  获取该Item 当前的高度 */
-    nowHeight = () => {
+    nowHeight = (h) => {
         let marginHeight = 0
-        if (this.pos.h > 1) marginHeight = (this.pos.h - 1) * this.margin[1]
+        const nowH = h ? h : this.pos.h
+        if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
         // console.log(this.pos.h, marginHeight);
-        return (this.pos.h * this.size[1]) + marginHeight
+        return (nowH * this.size[1]) + marginHeight
     }
 
     /**  @return   根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小 */

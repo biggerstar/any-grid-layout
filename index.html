@@ -254,6 +254,7 @@
     .grid-dragging-clone-el {
         opacity: 0.8;
         transform: scale(1.1);
+        z-index: 1;
     }
 
     /* 点击进行拖动(drag)的来源元素，也就是容器内的Item，正在拖动时候的样式*/
@@ -276,10 +277,15 @@
         font-size: 1.1rem;
     }
 
+    /* 关闭Item按钮的样式 */
     .grid-item-close-btn {
         background-color: skyblue;
     }
 
+    /* 点击Item按钮的样式 */
+    .grid-item-close-btn-active {
+        background-color: blue;
+    }
 
     /*--------------------------------------------------------*/
     @keyframes fadeIn {

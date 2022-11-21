@@ -70,10 +70,12 @@ export const cloneDeep = (obj) => {
 /**  用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container*/
 export const parseContainer = (ev, reverse = false) => {
     let container
-    if (ev.target._isGridContainer_) {
-        container = ev.target._gridContainer_
-
+    const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
+    if (target._isGridContainer_) {
+        container = target._gridContainer_
     } else {
+        // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是该目标的Container正常是一样的
+        // 后面有相关需求也能通过parentNode进行获取
         for (let i = 0; i < ev.path.length; i++) {
             if (ev.path[i]._isGridContainer_) {
                 container = ev.path[i]._gridContainer_
@@ -88,9 +90,12 @@ export const parseContainer = (ev, reverse = false) => {
 /** 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item */
 export const parseItem = (ev, reverse = false) => {
     let item
-    if (ev.target._isGridItem_) {
-        item = ev.target._gridItem_
+    const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
+    if (target._isGridItem_) {
+        item = target._gridItem_
     } else {
+        // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是吧，后面else这部分在当前逻辑未用到，
+        // 后面有相关需求也能通过parentNode进行获取
         for (let i = 0; i < ev.path.length; i++) {
             if (ev.path[i]._isGridItem_) {
                 item = ev.path[i]._gridItem_
@@ -102,13 +107,14 @@ export const parseItem = (ev, reverse = false) => {
     return item
 }
 
-/**  */
+/** 触屏模式下点击屏幕触发的触屏事件转成和鼠标事件类似的通用事件 */
 export const singleTouchToCommonEvent = (touchEvent) => {
     if (touchEvent.touches && touchEvent.touches.length){
         for(let k in touchEvent.touches[0]){
             if (['target'].includes(k)) continue
             touchEvent[k] = touchEvent.touches[0][k];
         }
+        touchEvent.touchTarget = document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
     }
     return touchEvent
 }

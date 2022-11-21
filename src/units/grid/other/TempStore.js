@@ -15,7 +15,6 @@ export default class TempStore {
         belongContainer : null,
         fromContainer:null,
         dragContainer:null,
-        crossContainerItem : false,  // 当前操作的Item是否跨容器操作
         draggingLock: false,    // 拖动限制锁
         currentContainer : null,  //  当前鼠标在哪个Container
         beforeContainer : null,  //  来自上一个的Container
@@ -38,6 +37,7 @@ export default class TempStore {
 
         //----------鼠标相关-----------//
         isLeftMousedown: false,
+        mouseDownElClassName : null,
         mouseSpeed: {
             timestamp: 0,
             endX: 0,

@@ -39,6 +39,7 @@ export default class Engine {
         this._sync()
         this.initialized = true
     }
+
     /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
@@ -50,7 +51,7 @@ export default class Engine {
         if (Object.keys(useLayoutConfig).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
-        merge(this.container, useLayoutConfig,false,['events'])      //  更新同步当前Container中的属性值
+        merge(this.container, useLayoutConfig, false, ['events'])      //  更新同步当前Container中的属性值
         // console.log(useLayoutConfig);
         // console.log(this.container.eventManager);
         this.autoSetColAndRows(this.container)
@@ -156,7 +157,7 @@ export default class Engine {
      *  @param h {Number} y坐标方向延伸宫格数量
      *  @param items {Object} 在该Item列表中查找，默认使用this.Items
      * */
-    findCoverItemFromPosition(x, y, w, h,items=null) {
+    findCoverItemFromPosition(x, y, w, h, items = null) {
         // console.log(x,y,w,h);
         items = items || this.items
         const resItem = []
@@ -175,8 +176,8 @@ export default class Engine {
                     || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd)    // 右边界碰撞
                 && (yItemEnd >= yBoundaryStart && yItemEnd <= yBoundaryEnd      // 左边界碰撞
                     || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd)      // 下边界碰撞
-                || ( xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
-                    && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd  )
+                || (xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
+                    && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)
             ) {
                 resItem.push(item)
             }
@@ -205,6 +206,38 @@ export default class Engine {
             }
         }
         return pointItem
+    }
+
+    /** 在静态布局中通过指定的Item找到该Item在矩阵中最大的resize空间，函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
+     * 数据来源于this.items的实时计算
+     * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
+     * @return {maxW, maxH }  maxW最大伸展宽度，maxH最大伸展高度
+     * */
+    findStaticBlankMaxMatrixFromItem(itemPoint) {
+        const x = itemPoint.pos.x
+        const y = itemPoint.pos.y
+        let maxW = this.container.col - x + 1
+        let maxH = this.container.row - y + 1
+        for (let i = 0; i < this.items.length; i++) {
+            const item = this.items[i]
+            const pos = item.pos
+            if (itemPoint === item) continue
+            if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue
+            if (pos.x > x) {
+                if (pos.x - x < maxW) {
+                    // console.log(111111111111, pos.x , x, maxW);
+                    maxW = pos.x - x
+                }
+            }
+            if (pos.y > y) {
+                // console.log(22222222222);
+                if (pos.y - y < maxH) maxH = pos.y - y
+            }
+        }
+        return {
+            maxW,
+            maxH
+        }
     }
 
     /** 更新当前配置，只有调用这里更新能同步所有的模块配置 */
@@ -288,22 +321,22 @@ export default class Engine {
     addItem(item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
         const itemLimit = this.container.itemLimit
         const eventManager = this.container.eventManager
-        if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError',`itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`,item,item)
-        else if (itemLimit.maxW < item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`,item,item)
-        else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`,item,item)
-        else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`,item,item)
+        if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`, item, item)
+        else if (itemLimit.maxW < item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`, item, item)
+        else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`, item, item)
+        else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
             if (!this.container._mounted || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
             else if (!item._mounted && item.pos.__temp__._autoOnce === null && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
             const success = this.push(item)
-            if(success){
-                eventManager._callback_('addItemSuccess',item)
-            }else {
+            if (success) {
+                eventManager._callback_('addItemSuccess', item)
+            } else {
                 if (!this.container.responsive) eventManager._error_('ContainerOverflowError',
                     "getErrAttr=>[name|message] 容器溢出，只有静态模式下会出现此错误,您可以使用error事件函数接收该错误，" +
                     "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
-                    ,item,item)
+                    , item, item)
             }
             return success ? item : null  //  添加成功返回该Item，添加失败返回null
         }
@@ -469,7 +502,7 @@ export default class Engine {
     /**  是否可以添加Item到当前的Container,请注意addSeat为true时该操作将会影响布局管理器中的_layoutMatrix,每次检查成功将会占用该检查成功所指定的空间
      *  @param item {Item}
      *  @param responsive {Boolean}  是否响应式还是静态布局
-     *  @param addSeat {Boolean}  检测的时候是否为矩阵中添加占位
+     *  @param addSeat {Boolean}  检测的时候是否为矩阵中添加占位同时修改Item中的pos
      * */
     _isCanAddItemToContainer_(item, responsive = false, addSeat = false) {
         let realLayoutPos
@@ -490,13 +523,11 @@ export default class Engine {
         }
     }
 
-    isStaticCover(item){
+    isStaticCover(item) {
         let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
         nextStaticPos.i = item.i
         let isCover = false
-        this.items.forEach(item=>{
-
-
+        this.items.forEach(item => {
 
 
             // isCover
@@ -508,7 +539,7 @@ export default class Engine {
      *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
      *  @param items {Array || Boolean} Array: 要更新的对应Item ，Array方案正常用于静态模式，
      *                                          响应式也能指定更新，用于静态优先更新(将传入的Item作为静态Item进行占位)
-     *                                  Boolean: 静态模式下只有传入true才能生效，响应式的话将全部更新
+     *                                  Boolean: 参数为true 传入true的话不管静态还是响应式强制刷新该容器的布局
      *                                  不传值(默认null): 静态模式不进行更新，响应式模式进行全部更新
      *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
      * */
@@ -516,8 +547,7 @@ export default class Engine {
         //更新响应式布局
         if (this.container.responsive) {
             this.reset()
-            let useLayoutConfig = this.layoutConfig.genLayoutConfig()
-            this._syncLayoutConfig(useLayoutConfig)
+            this._sync()
             this.renumber()
             let updateItemList = items
             if (items === true || updateItemList === null) updateItemList = []
@@ -545,6 +575,7 @@ export default class Engine {
             //     console.log(this.layoutManager._layoutMatrix[i]);
             // }
             // console.log('-----------------------------------------');
+            this.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
             this.container.updateStyle(this.container.genContainerStyle())
         } else if (!this.container.responsive) {
             //更新静态布局
