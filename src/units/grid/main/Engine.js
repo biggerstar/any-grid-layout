@@ -108,7 +108,6 @@ export default class Engine {
                 limitRow: maxRow
             }
         }
-
         if (container.responsive) {    // 响应模式会检测第一次给出的row进行初始容器固定
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
                 if (container.row === null) this.layoutManager.autoRow()
@@ -139,7 +138,7 @@ export default class Engine {
             this.container.containerH = containerH
             this.layoutManager.setColNum(maxCol)
             this.layoutManager.setRowNum(maxRow)
-            this.layoutManager.addRow(maxRow)
+            this.layoutManager.addRow(maxRow - this.layoutManager._layoutMatrix.length)
         }
         return {
             col: maxCol,
@@ -211,32 +210,55 @@ export default class Engine {
     /** 在静态布局中通过指定的Item找到该Item在矩阵中最大的resize空间，函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
      * 数据来源于this.items的实时计算
      * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
-     * @return {maxW, maxH }  maxW最大伸展宽度，maxH最大伸展高度
+     * @return {{maxW: number, maxH: number,minW: number, minH: number}}  maxW最大伸展宽度，maxH最大伸展高度,minW最小伸展宽度，maxH最小伸展高度
      * */
     findStaticBlankMaxMatrixFromItem(itemPoint) {
         const x = itemPoint.pos.x
         const y = itemPoint.pos.y
-        let maxW = this.container.col - x + 1
-        let maxH = this.container.row - y + 1
+        const w = itemPoint.pos.w
+        const h = itemPoint.pos.h
+        let maxW = this.container.col - x + 1   // X轴最大活动宽度
+        let maxH = this.container.row - y + 1   // Y轴最大活动宽度
+        let minW = maxW  // X轴最小活动宽度
+        let minH = maxH  // Y轴最小活动宽度
         for (let i = 0; i < this.items.length; i++) {
             const item = this.items[i]
             const pos = item.pos
             if (itemPoint === item) continue
-            if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue
-            if (pos.x > x) {
-                if (pos.x - x < maxW) {
-                    // console.log(111111111111, pos.x , x, maxW);
+            if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue   // 上和左在x,y点外的Item不考虑
+            //  思路：右方向最大(maxW && minH) :上方向最大(minW && maxH)
+            // if (pos.x === x && pos.y === y) continue
+            if (pos.x >= x && pos.x - x < maxW) {
+                if (((y + h - 1) >= pos.y && (y + h - 1) <= (pos.y + pos.h - 1)
+                    || (pos.y + pos.h - 1) >= y && (pos.y + pos.h - 1) <= (y + h - 1))) {    // 横向计算X空白处
                     maxW = pos.x - x
                 }
             }
-            if (pos.y > y) {
-                // console.log(22222222222);
-                if (pos.y - y < maxH) maxH = pos.y - y
+            if (pos.y >= y && pos.y - y < maxH) {
+                if (((x + w - 1) >= pos.x && (x + w - 1) <= (pos.x + pos.w - 1)
+                    || (pos.x + pos.w - 1) >= x && (pos.x + pos.w - 1) <= (x + w - 1))) {  // 纵向计算Y空白处
+                    maxH = pos.y - y
+                }
+            }
+            if (pos.x >= x && pos.x - x < minW) {
+                if (((y + maxH - 1) >= pos.y && (y + maxH - 1) <= (pos.y + pos.h - 1)
+                    || (pos.y + pos.h - 1) >= y && (pos.y + pos.h - 1) <= (y + maxH - 1))) {    // 横向计算X最小空白处
+                    minW = pos.x - x
+                }
+            }
+            if (pos.y >= y && pos.y - y < minH) {
+                if (((x + maxW - 1) >= pos.x && (x + maxW - 1) <= (pos.x + pos.w - 1)
+                    || (pos.x + pos.w - 1) >= x && (pos.x + pos.w - 1) <= (x + maxW - 1))) {  // 纵向计算Y空白处
+                    minH = pos.y - y
+                }
             }
         }
+        // console.log(minW,minH,maxW,maxH)
         return {
-            maxW,
-            maxH
+            maxW,    // 当前item的pos中x,y,w,h指定位置大伸展宽度
+            maxH,    // 最大伸展高度(同上)
+            minW,    // 最小伸展宽度(同上)
+            minH     // 最小伸展高度(同上)
         }
     }
 

@@ -80,17 +80,19 @@ export default class EditEvent {
                 //-----------------响应式和静态的分别resize算法实现---------------------//
                 if (!fromItem.container.responsive) {
                     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
+                    const newResize = limitGrid(resized)
                     const nowElSize = limitCloneEl()
                     const maxBlankMatrixLimit = fromItem.container.engine.findStaticBlankMaxMatrixFromItem(fromItem)
-
                     const updateStyle = {}
-                    if (maxBlankMatrixLimit.maxW >= resized.w) {    // 横向调整
+                    // console.log(maxBlankMatrixLimit);
+                    if (newResize.w > maxBlankMatrixLimit.minW && newResize.h > maxBlankMatrixLimit.minH) return  // 最低要求限制不能同时超过
+                    if (maxBlankMatrixLimit.maxW >= newResize.w ) {    // 横向调整
                         updateStyle.width =  nowElSize.width + 'px'
-                        fromItem.pos.w = resized.w
+                        fromItem.pos.w = newResize.w
                     }
-                    if (maxBlankMatrixLimit.maxH >= resized.h) {  // 纵向调整
+                    if (maxBlankMatrixLimit.maxH >= newResize.h) {  // 纵向调整
                         updateStyle.height =  nowElSize.height + 'px'
-                        fromItem.pos.h = resized.h
+                        fromItem.pos.h = newResize.h
                     }
                     if (Object.keys(updateStyle).length > 0){
                         fromItem.updateStyle(updateStyle, tempStore.cloneElement)

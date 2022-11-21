@@ -87,6 +87,7 @@ const container1 = new Container({
         size: [100, 60],
         // minRow: 10,
         // maxRow:6,
+        data: layoutData11,
         // data: layoutData,
         // responsive:true,
         minCol: 2,
