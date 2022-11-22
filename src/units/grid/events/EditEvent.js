@@ -514,9 +514,11 @@ export default class EditEvent {
 
                     let foundItems = container.engine.findCoverItemFromPosition(dragItem.pos.nextStaticPos.x
                         , dragItem.pos.nextStaticPos.y, dragItem.pos.w, dragItem.pos.h)  // 找到该位置下的所有Item
+
                     if (foundItems.length > 0) {
                         foundItems = foundItems.filter(item => dragItem !== item)
                     }
+
                     if (foundItems.length === 0) {  //如果该位置下没有Item,则移动过去
                         dragItem.pos.x = dragItem.pos.nextStaticPos.x
                         dragItem.pos.y = dragItem.pos.nextStaticPos.y

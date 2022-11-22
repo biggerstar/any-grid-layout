@@ -1,10 +1,8 @@
 import Item from "@/units/grid/main/item/Item.js";
-import Sync from "@/units/grid/other/Sync.js";
-import ItemPosList from "@/units/grid/main/item/ItemPosList.js";
-import {cloneDeep, merge} from "@/units/grid/other/tool.js";
+import { merge} from "@/units/grid/other/tool.js";
 import LayoutManager from "@/units/grid/algorithm/LayoutManager.js";
-import ItemPos from "@/units/grid/main/item/ItemPos.js";
 import LayoutConfig from "@/units/grid/algorithm/LayoutConfig.js";
+import ItemPos from "@/units/grid/main/item/ItemPos.js";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -30,7 +28,6 @@ export default class Engine {
     }
 
     init() {
-        this.itemPosList = new ItemPosList()
         this.layoutManager = new LayoutManager()
         this.layoutConfig = new LayoutConfig(this.option)
 
@@ -172,9 +169,11 @@ export default class Engine {
             const yItemEnd = item.pos.y + item.pos.h - 1    // Item下边界
 
             if ((xItemEnd >= xBoundaryStart && xItemEnd <= xBoundaryEnd      // 左边界碰撞
-                    || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd)    // 右边界碰撞
+                    || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd  // X轴中间部分碰撞
+                || xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd )    // 右边界碰撞
                 && (yItemEnd >= yBoundaryStart && yItemEnd <= yBoundaryEnd      // 左边界碰撞
-                    || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd)      // 下边界碰撞
+                    || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd  // Y轴中间部分碰撞
+                    || yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)      // 下边界碰撞
                 || (xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
                     && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)
             ) {
@@ -293,11 +292,6 @@ export default class Engine {
         return this.items
     }
 
-    getPosList() {
-        return this.itemPosList.getPosList()
-    }
-
-
     /** 根据当前的 i 获取对应的Item  */
     index(indexVal) {
         for (let i = 0; i < this.items.length; i++) {
@@ -331,6 +325,7 @@ export default class Engine {
     /** 将item成员从Container中全部移除,items数据还在  */
     unmount(isForce) {
         this.items.forEach((item) => item.unmount(isForce))
+        this.reset()
     }
 
     /** 将item成员从Container中全部移除，之后重新渲染  */
@@ -341,7 +336,7 @@ export default class Engine {
 
     /** 添加一个Item 只添加不挂载 */
     addItem(item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
-        const itemLimit = this.container.itemLimit
+        const itemLimit = this.container.itemLimit    // Container所有Item的限制信息
         const eventManager = this.container.eventManager
         if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`, item, item)
         else if (itemLimit.maxW < item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`, item, item)
@@ -435,7 +430,6 @@ export default class Engine {
 
     reset() {
         this.layoutManager.reset()
-        this.itemPosList.clear()
     }
 
     clear() {
@@ -535,7 +529,7 @@ export default class Engine {
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)
-                item.pos = this.itemPosList.createPos(merge(this._genItemPosArg(item), realLayoutPos))
+                item.pos = new ItemPos(merge(this._genItemPosArg(item), realLayoutPos))
                 item.pos.nextStaticPos = null
                 item.pos.__temp__._autoOnce = false
             }

@@ -70,6 +70,7 @@ export default class Item extends DomFunctionImpl {
         if (this.el instanceof Element) this.element = this.el
         this.pos = new ItemPos(itemOption)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
         // console.log(this.pos.static);
+        this._itemSizeLimitCheck()
     }
 
     /** 渲染, 直接渲染添加到 Container 中*/
@@ -365,6 +366,24 @@ export default class Item extends DomFunctionImpl {
             } catch (e) {
             }
         }
+    }
+    /** 做Item的大小信息限制 */
+    _itemSizeLimitCheck(){
+        const pos = this.pos
+        let realW = pos.w
+        let realH = pos.h
+        // 宽度
+        if (pos.minW >= pos.maxW && pos.maxW >= pos.w && pos.maxW !== Infinity) realW = pos.maxW
+        else if(pos.w > pos.maxW && pos.maxW !== Infinity) realW = pos.maxW
+        else if(pos.w < pos.minW) realW = pos.minW
+
+        // 高度
+        if (pos.minH >= pos.maxH && pos.maxH >= pos.h && pos.maxH !== Infinity) realH = pos.maxH
+        else if(pos.h > pos.maxH && pos.maxH !== Infinity) realH = pos.maxH
+        else if(pos.h < pos.minH) realH = pos.minH
+
+        this.pos.w = realW
+        this.pos.h = realH
     }
 
     /** 生成该ITEM的栅格放置位置样式  */
