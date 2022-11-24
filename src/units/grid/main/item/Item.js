@@ -25,6 +25,9 @@ export default class Item extends DomFunctionImpl {
     close = false
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
     className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
+    dragIgnoreEls = []   // 【不】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
+    dragAllowEls = []    // 【只】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
+
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
@@ -80,9 +83,9 @@ export default class Item extends DomFunctionImpl {
             // console.log(this.element);
             if (this.element === null) this.element = document.createElement(this.tagName)
             this.container.element.appendChild(this.element)
-            this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
             this.element.classList.add(this.className)
+            this.classList = Array.from(this.element.classList)
             this.updateStyle(defaultStyle.gridItem)
             // console.log(this._genItemStyle(),this.pos);
             this.updateStyle(this._genItemStyle())
@@ -93,7 +96,6 @@ export default class Item extends DomFunctionImpl {
                 close: this.close,
             })
             this.animation(this.transition)
-
             // this.__temp__.clientWidth = this.element.clientWidth
             // this.__temp__.clientHeight = this.element.clientHeight
             this.__temp__.w = this.pos.w
@@ -101,6 +103,7 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
+            this.container.eventManager._callback_('itemMounted',this)
             if (this.pos.static) this.element.innerHTML = this.element.innerHTML + `--
                 ${this.pos.i}</br>
                 ${this.pos.w},${this.pos.h}</br>
@@ -124,8 +127,9 @@ export default class Item extends DomFunctionImpl {
                 this._closeBtn(false)
                 EditEvent.removeEventFromItem(this)
                 this.container.element.removeChild(this.element)
+                this.container.eventManager._callback_('itemUnmounted',this)
             } else {
-                console.error('该Item对应的element未在文档中挂载，可能已经被移除', this);
+                this.container.layoutManager._error_('ItemAlreadyRemove','该Item对应的element未在文档中挂载，可能已经被移除',this)
             }
         })
         if (isForce) this.remove()
@@ -343,7 +347,7 @@ export default class Item extends DomFunctionImpl {
         }
     }
 
-    /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩 */
+    /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩，已弃用 */
     _mask_(isMask = false) {
         if (isMask) {
             const maskEl = document.createElement('div')

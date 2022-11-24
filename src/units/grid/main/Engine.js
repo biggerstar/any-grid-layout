@@ -499,6 +499,9 @@ export default class Engine {
         itemOption.container = this.container
         itemOption.size = this.container.size
         itemOption.margin = this.container.margin
+        itemOption.resize = Boolean(itemOption.resize)
+        itemOption.draggable = Boolean(itemOption.draggable)
+        itemOption.close = Boolean(itemOption.close)
         //-----------------------------------------------------------//
         itemOption.i = this.len()  // 为item自动编号，动态值，决定因素是原始html元素加上后面添加的item
         return new Item(itemOption)
@@ -512,7 +515,6 @@ export default class Engine {
                 || item.classList.includes(nameOrClassOrElement)
                 || item.element === nameOrClassOrElement
         })
-
     }
 
     /**  是否可以添加Item到当前的Container,请注意addSeat为true时该操作将会影响布局管理器中的_layoutMatrix,每次检查成功将会占用该检查成功所指定的空间
@@ -539,17 +541,6 @@ export default class Engine {
         }
     }
 
-    isStaticCover(item) {
-        let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
-        nextStaticPos.i = item.i
-        let isCover = false
-        this.items.forEach(item => {
-
-
-            // isCover
-        })
-        return isCover
-    }
 
     /**  根据是否响应式布局或者静态布局更新容器内的Item布局
      *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
@@ -617,6 +608,30 @@ export default class Engine {
                 item.updateItemLayout()    //  只对要更新的Item进行更新
             })
         }
+        const genBeforeSize = (container)=>{
+            return {
+                row:container.row,
+                col:container.col,
+                containerW:container.containerW,
+                containerH:container.containerH,
+                width:container.nowWidth(),
+                height:container.nowHeight()
+            }
+        }
+        const container = this.container
+        if (!container.__ownTemp__.beforeContainerSizeInfo){
+            container.__ownTemp__.beforeContainerSizeInfo =  genBeforeSize(container)
+        }else {
+            const beforeSize = container.__ownTemp__.beforeContainerSizeInfo
+            if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH){
+                const nowSize = genBeforeSize(container)
+                container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
+                this.container.eventManager._callback_('containerResized',container,beforeSize,nowSize)
+            }
+        }
+
+
+
         // const isDebugger = false
         // if (isDebugger) {
         //     for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {

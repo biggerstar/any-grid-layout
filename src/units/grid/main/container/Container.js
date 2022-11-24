@@ -48,7 +48,7 @@ export default class Container extends DomFunctionImpl {
     responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
     layout = []    //  其中的px字段表示 XXX 像素以下执行指定布局方案
     col = null
-    row = null
+    row = null    //  响应模式下如果溢出指定效果是和maxRow一样的，如果未溢出按实际占用row计算
     margin = [null, null]
     marginX = null
     marginY = null
@@ -70,6 +70,10 @@ export default class Container extends DomFunctionImpl {
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
     itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
     exchange = false
+    pressTime = 360   // 触屏下长按多久响应拖拽事件,默认360ms
+    scrollWaitTime = 800   // 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
+    scrollSpeedX = null    // 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
+    scrollSpeedY = null    // 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
     //----------------保持状态所用参数---------------------//
     _mounted = false
     __store__ = TempStore.containerStore
@@ -88,6 +92,7 @@ export default class Container extends DomFunctionImpl {
         offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
         exchangeLockX: false,  // 锁定Item是否可以横向移动
         exchangeLockY: false, // 锁定Item是否可以纵向向移动
+        beforeContainerSizeInfo: null
         //----------可写变量-----------//
     }
 
@@ -156,9 +161,9 @@ export default class Container extends DomFunctionImpl {
                 throw new Error('使用静态布局col,row,和sizeWidth必须都指定值,sizeWidth等价于size[0]')
             }
             if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
-            this.classList = Array.from(this.element.classList)
             this.attr = Array.from(this.element.attributes)
             this.element.classList.add(this.className)
+            this.classList = Array.from(this.element.classList)
             this._childCollect()
             this.engine.initItems()
             this.engine.mountAll()
@@ -177,6 +182,7 @@ export default class Container extends DomFunctionImpl {
             // this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
             // this.responsiveLayout()
             this._mounted = true
+            this.eventManager._callback_('containerMounted',this)
         })
     }
 
@@ -213,6 +219,7 @@ export default class Container extends DomFunctionImpl {
     unmount(isForce=false) {
         this.engine.unmount(isForce)
         this._mounted = false
+        this.eventManager._callback_('containerUnmounted',this)
     }
 
     /** 将item成员从Container中全部移除，之后重新渲染  */
@@ -238,7 +245,7 @@ export default class Container extends DomFunctionImpl {
     animation(transition = true, fieldString = null) {
         Sync.run(() => {
             if (!this._mounted) {
-                console.error('animation函数执行错误,Container未挂载', this)
+                this.eventManager._error_('ContainerNotMounted','edit函数执行错误Container未挂载',this)
                 return
             }
             this.engine.items.forEach((item) => item.animation(transition, fieldString))
@@ -290,7 +297,13 @@ export default class Container extends DomFunctionImpl {
         })
     }
 
-
+    /** 检查当前布局下指定Item是否能添加进Container，如果不行返回null，如果可以返回该Item可以添加的位置信息
+     * @param {Item} item 想要检查的Item信息
+     * @param {Boolean} responsive 是否响应式检查，如果是响应式自动返回可以添加的位置，如果是静态则确定该Item指定的位置是否被占用
+     *  */
+    isBlank(item,responsive) {
+        return this.engine._isCanAddItemToContainer_(item,responsive)
+    }
 
     /** 为dom添加新成员
      * @param { Object || Item } item 可以是一个Item实例类或者一个配置对象
@@ -321,8 +334,6 @@ export default class Container extends DomFunctionImpl {
 
     /** 生成该栅格容器布局样式  */
     genContainerStyle = () => {
-        // console.log(this.row, this.maxRow, this.maxRow || this.row);
-        // containerStyle
         return {
             width: this.nowWidth() + 'px',
             height: this.nowHeight() + 'px',
@@ -346,10 +357,9 @@ export default class Container extends DomFunctionImpl {
      *                              传入 布尔值 false 表示全部关闭
      * */
     edit(editOption = {}) {
-        // console.log(editOption);
         Sync.run(() => {
             if (!this._mounted) {
-                console.error('edit函数执行错误Container未挂载', this)
+                this.eventManager._error_('ContainerNotMounted','edit函数执行错误Container未挂载',this)
                 return
             }
             if (typeof editOption === 'object') {

@@ -1,7 +1,7 @@
 export const layoutData11 = [
-    { w: 1, h: 1 , x: 6, y: 8, static: true},
-    { w: 1, h: 2 , x: 5, y: 3, static: true},
-    { w: 1, h: 2 , x: 8, y: 2, static: true},
+    { w: 1, h: 1 , x: 6, y: 8, static: true,close:false},
+    { w: 1, h: 2 , x: 5, y: 3, static: true,draggable:false},
+    { w: 1, h: 2 , x: 8, y: 2, static: true,resize:false},
     { w: 2, h: 2 , x: 8, y: 12, static: true},
     { w: 1, h: 2 , x: 7, y: 10, static: true},
     { w: 1, h: 1 },

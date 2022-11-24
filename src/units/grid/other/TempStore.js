@@ -34,7 +34,8 @@ export default class TempStore {
         resizeHeight: null,
         offsetPageX:null,
         offsetPageY:null,
-
+        scrollReactionStatic:'stop',  // stop || wait || scroll  鼠标移动到容器边界自动滚动状态
+        scrollReactionTimer: null,   // 鼠标移动到容器边界自动滚动反应的定时器
         //----------鼠标相关-----------//
         isLeftMousedown: false,
         mouseDownElClassName : null,

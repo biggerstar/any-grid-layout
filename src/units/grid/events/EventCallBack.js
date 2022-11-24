@@ -13,7 +13,6 @@ export default class EventCallBack {
         if ((typeof this['error']) !== 'function') {
             throw new (ErrorTypeIndex.index(errName))
         } else {
-            const errInfo = new (ErrorTypeIndex.index(errName))
             this.error.call(this.error, new (ErrorTypeIndex.index(errName)), ...args)
         }
     }
@@ -21,20 +20,19 @@ export default class EventCallBack {
     /** 成功执行的回调钩子接口 */
     _callback_(cbName, ...args) {
         if (typeof this[cbName] === 'function') {
-            this[cbName](...args)
-            return true
-        } else return false
+            return this[cbName](...args)
+        }
     }
 
     /** 不会抛出错误中止执行，使用系统控制台的error方法，可附带对象参数 */
-    _error_(errName, msg = '',data = '', ...args) {
+    _error_(errName, msg = '',fromData = '', ...args) {
         if ((typeof this['error']) === 'function') {
             this.error.call(this.error, {
                 name: errName,
                 msg: 'getErrAttr=>[name|message|data]  ' + msg,
-                data: data
+                from: fromData    //  来自哪个数据或者实例
             }, ...args)
-        } else console.error(errName,msg,data)
+        } else console.error(errName,msg,fromData)
     }
 }
 
