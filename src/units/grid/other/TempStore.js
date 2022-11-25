@@ -10,8 +10,8 @@ export default class TempStore {
         screenHeight: null,  // 用户屏幕高度
         // editModeItemDragNum:0,   // 记录当前开启drag的Item个数
         // editModeItemResizeNum:0, // 记录当前开启resize的Item个数
-        editItemNum : 0,
         //----------通用可写变量-----------//
+        editItemNum : 0,   // 当前处于编辑模式的Item个数
         belongContainer : null,
         fromContainer:null,
         dragContainer:null,

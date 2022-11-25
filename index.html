@@ -9,56 +9,59 @@
 </head>
 <body>
 
-<div class="container1Box">
-    <div id="container" style="display: none;   ">
-        <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='2' data-h='3'
-             data-min-w='2' data-max-w='5' data-min-h='2' data-max-h='5'>
-            <div style=" height: 80%;width: 80%;  ">
-                Item console.log(toItem.x,this.pos.x);
-                宽高互减问题 NaN
-                <h4>一列:</h4>
-                <table border="1">
-                    <tr>
-                        <td>100</td>
-                    </tr>
-                </table>
+<!--<div class="container1Box">-->
+<!--</div>-->
+<!--style="display: none;"-->
+<div id="container"    ></div>
 
-                <h4>一行三列:</h4>
-                <table border="1">
-                    <tr>
-                        <td>100</td>
-                        <td>200</td>
-                        <td>300</td>
-                    </tr>
-                </table>
+<div id="container1111" style="display: none;   ">
+    <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='2' data-h='3'
+         data-min-w='2' data-max-w='5' data-min-h='2' data-max-h='5'>
+        <div style=" height: 80%;width: 80%;  ">
+            Item console.log(toItem.x,this.pos.x);
+            宽高互减问题 NaN
+            <h4>一列:</h4>
+            <table border="1">
+                <tr>
+                    <td>100</td>
+                </tr>
+            </table>
 
-                <h4>两行三列:</h4>
-                <table border="1">
-                    <tr>
-                        <td>100</td>
-                        <td>200</td>
-                        <td>300</td>
-                    </tr>
-                    <tr>
-                        <td>400</td>
-                        <td>500</td>
-                        <td>600</td>
-                    </tr>
-                </table>
+            <h4>一行三列:</h4>
+            <table border="1">
+                <tr>
+                    <td>100</td>
+                    <td>200</td>
+                    <td>300</td>
+                </tr>
+            </table>
 
-            </div>
+            <h4>两行三列:</h4>
+            <table border="1">
+                <tr>
+                    <td>100</td>
+                    <td>200</td>
+                    <td>300</td>
+                </tr>
+                <tr>
+                    <td>400</td>
+                    <td>500</td>
+                    <td>600</td>
+                </tr>
+            </table>
+
         </div>
-        <div class="item2">a2</div>
-        <div class="item3">a3</div>
-        <div class="item4">a4</div>
-        <div class="item5">a5</div>
-        <div class="item6">a6</div>
-        <div class="item7">a7</div>
-        <div class="item8">a8</div>
-        <div class="item9">a9</div>
-        <div class="item10">a10</div>
-        <div class="item11">a11</div>
     </div>
+    <div class="item2">a2</div>
+    <div class="item3">a3</div>
+    <div class="item4">a4</div>
+    <div class="item5">a5</div>
+    <div class="item6">a6</div>
+    <div class="item7">a7</div>
+    <div class="item8">a8</div>
+    <div class="item9">a9</div>
+    <div class="item10">a10</div>
+    <div class="item11">a11</div>
 </div>
 
 
@@ -143,6 +146,14 @@
         /*width: 90%;*/
         margin: auto;
         background-color: rgba(1, 1, 1, 0.1);
+    }
+
+    #container{
+        height: 600px;
+        width: 900px;
+        overflow: scroll;
+        margin: 50px auto auto;
+        background-color: rgb(108, 226, 180);
     }
 
     .container1Box {

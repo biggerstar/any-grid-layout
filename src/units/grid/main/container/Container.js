@@ -74,6 +74,7 @@ export default class Container extends DomFunctionImpl {
     scrollWaitTime = 800   // 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
     scrollSpeedX = null    // 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
     scrollSpeedY = null    // 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
+    scroll = 'auto'
     //----------------保持状态所用参数---------------------//
     _mounted = false
     __store__ = TempStore.containerStore
@@ -92,7 +93,8 @@ export default class Container extends DomFunctionImpl {
         offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
         exchangeLockX: false,  // 锁定Item是否可以横向移动
         exchangeLockY: false, // 锁定Item是否可以纵向向移动
-        beforeContainerSizeInfo: null
+        beforeContainerSizeInfo: null,
+        _resizeReactionMethod : null
         //----------可写变量-----------//
     }
 
@@ -129,15 +131,15 @@ export default class Container extends DomFunctionImpl {
     }
 
 
-    /** 在页面上添加一行的空间 */
+    /** 在页面上添加一行的空间,已弃用 */
     addRowSpace(num = 1) {
         this.row += num
         this.updateStyle(this.genContainerStyle())
     }
 
-    /** 在页面上删除一行的空间 */
+    /** 在页面上删除一行的空间，已弃用*/
     removeRowSpace(num = 1) {
-        this.row = this.row = num
+        this.row = this.row - num
         if (this.row < 0) throw new Error('行数不应该小于0，请设置一个大于0的值')
         this.updateStyle(this.genContainerStyle())
     }
@@ -155,6 +157,23 @@ export default class Container extends DomFunctionImpl {
                 this.element = document.querySelector(this.el)
                 if (this.element === null) throw new Error('未找到指定ID:' + this.el + '元素')
             }
+
+            this.contentElement = this.element
+            this.element =  document.createElement('div')
+
+            this.contentElement.style.height = '600px'
+            this.contentElement.style.width = '900px'
+
+            this.element.style.height = '100%'
+            this.element.style.width = '100%'
+
+            console.log(this.contentElement,this.element);
+            // this.updateStyle({
+            //     height:'600px',
+            //     width:'900px',
+            // },this.element)
+            this.contentElement.appendChild(this.element)
+
             this.updateStyle(defaultStyle.gridContainer) // 必须在engine.init之前
             this.engine.init()   //  初始化后就能找到用户指定的 this.useLayout
             if (!this.responsive && (!this.col || !this.row || (!this.sizeWidth && !this.size[0]))) {
@@ -182,6 +201,7 @@ export default class Container extends DomFunctionImpl {
             // this.__ownTemp__.offsetAbsolutePageTop = containerPosInfo.top
             // this.responsiveLayout()
             this._mounted = true
+            this._event_()
             this.eventManager._callback_('containerMounted',this)
         })
     }
@@ -219,6 +239,7 @@ export default class Container extends DomFunctionImpl {
     unmount(isForce=false) {
         this.engine.unmount(isForce)
         this._mounted = false
+        window.removeEventListener('resize', this.__ownTemp__._resizeReactionMethod)
         this.eventManager._callback_('containerUnmounted',this)
     }
 
@@ -260,23 +281,18 @@ export default class Container extends DomFunctionImpl {
         })
     }
 
-    /**  开启响应式布局 ，  非静态自动补全前面的空位，紧凑布局   */
-    responsiveLayout() {
-        this.mode = "responsive"
-        this.engine.responsive()
-        window.addEventListener('resize', (ev) => {
-            // this.engine.setColNum()
+    _event_(){
+        //------------------------------define----------------------------------//
+        this.__ownTemp__._resizeReactionMethod  = () => {
             const browserViewWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
             // let browserViewHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-
-
             // containerViewWidth
-            const newContainerWidth = Math.round(this.__ownTemp__.containerViewWidth * (browserViewWidth / this.__store__.screenWidth))
+            const newContainerWidth = Math.round(this.__ownTemp__.containerViewWidth * (this.__ownTemp__.containerViewWidth / browserViewWidth))
 
             // let gridColNum = Math.floor( newContainerWidth / (this.size[0] + this.margin[0]))
             // let gridColNum = Math.round(this.__ownTemp__.firstInitColNum * (browserViewWidth / this.__store__.screenWidth))
+            // console.log(this.__ownTemp__.containerViewWidth,newContainerWidth,this.__store__.screenWidth);
 
-            console.log(newContainerWidth);
             // console.log(gridColNum, '    ')
             // this.setColNum(gridColNum)
 
@@ -285,17 +301,14 @@ export default class Container extends DomFunctionImpl {
             this.engine._syncLayoutConfig(this.engine.layoutConfig.genLayoutConfig(newContainerWidth))
             // this.engine.updateLayout()
 
+        }
 
-        })
 
+        //--------------------------------listener--------------------------------//
+        window.addEventListener('resize', this.__ownTemp__._resizeReactionMethod)
 
-        Sync.run({
-            func: () => {
-
-            },
-            rule: () => this.element !== null
-        })
     }
+
 
     /** 检查当前布局下指定Item是否能添加进Container，如果不行返回null，如果可以返回该Item可以添加的位置信息
      * @param {Item} item 想要检查的Item信息

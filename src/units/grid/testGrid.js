@@ -20,7 +20,7 @@ const container = new Container({
         from: '来自layout',
         data: layoutData,
         // data : layoutData11,
-        col: 3,
+        // col: 3,
         // row: 5,
         ratio: 0.2,
         margin: [10, 10],
@@ -175,10 +175,10 @@ const container1 = new Container({
     }
 })
 
-container1.mount()
-container1.edit()
-container1.animation()
-container1.follow(false)
+// container1.mount()
+// container1.edit()
+// container1.animation()
+// container1.follow(false)
 
 const container2 = new Container({
     el: '#container2',
@@ -203,10 +203,10 @@ const container2 = new Container({
     },
 })
 
-container2.mount()
-container2.edit()
-container2.animation()
-container2.follow(true)
+// container2.mount()
+// container2.edit()
+// container2.animation()
+// container2.follow(true)
 
 const container3 = new Container({
     el: '#container3',
@@ -232,10 +232,10 @@ const container3 = new Container({
     },
 })
 
-container3.mount()
-container3.edit()
-container3.animation(220)
-container3.follow()
+// container3.mount()
+// container3.edit()
+// container3.animation(220)
+// container3.follow()
 
 
 // setTimeout(()=>{

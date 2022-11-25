@@ -736,7 +736,6 @@ export default class EditEvent {
                     }
 
                     tempStore.dragOrResize = 'drag'
-                    console.log(ev);
                     if (tempStore.fromItem.__temp__.dragging) return
                     const fromEl = tempStore.fromItem.element.getBoundingClientRect()
                     tempStore.mousedownItemOffsetLeft = ev.pageX - (fromEl.left + window.scrollX)
@@ -1022,6 +1021,7 @@ export default class EditEvent {
 
         document.addEventListener('mouseup', EPF.container.touchendOrMouseup)
         document.addEventListener('touchend', EPF.container.touchendOrMouseup, {passive: false})
+
     }
 
     static removeGlobalEvent() {
@@ -1059,7 +1059,6 @@ export default class EditEvent {
         }
     }
 }
-
 
 const EEF = EditEvent._eventEntrustFunctor
 const EPF = EditEvent._eventPerformer
