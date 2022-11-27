@@ -5,131 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vite + Vue</title>
+    <!--    <script type="module" src="/src/main.js"></script>-->
+    <script type="module" src="/src/units/grid/testGrid.js"></script>
 
 </head>
 <body>
 
-<!--<div class="container1Box">-->
-<!--</div>-->
-<!--style="display: none;"-->
-<div id="container"    ></div>
 
-<div id="container1111" style="display: none;   ">
-    <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='2' data-h='3'
-         data-min-w='2' data-max-w='5' data-min-h='2' data-max-h='5'>
-        <div style=" height: 80%;width: 80%;  ">
-            Item console.log(toItem.x,this.pos.x);
-            宽高互减问题 NaN
-            <h4>一列:</h4>
-            <table border="1">
-                <tr>
-                    <td>100</td>
-                </tr>
-            </table>
-
-            <h4>一行三列:</h4>
-            <table border="1">
-                <tr>
-                    <td>100</td>
-                    <td>200</td>
-                    <td>300</td>
-                </tr>
-            </table>
-
-            <h4>两行三列:</h4>
-            <table border="1">
-                <tr>
-                    <td>100</td>
-                    <td>200</td>
-                    <td>300</td>
-                </tr>
-                <tr>
-                    <td>400</td>
-                    <td>500</td>
-                    <td>600</td>
-                </tr>
-            </table>
-
-        </div>
-    </div>
-    <div class="item2">a2</div>
-    <div class="item3">a3</div>
-    <div class="item4">a4</div>
-    <div class="item5">a5</div>
-    <div class="item6">a6</div>
-    <div class="item7">a7</div>
-    <div class="item8">a8</div>
-    <div class="item9">a9</div>
-    <div class="item10">a10</div>
-    <div class="item11">a11</div>
+<div id="container">
+<!--    <div id="container3"> </div>-->
 </div>
 
+<div id="container1"></div>
 
-<div id="container1" style="display: none; margin-top: 50px ">
-    <div class="item2">b2</div>
-    <div class="item3">b3</div>
-    <div class="item4">b4</div>
-    <div class="item5">b5</div>
-
-    <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='3' data-h='3'
-         data-min-w='2' data-max-w='5' data-min-h='4' data-max-h='6' data-draggable="true" data-resize ="true" data-close ="true">
-
-        <div class="container3Box">
-            <div id="container3" style="display: none; ">
-                <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='2' data-h='3'
-                     data-min-w='2' data-max-w='5' data-min-h='2' data-max-h='5' >
-                </div>
-                <div class="item2">d2</div>
-                <div class="item3">d3</div>
-                <div class="item4">d4</div>
-                <div class="item5">d5</div>
-                <div class="item6">d6</div>
-                <div class="item7">d7</div>
-                <div class="item8">d8</div>
-                <div class="item9">d9</div>
-                <div class="item10">d10</div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="item6">b6</div>
-    <div class="item7">b7</div>
-    <div class="item8">b8</div>
-    <div class="item9">b9</div>
-    <div class="item10">b10</div>
-</div>
-
-<div class="container2Box">
-    <div id="container2" style="display: none; margin-top: 50px ">
-        <div class="item1 grid-layout-1x1 grid-size-1x2" data-w='2' data-h='3'
-             data-min-w='2' data-max-w='5' data-min-h='2' data-max-h='5'>
-        </div>
-        <div class="item2">c2</div>
-        <div class="item3">c3</div>
-        <div class="item4">c4</div>
-        <div class="item5">c5</div>
-        <div class="item6">c6</div>
-        <div class="item7">c7</div>
-        <div class="item8">c8</div>
-        <div class="item9">c9</div>
-        <div class="item10">c10</div>
-        <div class="item11">c11</div>
-        <div class="item12">c12</div>
-        <div class="item13">c13</div>
-        <div class="item14">c14</div>
-        <div class="item15">c15</div>
-        <div class="item16">c16</div>
-        <div class="item17">c17</div>
-        <div class="item18">c18</div>
-        <div class="item19">c19</div>
-        <div class="item20">c20</div>
-    </div>
-</div>
-<!--    <script type="module" src="/src/main.js"></script>-->
+<div id="container2"></div>
 
 
-<script type="module" src="/src/units/grid/testGrid.js"></script>
 </body>
 <script>
 
@@ -143,45 +34,30 @@
     }
 
     body {
-        /*width: 90%;*/
+        width: 90%;
         margin: auto;
         background-color: rgba(1, 1, 1, 0.1);
     }
 
-    #container{
+    #container {
         height: 600px;
-        width: 900px;
+        /*width: 900px;*/
+        /*width: 90%;*/
         overflow: scroll;
         margin: 50px auto auto;
         background-color: rgb(108, 226, 180);
     }
 
-    .container1Box {
-        height: 600px;
-        width: 100%;
-        overflow: scroll;
-        margin: 50px auto auto;
-        background-color: rgb(108, 226, 180);
-    }
-
-    .container2Box {
-        height: 600px;
-        width: 100%;
-        overflow: scroll;
-        margin: 50px auto auto;
-    }
-
-    .container3Box {
+    #container3 {
         height: 100%;
         width: 100%;
         overflow: scroll;
+        /*margin: 50px auto auto;*/
+        background-color: rgb(108, 226, 180);
     }
 
-    #container, #container1, #container2, #container3 {
+    #container, #container1, #container2 {
         margin: 50px auto auto;
-        /*display: grid;*/
-        /*margin: 50px auto auto;*/
-        /*overflow: scroll;*/
     }
 
 
@@ -223,7 +99,7 @@
     }
 
     /* 鼠标移动到静态Item上面显示的鼠标样式(该样式只有编辑模式有) */
-    .grid-cursor-static-item{
+    .grid-cursor-static-item {
         cursor: no-drop;
     }
 
@@ -254,6 +130,7 @@
     .grid-container {
         border-radius: 10px;
         background-color: skyblue;
+        margin: auto;
     }
 
     /* 所有Item的默认样式,定义宽高会被忽略 */

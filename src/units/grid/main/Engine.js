@@ -33,7 +33,6 @@ export default class Engine {
 
         this.layoutConfig.setContainer(this.container)
         this.layoutConfig.initLayoutInfo()
-        this._sync()
         this.initialized = true
     }
 
@@ -44,7 +43,8 @@ export default class Engine {
     }
 
     /** 通过传入当前的useLayoutConfig直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
-    _syncLayoutConfig(useLayoutConfig) {
+    _syncLayoutConfig(useLayoutConfig = null) {
+        if (!useLayoutConfig) return
         if (Object.keys(useLayoutConfig).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
@@ -88,28 +88,28 @@ export default class Engine {
         }
         const computeLimitLength = (maxCol, maxRow) => {
             //-----------------------------Col确定---------------------------------//
-            if (container.minCol && container.maxCol && (container.minCol > container.maxCol)) {
-                maxCol = container.maxCol
+            if (container["minCol"] && container["maxCol"] && (container["minCol"] > container["maxCol"])) {
+                maxCol = container["maxCol"]
                 console.warn("minCol指定的值大于maxCol,将以maxCol指定的值为主")
-            } else if (container.maxCol && maxCol > container.maxCol) maxCol = container.maxCol
-            else if (container.minCol && maxCol < container.minCol) maxCol = container.minCol
+            } else if (container["maxCol"] && maxCol > container["maxCol"]) maxCol = container["maxCol"]
+            else if (container["minCol"] && maxCol < container["minCol"]) maxCol = container["minCol"]
 
             //-----------------------------Row确定---------------------------------//
-            if (container.minRow && container.maxRow && (container.minRow > container.maxRow)) {
-                maxRow = container.maxRow
+            if (container["minRow"] && container["maxRow"] && (container["minRow"] > container["maxRow"])) {
+                maxRow = container["maxRow"]
                 console.warn("minRow指定的值大于maxRow,将以maxRow指定的值为主")
-            } else if (container.maxRow && maxRow > container.maxRow) maxRow = container.maxRow
-            else if (container.minRow && maxRow < container.minRow) maxRow = container.minRow
+            } else if (container["maxRow"] && maxRow > container["maxRow"]) maxRow = container["maxRow"]
+            else if (container["minRow"] && maxRow < container["minRow"]) maxRow = container["minRow"]
             return {
                 limitCol: maxCol,
                 limitRow: maxRow
             }
         }
-        if (container.responsive) {    // 响应模式会检测第一次给出的row进行初始容器固定
+        if (container["responsive"]) {    // 响应模式会检测第一次给出的row进行初始容器固定
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
                 if (container.row === null) this.layoutManager.autoRow()
                 else maxRow = container.row
-                if (container.maxRow) console.warn("【响应式】模式中不建议使用maxRow,您如果使用该值，" +
+                if (container["maxRow"]) console.warn("【响应式】模式中不建议使用maxRow,您如果使用该值，" +
                     "只会限制容器盒子(Container)的高度,不能限制成员排列的row值 因为响应式设计是能自动管理容器的高度，" +
                     "您如果想要限制Container显示区域且获得内容滚动能力，您可以在Container外部加上一层盒子并设置成overflow:scroll")
             } else if (this.initialized) {   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
@@ -123,7 +123,7 @@ export default class Engine {
                 containerW = limitInfo.limitCol
                 containerH = limitInfo.limitRow
             }
-        } else if (!container.responsive) {  // 静态模式下老老实实row多少就多少
+        } else if (!container["responsive"]) {  // 静态模式下老老实实row多少就多少
             const limitInfo = computeLimitLength(container.col, container.row)
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
@@ -273,7 +273,6 @@ export default class Engine {
         posList.forEach((pos) => {
             this.addItem(this.createItem(pos))
         })
-
     }
 
     setColNum(col) {
@@ -583,21 +582,23 @@ export default class Engine {
             // }
             // console.log('-----------------------------------------');
             this.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-            this.container.updateStyle(this.container.genContainerStyle())
         } else if (!this.container.responsive) {
             //更新静态布局
             let updateItemList = []
             if (items === null) updateItemList = []
             else if (Array.isArray(items)) updateItemList = items
             else if (items !== true && updateItemList.length === 0) return
+            this.reset()
+            this._sync()
+            this.renumber()
             items = this.items
             updateItemList = updateItemList.filter(item => items.includes(item))
-            this.reset()
             let useLayoutConfig = this.layoutConfig.genLayoutConfig()
             this._syncLayoutConfig(useLayoutConfig)
             //----------------------------------------------------//
             const updateStaticItemLayout = (item) => {
                 this._isCanAddItemToContainer_(item, false, true)
+                item.updateItemLayout()
             }
             items.forEach(item => {  // 1.先把不进行改变的成员占位
                 if (updateItemList.includes(item)) return   //  后面处理
@@ -605,9 +606,9 @@ export default class Engine {
             })
             updateItemList.forEach((item) => {  // 2。再对要进行更新的Item进行查询和改变位置
                 updateStaticItemLayout(item)
-                item.updateItemLayout()    //  只对要更新的Item进行更新
             })
         }
+        this.container.updateContainerStyleSize()
         const genBeforeSize = (container)=>{
             return {
                 row:container.row,
@@ -626,7 +627,7 @@ export default class Engine {
             if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH){
                 const nowSize = genBeforeSize(container)
                 container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
-                this.container.eventManager._callback_('containerResized',container,beforeSize,nowSize)
+                this.container.eventManager._callback_('containerSizeChange',container,beforeSize,nowSize)
             }
         }
 

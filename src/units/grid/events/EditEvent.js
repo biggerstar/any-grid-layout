@@ -27,12 +27,12 @@ export default class EditEvent {
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = fromItem.element.cloneNode(true)
                     tempStore.cloneElement.classList.add('grid-clone-el', 'grid-resizing-clone-el')
-                    if (tempStore.cloneElement) tempStore.fromContainer.element.appendChild(tempStore.cloneElement)
+                    if (tempStore.cloneElement) tempStore.fromContainer.contentElement.appendChild(tempStore.cloneElement)
                     fromItem.updateStyle({transition: 'none'}, tempStore.cloneElement)
                     fromItem.addClass('grid-resizing-source-el')
                 }
 
-                const containerElRect = fromItem.container.element.getBoundingClientRect()
+                const containerElRect = fromItem.container.contentElement.getBoundingClientRect()
                 let width = ev.pageX - containerElRect.left - window.scrollX - fromItem.offsetLeft()
                 let height = ev.pageY - containerElRect.top - window.scrollY - fromItem.offsetTop()
 
@@ -106,10 +106,10 @@ export default class EditEvent {
                 if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
                     fromItem.__temp__.resized = resized
-                    fromItem.container.eventManager._callback_('itemResize',fromItem,newResize.w,newResize.h)
+                    fromItem.container.eventManager._callback_('itemResizing',fromItem,newResize.w,newResize.h)
                     tempStore.fromContainer.updateLayout([fromItem])
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
-                    fromItem.container.updateStyle(fromItem.container.genContainerStyle())
+                    fromItem.container.updateContainerStyleSize()
                 }
             }, 15),
             mouseup: (ev) => {
@@ -206,12 +206,12 @@ export default class EditEvent {
                     tempStore.fromContainer = toContainer
                     return
                 }
-                if (toContainer.isNesting) {   //  修复快速短距重复拖放情况下概率识别成父容器移动到子容器当Item的情况
-                    if (toContainer.parentItem === dragItem
-                        || toContainer.parentItem.element === dragItem.element) {
-                        return;
-                    }
-                }
+                // if (toContainer.isNesting) {   //  修复快速短距重复拖放情况下概率识别成父容器移动到子容器当Item的情况
+                //     if (toContainer.parentItem === dragItem
+                //         || toContainer.parentItem.element === dragItem.element) {
+                //         return;
+                //     }
+                // }
                 this.mouseenter(null, toContainer)
                 //  如果现在点击嵌套容器空白部分选择的Item会是父容器的Item,按照mouseenter逻辑对应不可能删除当前Item(和前面一样是fromItem)在插入
                 //  接上:因为这样是会直接附加在父级Container最后面，这倒不如什么都不做直接等待后面逻辑执行换位功能
@@ -323,14 +323,14 @@ export default class EditEvent {
                 const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.size[0] / tempStore.fromContainer.size[0])
                 const offsetDragItemY = tempStore.mousedownItemOffsetTop * (container.size[1] / tempStore.fromContainer.size[1])
                 // console.log(offsetDragItemX,offsetDragItemY);
-                const dragContainerElRect = container.element.getBoundingClientRect()
+                const dragContainerElRect = container.contentElement.getBoundingClientRect()
                 // Item距离容器的px
                 const offsetLeftPx = ev.pageX - offsetDragItemX - (window.scrollX + dragContainerElRect.left)
                 const offsetTopPx = ev.pageY - offsetDragItemY - (window.scrollY + dragContainerElRect.top)
 
                 //------如果容器内容超出滚动条盒子在边界的时候自动滚动(上高0.25倍下高0.75倍触发，左宽0.25倍右宽0.75倍触发)-----//
                 if (dragItem.container.followScroll) {
-                    const scrollContainerBoxEl = container.element.parentElement
+                    const scrollContainerBoxEl = container.contentElement.parentElement
                     const scrollContainerBoxElRect = scrollContainerBoxEl.getBoundingClientRect()
                     const scrollSpeedX = container.scrollSpeedX ? container.scrollSpeedX : Math.round(scrollContainerBoxElRect.width / 20)
                     const scrollSpeedY = container.scrollSpeedY ? container.scrollSpeedY : Math.round(scrollContainerBoxElRect.height / 20)
@@ -351,12 +351,12 @@ export default class EditEvent {
                         }
                         if (direction === 'X'){
                             if (tempStore.scrollReactionStatic === 'scroll'){
-                                container.element.parentElement.scrollLeft += scrollOffset
+                                container.contentElement.parentElement.scrollLeft += scrollOffset
                             }
                         }
                         if (direction === 'Y'){
                             if (tempStore.scrollReactionStatic === 'scroll'){
-                                container.element.parentElement.scrollTop += scrollOffset
+                                container.contentElement.parentElement.scrollTop += scrollOffset
                             }
                         }
                     }
@@ -403,7 +403,7 @@ export default class EditEvent {
 
                 // console.log(offsetLeftPx,offsetTopPx);
                 // console.log(nowMoveWidth,nowMoveHeight)
-                dragItem.container.eventManager._callback_('itemMove',dragItem,nowMoveWidth,nowMoveHeight)
+                dragItem.container.eventManager._callback_('itemMoving',dragItem,nowMoveWidth,nowMoveHeight)
 
                 const responsiveLayoutAlgorithm = () => {
                     // 响应式Item交换算法
@@ -523,6 +523,7 @@ export default class EditEvent {
                     // 同容器成员间交换方式
                     const isExchange = dragItem.container.eventManager._callback_('itemExchange',fromItem,toItem)
                     if (isExchange === false || isExchange === null) return
+                    // console.log(dragItem,toItem);
                     if (container.responseMode === 'default') {
                         if (xOrY) {  // X轴
                             container.engine.sortResponsiveItem()
@@ -594,8 +595,8 @@ export default class EditEvent {
                 //     left = ev.pageX - mousedownEvent.pageX + tempStore.offsetPageX
                 //     top = ev.pageY - mousedownEvent.pageY + tempStore.offsetPageY
                 // } else {
-                //     left = ev.pageX - container.element.offsetLeft
-                //     top = ev.pageY - container.element.offsetTop
+                //     left = ev.pageX - container.contentElement.offsetLeft
+                //     top = ev.pageY - container.contentElement.offsetTop
                 // }
 
                 // console.log(left / (container.size[0] + container.margin[0]), top / (container.size[1] + container.margin[1]));
@@ -648,11 +649,11 @@ export default class EditEvent {
                 let top = ev.pageY - tempStore.mousedownItemOffsetTop
 
                 if (!container.dragOut) {   // 限制是否允许拖动到容器之外
-                    const containerElOffset = container.element.getBoundingClientRect()
+                    const containerElOffset = container.contentElement.getBoundingClientRect()
                     const limitLeft = window.scrollX + containerElOffset.left
                     const limitTop = window.scrollY + containerElOffset.top
-                    const limitRight = window.scrollX + containerElOffset.left + container.element.clientWidth - dragItem.nowWidth()
-                    const limitBottom = window.scrollY + containerElOffset.top + container.element.clientHeight - dragItem.nowHeight()
+                    const limitRight = window.scrollX + containerElOffset.left + container.contentElement.clientWidth - dragItem.nowWidth()
+                    const limitBottom = window.scrollY + containerElOffset.top + container.contentElement.clientHeight - dragItem.nowHeight()
                     if (left < limitLeft) left = limitLeft
                     if (left > limitRight) left = limitRight
                     if (top < limitTop) top = limitTop
@@ -685,7 +686,6 @@ export default class EditEvent {
                 if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
                 const container = parseContainer(ev)
                 if (!container) return   // 只有点击Container或里面元素才生效
-
                 // console.log(ev);
                 tempStore.fromItem = parseItem(ev)
                 if (!tempStore.fromItem) return
@@ -828,7 +828,7 @@ export default class EditEvent {
                     for (let i = 0; i < gridCloneEls.length; i++) {
                         const gridCloneEl = gridCloneEls[i]
                         if (dragItem.transition) {
-                            const containerElOffset = dragItem.container.element.getBoundingClientRect()
+                            const containerElOffset = dragItem.container.contentElement.getBoundingClientRect()
                             if (tempStore.isDragging) {
                                 let left = window.scrollX + containerElOffset.left + dragItem.offsetLeft()
                                 let top = window.scrollY + containerElOffset.top + dragItem.offsetTop()

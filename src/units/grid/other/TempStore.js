@@ -47,7 +47,9 @@ export default class TempStore {
         //----------触屏相关-----------//
         deviceEventMode: 'mouse',   //   mouse || touch
         allowTouchMoveItem: false,   // 是否允许触屏下拖动Item
-        timeOutEvent : null
+        timeOutEvent : null,
+        //----------网页元素-----------//
+        nestingMountPointList : [],  // 网页挂载点
     }
     static ItemStore = {  }
 

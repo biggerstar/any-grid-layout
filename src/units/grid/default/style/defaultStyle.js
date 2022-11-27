@@ -4,12 +4,14 @@
  * */
 
 export const defaultStyle = {
+    mainContainer : {
+        display: 'block',
+    },
     gridContainer :{   // Container初始化使用的默认样式
         height: 'auto',
-        display: 'block',
+        width: '100%',
         boxSizing: 'border-box',
         position: 'relative',
-        // touchAction:'none'
     },
     gridItem:{   // Item初始化使用的默认样式
         height: '100%',

@@ -12,29 +12,29 @@ ItemAlreadyRemove
 
 `
 
-
 const container = new Container({
     el: '#container',
     // el: document.getElementById('container'),
-    layout: {
+    layout1: {
         from: '来自layout',
         data: layoutData,
         // data : layoutData11,
         // col: 3,
         // row: 5,
         ratio: 0.2,
-        margin: [10, 10],
-        // size:[120,80],
-        size: [120, 90],
-        // minCol: 2,
+        // margin: [10, 10],
+        size:[120,80],
+        // size: [120, 90],
+        minCol: 5,
         // maxCol: 8,
-        minRow: 5,
+        // minRow: 5,
         // maxRow: 8,
         itemLimit: {
             // minW:1,
             // maxH:1,
             // maxW:1,
         },
+        // TODO  sizeLimit  marginLimit    resize清除在container中上次限制的缓存
         dragOut: true,
         exchange: true,
         // sizeWidth: 50,
@@ -43,9 +43,60 @@ const container = new Container({
         // marginY: 50,
         // isEdit: false,
     },
+    layout: [
+        {
+            px: 1300,
+            // col:9,
+            margin: [30, 30],
+            size:[120,80],
+            // minCol: 9,
+            data: layoutData,
+            edit:{
+                draggable:true,
+                resize:false,
+            },
+            animation: 1000,
+        },
+        {
+            px: 1100,
+            margin: [20, 20],
+            size:[90,80],
+            // minCol: 7,
+            data: layoutData11,
+            edit: {    // true或者对象
+                draggable:true,
+                close:true
+            },
+            animation: 750,
+        },
+        {
+            px: 800,
+            margin: [10, 10],
+            size:[60,80],
+            edit: {    // true或者对象
+                draggable:true,
+            },
+            data: layoutData,
+            // minCol: 5,
+            animation: 500,
+        },
+        {
+            px: 360,
+            margin: [0, 0],
+            size:[36,80],
+            edit: {    // true或者对象
+                resize:false,
+                close:true
+            },
+            data: layoutData11,
+            animation: 250,
+            // minCol: 3,
+        },
+        //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
+    ],
     events : {
         error(err){
-            if (["itemLimitError"].includes(err.name)) return
+            // if (["itemLimitError"].includes(err.name)) return
             console.log(err);
         },
         containerMounted(container){
@@ -67,10 +118,11 @@ const container = new Container({
             // console.log(container.getItemList())
         },
         addItemSuccess(item){
-            //添加Item成功
+
+            //Item添加成功事件
             // console.log(item);
         },
-        itemResize(item,w,h){
+        itemResizing(item,w,h){
             //item每次大小被改变时
             // console.log(w,h,item);
         },
@@ -78,7 +130,7 @@ const container = new Container({
             //item鼠标抬起后在容器中的最终大小
             // console.log(w,h,item);
         },
-        itemMove(item,nowX,nowY){
+        itemMoving(item,nowX,nowY){
             //item拖动时在容器内所属位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
             // console.log(nowX,nowY);
         },
@@ -105,36 +157,41 @@ const container = new Container({
             // console.log(fromItem,toItem);
             // return false
         },
-        containerResized(container,oldSize,newSize){
-            // 容器大小改变触发的事件,oldSize和newSize包含以下信息{ containerW,containerH,row,col,width,height }
+        containerSizeChange(container,oldSize,newSize){
+            // 内层容器(grid-container)col或者row大小改变触发的事件,oldSize和newSize包含以下信息{ containerW,containerH,row,col,width,height }
             // console.log(container,oldSize,newSize);
+        },
+        mountPointElementResizing(container,useLayout,containerWidth){
+            // 外层容器(挂载点)大小正在改变时触发的事件(如果是嵌套容器,只会等col和row改变才触发，效果和containerResized一样),
+            // containerWidth是当前container的宽度，useLayout是当前使用的布局配置,使用的是实例化时传入的layout字段，
+            // 可以直接修改形参useLayout的值或者直接返回一个新的layout对象，框架将会使用该新的layout对象进行布局,返回null或者false将会阻止布局切换
+            // 可通过实例属性resizeReactionDelay控制触发间隔
+            // console.log(container,containerWidth,useLayout);
+            // if (useLayout.margin[0] < 5) return false
+
         }
     },
     global: {
         responsive:true,
         responseMode:'default',
-        // static:true,
+        dragOut: true,
+        exchange: true,
+        ratio: 0.2,
         from1: '来自global',
-        // transition: true,
-        // data: layoutData,
-        // margin: [10, 10],
-        // size:[160,300],
-
+        edit: {    // true或者对象
+            draggable:true,
+            resize:false,
+            close:true
+        },
+        animation:{  // 数值或者对象
+            time: 180,
+            field: 'top,left,width,height'
+        },
+        follow:true,
     }
 })
 
-container.mount()
-container.edit()
-container.animation(180)
-container.follow()
 
-// setTimeout(()=>{
-//     container.unmount()
-// },3000)
-//
-// setTimeout(()=>{
-//     container.mount()
-// },6000)
 
 const container1 = new Container({
     el: '#container1',
@@ -144,17 +201,20 @@ const container1 = new Container({
         from: '来自layout1',
         // ratio: 0.1,
         col:6,
-        row:9,
+        row:5,
         margin: [20, 10],
-        size: [100, 60],
+        // size: [100, 60],
         // minRow: 10,
         // maxRow:6,
-        data: layoutData11,
-        // data: layoutData,
+        // data: layoutData11,
+        data: layoutData,
         // responsive:true,
         minCol: 2,
         // maxCol:6,
         exchange: true,
+        edit: true,
+        animation:true,
+        follow:true,
     },
     events:{
         error(err){
@@ -175,10 +235,7 @@ const container1 = new Container({
     }
 })
 
-// container1.mount()
-// container1.edit()
-// container1.animation()
-// container1.follow(false)
+
 
 const container2 = new Container({
     el: '#container2',
@@ -194,7 +251,10 @@ const container2 = new Container({
         exchange: true,
         data: layoutData,
         // data: layoutData11,
-        // responsive:true,
+        responsive:true,
+        edit: true,
+        animation:true,
+        follow:true,
     },
     events:{
         // error(type){
@@ -203,27 +263,27 @@ const container2 = new Container({
     },
 })
 
-// container2.mount()
-// container2.edit()
-// container2.animation()
-// container2.follow(true)
+
 
 const container3 = new Container({
     el: '#container3',
     // el: document.getElementById('container'),
+    parent:container,
     layout: {
         from: '来自layout3',
         ratio: 0.1,
-        col: 6,
+        // col: 6,
         row:6,
-        // margin: [10, 10],
+        margin: [10, 10],
         size:[50,50],
-        minCol: 2,
+        // minCol: 2,
         // maxCol: 6,
         exchange: true,
-        // responsive:true,
-        // data: layoutData,
-
+        responsive:true,
+        data: layoutData,
+        edit: true,
+        animation:true,
+        follow:true,
     },
     events:{
         // error(type){
@@ -232,33 +292,29 @@ const container3 = new Container({
     },
 })
 
-// container3.mount()
-// container3.edit()
-// container3.animation(220)
-// container3.follow()
+
+container.mount()
+// container1.mount()
+// container2.mount()
+container3.mount()
+
 
 
 // setTimeout(()=>{
-//     container.edit(false)
-//     container1.edit(false)
-//     container2.edit(false)
-//     container3.edit(false)
-// },5000)
-//
+//     container.unmount()
+// },3000)
 //
 // setTimeout(()=>{
-//     container.edit()
-//     container1.edit()
-//     container2.edit(true)
-//     container3.edit(true)
+//     container.mount()
+// },6000)
+//
+// setTimeout(()=>{
+//     container.unmount()
 // },10000)
 //
 // setTimeout(()=>{
-//     container.edit(false)
-//     container1.edit(false)
-//     container2.edit(false)
-//     container3.edit(false)
-// },15000)
+//     container.mount()
+// },6000)
 
 
 // ######################

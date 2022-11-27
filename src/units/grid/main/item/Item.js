@@ -42,6 +42,7 @@ export default class Item extends DomFunctionImpl {
     pos = {}
     parentElement = null
     isEdit = false   // 该Item是否正在被编辑
+    nesting = null
     //----------------保持状态所用参数---------------------//
     _mounted = false
     _resizeTabEl = null
@@ -82,7 +83,7 @@ export default class Item extends DomFunctionImpl {
             if (this._mounted) return
             // console.log(this.element);
             if (this.element === null) this.element = document.createElement(this.tagName)
-            this.container.element.appendChild(this.element)
+            this.container.contentElement.appendChild(this.element)
             this.attr = Array.from(this.element.attributes)
             this.element.classList.add(this.className)
             this.classList = Array.from(this.element.classList)
@@ -96,6 +97,7 @@ export default class Item extends DomFunctionImpl {
                 close: this.close,
             })
             this.animation(this.transition)
+            this._mountNestingContainer()
             // this.__temp__.clientWidth = this.element.clientWidth
             // this.__temp__.clientHeight = this.element.clientHeight
             this.__temp__.w = this.pos.w
@@ -103,7 +105,7 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
-            this.container.eventManager._callback_('itemMounted',this)
+            this.container.eventManager._callback_('itemMounted', this)
             if (this.pos.static) this.element.innerHTML = this.element.innerHTML + `--
                 ${this.pos.i}</br>
                 ${this.pos.w},${this.pos.h}</br>
@@ -112,6 +114,33 @@ export default class Item extends DomFunctionImpl {
         })
     }
 
+    _mountNestingContainer() {
+        if (this.nesting) {
+            const updateContainerList = this.container.childContainer.filter(container => {
+                let containerID = container.el
+                if (container.el instanceof Element) containerID = container.el.id
+                const item = this
+                if (containerID.replace('#', '') === (item.nesting || '').replace('#', '')) {
+                    container.render()
+                    container.genGridContainerBox()
+                    console.log(container,container.element);
+                    let ntNode = container.element
+                    console.log(ntNode);
+                    // container.render()
+                    ntNode = ntNode.cloneNode()
+                    // newNode.id = ntList[j].id
+                    item.element.appendChild(ntNode)
+
+                }
+            })
+            // updateContainerList.forEach(container=>{
+            //
+            // })
+            // console.log(updateContainerList);
+        }
+
+
+    }
 
     /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
      * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
@@ -126,10 +155,10 @@ export default class Item extends DomFunctionImpl {
                 this._handleResize(false)
                 this._closeBtn(false)
                 EditEvent.removeEventFromItem(this)
-                this.container.element.removeChild(this.element)
-                this.container.eventManager._callback_('itemUnmounted',this)
+                this.container.contentElement.removeChild(this.element)
+                this.container.eventManager._callback_('itemUnmounted', this)
             } else {
-                this.container.layoutManager._error_('ItemAlreadyRemove','该Item对应的element未在文档中挂载，可能已经被移除',this)
+                this.container.layoutManager._error_('ItemAlreadyRemove', '该Item对应的element未在文档中挂载，可能已经被移除', this)
             }
         })
         if (isForce) this.remove()
@@ -142,7 +171,7 @@ export default class Item extends DomFunctionImpl {
     remove(force = false) {
         this.container.engine.remove(this)
         if (force) {
-            this.container.element.removeChild(this.element)
+            this.container.contentElement.removeChild(this.element)
         }
     }
 
@@ -316,8 +345,8 @@ export default class Item extends DomFunctionImpl {
             this._resizeTabEl = resizeTabEl
         } else if (isResize === false) {
             for (let i = 0; i < this.element.children.length; i++) {
-                const node =  this.element.children[i]
-                if(node.className.includes(className)){
+                const node = this.element.children[i]
+                if (node.className.includes(className)) {
                     this.element.removeChild(node)
                     this._resizeTabEl = null
                 }
@@ -338,8 +367,8 @@ export default class Item extends DomFunctionImpl {
         }
         if (this._closeEl !== null && !isDisplayBtn) {
             for (let i = 0; i < this.element.children.length; i++) {
-                const node =  this.element.children[i]
-                if(node.className.includes(className)){
+                const node = this.element.children[i]
+                if (node.className.includes(className)) {
                     this.element.removeChild(node)
                     this._closeEl = null
                 }
@@ -371,20 +400,21 @@ export default class Item extends DomFunctionImpl {
             }
         }
     }
+
     /** 做Item的大小信息限制 */
-    _itemSizeLimitCheck(){
+    _itemSizeLimitCheck() {
         const pos = this.pos
         let realW = pos.w
         let realH = pos.h
         // 宽度
         if (pos.minW >= pos.maxW && pos.maxW >= pos.w && pos.maxW !== Infinity) realW = pos.maxW
-        else if(pos.w > pos.maxW && pos.maxW !== Infinity) realW = pos.maxW
-        else if(pos.w < pos.minW) realW = pos.minW
+        else if (pos.w > pos.maxW && pos.maxW !== Infinity) realW = pos.maxW
+        else if (pos.w < pos.minW) realW = pos.minW
 
         // 高度
         if (pos.minH >= pos.maxH && pos.maxH >= pos.h && pos.maxH !== Infinity) realH = pos.maxH
-        else if(pos.h > pos.maxH && pos.maxH !== Infinity) realH = pos.maxH
-        else if(pos.h < pos.minH) realH = pos.minH
+        else if (pos.h > pos.maxH && pos.maxH !== Infinity) realH = pos.maxH
+        else if (pos.h < pos.minH) realH = pos.minH
 
         this.pos.w = realW
         this.pos.h = realH
