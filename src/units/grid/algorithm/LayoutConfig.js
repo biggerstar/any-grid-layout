@@ -3,6 +3,7 @@ import {layoutConfig} from "@/units/grid/default/defaultLayoutConfig.js";
 
 export default class LayoutConfig {
     container = null
+    useLayoutConfig = {}
     option = {}
     _defaultLayoutConfig = layoutConfig
 
@@ -18,9 +19,9 @@ export default class LayoutConfig {
     initLayoutInfo() {
         const option = this.option
         let layoutInfo = []
-        if (Array.isArray(option.layout)) layoutInfo = option.layout         // 传入的layout字段Array形式
-        else if (typeof option.layout === "object") layoutInfo.push(option.layout)     // 传入的layout字段Object形式
-        else if (option.layout === true) layoutInfo = this._defaultLayoutConfig  // (不计划开放外用,只用于开发测试)传入的layout字段直接设置成true形式,使用默认的内置布局方案
+        if (Array.isArray(option.layouts)) layoutInfo = option.layouts         // 传入的layouts字段Array形式
+        else if (typeof option.layouts === "object") layoutInfo.push(option.layouts)     // 传入的layouts字段Object形式
+        else if (option.layouts === true) layoutInfo = this._defaultLayoutConfig  // (不计划开放外用,只用于开发测试)传入的layouts字段直接设置成true形式,使用默认的内置布局方案
         else throw new Error("请传入layout配置信息")
         if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
             layoutInfo.sort((a, b) => {
@@ -30,7 +31,7 @@ export default class LayoutConfig {
                 return a.px - b.px
             })
         }
-        this.container.layouts = layoutInfo    // 这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layout属性传入的一种布局
+        this.container.layouts = layoutInfo    // 这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
         // console.log(layoutInfo);
     }
 
@@ -39,25 +40,24 @@ export default class LayoutConfig {
      * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
     genLayoutConfig(containerWidth = null) {
         let useLayoutConfig = {}
+        let layoutItem = {}
         // console.log(containerWidth,this.container.element.clientWidth);
         containerWidth = containerWidth ? containerWidth : this.container.element.clientWidth
-        for (let i = 0; i < this.container.layouts.length; i++) {
-            const layoutItem = this.container.layouts[i]
-            useLayoutConfig = layoutItem
-            if (this.container.layouts.length === 1) break
+        const layouts = this.container.layouts.sort((a,b)=> a.px - b.px )
+        for (let i = 0; i < layouts.length; i++) {
+            layoutItem = layouts[i]
+            if (!Array.isArray(layoutItem.data)) layoutItem.data = []
+            if (layouts.length === 1) break
             // 此时 layoutItem.px循环结束后 大于 containerWidth,表示该Container在该布局方案中符合px以下的设定,
             // 接上行: 如果实际Container大小还大于layoutItem.px，此时是最后一个，将跳出直接使用最后也就是px最大对应的那个布局方案
             if (layoutItem.px < containerWidth) continue
             break
         }
+        // console.log(containerWidth,layoutItem.px);
         if (containerWidth === 0 && !useLayoutConfig.col) throw new Error("请在layout中传入col的值或者为Container设置一个初始宽度")
         //----------------------------------------------------//
-        // useLayoutConfig = cloneDeep(Object.assign(merge(this.option.global, this.option.global, true), useLayoutConfig)) // 在global值的基础上附加修改克隆符合当前layout的属性
-        // console.log(containerWidth,useLayoutConfig.px,useLayoutConfig);
-        useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(useLayoutConfig) ) // 在global值的基础上附加修改克隆符合当前layout的属性
+        useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem) ) // 在global值的基础上附加修改克隆符合当前layout的属性
 
-        // console.log(useLayoutConfig);
-        this.container.useLayout = useLayoutConfig  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
         let {
             col = null,   //  缺省值必须为null才能触发自动计算col
             ratio = this.container.ratio,
@@ -70,15 +70,12 @@ export default class LayoutConfig {
             marginY,
             marginLimit = {}
         } = useLayoutConfig
-        if (!col && !size[0]) throw new Error('col或者size[0]必须要设定一个,您也可以设定col或sizeWidth两个中的一个便能进行布局')
+
+        if (!col && !(size[0] || sizeWidth)) throw new Error('col或者size[0]必须要设定一个,您也可以设定col或sizeWidth两个中的一个便能进行布局')
         if (marginX) margin[0] = marginX
         if (marginY) margin[1] = marginY
         if (sizeWidth) size[0] = sizeWidth
         if (sizeHeight) size[1] = sizeHeight
-
-        if (margin[0] === null){
-            // if (marginLimit.minW && marginLimit.minW )
-        }
 
         if (col) {   //  col指定通常是执行静态布局，主算 size 和 margin
             if (size[0] === null && margin[0] === null) {   // 自动分配size[0]和margin[0]
@@ -155,8 +152,31 @@ export default class LayoutConfig {
             // console.log(padding,containerWidth,computedPadding());
             return useLayoutConfig
         }
-        return checkLayoutValue(useLayoutConfig)
+
+        const currentLayout = {}
+        for (const key in useLayoutConfig) {
+            if (this.option.global[key] !== undefined || layoutItem[key] !== undefined){
+                currentLayout[key] = useLayoutConfig[key]
+            }
+        }
+        this.useLayoutConfig = Object.assign(this.useLayoutConfig,checkLayoutValue(useLayoutConfig))
+        this.container.useLayout = currentLayout  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
+        return {
+            layout:layoutItem,   // 当前使用的layouts中某个布局配置
+            global:this.option.global,  //  当前container的全局配置
+            useLayoutConfig:useLayoutConfig,  // currentLayout情况下包含margin，size等等布局必须字段
+            currentLayout:currentLayout,   //  当前global和layoutItem 合并后使用的布局配置
+        }
     }
 
-
 }
+
+
+
+
+
+
+
+
+
+

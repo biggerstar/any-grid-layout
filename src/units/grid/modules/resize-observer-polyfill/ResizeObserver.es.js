@@ -95,7 +95,7 @@ const MapShim = (function () {
          */
         Class_1.prototype.forEach = function (callback, ctx) {
             if (ctx === void 0) { ctx = null; }
-            for (const _i = 0, _a = this.__entries__; _i < _a.length; _i++) {
+            for (let _i = 0, _a = this.__entries__; _i < _a.length; _i++) {
                 var entry = _a[_i];
                 callback.call(ctx, entry[1], entry[0]);
             }
@@ -418,7 +418,7 @@ const ResizeObserverController = /** @class */ (function () {
  * @returns {Object} Target object.
  */
 const defineConfigurable = (function (target, props) {
-    for (const _i = 0, _a = Object.keys(props); _i < _a.length; _i++) {
+    for (let _i = 0, _a = Object.keys(props); _i < _a.length; _i++) {
         const key = _a[_i];
         Object.defineProperty(target, key, {
             value: props[key],
@@ -466,7 +466,7 @@ function toFloat(value) {
  */
 function getBordersSize(styles) {
     const positions = [];
-    for (const _i = 1; _i < arguments.length; _i++) {
+    for (let _i = 1; _i < arguments.length; _i++) {
         positions[_i - 1] = arguments[_i];
     }
     return positions.reduce(function (size, position) {
@@ -530,7 +530,7 @@ function getHTMLElementContentRect(target) {
     // only dimensions available to JS that contain non-rounded values. It could
     // be possible to utilize the getBoundingClientRect if only it's data wasn't
     // affected by CSS transformations let alone paddings, borders and scroll bars.
-    const width = toFloat(styles.width), height = toFloat(styles.height);
+    let width = toFloat(styles.width), height = toFloat(styles.height);
     // Width & height include paddings and borders when the 'border-box' box
     // model is applied (except for IE).
     if (styles.boxSizing === 'border-box') {

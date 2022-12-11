@@ -67,6 +67,22 @@ export const cloneDeep = (obj) => {
     return objClone;
 }
 
+/**  用于将在原型链中对象中往root方向最新的的Container解析出来 */
+export const parseContainerFromPrototypeChain = (target) => {
+    let container
+    if (target instanceof Element){
+        do{
+            if (target._isGridContainer_) {
+                container = target._gridContainer_
+                break
+            }
+            target =  target.parentNode
+            // console.log(target);
+        }while (target.parentNode)
+    }
+    return container
+}
+
 /**  用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container*/
 export const parseContainer = (ev, reverse = false) => {
     let container

@@ -4,7 +4,7 @@
  * */
 export default class TempStore {
     static ins = false
-    static containerStore = {
+    static store = {
         //----------只读变量-----------//
         screenWidth: null,  // 用户屏幕宽度
         screenHeight: null,  // 用户屏幕高度

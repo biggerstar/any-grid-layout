@@ -1,65 +1,98 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <div class="vue3-grid-container" :style="genContainerStyle()" >
-    <slot></slot>
+  <div ref="gridContainer">
+    <div class="grid-container-area">
+      <slot></slot>
+    </div>
   </div>
 </template>
 
-<script setup >
-import gridItem from "@/components/GridItem.vue";
-import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, onUnmounted} from 'vue'
+<script setup>
+import {onMounted, ref, watch, getCurrentInstance} from 'vue'
+import {Container} from "@/units/grid/AnyGridLayout.js";
 
-const { manager } = defineProps({ manager:{ required:true, type:Object } })
-const layoutManager = manager
+const gridContainer = ref(null)
+const props = defineProps({
+  render: {required: true, type: Function},
+  layoutChange: {required: false, type: [Function], default: () => null},
+  events: {required: false, type: Object},
+  useLayout: {required: true, type: Object},
+  config: {
+    required: true, type: Object,
+    default() {
+      return {
+        layouts: {required: true, type: [Object, Array]},
+        global: {required: false, type: Object}
+      }
+    }
+  },
+})
 
-console.log('gridContainer运行');
-console.log( layoutManager);
+
+const container = new Container({
+  platform: 'vue',
+  layouts: props.config.layouts,
+  events: props.events,
+  global: props.config.global
+})
+
+let useLayoutConfig = {}
 
 onMounted(() => {
-  onScreenResize()
-})
-onUnmounted(()=>{
-  layoutManager['unload']()
-})
+  container.el = gridContainer.value
+  container.engine.init()
+  container.vue = props
+  useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
 
-const genContainerStyle = () => {
-  return {
-    gridTemplateColumns: `repeat(${layoutManager["colNum"]},${layoutManager["size"][0]}px)`,
-    gridAutoRows: `${layoutManager["size"][1]}px`,
-    gap: `${layoutManager["margin"][0]}px ${layoutManager["margin"][1]}px`,
+  if (typeof props.render === "function") {
+    props.render(useLayoutConfig.currentLayout, props.config.layouts)
+    container.mount()
   }
-}
 
-const computedColumNum = () => {
-  let colSizePx = size[0]
-  const gridContainer = document.getElementById('grid-container')
-  return Math.round(gridContainer.clientWidth / (colSizePx + layoutConfig.rowSizePx))
-}
-const computedRowNum = () => {
-  let colSizePx = size[1]
-  const gridContainer = document.getElementById('grid-container')
-  console.log(gridContainer);
-  return Math.round(gridContainer.clientHeight / (colSizePx + layoutConfig.colSizePx))
-}
+  if (!window.con) window.con = []
+  console.log(container);
+  window.con.push(container)
 
-const onScreenResize = () => {
-  window.onresize = (ev) => containerResize(ev)
-}
+  setTimeout(() => {
+    if (props.useLayout['responsive'] === false) {
+      const exportData = container.exportData()
+      if (props.useLayout['data'].length !== exportData.length) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
+        useLayoutConfig.layout.data = exportData      //  静态模式可能溢出，此时拿到当前成功添加的Item更新当前使用布局的data数组
+        container.engine.items.forEach((item, index) => {
+          props.useLayout['data'][index] = exportData[index]
+        })
+      }
+    }
+    container.updateLayout(true)
+  })
 
-const containerResize = (event) => {
-  // if (!isShowContainer.value) return
-  // console.log(gridLayoutConfig.computedRowNum(), gridLayoutConfig.computedColumNum());
+  container._VueEvents.vueUseLayoutChange = (currentLayout,layout) => {
+    props.useLayout.data = []
+    if (props.layoutChange === null) {
+      Object.assign(props.useLayout, currentLayout)
+    } else if (typeof props.layoutChange === 'function') props.layoutChange(currentLayout)
+  }
+})
 
-}
+watch(props.useLayout, () => {
+  for (let key in props.useLayout) {
+    // if (key === 'data') continue
+    useLayoutConfig.layout[key] = props.useLayout[key]
+  }
+  container.updateLayout(true)
+})
 
 
 </script>
 
-<style scoped>
-.vue3-grid-container{
-  display: grid;
-  background-color: #2196F3;
-  place-content: center;
+<style>
 
+.grid-container-area {
+  width: 100%;
+  height: auto;
+  margin: auto;
+  box-sizing: border-box;
+  position: relative;
+  background: #5df8eb;
 }
 
 </style>

@@ -1,12 +1,15 @@
 import Sync from "@/units/grid/other/Sync.js";
-import {cloneDeep, merge, parseContainer, throttle} from "@/units/grid/other/tool.js";
+import {merge} from "@/units/grid/other/tool.js";
 import ItemPos from "@/units/grid/main/item/ItemPos.js";
-import DomFunctionImpl from "@/units/grid/other/DomFunctionImpl.js";
 import {defaultStyle} from "@/units/grid/default/style/defaultStyle.js";
 import EditEvent from '@/units/grid/events/EditEvent.js'
+import DomFunctionImpl from "@/units/grid/other/DomFunctionImpl.js";
 import TempStore from "@/units/grid/other/TempStore.js";
 
-const tempStore = TempStore.containerStore
+//---------------------------------------------------------------------------------------------//
+const tempStore = TempStore.store
+
+//---------------------------------------------------------------------------------------------//
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
@@ -16,18 +19,17 @@ export default class Item extends DomFunctionImpl {
     //------------实例化Item外部传进的的参数,不建议在Container中传进来--------------//
     el = ''   // 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
     name = '' //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
-    transition = {
-        time: 180,
-        field: 'top,left,width,height'
-    }     // time:动画过渡时长 ms, field: 要过渡的css字段 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
-    draggable = false  //  自身是否可以拖动
-    resize = false     //  自身是否可以调整大小
-    close = false
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
+    dragOut = true     // 是否可以将Item拖动到容器外
     className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
     dragIgnoreEls = []   // 【不】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
     dragAllowEls = []    // 【只】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
-
+    //----------被defineProperties代理的字段-------------//
+    transition = null  // time:动画过渡时长 ms, field: 要过渡的css字段 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
+    draggable = null  //  自身是否可以拖动
+    resize = null     //  自身是否可以调整大小
+    close = null
+    static = false
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
@@ -40,9 +42,10 @@ export default class Item extends DomFunctionImpl {
     classList = []
     attr = []
     pos = {}
+    edit = null   // 该Item是否正在被编辑(只读)
     parentElement = null
-    isEdit = false   // 该Item是否正在被编辑
     nesting = null
+    _VueEvents = {}   // 用于 vue 携带的内置事件
     //----------------保持状态所用参数---------------------//
     _mounted = false
     _resizeTabEl = null
@@ -70,77 +73,121 @@ export default class Item extends DomFunctionImpl {
 
     constructor(itemOption) {
         super()
+        if (itemOption.el instanceof Element) {
+            this.el = itemOption.el
+            this.element = itemOption.el
+        }
+        this._define()
         merge(this, itemOption)
-        if (this.el instanceof Element) this.element = this.el
-        this.pos = new ItemPos(itemOption)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
-        // console.log(this.pos.static);
+        this.pos = new ItemPos(itemOption.pos)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
         this._itemSizeLimitCheck()
+    }
+
+    _define() {
+        const self = this
+        let draggable = false
+        let resize = false
+        let close = false
+        let edit = false
+        let transition = {
+            time: 180,
+            field: 'top,left,width,height'
+        }
+        Object.defineProperties(this, {
+            draggable: {
+                configurable: false,
+                get: () => draggable,
+                set(v) {
+                    if (typeof v === 'boolean') {
+                        if (draggable === v) return
+                        draggable = v
+                        self.edit = draggable || resize || close
+                    }
+                }
+            },
+            resize: {
+                configurable: false,
+                get: () => resize,
+                set(v) {
+                    if (typeof v === 'boolean') {
+                        if (resize === v) return
+                        resize = v
+                        self._handleResize(v)
+                        self.edit = draggable || resize || close
+                    }
+                }
+            },
+            close: {
+                configurable: false,
+                get: () => close,
+                set(v) {
+                    if (typeof v === 'boolean') {
+                        if (close === v) return
+                        close = v
+                        self._closeBtn(v)
+                        self.edit = draggable || resize || close
+                    }
+                }
+            },
+            edit: {
+                configurable: false,
+                get: () => edit,
+                set(v) {
+                    if (typeof v === 'boolean') {
+                        if (edit === v) return
+                        edit = v
+                        self._edit(edit)
+                    }
+                }
+            },
+            transition: {
+                configurable: false,
+                get: () => transition,
+                set(v) {
+                    if (v === false) transition.time = 0
+                    if (typeof v === 'number') transition.time = v
+                    if (typeof v === 'object') {
+                        if (v.time !== transition.time) transition.time = v.time
+                        if (v.field !== transition.field) transition.field = v.field
+                    }
+                    self.animation(transition)
+                }
+            },
+        })
+
+
     }
 
     /** 渲染, 直接渲染添加到 Container 中*/
     mount() {
-        Sync.run(() => {
+        const _mountedFun = () => {
             if (this._mounted) return
-            // console.log(this.element);
-            if (this.element === null) this.element = document.createElement(this.tagName)
-            this.container.contentElement.appendChild(this.element)
+            if (this.container.platform !== 'vue') {
+                if (this.element === null) this.element = document.createElement(this.tagName)
+                this.container.contentElement.appendChild(this.element)
+            }
             this.attr = Array.from(this.element.attributes)
             this.element.classList.add(this.className)
             this.classList = Array.from(this.element.classList)
             this.updateStyle(defaultStyle.gridItem)
-            // console.log(this._genItemStyle(),this.pos);
             this.updateStyle(this._genItemStyle())
-            // console.log(this._genItemStyle());
-            this.edit({
-                draggable: this.draggable,
-                resize: this.resize,
-                close: this.close,
-            })
-            this.animation(this.transition)
-            this._mountNestingContainer()
-            // this.__temp__.clientWidth = this.element.clientWidth
-            // this.__temp__.clientHeight = this.element.clientHeight
             this.__temp__.w = this.pos.w
             this.__temp__.h = this.pos.h
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
             this.container.eventManager._callback_('itemMounted', this)
-            if (this.pos.static) this.element.innerHTML = this.element.innerHTML + `--
+            if (this.static) this.element.innerHTML = this.element.innerHTML + `--
                 ${this.pos.i}</br>
                 ${this.pos.w},${this.pos.h}</br>
                 ${this.pos.x},${this.pos.y} `
             // else this.element.innerHTML = this.element.innerHTML + '---' + this.i
-        })
-    }
-
-    _mountNestingContainer() {
-        if (this.nesting) {
-            const updateContainerList = this.container.childContainer.filter(container => {
-                let containerID = container.el
-                if (container.el instanceof Element) containerID = container.el.id
-                const item = this
-                if (containerID.replace('#', '') === (item.nesting || '').replace('#', '')) {
-                    container.render()
-                    container.genGridContainerBox()
-                    console.log(container,container.element);
-                    let ntNode = container.element
-                    console.log(ntNode);
-                    // container.render()
-                    ntNode = ntNode.cloneNode()
-                    // newNode.id = ntList[j].id
-                    item.element.appendChild(ntNode)
-
-                }
-            })
-            // updateContainerList.forEach(container=>{
-            //
-            // })
-            // console.log(updateContainerList);
         }
 
-
+        if (this.container.platform === 'vue') _mountedFun()
+        else Sync.run(_mountedFun)
     }
+
 
     /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
      * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
@@ -176,78 +223,46 @@ export default class Item extends DomFunctionImpl {
     }
 
     /** 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
-     *  @param {Object} editOption 包含 draggable(Boolean)  resize(Boolean) 表示开启或关闭哪个功能,
+     *  @param {Boolean}  isEdit    是否开启编辑模式
+     *  @backup {Object}  editOption  原参数(editOption)  包含 draggable(Boolean)  resize(Boolean) 表示开启或关闭哪个功能,
      *                              调用该函数不传参或者传入布尔值 true表示draggable和 resize 全部开启
      *                              传入 布尔值 false 表示全部关闭
      * */
-    edit(editOption) {
-        if (typeof editOption === 'object') {
-            if (Object.keys(editOption).length === 0) editOption = true
-        }
-        if (editOption === false) {
-            editOption = {draggable: false, resize: false, close: false}
-        } else if (editOption === true) {
-            editOption = {draggable: true, resize: true, close: true}
-        }
-        if (typeof editOption.draggable === "boolean") this.draggable = editOption.draggable
-        if (typeof editOption.resize === "boolean") this.resize = editOption.resize
-        if (typeof editOption.close === "boolean") this.close = editOption.close
-
-        if (this._mounted) {
-            if (this.draggable || this.resize || this.close) {
-                if (this.isEdit === false) {
-                    EditEvent.startEvent(null, this)
-                    this.isEdit = true
-                    if (!this.__temp__.editNumUsing) {
-                        this.__temp__.editNumUsing = true
-                        tempStore.editItemNum++   // 未占用editNum 进行占用
-                    }
-                }
-            } else if (!this.draggable && !this.resize && !this.close) {
-                if (this.isEdit === true) {
-                    this.isEdit = false
-                    if (this.__temp__.editNumUsing) {
-                        tempStore.editItemNum--   // 占用了editNum 进行释放
-                        this.__temp__.editNumUsing = false
-                    }
-                    EditEvent.removeEvent(null, this)
-                }
+    _edit(isEdit = false) {
+        if (this.edit === true) {
+            if (!this.__temp__.editNumUsing) {
+                EditEvent.startEvent(null, this)
+                this.__temp__.editNumUsing = true
+                tempStore.editItemNum++   // 未占用editNum 进行占用
+            }
+        } else if (this.edit === false) {
+            if (this.__temp__.editNumUsing) {
+                EditEvent.removeEvent(null, this)
+                tempStore.editItemNum--   // 占用了editNum 进行释放
+                this.__temp__.editNumUsing = false
             }
         }
-        this._handleResize(editOption.resize)
-        this._closeBtn(editOption.close)
     }
 
     /** 对该Item开启位置变化过渡动画
-     *  @param {Number|Object|Boolean} transition Item移动或者大小癌变要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
-     *  @param {String} fieldString 要进行变化的CSS属性字段，使用逗号
+     *  @param {Object} transition  Item移动或者大小癌变要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
      * */
-    animation(transition, fieldString = null) {
-        if (typeof transition === "object") {
-            const cloneObj = cloneDeep(transition)
-            transition = cloneObj.time
-            fieldString = cloneObj.field
+    animation(transition) {
+        if (typeof transition !== "object") {
+            console.log('参数应该是对象形式{time:Number, field:String}')
+            return
         }
         Sync.run(() => {
-                const style = {}
-                if (typeof transition === 'number') this.transition.time = transition   // 传入数字保存
-                else if (transition === true || transition === undefined) {
-                    transition = this.transition.time  // 传入true 使用默认动画时长和字段
-                    fieldString = this.transition.field
-                }
-                if (fieldString === null) fieldString = this.transition.field
-                style.transitionProperty = transition ? fieldString : 'none'    //  当transition = false的时候，不会开启动画
-                style.transitionDuration = transition ? transition + 'ms' : 'none'
+            const style = {}
+            if (transition.time > 0) {
+                style.transitionProperty = transition.field
+                style.transitionDuration = transition.time + 'ms'
                 style.transitionTimingFunction = 'ease-out'
-                this.updateStyle(style)
-                if (transition !== false) {
-                    this.transition = {
-                        time: transition,
-                        field: fieldString,
-                    }
-                } else this.transition = false
+            } else if (transition.time === 0) {
+                style.transition = 'none'
             }
-        )
+            this.updateStyle(style)
+        })
     }
 
     /**  */
@@ -332,48 +347,56 @@ export default class Item extends DomFunctionImpl {
         if (isStyle === false) return this.__temp__.styleLock = false
     }
 
-    _handleResize(isResize = false, msg) {
-        const className = 'grid-item-resizable-handle'
-        if (isResize && this._resizeTabEl === null) {
-            const handleResizeEls = this.element.querySelectorAll('.' + className)
-            if (handleResizeEls.length > 0) return;
-            const resizeTabEl = document.createElement('span')
-            resizeTabEl.innerHTML = '⊿'
-            this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
-            this.element.appendChild(resizeTabEl)
-            resizeTabEl.classList.add(className, 'grid-cursor-item-resize')
-            this._resizeTabEl = resizeTabEl
-        } else if (isResize === false) {
-            for (let i = 0; i < this.element.children.length; i++) {
-                const node = this.element.children[i]
-                if (node.className.includes(className)) {
-                    this.element.removeChild(node)
-                    this._resizeTabEl = null
+    _handleResize(isResize = false) {
+        const handleResizeFunc = ()=>{
+            const className = 'grid-item-resizable-handle'
+            if (isResize && this._resizeTabEl === null) {
+                const handleResizeEls = this.element.querySelectorAll('.' + className)
+                if (handleResizeEls.length > 0) return;
+                const resizeTabEl = document.createElement('span')
+                resizeTabEl.innerHTML = '⊿'
+                this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
+                this.element.appendChild(resizeTabEl)
+                resizeTabEl.classList.add(className)
+                this._resizeTabEl = resizeTabEl
+            } else if (this.element && isResize === false) {
+                for (let i = 0; i < this.element.children.length; i++) {
+                    const node = this.element.children[i]
+                    if (node.className.includes(className)) {
+                        this.element.removeChild(node)
+                        this._resizeTabEl = null
+                    }
                 }
             }
         }
+        if (this.element) handleResizeFunc()
+        else Sync.run(handleResizeFunc)
     }
 
     /** 创建拖Item关闭按钮 */
     _closeBtn(isDisplayBtn = false) {
-        const className = 'grid-item-close-btn'
-        if (isDisplayBtn && this._closeEl === null) {
-            const _closeEl = document.createElement('div')
-            this.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
-            this._closeEl = _closeEl
-            _closeEl.classList.add(className, 'grid-cursor-item-close')
-            this.element.appendChild(_closeEl)
-            _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
-        }
-        if (this._closeEl !== null && !isDisplayBtn) {
-            for (let i = 0; i < this.element.children.length; i++) {
-                const node = this.element.children[i]
-                if (node.className.includes(className)) {
-                    this.element.removeChild(node)
-                    this._closeEl = null
+        const closeBtnFunc = ()=>{
+            const className = 'grid-item-close-btn'
+            if (isDisplayBtn && this._closeEl === null) {
+                const _closeEl = document.createElement('div')
+                this.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
+                this._closeEl = _closeEl
+                _closeEl.classList.add(className)
+                this.element.appendChild(_closeEl)
+                _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
+            }
+            if (this._closeEl !== null && !isDisplayBtn) {
+                for (let i = 0; i < this.element.children.length; i++) {
+                    const node = this.element.children[i]
+                    if (node.className.includes(className)) {
+                        this.element.removeChild(node)
+                        this._closeEl = null
+                    }
                 }
             }
         }
+        if (this.element) closeBtnFunc()
+        else Sync.run(closeBtnFunc)
     }
 
     /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩，已弃用 */

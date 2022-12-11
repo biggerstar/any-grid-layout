@@ -28,9 +28,9 @@ export default class Engine {
     }
 
     init() {
+        if (this.initialized) return
         this.layoutManager = new LayoutManager()
         this.layoutConfig = new LayoutConfig(this.option)
-
         this.layoutConfig.setContainer(this.container)
         this.layoutConfig.initLayoutInfo()
         this.initialized = true
@@ -39,7 +39,7 @@ export default class Engine {
     /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
-        this._syncLayoutConfig(useLayoutConfig)
+        this._syncLayoutConfig(useLayoutConfig.useLayoutConfig)
     }
 
     /** 通过传入当前的useLayoutConfig直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
@@ -48,9 +48,10 @@ export default class Engine {
         if (Object.keys(useLayoutConfig).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
+        // console.log(useLayoutConfig);
         merge(this.container, useLayoutConfig, false, ['events'])      //  更新同步当前Container中的属性值
         // console.log(useLayoutConfig);
-        // console.log(this.container.eventManager);
+        // console.log(this.container.eventManager)
         this.autoSetColAndRows(this.container)
         this.items.forEach(item => {
             //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
@@ -105,9 +106,9 @@ export default class Engine {
                 limitRow: maxRow
             }
         }
-        if (container["responsive"]) {    // 响应模式会检测第一次给出的row进行初始容器固定
+        const responsiveAutoSetting = ()=>{
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
-                if (container.row === null) this.layoutManager.autoRow()
+                if (!container.row) this.layoutManager.autoRow()
                 else maxRow = container.row
                 if (container["maxRow"]) console.warn("【响应式】模式中不建议使用maxRow,您如果使用该值，" +
                     "只会限制容器盒子(Container)的高度,不能限制成员排列的row值 因为响应式设计是能自动管理容器的高度，" +
@@ -123,10 +124,17 @@ export default class Engine {
                 containerW = limitInfo.limitCol
                 containerH = limitInfo.limitRow
             }
-        } else if (!container["responsive"]) {  // 静态模式下老老实实row多少就多少
+        }
+        const staticAutoSetting = ()=>{
             const limitInfo = computeLimitLength(container.col, container.row)
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
+        }
+
+        if (container["responsive"]) {    // 响应模式会检测第一次给出的row进行初始容器固定
+            responsiveAutoSetting()
+        } else if (!container["responsive"]) {  // 静态模式下老老实实row多少就多少
+            staticAutoSetting()
         }
         if (isSetConfig) {
             this.container.col = maxCol
@@ -261,19 +269,19 @@ export default class Engine {
         }
     }
 
-    /** 更新当前配置，只有调用这里更新能同步所有的模块配置 */
-    updateConfig(useLayoutConfig) {
-        // this.container.layout
-        // console.log(useLayoutConfig);
-    }
+    // /** 更新当前配置，只有调用这里更新能同步所有的模块配置 */
+    // updateConfig(useLayoutConfig) {
+    //     // this.container.layout
+    //     // console.log(useLayoutConfig);
+    // }
 
-    initItems() {
-        const posList = this.container.data || []
-        // 静态布局且可能网页元素已经被收集，js添加比html收集慢所以需要使用computedNeedRow
-        posList.forEach((pos) => {
-            this.addItem(this.createItem(pos))
-        })
-    }
+    // initItems() {
+    //     const posList = this.container.data || []
+    //     // 静态布局且可能网页元素已经被收集，js添加比html收集慢所以需要使用computedNeedRow
+    //     posList.forEach((pos) => {
+    //         this.addItem(this.createItem(pos))
+    //     })
+    // }
 
     setColNum(col) {
         this.layoutManager.setColNum(col)
@@ -347,6 +355,7 @@ export default class Engine {
             else if (!item._mounted && item.pos.__temp__._autoOnce === null && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
             const success = this.push(item)
             if (success) {
+                // console.log(11111111111111111);
                 eventManager._callback_('addItemSuccess', item)
             } else {
                 if (!this.container.responsive) eventManager._error_('ContainerOverflowError',
@@ -593,8 +602,7 @@ export default class Engine {
             this.renumber()
             items = this.items
             updateItemList = updateItemList.filter(item => items.includes(item))
-            let useLayoutConfig = this.layoutConfig.genLayoutConfig()
-            this._syncLayoutConfig(useLayoutConfig)
+            this._sync()
             //----------------------------------------------------//
             const updateStaticItemLayout = (item) => {
                 this._isCanAddItemToContainer_(item, false, true)
@@ -630,7 +638,6 @@ export default class Engine {
                 this.container.eventManager._callback_('containerSizeChange',container,beforeSize,nowSize)
             }
         }
-
 
 
         // const isDebugger = false

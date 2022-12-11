@@ -14,10 +14,10 @@ export default class ItemPosList {
         for (let i = 0; i < this.data.length; i++) {
             if (this.data[i].i === indexVal) return this.data[i]
         }
-        return  null
+        return null
     }
 
-    len(){
+    len() {
         return this.data.length
     }
 
@@ -28,8 +28,7 @@ export default class ItemPosList {
     /** 创建一个pos对象， */
     createPos(pos) {
         const itemPos = new ItemPos(pos)
-        if (itemPos.static === true) this.data.unshift(itemPos)
-        else this.data.push(itemPos)
+        this.data.push(itemPos)
         // console.log(itemPos);
         return itemPos
     }

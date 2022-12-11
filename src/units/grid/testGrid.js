@@ -3,6 +3,7 @@ import tempStore from '@/units/grid/other/TempStore.js'
 // import Container from 'any-grid-layout/src/units/grid/Container.js'
 import {layoutData, layoutData11} from "@/stores/layout.js";
 
+
 ` 
 错误类型
 ContainerOverflowError
@@ -15,10 +16,9 @@ ItemAlreadyRemove
 const container = new Container({
     el: '#container',
     // el: document.getElementById('container'),
-    layout1: {
+    layout: {
         from: '来自layout',
-        data: layoutData,
-        // data : layoutData11,
+        data : layoutData11,
         // col: 3,
         // row: 5,
         ratio: 0.2,
@@ -34,8 +34,6 @@ const container = new Container({
             // maxH:1,
             // maxW:1,
         },
-        // TODO  sizeLimit  marginLimit    resize清除在container中上次限制的缓存
-        dragOut: true,
         exchange: true,
         // sizeWidth: 50,
         // sizeHeight: 80,
@@ -43,57 +41,6 @@ const container = new Container({
         // marginY: 50,
         // isEdit: false,
     },
-    layout: [
-        {
-            px: 1300,
-            // col:9,
-            margin: [30, 30],
-            size:[120,80],
-            // minCol: 9,
-            data: layoutData,
-            edit:{
-                draggable:true,
-                resize:false,
-            },
-            animation: 1000,
-        },
-        {
-            px: 1100,
-            margin: [20, 20],
-            size:[90,80],
-            // minCol: 7,
-            data: layoutData11,
-            edit: {    // true或者对象
-                draggable:true,
-                close:true
-            },
-            animation: 750,
-        },
-        {
-            px: 800,
-            margin: [10, 10],
-            size:[60,80],
-            edit: {    // true或者对象
-                draggable:true,
-            },
-            data: layoutData,
-            // minCol: 5,
-            animation: 500,
-        },
-        {
-            px: 360,
-            margin: [0, 0],
-            size:[36,80],
-            edit: {    // true或者对象
-                resize:false,
-                close:true
-            },
-            data: layoutData11,
-            animation: 250,
-            // minCol: 3,
-        },
-        //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
-    ],
     events : {
         error(err){
             // if (["itemLimitError"].includes(err.name)) return
@@ -178,16 +125,6 @@ const container = new Container({
         exchange: true,
         ratio: 0.2,
         from1: '来自global',
-        edit: {    // true或者对象
-            draggable:true,
-            resize:false,
-            close:true
-        },
-        animation:{  // 数值或者对象
-            time: 180,
-            field: 'top,left,width,height'
-        },
-        follow:true,
     }
 })
 
@@ -197,6 +134,46 @@ const container1 = new Container({
     el: '#container1',
     // el: document.getElementById('container'),
     layout2: true,
+    layout1: [
+        {
+            px: 1300,
+            // col:9,
+            margin: [30, 30],
+            size:[120,80],
+            // minCol: 9,
+            data: layoutData,
+        },
+        {
+            px: 1100,
+            margin: [20, 20],
+            size:[90,80],
+            // minCol: 7,
+            data: layoutData11,
+        },
+        {
+            px: 800,
+            margin: [10, 10],
+            size:[60,80],
+            edit: {    // true或者对象
+                draggable:true,
+            },
+            data: layoutData,
+            // minCol: 5,
+        },
+        {
+            px: 360,
+            margin: [0, 0],
+            size:[36,80],
+            edit: {    // true或者对象
+                resize:false,
+                close:true
+            },
+            data: layoutData11,
+            // minCol: 3,
+        },
+        //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
+    ],
+
     layout: {
         from: '来自layout1',
         // ratio: 0.1,
@@ -235,8 +212,6 @@ const container1 = new Container({
     }
 })
 
-
-
 const container2 = new Container({
     el: '#container2',
     // el: document.getElementById('container'),
@@ -263,12 +238,9 @@ const container2 = new Container({
     },
 })
 
-
-
 const container3 = new Container({
     el: '#container3',
     // el: document.getElementById('container'),
-    parent:container,
     layout: {
         from: '来自layout3',
         ratio: 0.1,
@@ -294,9 +266,25 @@ const container3 = new Container({
 
 
 container.mount()
+container.render((data,useLayout,containerElement)=>{
+    // console.log(data,useLayout);
+    // container.mountItems(items)
+    console.log(containerElement);
+    data.forEach((item)=>{
+        container.add(item).mount()
+    })
+})
+
+// container.update()
+
+
 // container1.mount()
 // container2.mount()
-container3.mount()
+// container3.mount()
+
+
+// console.log(new GridContainer());
+
 
 
 
