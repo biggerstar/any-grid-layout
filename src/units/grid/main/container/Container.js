@@ -324,9 +324,10 @@ export default class Container extends DomFunctionImpl {
             if (!this._mounted) return
             const containerWidth = this.element.clientWidth
             if (containerWidth <= 0) return
-            let {useLayoutConfig,currentLayout, layout} = this.engine.layoutConfig.genLayoutConfig(containerWidth)
+            let useLayout = this.engine.layoutConfig.genLayoutConfig(containerWidth)
+            let {useLayoutConfig, currentLayout, layout} = useLayout
             let fullUseLayoutConfig = new LayoutInstantiationField(useLayoutConfig)
-            const res = this.eventManager._callback_('mountPointElementResizing', this.container, useLayoutConfig, containerWidth)
+            const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
 
             if (res === null || res === false) return
             if (typeof res === 'object') useLayoutConfig = res
@@ -337,19 +338,19 @@ export default class Container extends DomFunctionImpl {
             if (this.px && useLayoutConfig.px) {
                 if (this.px !== useLayoutConfig.px) {
                     // console.log(this.px, useLayoutConfig.px);
-                    if (this.platform !== 'vue'){
+                    if (this.platform !== 'vue') {
                         // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
                         // this.engine.unmount(false)
                         // this.engine.clear()
                         // this.engine._syncLayoutConfig(fullUseLayoutConfig)
                         // this.render()
                     }
-                    this.eventManager._callback_('useLayoutChange', this.container, currentLayout, containerWidth)
-                    this._VueEvents.vueUseLayoutChange(currentLayout, layout)
+                    this.eventManager._callback_('useLayoutChange', currentLayout, containerWidth, this.container)
+                    this._VueEvents.vueUseLayoutChange(useLayout)
                 } else {
                     this.engine._syncLayoutConfig(fullUseLayoutConfig)
-                    this.engine.updateLayout(true)
                 }
+                this.engine.updateLayout(true)
             }
         }, this.resizeReactionDelay))
         this.__ownTemp__.observer.observe(this.element)

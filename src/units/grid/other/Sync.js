@@ -43,7 +43,7 @@ export default class Sync {
             if (typeof obj === "function") result = obj.call(obj, ...args)   // 只传入一个函数的情况
             else if (typeof obj === "object") {  // 对象形式传入
                 if (!obj["func"]) throw new Error("func函数必须传入")
-                result = obj["func"].call(obj.func, ...args) || undefined  // 通过rule函数校验或者无rule限制情况正常执行
+                result = obj["func"].call(obj['func'], ...args) || undefined  // 通过rule函数校验或者无rule限制情况正常执行
             }
             if (obj["callback"]) obj["callback"](result)
         }
@@ -52,7 +52,7 @@ export default class Sync {
             if (obj["rule"]) {
                 return obj["rule"]()
             }
-            return Sync.ready
+            return Sync.ready   // 如果已经都准备好了直接就能运行了
         }
         if (isObeyRule()) {
             doSync()

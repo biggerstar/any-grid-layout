@@ -23,6 +23,7 @@ export default class EditEvent {
                 const isLeftMousedown = tempStore.isLeftMousedown
                 const fromItem = tempStore.fromItem
                 if (fromItem === null || mousedownEvent === null || !isLeftMousedown) return
+                const container = fromItem.container
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = fromItem.element.cloneNode(true)
                     tempStore.cloneElement.classList.add('grid-clone-el', 'grid-resizing-clone-el')
@@ -49,11 +50,11 @@ export default class EditEvent {
                     // w，h是新的resize克隆元素对应生成大小的w，和h
                     const pos = fromItem.pos
                     //----------------检测改变的大小是否符合用户限制 -------------//
-                    if ((w + pos.x) > pos.col) w = pos.col - pos.x + 1    //item调整大小时在容器右边边界超出时进行限制
+                    if ((w + pos.x) > container.col) w = container.col - pos.x + 1     //item调整大小时在容器右边边界超出时进行限制
                     if (w < pos.minW) w = pos.minW
                     if (w > pos.maxW && pos.maxW !== Infinity) w = pos.maxW
 
-                    if ((h + pos.y) > pos.row) h = pos.row - pos.y + 1
+                    if ((h + pos.y) > container.row) h = container.row - pos.y + 1
                     if (h < pos.minH) h = pos.minH
                     if (h > pos.maxH && pos.maxH !== Infinity) h = pos.maxH
                     return {
@@ -74,7 +75,8 @@ export default class EditEvent {
                     }
                 }
                 //-----------------响应式和静态的分别resize算法实现---------------------//
-                const newResize = limitGrid(resized)
+                const newResize = limitGrid(resized)    //当前鼠标距离x,y的距离构成的矩形
+                // console.log(fromItem.pos.w,fromItem.pos.h);
                 if (!fromItem.container.responsive) {
                     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
                     const nowElSize = limitCloneEl()
@@ -85,14 +87,20 @@ export default class EditEvent {
                     if (maxBlankMatrixLimit.maxW >= newResize.w) {    // 横向调整
                         updateStyle.width = nowElSize.width + 'px'
                         fromItem.pos.w = newResize.w
+                    }else {
+                        newResize.w=fromItem.pos.w      //必要，将当前实际宽给newResize
                     }
                     if (maxBlankMatrixLimit.maxH >= newResize.h) {  // 纵向调整
                         updateStyle.height = nowElSize.height + 'px'
                         fromItem.pos.h = newResize.h
+                    }else {
+                        newResize.h=fromItem.pos.h   //必要，将当前实际高给newResize
                     }
                     if (Object.keys(updateStyle).length > 0) {
                         fromItem.updateStyle(updateStyle, tempStore.cloneElement)
                     }
+                    // console.log(fromItem.pos.w,fromItem.pos.h, container.col, fromItem.pos.col);
+
                 } else if (fromItem.container.responsive) {
                     //---------------------动态模式resize判断是否w和h是否改变并更新---------------------//
                     merge(fromItem.pos, newResize)
@@ -104,11 +112,11 @@ export default class EditEvent {
                 }
                 if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
-                    fromItem.__temp__.resized = resized
+                    fromItem.__temp__.resized = newResize
                     if (typeof fromItem._VueEvents.vueItemResizing === 'function') {
-                        fromItem._VueEvents.vueItemResizing(fromItem,newResize.w,newResize.h)
+                        fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)
                     }
-                    fromItem.container.eventManager._callback_('itemResizing', fromItem, newResize.w, newResize.h)
+                    fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
                     tempStore.fromContainer.updateLayout([fromItem])
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
                     fromItem.container.updateContainerStyleSize()
@@ -286,8 +294,8 @@ export default class EditEvent {
                     const isExchange = fromItem.container.eventManager._callback_('crossContainerExchange', dragItem, newItem)
                     if (isExchange === false || isExchange === null) return   // 通过事件返回值来判断是否继续进行交换
 
-                    if (container['responsive']) newItem.pos.__temp__._autoOnce = true
-                    else if (!container['responsive']) newItem.pos.__temp__._autoOnce = false
+                    if (container['responsive']) newItem.pos.__temp__.autoOnce = true
+                    else if (!container['responsive']) newItem.pos.__temp__.autoOnce = false
                     container.add(newItem)
 
                     if (typeof itemPositionMethod === 'function') {
@@ -346,7 +354,7 @@ export default class EditEvent {
                     const scrollSpeedX = container.scrollSpeedX ? container.scrollSpeedX : Math.round(scrollContainerBoxElRect.width / 20)
                     const scrollSpeedY = container.scrollSpeedY ? container.scrollSpeedY : Math.round(scrollContainerBoxElRect.height / 20)
                     const scroll = (direction, scrollOffset) => {
-                        const isScroll = dragItem.container.eventManager._callback_('autoScroll', dragItem.container, direction, scrollOffset)
+                        const isScroll = dragItem.container.eventManager._callback_('autoScroll', direction, scrollOffset, dragItem.container)
                         if (isScroll === false || isScroll === null) return
                         if (typeof isScroll === 'object') {   //按照返回的最新方向和距离进行滚动，这里类型限制不严谨，但是吧开发者自己控制不管那么多了
                             if (typeof isScroll.offset === 'number') scrollOffset = isScroll.offset
@@ -414,7 +422,7 @@ export default class EditEvent {
 
                 // console.log(offsetLeftPx,offsetTopPx);
                 // console.log(nowMoveWidth,nowMoveHeight)
-                dragItem.container.eventManager._callback_('itemMoving', dragItem, nowMoveWidth, nowMoveHeight)
+                dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
 
                 const responsiveLayoutAlgorithm = () => {
                     // 响应式Item交换算法
@@ -478,7 +486,7 @@ export default class EditEvent {
                     } else innerContentArea()
                     //---------------------------响应模式【跨】容器交换(跨容器交换后直接跳出)------------------------------//
                     if (container.__ownTemp__.firstEnterUnLock) {
-                        dragItem.pos.__temp__._autoOnce = true
+                        dragItem.pos.__temp__.autoOnce = true
                         if (toItem) {
                             EEF.itemDrag.mousemoveExchange(container, (newItem) => {
                                 container.engine.move(newItem, toItem.i)
@@ -593,15 +601,15 @@ export default class EditEvent {
                 }
                 Sync.run(() => {
                     //  判断使用的是静态布局还是响应式布局并执行响应的算法
-                    const oldPos = Object.assign({},dragItem.pos)
+                    const oldPos = Object.assign({}, dragItem.pos)
                     if (container.responsive) responsiveLayoutAlgorithm()
                     else staticLayoutAlgorithm()
-                    if (oldPos.x !== dragItem.pos.x || oldPos.y !== dragItem.pos.y){
+                    if (oldPos.x !== dragItem.pos.x || oldPos.y !== dragItem.pos.y) {
                         const vuePosChange = dragItem._VueEvents.vueItemMovePositionChange
-                        if (typeof vuePosChange === 'function'){
-                            vuePosChange(oldPos.x,oldPos.y,dragItem.pos.x,dragItem.pos.y)
+                        if (typeof vuePosChange === 'function') {
+                            vuePosChange(oldPos.x, oldPos.y, dragItem.pos.x, dragItem.pos.y)
                         }
-                        dragItem.container.eventManager._callback_('itemMovePositionChange', oldPos.x,oldPos.y,dragItem.pos.x,dragItem.pos.y)
+                        dragItem.container.eventManager._callback_('itemMovePositionChange', oldPos.x, oldPos.y, dragItem.pos.x, dragItem.pos.y)
                     }
                 })
 
@@ -821,11 +829,11 @@ export default class EditEvent {
                     const overItem = parseItem(ev)
                     if (overItem) {
                         const evClassList = ev.target.classList
-                        if (evClassList.contains('grid-item-close-btn')){
+                        if (evClassList.contains('grid-item-close-btn')) {
                             if (EEF.cursor.cursor !== 'item-close') EEF.cursor.itemClose()
-                        }else if (evClassList.contains('grid-item-resizable-handle')){
+                        } else if (evClassList.contains('grid-item-resizable-handle')) {
                             if (EEF.cursor.cursor !== 'item-resize') EEF.cursor.itemResize()
-                        }else if (!overItem.container.responsive) {
+                        } else if (!overItem.container.responsive) {
                             if (overItem.static && EEF.cursor.cursor !== 'static-no-drop') EEF.cursor.staticItemNoDrop()   // 静态模式才notDrop
                         }
                     } else if (parseContainer(ev)) {
@@ -928,10 +936,10 @@ export default class EditEvent {
 
                 if (dragItem) {
                     if (tempStore.isDragging) {
-                        dragItem.container.eventManager._callback_('itemMoved', dragItem, dragItem.pos.x, dragItem.pos.y)
+                        dragItem.container.eventManager._callback_('itemMoved', dragItem.pos.x, dragItem.pos.y, dragItem)
                     }
                     if (tempStore.isResizing) {
-                        dragItem.container.eventManager._callback_('itemResized', dragItem, dragItem.pos.w, dragItem.pos.h)
+                        dragItem.container.eventManager._callback_('itemResized', dragItem.pos.w, dragItem.pos.h, dragItem)
                     }
                 }
 

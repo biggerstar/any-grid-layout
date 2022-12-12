@@ -25,7 +25,7 @@ export default class ItemPos {
     }
     beforePos = null   //  跨容器时候保存上一个容器的位置
     __temp__ = {
-        _autoOnce: null,  // 静态布局下指定是否自动寻找当前空位,
+        autoOnce: null,  // 静态布局下指定是否自动寻找当前空位,
     }
 
     constructor(pos) {

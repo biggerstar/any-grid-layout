@@ -2,12 +2,12 @@
   <div>
     <GridContainer
         class="grid-container"
-        style="height: 600px"
+        style="height: 500px"
         :useLayout="useLayout"
         :events="events"
         :config="config"
         :render="render"
-        :layoutChange="layoutChange"
+        :layout-change="layoutChange"
     >
       <gridItem v-for="(item,index) in useLayout.data"
                 :key=index
@@ -27,24 +27,23 @@
         <span>这是允许的按钮</span>
       </gridItem>
     </GridContainer>
-
-    <!--    <GridContainer-->
-    <!--        :layout="layout"-->
-    <!--        :global="globalConf"-->
-    <!--        :events="events"-->
-    <!--    >-->
-    <!--      <gridItem v-for="item in layoutData02"-->
-    <!--                :w=item.w-->
-    <!--                :h=item.h-->
-    <!--                :x=item.x-->
-    <!--                :y=item.y-->
-    <!--                :draggable= item.draggable-->
-    <!--                :resize= item.resize-->
-    <!--                :close= item.close-->
-    <!--      >-->
-    <!--        {{ item }}-->
-    <!--      </gridItem>-->
-    <!--    </GridContainer>-->
+    <!--        <GridContainer-->
+    <!--            class="grid-container"-->
+    <!--            style="height: 500px"-->
+    <!--            :config="config1"-->
+    <!--            :useLayout="useLayout1"-->
+    <!--            :events="events"-->
+    <!--        >-->
+    <!--          <gridItem v-for="(item,index) in useLayout1.data"-->
+    <!--                    :key=index-->
+    <!--                    :pos="item.pos"-->
+    <!--                    :draggable= true-->
+    <!--                    :resize= true-->
+    <!--                    :close= true-->
+    <!--          >-->
+    <!--            {{ item }}-->
+    <!--          </gridItem>-->
+    <!--        </GridContainer>-->
 
 
   </div>
@@ -54,6 +53,10 @@ import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive}
 import {layoutData, layoutData11} from '@/stores/layout.js'
 import GridItem from "@/components/GridItem.vue";
 import GridContainer from "@/components/GridContainer.vue";
+
+
+const layoutData1 = layoutData.filter((item, index) => index < 10)
+const layoutData2 = layoutData.filter((item, index) => index < 16)
 
 
 const events = {
@@ -138,44 +141,49 @@ const events = {
 
   }
 }
-const layouts  = [
+const layouts = [
   {
     px: 1200,
-    // col:9,
+    col: 9,
     // margin: [30, 30],
-    size: [120, 80],
+    // size: [120, 80],
     // minCol: 9,
-    data: layoutData,
+    data: layoutData1,
   },
   {
     px: 1000,
+    col: 7,
     // margin: [20, 20],
-    size: [90, 80],
+    // size: [90, 80],
     // minCol: 7,
-    data: layoutData11,
+    data: layoutData1,
   },
   {
     px: 800,
+    col: 6,
     // margin: [10, 10],
-    size: [60, 80],
-    data: layoutData,
+    // size: [60, 80],
+    data: layoutData2,
   },
   {
     px: 560,
+    col: 5,
     // margin: [10, 10],
-    size: [60, 80],
-    data: layoutData,
+    // size: [60, 80],
+    data: layoutData2,
   },
   {
     px: 360,
+    col: 4,
     // margin: [0, 0],
-    size: [36, 80],
-    data: layoutData,
+    // size: [36, 80],
+    data: layoutData11,
   },
   {
     px: 200,
+    col: 3,
     // margin: [5, 5],
-    size: [12, 30],
+    // size: [12, 30],
     data: layoutData,
   },
 ]
@@ -191,8 +199,8 @@ const layouts1 = {
   // maxCol: 5,
   // minRow: 5,
   // maxRow: 5,
-  followScroll:true,
-  scrollWaitTime:800,
+  followScroll: true,
+  scrollWaitTime: 800,
   itemLimit: {
     // minW: 1,
     // minH: 1,
@@ -206,29 +214,40 @@ const layouts1 = {
   // marginY: 50,
 }
 const globalConf = {
-  responsive: true,
+  responsive: false,
+  row: 6,
   responseMode: 'default',
   exchange: true,
   ratio: 0.2,
 }
 
 let useLayout = reactive({})
+let useLayout1 = reactive({})
+
 const config = reactive({
   layouts,
   global: globalConf
 })
+const config1 = reactive({
+  layouts: layouts1,
+  global: globalConf
+})
 
-
-const layoutChange = (currentLayout)=>{
-  // console.log(currentLayout);
+const layoutChange = (currentLayout) => {
+  console.log(currentLayout);
   // console.log(currentLayout.data );
   // useLayout.data = currentLayout.data
-  useLayout = currentLayout
+  // currentLayout.data[0].static=false
+  Object.assign(useLayout, currentLayout)
+  // for (let k in currentLayout) {
+  //   useLayout[k] = currentLayout[k]
+  // }
+  useLayout.data = Object.assign([], currentLayout.data)
+}
+const render = (currentLayout, layouts) => {
+  // console.log(currentLayout.px);
   // Object.assign(useLayout,currentLayout)
 
-}
-
-const render = (currentLayout, layouts) => {
   const data = layoutData.filter((item, index) => {
     item.draggable = true
     item.resize = true
@@ -236,13 +255,14 @@ const render = (currentLayout, layouts) => {
     return index < 10
   })
 
-  Object.assign(useLayout,currentLayout)
+  Object.assign(useLayout, currentLayout)
 
   if (!useLayout.data) useLayout.data = []
 
-  // useLayout.data = data
+  useLayout.data = data
+
   currentLayout.data.forEach((item, index) => {
-      // useLayout.data.push(item)
+    // useLayout.data.push(item)
     setTimeout(() => {
       // console.log(useLayout.sizeWidth);
       // useLayout.sizeWidth++
@@ -250,24 +270,12 @@ const render = (currentLayout, layouts) => {
     }, 300 * index)
   })
 
+  setTimeout(() => {
+    // console.log(useLayout.sizeWidth);
+    // useLayout.sizeWidth++
+    // useLayout.data[index].x++
+  }, 10000)
 
-  // console.log(itemData);
-  // layout.data = itemData
-  // console.log(useLayout);
-  // console.log(layout.data);
-  // layout.data = itemData
-  // layout.data1 = reactive(layoutData.filter((item, index) => {
-  //   item.draggable = true
-  //   item.resize = true
-  //   item.close = true
-  //   return index < 20
-  // }))
-  // layout.data2 = reactive(layoutData.filter((item, index) => {
-  //   item.draggable = true
-  //   item.resize = true
-  //   item.close = true
-  //   return index < 30
-  // }))
 }
 
 

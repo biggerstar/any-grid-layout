@@ -351,8 +351,8 @@ export default class Engine {
         else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
-            if (!this.container._mounted || this.container.responsive) item.pos.__temp__._autoOnce = true   // 所有响应式都自动排列
-            else if (!item._mounted && item.pos.__temp__._autoOnce === null && !this.container.responsive) item.pos.__temp__._autoOnce = true  // 静态且未挂载状态的话自动排列
+            if (!this.container._mounted || this.container.responsive) item.pos.__temp__.autoOnce = true   // 所有响应式都自动排列
+            else if (!item._mounted && item.pos.__temp__.autoOnce === null && !this.container.responsive) item.pos.__temp__.autoOnce = true  // 静态且未挂载状态的话自动排列
             const success = this.push(item)
             if (success) {
                 // console.log(11111111111111111);
@@ -371,7 +371,7 @@ export default class Engine {
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
         // console.log(item.pos);
-        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__._autoOnce, true)
+        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__.autoOnce, true)
         // console.log(realLayoutPos);
         let success = false
         if (realLayoutPos) {
@@ -541,7 +541,7 @@ export default class Engine {
                 this.layoutManager.addItem(realLayoutPos)
                 item.pos = new ItemPos(merge(this._genItemPosArg(item), realLayoutPos))
                 item.pos.nextStaticPos = null
-                item.pos.__temp__._autoOnce = false
+                item.pos.__temp__.autoOnce = false
             }
             return realLayoutPos
         } else {
@@ -570,19 +570,19 @@ export default class Engine {
             updateItemList = updateItemList.filter(item => items.includes(item))
             // console.log(items.length, updateItemList);
             const updateResponsiveItemLayout = (item) => {
-                const realPos = this._isCanAddItemToContainer_(item, item.__temp__._autoOnce, true)
+                const realPos = this._isCanAddItemToContainer_(item, item.__temp__.autoOnce, true)
                 if (realPos) {
                     item.updateItemLayout()
                 }
             }
             updateItemList.forEach((item) => {   // 1.先对要进行更新成员占指定静态位
-                item.__temp__._autoOnce = false
+                item.__temp__.autoOnce = false
                 updateResponsiveItemLayout(item)
             })
 
             items.forEach(item => {   // 2。再对剩余成员按顺序找位置坐下
                 if (updateItemList.includes(item)) return
-                item.__temp__._autoOnce = true
+                item.__temp__.autoOnce = true
                 updateResponsiveItemLayout(item)
             })
             // console.log(items);
@@ -635,7 +635,7 @@ export default class Engine {
             if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH){
                 const nowSize = genBeforeSize(container)
                 container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
-                this.container.eventManager._callback_('containerSizeChange',container,beforeSize,nowSize)
+                this.container.eventManager._callback_('containerSizeChange',beforeSize,nowSize,container)
             }
         }
 

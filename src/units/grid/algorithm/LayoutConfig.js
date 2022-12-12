@@ -31,7 +31,7 @@ export default class LayoutConfig {
                 return a.px - b.px
             })
         }
-        this.container.layouts = layoutInfo    // 这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
+        this.container.layouts = JSON.parse(JSON.stringify(layoutInfo))    // data可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
         // console.log(layoutInfo);
     }
 

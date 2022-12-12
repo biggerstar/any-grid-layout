@@ -15,29 +15,27 @@ let selfItem = null  // 改Item对应的实例，Item内所有变量都非响应
 const props = defineProps({
   //----------------------ItemPos挂载字段-------------------------//
   pos: {
-    required: true, type: Object, default() {
-      return {
-        w: {required: true, type: Number},
-        h: {required: true, type: Number},
-        x: {required: false, type: Number},
-        y: {required: false, type: Number},
-        minW: {required: false, type: Number},
-        maxW: {required: false, type: Number},
-        minH: {required: false, type: Number},
-        maxH: {required: false, type: Number},
-      }
+    required: true, type: Object, default: {   // 未有实际效果，为了方便类型
+      w: {required: true, type: Number,default:undefined},
+      h: {required: true, type: Number,default:undefined},
+      x: {required: false, type: Number,default:undefined},
+      y: {required: false, type: Number,default:undefined},
+      minW: {required: false, type: Number,default:undefined},
+      maxW: {required: false, type: Number,default:undefined},
+      minH: {required: false, type: Number,default:undefined},
+      maxH: {required: false, type: Number,default:undefined},
     }
   },
-  static: {required: false, type: Boolean},
   //----------------------Item挂载字段-------------------------//
-  transition: {required: false, type: [Boolean, Object, Number]},
-  draggable: {required: false, type: Boolean},
-  resize: {required: false, type: Boolean},
-  close: {required: false, type: Boolean},
-  follow: {required: false, type: Boolean},
-  dragOut: {required: false, type: Boolean},
-  dragIgnoreEls: {required: false, type: Array},
-  dragAllowEls: {required: false, type: Array},
+  static: {required: false, type: Boolean, default: undefined},
+  transition: {required: false, type: [Boolean, Object, Number], default: undefined},
+  draggable: {required: false, type: Boolean, default: undefined},
+  resize: {required: false, type: Boolean, default: undefined},
+  close: {required: false, type: Boolean, default: undefined},
+  follow: {required: false, type: Boolean, default: undefined},
+  dragOut: {required: false, type: Boolean, default: undefined},
+  dragIgnoreEls: {required: false, type: Array, default: undefined},
+  dragAllowEls: {required: false, type: Array, default: undefined},
 })
 
 watch(() => props, () => {
@@ -96,6 +94,8 @@ onMounted(() => {
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
+  // console.log(props.pos.x,props.pos.y);
+  if (!props.pos.x || !props.pos.y) selfItem.pos.__temp__.autoOnce = true
   selfItem.mount()
   // console.log(selfItem);
   selfItem._VueEvents.vueItemResizing = (fromItem, w, h) => {
