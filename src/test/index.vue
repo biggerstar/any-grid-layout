@@ -168,7 +168,7 @@ const layouts = [
   {
     px: 560,
     col: 9,
-    margin: [20, 20],
+    margin: [20, 20], 
     size: [60, 80],
     data: layoutData11,
   },
