@@ -14,7 +14,7 @@ export const layoutData11 = [
 
 
 export const layoutData = [
-    {pos: {w: 4, h: 4, x: 6, y: 8, maxW: 5, minW: 3}, static: true },
+    {pos: {w: 4, h: 4, x: 1, y: 2, maxW: 5, minW: 3}, static: true },
     {pos: {w: 1, h: 2, x: 5, y: 3}, static: true },
     {pos: {w: 1, h: 2, x: 8, y: 2}, static: true},
     {pos: {w: 2, h: 2, x: 8, y: 12}, static: true},
@@ -24,6 +24,7 @@ export const layoutData = [
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},
+
     {pos: {w: 1, h: 1}},
     {pos: {w: 2, h: 1}},
     {pos: {w: 1, h: 2}},

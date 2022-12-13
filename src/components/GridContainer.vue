@@ -72,24 +72,21 @@ onMounted(() => {
     container.updateLayout(true)
   })
   container._VueEvents.vueUseLayoutChange = (useLayout) => {
-    // useLayoutConfig.layout['data'] = container.exportData()
     isLayoutChange = true
     props.useLayout.data = []
-    nextTick(() => {
+    nextTick(()=>{
       useLayoutConfig = useLayout
       const realLayout = cloneDeep(useLayout.currentLayout)   // 隔离用户操作和layout对应的地址引用，用户修改都由watch同步
       if (props.layoutChange === null) {
-        for (const k in props.useLayout) {   // 让vue配置使用当前的layout,原来有现在不在realLayout中的键去除
-          if (realLayout[k] !== undefined) {
-            props.useLayout[k] = realLayout[k]
-          } else delete props.useLayout[k]
+        for (let k in props.useLayout) {   // 让vue配置使用当前的layout,原来有现在不在realLayout中的键去除
+          if (realLayout[k]  === undefined) delete props.useLayout[k]
         }
+        Object.assign(useLayout, useLayout.currentLayout)
       } else if (typeof props.layoutChange === 'function') {
         isLayoutChange = false
         props.layoutChange(realLayout) //  手动配置当前vue要使用的layout
       }
-
-      // ctx.$forceUpdate()
+      // console.log(realLayout.px,realLayout.data);
     })
   }
 })
@@ -102,7 +99,7 @@ watch(props.useLayout, (pre, now) => {    //  针对非地址引用(地址引用
     if (!Array.isArray(val) && ['data', 'margin', 'size'].includes(key)) {
       console.error(key, '键应该是一个数组');
     }
-    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange'].includes(key)) {
+    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage'].includes(key)) {
       console.error(key, '键应该是一个boolean值');
     }
     if (valueType !== 'number' && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',

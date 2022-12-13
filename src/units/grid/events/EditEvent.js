@@ -208,6 +208,7 @@ export default class EditEvent {
         prevent: {
             default: (ev) => ev.preventDefault(),
             false: (ev) => false,
+            contextmenu: (ev) =>  ev.preventDefault()
         },
         moveOuterContainer: {  //  用于跨容器Item通信，转移的各种处理
             /**用于嵌套情况两个【相邻】Container的直接过渡
@@ -722,6 +723,7 @@ export default class EditEvent {
                 // 拖拽滑动整个容器元素
                 const container = tempStore.fromContainer
                 if (!container) return
+                if (!container.slidePage) return
                 const element = container.element
                 let offsetX = ev.pageX - tempStore.mousedownEvent.pageX
                 let offsetY = ev.pageY - tempStore.mousedownEvent.pageY
@@ -729,26 +731,7 @@ export default class EditEvent {
                 const offsetTop = tempStore.slidePageOffsetInfo.offsetTop - offsetY
                 if (offsetLeft >= 0) element.scrollLeft = offsetLeft
                 if (offsetTop >= 0) element.scrollTop = offsetTop
-
-                // console.log(tempStore.slidePageOffsetInfo);
                 EPF.other.updateSlidePageInfo(ev.pageX, ev.pageY)
-                // let startY, startX
-                // let now = Date.now()
-                // startX = ev.screenX
-                // startY = ev.screenY
-                // const mouseSpeed = () => {
-                //     let dt = now - tempStore.mouseSpeed.timestamp;
-                //     let distanceX = Math.abs(startX - tempStore.mouseSpeed.endX);
-                //     let distanceY = Math.abs(startY - tempStore.mouseSpeed.endY);
-                //     let distance = distanceX > distanceY ? distanceX : distanceY   //  选一个移动最多的方向
-                //     let speed = Math.round(distance / dt * 1000);
-                //     // console.log(dt, distance, speed);
-                //     tempStore.mouseSpeed.endX = startX;
-                //     tempStore.mouseSpeed.endY = startY;
-                //     tempStore.mouseSpeed.timestamp = now;
-                //     return {distance, speed}
-                // }
-                // console.log(mouseSpeed());
             }
         },
         container: {
@@ -756,10 +739,10 @@ export default class EditEvent {
                 if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
                 const container = parseContainer(ev)
                 if (!container) return   // 只有点击Container或里面元素才生效
-                else EEF.cursor.mousedown(ev)
                 tempStore.fromItem = parseItem(ev)
                 if (!container && !tempStore.fromItem) return
-                if (container && !tempStore.fromItem) {
+                if (container && !tempStore.fromItem && !ev.touches) {
+                    EEF.cursor.mousedown(ev)
                     tempStore.slidePageOffsetInfo = {
                         offsetTop: container.element.scrollTop,
                         offsetLeft: container.element.scrollLeft,
@@ -824,6 +807,7 @@ export default class EditEvent {
                 tempStore.isLeftMousedown = true
                 tempStore.mousedownEvent = ev
                 tempStore.fromContainer = container
+                EEF.check.resizeOrDrag(ev)
 
                 if (tempStore.fromItem) {
                     // tempStore.fromItem._mask_(true)
@@ -835,12 +819,12 @@ export default class EditEvent {
                 //----------------------------------------------------------------//
             },
             mousemove: throttle((ev) => {
+                const container = parseContainer(ev)
                 if (tempStore.isLeftMousedown) {
                     if (tempStore.dragOrResize === 'slidePage') {
                         EPF.other.slidePage(ev)
                         return
                     }
-                    const container = parseContainer(ev)
                     tempStore.beforeContainer = tempStore.currentContainer
                     tempStore.currentContainer = container || null
                     if (tempStore.currentContainer !== null && tempStore.beforeContainer !== null) {   // 表示进去了某个Container内
@@ -881,7 +865,7 @@ export default class EditEvent {
                     const overItem = parseItem(ev)
                     if (overItem) {
                         const evClassList = ev.target.classList
-                        if (overItem.static) {
+                        if (overItem.static && container && !container.responsive) {
                             if (EEF.cursor.cursor !== 'static-no-drop') EEF.cursor.staticItemNoDrop()   // 静态模式才notDrop
                         } else if (evClassList.contains('grid-item-close-btn')) {
                             if (EEF.cursor.cursor !== 'item-close') EEF.cursor.itemClose()
@@ -900,7 +884,7 @@ export default class EditEvent {
                 if (tempStore.isResizing) EEF.itemResize.mouseup(ev)
                 // if (tempStore.isDragging) EEF.itemDrag.mouseup(ev)
 
-                if (container && EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()
+                if (container && container.responsive && EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()
                 const fromItem = tempStore.fromItem
                 const dragItem = tempStore.moveItem ? tempStore.moveItem : tempStore.fromItem
 
@@ -963,8 +947,11 @@ export default class EditEvent {
                 //--------------------------点击关闭按钮-----------------------------//
                 const downTagClassName = tempStore.mouseDownElClassName
                 if (downTagClassName && downTagClassName.includes('grid-item-close-btn')) {
-                    const evItem = parseItem(ev)
-                    if (evItem === tempStore.fromItem) evItem.remove(true)
+                    const target = ev.touchTarget ? ev.touchTarget : ev.target
+                    if(target.classList.contains('grid-item-close-btn')){
+                       const evItem = parseItem(ev)
+                       if (evItem === tempStore.fromItem) evItem.remove(true)
+                   }
                 }
 
                 //--------------------------------------------------------------------------//
@@ -996,22 +983,26 @@ export default class EditEvent {
                         dragItem.container.eventManager._callback_('itemResized', dragItem.pos.w, dragItem.pos.h, dragItem)
                     }
                 }
-                const sPFI = tempStore.slidePageOffsetInfo
-                const offsetLeft = sPFI.newestPageX - ev.pageX
-                const offsetTop = sPFI.newestPageY - ev.pageY
-                console.log(offsetLeft, offsetTop);
 
-                if (tempStore.dragOrResize === 'slidePage') {
-                    // 实现container在鼠标释放之后惯性滑动
-                    let timeCont = 500
-                    const container = tempStore.fromContainer
-                    const timer = setInterval(() => {
-                        timeCont -= 20
-                        container.element.scrollTop += parseInt((((offsetTop / 100 * timeCont) / 30) || 0).toString())
-                        container.element.scrollLeft += parseInt((((offsetLeft / 100 * timeCont) / 30) || 0).toString())
-                        if (timeCont <= 0 || tempStore.isLeftMousedown) clearInterval(timer)
-                    }, 20)
+                if(tempStore.isLeftMousedown){
+                    if (tempStore.dragOrResize === 'slidePage') {
+                        const sPFI = tempStore.slidePageOffsetInfo
+                        const offsetLeft = sPFI.newestPageX - ev.pageX
+                        const offsetTop = sPFI.newestPageY - ev.pageY
+                        // 实现container在鼠标释放之后惯性滑动
+                        let timeCont = 500
+                        const container = tempStore.fromContainer
+                        if (container.slidePage && (offsetTop >= 20 || offsetLeft >= 20) ) {
+                            const timer = setInterval(() => {
+                                timeCont -= 20
+                                container.element.scrollTop += parseInt((((offsetTop / 100 * timeCont) / 30) || 0).toString())
+                                container.element.scrollLeft += parseInt((((offsetLeft / 100 * timeCont) / 30) || 0).toString())
+                                if (timeCont <= 0 || tempStore.isLeftMousedown) clearInterval(timer)
+                            }, 20)
+                        }
+                    }
                 }
+
 
 
                 //-------------------------------重置相关缓存-------------------------------//
@@ -1039,20 +1030,22 @@ export default class EditEvent {
                 // touch 和 drag效果是一样的
                 ev = ev || window.event
                 if (ev.touches) {
-                    if (ev.stopPropagation) {
-                        ev.stopPropagation()
-                        ev.preventDefault()
-                    }
+                    if (ev.stopPropagation) ev.stopPropagation()
                     tempStore.deviceEventMode = 'touch'
                     ev = singleTouchToCommonEvent(ev)
                 } else tempStore.deviceEventMode = 'mouse'
                 if (tempStore.deviceEventMode === 'touch') {
                     tempStore.allowTouchMoveItem = false
                     const container = parseContainer(ev)
+                    document.addEventListener('contextmenu', EEF.prevent.contextmenu)  // 禁止长按弹出菜单
                     const pressTime = container ? container.pressTime : 360  // 长按多久响应拖动事件，默认360ms
                     tempStore.timeOutEvent = setTimeout(() => {
                         tempStore.allowTouchMoveItem = true
                         EPF.container.mousemove(ev)   // 触屏模式下只为了触发生成克隆元素
+                        const timer = setTimeout(()=>{
+                            document.removeEventListener('contextmenu', EEF.prevent.contextmenu)
+                            clearTimeout(timer)
+                        },600)
                         clearTimeout(tempStore.timeOutEvent)
                     }, pressTime)
                 }
@@ -1085,6 +1078,7 @@ export default class EditEvent {
                     tempStore.allowTouchMoveItem = false
                     tempStore.deviceEventMode = 'touch'
                     ev = singleTouchToCommonEvent(ev)
+                    document.removeEventListener('contextmenu', EEF.prevent.contextmenu)
                 } else tempStore.deviceEventMode = 'mouse'
                 EPF.container.mouseup(ev)    // 根据浏览器事件特性，触屏模式下快读点击情况下mouseup和touchend都会执行该函数，所以这里会执行两次但是不影响基本功能
             }
@@ -1116,8 +1110,8 @@ export default class EditEvent {
         document.addEventListener('mousedown', EPF.container.touchstartOrMousedown)
         document.addEventListener('touchstart', EPF.container.touchstartOrMousedown, {passive: false})
 
-        document.addEventListener('dragstart', EEF.prevent.default)
-        document.addEventListener('selectstart', EEF.prevent.default)
+        // document.addEventListener('dragstart', EEF.prevent.false)
+        // document.addEventListener('selectstart', EEF.prevent.false)
 
         //-------------------------------原来的必须挂dom上的事件-----------------------------//
         document.addEventListener('mousemove', EPF.container.touchmoveOrMousemove)
@@ -1132,8 +1126,8 @@ export default class EditEvent {
         document.removeEventListener('mousedown', EPF.container.touchstartOrMousedown)
         document.removeEventListener('touchstart', EPF.container.touchstartOrMousedown)
 
-        document.removeEventListener('dragstart', EEF.prevent.default)
-        document.removeEventListener('selectstart', EEF.prevent.default)
+        // document.removeEventListener('dragstart', EEF.prevent.false)
+        // document.removeEventListener('selectstart', EEF.prevent.false)
 
         //-----------------------------------------------------------------------------//
         document.removeEventListener('mousemove', EPF.container.touchmoveOrMousemove)

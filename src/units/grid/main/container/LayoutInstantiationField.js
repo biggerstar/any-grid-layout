@@ -28,8 +28,8 @@ export default class LayoutInstantiationField {
     scrollWaitTime = 800   // 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
     scrollSpeedX = null    // 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
     scrollSpeedY = null    // 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
-    resizeReactionDelay = 200    // 当Container大小改变时检测是否切换其他符合px限制的layout所用的时间间隔,建议间隔不要太低
-
+    resizeReactionDelay = 200    // 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔
+    slidePage = true    // 点击container的空白处是否能拖拽进行滑动容器
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
     //------------------------------------------------------//
     constructor(config = {}) {

@@ -321,7 +321,8 @@ export default class Container extends DomFunctionImpl {
     }
 
     _observer_() {
-        this.__ownTemp__.observer = new ResizeObserver(throttle(() => {
+        let isWindowResize = false
+        const layoutChangeFun = () => {
             if (!this._mounted) return
             const containerWidth = this.element.clientWidth
             if (containerWidth <= 0) return
@@ -335,7 +336,6 @@ export default class Container extends DomFunctionImpl {
 
             // console.log(useLayoutConfig);
             // console.log(this.px, useLayoutConfig.px);
-
             if (this.px && useLayoutConfig.px) {
                 if (this.px !== useLayoutConfig.px) {
                     // console.log(this.px, useLayoutConfig.px);
@@ -348,12 +348,14 @@ export default class Container extends DomFunctionImpl {
                     }
                     this.eventManager._callback_('useLayoutChange', currentLayout, containerWidth, this.container)
                     this._VueEvents.vueUseLayoutChange(useLayout)
-                } else {
-                    this.engine._syncLayoutConfig(fullUseLayoutConfig)
                 }
-                this.engine.updateLayout(true)
             }
-        }, this.resizeReactionDelay))
+            if (isWindowResize) return
+            this.engine.updateLayout(true)
+        }
+
+        window.addEventListener('resize',layoutChangeFun)
+        this.__ownTemp__.observer = new ResizeObserver(throttle(layoutChangeFun, this.resizeReactionDelay))
         this.__ownTemp__.observer.observe(this.element)
     }
 

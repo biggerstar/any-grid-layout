@@ -15,14 +15,14 @@ export default class ItemPos {
     maxH = Infinity   // 栅格倍数
     iName = ''
     nextStaticPos = null
-    nextStaticPosDemo = {     // 静态布局下用于算法检测是否空位的缓存 // 静态布局模式下指定是否可拖动【只支持静态布局】
-        w: 1,
-        h: 1,
-        x: 1,
-        y: 1,
-        isNext: false,
-        beforeIndex: null
-    }
+    // nextStaticPosDemo = {     // 静态布局下用于算法检测是否空位的缓存 // 静态布局模式下指定是否可拖动【只支持静态布局】
+    //     w: 1,
+    //     h: 1,
+    //     x: 1,
+    //     y: 1,
+    //     isNext: false,
+    //     beforeIndex: null
+    // }
     beforePos = null   //  跨容器时候保存上一个容器的位置
     autoOnce = null  // 静态布局下在下一次指定是否自动寻找容器中的空位
 

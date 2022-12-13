@@ -125,10 +125,12 @@ export const parseItem = (ev, reverse = false) => {
 
 /** 触屏模式下点击屏幕触发的触屏事件转成和鼠标事件类似的通用事件 */
 export const singleTouchToCommonEvent = (touchEvent) => {
-    if (touchEvent.touches && touchEvent.touches.length){
-        for(let k in touchEvent.touches[0]){
+    let useTouchKey = 'touches'
+    if (touchEvent.touches && touchEvent.touches.length === 0) useTouchKey = 'changedTouches'  // 正常用于touchEnd
+    if (touchEvent[useTouchKey] && touchEvent[useTouchKey].length){
+        for(let k in touchEvent[useTouchKey][0]){
             if (['target'].includes(k)) continue
-            touchEvent[k] = touchEvent.touches[0][k];
+            touchEvent[k] = touchEvent[useTouchKey][0][k];
         }
         touchEvent.touchTarget = document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
     }

@@ -19,7 +19,9 @@ export const defaultStyle = {
         display:'block',
         overflow: 'hidden',
         position: 'absolute',
-        // touchAction:'none'
+        userSelect:'none',   // 禁止用户选择文本或元素
+        touchCallout:'none',  // 苹果禁用touch提示
+        // touchAction: 'none',  // 阻止touch事件
     },
     gridResizableHandle:{
         height: '20px',

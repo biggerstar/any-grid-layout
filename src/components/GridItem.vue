@@ -85,7 +85,7 @@ const reSetContainerSize = () => {
 onMounted(() => {
   const propsRaw = toRaw(props)
   container = parseContainerFromPrototypeChain(gridItem.value)
-  props.pos.autoOnce = !props.pos.x || !props.pos.y;
+  props.pos.autoOnce = !props.pos.x || !props.pos.y
 
   selfItem = container.add({
     el: gridItem.value,

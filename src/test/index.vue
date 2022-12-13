@@ -7,7 +7,7 @@
         :events="events"
         :config="config"
         :render="render"
-        :layout-change="layoutChange"
+        :layoutChange="layoutChange"
     >
       <gridItem v-for="(item,index) in useLayout.data"
                 :key=index
@@ -27,23 +27,23 @@
         <span>这是允许的按钮</span>
       </gridItem>
     </GridContainer>
-    <!--        <GridContainer-->
-    <!--            class="grid-container"-->
-    <!--            style="height: 500px"-->
-    <!--            :config="config1"-->
-    <!--            :useLayout="useLayout1"-->
-    <!--            :events="events"-->
-    <!--        >-->
-    <!--          <gridItem v-for="(item,index) in useLayout1.data"-->
-    <!--                    :key=index-->
-    <!--                    :pos="item.pos"-->
-    <!--                    :draggable= true-->
-    <!--                    :resize= true-->
-    <!--                    :close= true-->
-    <!--          >-->
-    <!--            {{ item }}-->
-    <!--          </gridItem>-->
-    <!--        </GridContainer>-->
+            <GridContainer
+                class="grid-container"
+                style="height: 500px"
+                :config="config1"
+                :useLayout="useLayout1"
+                :events="events"
+            >
+              <gridItem v-for="(item,index) in useLayout1.data"
+                        :key=index
+                        :pos="item.pos"
+                        :draggable= true
+                        :resize= true
+                        :close= true
+              >
+                {{ item }}
+              </gridItem>
+            </GridContainer>
 
 
   </div>
@@ -57,6 +57,7 @@ import GridContainer from "@/components/GridContainer.vue";
 
 const layoutData1 = layoutData.filter((item, index) => index < 10)
 const layoutData2 = layoutData.filter((item, index) => index < 16)
+const layoutData3 = layoutData.filter((item, index) => index < 25)
 
 
 const events = {
@@ -156,20 +157,20 @@ const layouts = [
     // margin: [20, 20],
     // size: [90, 80],
     // minCol: 7,
-    data: layoutData1,
+    data: layoutData2,
   },
   {
     px: 800,
     col: 6,
     // margin: [10, 10],
     // size: [60, 80],
-    data: layoutData11,
+    data: layoutData1,
   },
   {
     px: 560,
     col: 9,
-    margin: [20, 20], 
-    size: [60, 80],
+    margin: [20, 20],
+    // size: [60, 80],
     data: layoutData11,
   },
   {
@@ -177,7 +178,7 @@ const layouts = [
     col: 4,
     // margin: [0, 0],
     // size: [36, 80],
-    data: layoutData11,
+    data: layoutData3,
   },
   {
     px: 200,
@@ -188,7 +189,7 @@ const layouts = [
   },
 ]
 const layouts1 = {
-  data: layoutData,
+  data: layoutData1 ,
   // col: 8,
   row: 8,
   ratio: 0.2,
@@ -201,23 +202,24 @@ const layouts1 = {
   // maxRow: 5,
   followScroll: true,
   scrollWaitTime: 800,
+  responsive: true,
   itemLimit: {
     // minW: 1,
     // minH: 1,
     // maxH: 1,
     // maxW: 1,
   },
-
   // sizeWidth: 80,
   // sizeHeight: 80,
   // marginX: 30,
   // marginY: 50,
 }
 const globalConf = {
-  responsive: true,
+  responsive: false,
   row: 6,
   responseMode: 'default',
   exchange: true,
+  slidePage :true,
   ratio: 0.2,
 }
 
@@ -242,7 +244,7 @@ const layoutChange = (currentLayout) => {
   // for (let k in currentLayout) {
   //   useLayout[k] = currentLayout[k]
   // }
-  useLayout.data = Object.assign([], currentLayout.data)
+  // useLayout.data = Object.assign([], currentLayout.data)
 }
 const render = (currentLayout, layouts) => {
   // console.log(currentLayout.px);
@@ -254,12 +256,12 @@ const render = (currentLayout, layouts) => {
   //   item.close = true
   //   return index < 10
   // })
-
+  // console.log(currentLayout.px,currentLayout.data);
   Object.assign(useLayout, currentLayout)
 
   if (!useLayout.data) useLayout.data = []
 
-  useLayout.data = layoutData
+  // useLayout.data = layoutData
 
   currentLayout.data.forEach((item, index) => {
     // useLayout.data.push(item)
