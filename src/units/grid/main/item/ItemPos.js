@@ -24,9 +24,7 @@ export default class ItemPos {
         beforeIndex: null
     }
     beforePos = null   //  跨容器时候保存上一个容器的位置
-    __temp__ = {
-        autoOnce: null,  // 静态布局下指定是否自动寻找当前空位,
-    }
+    autoOnce = null  // 静态布局下在下一次指定是否自动寻找容器中的空位
 
     constructor(pos) {
         if (typeof pos === 'object') this.update(pos)
@@ -38,7 +36,7 @@ export default class ItemPos {
         return this
     }
 
-    export(){
+    export() {
         const exportFields = {}
         Object.keys(this).forEach((posKey) => {
             if (['w', 'h', 'x', 'y'].includes(posKey)) {
@@ -60,6 +58,10 @@ export default class ItemPos {
                 if (pos[posKey] === Infinity) return
                 if (pos[posKey] === undefined) return
                 pos[posKey] = parseInt(pos[posKey])
+            }
+            if (['autoOnce'].includes(posKey)) {
+                // console.log(pos.autoOnce);
+                pos[posKey] = pos[posKey]
             }
         })
         // console.log(pos);

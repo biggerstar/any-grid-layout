@@ -87,14 +87,14 @@ export default class EditEvent {
                     if (maxBlankMatrixLimit.maxW >= newResize.w) {    // 横向调整
                         updateStyle.width = nowElSize.width + 'px'
                         fromItem.pos.w = newResize.w
-                    }else {
-                        newResize.w=fromItem.pos.w      //必要，将当前实际宽给newResize
+                    } else {
+                        newResize.w = fromItem.pos.w      //必要，将当前实际宽给newResize
                     }
                     if (maxBlankMatrixLimit.maxH >= newResize.h) {  // 纵向调整
                         updateStyle.height = nowElSize.height + 'px'
                         fromItem.pos.h = newResize.h
-                    }else {
-                        newResize.h=fromItem.pos.h   //必要，将当前实际高给newResize
+                    } else {
+                        newResize.h = fromItem.pos.h   //必要，将当前实际高给newResize
                     }
                     if (Object.keys(updateStyle).length > 0) {
                         fromItem.updateStyle(updateStyle, tempStore.cloneElement)
@@ -144,7 +144,11 @@ export default class EditEvent {
                     tempStore.isResizing = true
                     tempStore.isDragging = false
                     return 'resize'
+                } else if (tempStore.dragOrResize === 'slidePage') {
+                    return 'slidePage'
                 }
+
+
             }
         },
         cursor: {
@@ -294,8 +298,8 @@ export default class EditEvent {
                     const isExchange = fromItem.container.eventManager._callback_('crossContainerExchange', dragItem, newItem)
                     if (isExchange === false || isExchange === null) return   // 通过事件返回值来判断是否继续进行交换
 
-                    if (container['responsive']) newItem.pos.__temp__.autoOnce = true
-                    else if (!container['responsive']) newItem.pos.__temp__.autoOnce = false
+                    if (container['responsive']) newItem.pos.autoOnce = true
+                    else if (!container['responsive']) newItem.pos.autoOnce = false
                     container.add(newItem)
 
                     if (typeof itemPositionMethod === 'function') {
@@ -486,7 +490,7 @@ export default class EditEvent {
                     } else innerContentArea()
                     //---------------------------响应模式【跨】容器交换(跨容器交换后直接跳出)------------------------------//
                     if (container.__ownTemp__.firstEnterUnLock) {
-                        dragItem.pos.__temp__.autoOnce = true
+                        dragItem.pos.autoOnce = true
                         if (toItem) {
                             EEF.itemDrag.mousemoveExchange(container, (newItem) => {
                                 container.engine.move(newItem, toItem.i)
@@ -708,22 +712,70 @@ export default class EditEvent {
                 if (tempStore.toItem === null) return false
             }
         },
+        other: {
+            updateSlidePageInfo: throttle((pageX, pageY) => {
+                tempStore.slidePageOffsetInfo.newestPageX = pageX
+                tempStore.slidePageOffsetInfo.newestPageY = pageY
+                // console.log(1111111111111);
+            }),
+            slidePage: (ev) => {
+                // 拖拽滑动整个容器元素
+                const container = tempStore.fromContainer
+                if (!container) return
+                const element = container.element
+                let offsetX = ev.pageX - tempStore.mousedownEvent.pageX
+                let offsetY = ev.pageY - tempStore.mousedownEvent.pageY
+                const offsetLeft = tempStore.slidePageOffsetInfo.offsetLeft - offsetX
+                const offsetTop = tempStore.slidePageOffsetInfo.offsetTop - offsetY
+                if (offsetLeft >= 0) element.scrollLeft = offsetLeft
+                if (offsetTop >= 0) element.scrollTop = offsetTop
+
+                // console.log(tempStore.slidePageOffsetInfo);
+                EPF.other.updateSlidePageInfo(ev.pageX, ev.pageY)
+                // let startY, startX
+                // let now = Date.now()
+                // startX = ev.screenX
+                // startY = ev.screenY
+                // const mouseSpeed = () => {
+                //     let dt = now - tempStore.mouseSpeed.timestamp;
+                //     let distanceX = Math.abs(startX - tempStore.mouseSpeed.endX);
+                //     let distanceY = Math.abs(startY - tempStore.mouseSpeed.endY);
+                //     let distance = distanceX > distanceY ? distanceX : distanceY   //  选一个移动最多的方向
+                //     let speed = Math.round(distance / dt * 1000);
+                //     // console.log(dt, distance, speed);
+                //     tempStore.mouseSpeed.endX = startX;
+                //     tempStore.mouseSpeed.endY = startY;
+                //     tempStore.mouseSpeed.timestamp = now;
+                //     return {distance, speed}
+                // }
+                // console.log(mouseSpeed());
+            }
+        },
         container: {
             mousedown: (ev) => {
                 if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
                 const container = parseContainer(ev)
                 if (!container) return   // 只有点击Container或里面元素才生效
+                else EEF.cursor.mousedown(ev)
                 tempStore.fromItem = parseItem(ev)
-                if (!tempStore.fromItem) return
-
-
+                if (!container && !tempStore.fromItem) return
+                if (container && !tempStore.fromItem) {
+                    tempStore.slidePageOffsetInfo = {
+                        offsetTop: container.element.scrollTop,
+                        offsetLeft: container.element.scrollLeft,
+                        newestPageX: 0,
+                        newestPageY: 0,
+                    }
+                    tempStore.dragOrResize = 'slidePage'
+                }
+                // 执行到这行container一定存在,可能点击container或者Item，Item用于操作Item，container用于拖动整个container元素
                 const downTagClassName = ev.target.className
                 tempStore.mouseDownElClassName = downTagClassName
                 if (downTagClassName.includes('grid-clone-el')) return
                 if (downTagClassName.includes('grid-item-close-btn')) return
                 if (downTagClassName.includes('grid-item-resizable-handle')) {   //   用于resize
                     tempStore.dragOrResize = 'resize'
-                } else {    //  用于drag
+                } else if (tempStore.fromItem) {    //  用于drag
                     if (!tempStore.fromItem.container.responsive) {  // 静态布局下如果pos中是要求static则取消该Item的drag
                         if (tempStore.fromItem.static) return
                     }
@@ -773,21 +825,21 @@ export default class EditEvent {
                 tempStore.mousedownEvent = ev
                 tempStore.fromContainer = container
 
-                // console.log(container);
                 if (tempStore.fromItem) {
                     // tempStore.fromItem._mask_(true)
                     tempStore.fromItem.__temp__.clientWidth = tempStore.fromItem.nowWidth()
                     tempStore.fromItem.__temp__.clientHeight = tempStore.fromItem.nowHeight()
                     tempStore.offsetPageX = tempStore.fromItem.offsetLeft()
                     tempStore.offsetPageY = tempStore.fromItem.offsetTop()
-                    if (EEF.check.resizeOrDrag(ev) === 'drag') {
-                        EEF.cursor.mousedown(ev)
-                    }
                 }
                 //----------------------------------------------------------------//
             },
             mousemove: throttle((ev) => {
                 if (tempStore.isLeftMousedown) {
+                    if (tempStore.dragOrResize === 'slidePage') {
+                        EPF.other.slidePage(ev)
+                        return
+                    }
                     const container = parseContainer(ev)
                     tempStore.beforeContainer = tempStore.currentContainer
                     tempStore.currentContainer = container || null
@@ -829,12 +881,14 @@ export default class EditEvent {
                     const overItem = parseItem(ev)
                     if (overItem) {
                         const evClassList = ev.target.classList
-                        if (evClassList.contains('grid-item-close-btn')) {
+                        if (overItem.static) {
+                            if (EEF.cursor.cursor !== 'static-no-drop') EEF.cursor.staticItemNoDrop()   // 静态模式才notDrop
+                        } else if (evClassList.contains('grid-item-close-btn')) {
                             if (EEF.cursor.cursor !== 'item-close') EEF.cursor.itemClose()
                         } else if (evClassList.contains('grid-item-resizable-handle')) {
                             if (EEF.cursor.cursor !== 'item-resize') EEF.cursor.itemResize()
-                        } else if (!overItem.container.responsive) {
-                            if (overItem.static && EEF.cursor.cursor !== 'static-no-drop') EEF.cursor.staticItemNoDrop()   // 静态模式才notDrop
+                        } else {
+                            if (EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()
                         }
                     } else if (parseContainer(ev)) {
                         if (EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()
@@ -942,6 +996,22 @@ export default class EditEvent {
                         dragItem.container.eventManager._callback_('itemResized', dragItem.pos.w, dragItem.pos.h, dragItem)
                     }
                 }
+                const sPFI = tempStore.slidePageOffsetInfo
+                const offsetLeft = sPFI.newestPageX - ev.pageX
+                const offsetTop = sPFI.newestPageY - ev.pageY
+                console.log(offsetLeft, offsetTop);
+
+                if (tempStore.dragOrResize === 'slidePage') {
+                    // 实现container在鼠标释放之后惯性滑动
+                    let timeCont = 500
+                    const container = tempStore.fromContainer
+                    const timer = setInterval(() => {
+                        timeCont -= 20
+                        container.element.scrollTop += parseInt((((offsetTop / 100 * timeCont) / 30) || 0).toString())
+                        container.element.scrollLeft += parseInt((((offsetLeft / 100 * timeCont) / 30) || 0).toString())
+                        if (timeCont <= 0 || tempStore.isLeftMousedown) clearInterval(timer)
+                    }, 20)
+                }
 
 
                 //-------------------------------重置相关缓存-------------------------------//
@@ -969,7 +1039,10 @@ export default class EditEvent {
                 // touch 和 drag效果是一样的
                 ev = ev || window.event
                 if (ev.touches) {
-                    if (ev.stopPropagation) ev.stopPropagation()
+                    if (ev.stopPropagation) {
+                        ev.stopPropagation()
+                        ev.preventDefault()
+                    }
                     tempStore.deviceEventMode = 'touch'
                     ev = singleTouchToCommonEvent(ev)
                 } else tempStore.deviceEventMode = 'mouse'

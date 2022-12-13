@@ -1,5 +1,5 @@
 import Item from "@/units/grid/main/item/Item.js";
-import { merge} from "@/units/grid/other/tool.js";
+import {merge} from "@/units/grid/other/tool.js";
 import LayoutManager from "@/units/grid/algorithm/LayoutManager.js";
 import LayoutConfig from "@/units/grid/algorithm/LayoutConfig.js";
 import ItemPos from "@/units/grid/main/item/ItemPos.js";
@@ -106,7 +106,7 @@ export default class Engine {
                 limitRow: maxRow
             }
         }
-        const responsiveAutoSetting = ()=>{
+        const responsiveAutoSetting = () => {
             if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
                 if (!container.row) this.layoutManager.autoRow()
                 else maxRow = container.row
@@ -125,7 +125,7 @@ export default class Engine {
                 containerH = limitInfo.limitRow
             }
         }
-        const staticAutoSetting = ()=>{
+        const staticAutoSetting = () => {
             const limitInfo = computeLimitLength(container.col, container.row)
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
@@ -178,7 +178,7 @@ export default class Engine {
 
             if ((xItemEnd >= xBoundaryStart && xItemEnd <= xBoundaryEnd      // 左边界碰撞
                     || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd  // X轴中间部分碰撞
-                || xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd )    // 右边界碰撞
+                    || xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd)    // 右边界碰撞
                 && (yItemEnd >= yBoundaryStart && yItemEnd <= yBoundaryEnd      // 左边界碰撞
                     || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd  // Y轴中间部分碰撞
                     || yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)      // 下边界碰撞
@@ -351,8 +351,13 @@ export default class Engine {
         else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
         else {
             item.pos.i = item.i = this.__temp__.staticIndexCount++
-            if (!this.container._mounted || this.container.responsive) item.pos.__temp__.autoOnce = true   // 所有响应式都自动排列
-            else if (!item._mounted && item.pos.__temp__.autoOnce === null && !this.container.responsive) item.pos.__temp__.autoOnce = true  // 静态且未挂载状态的话自动排列
+            // console.log(item.pos.autoOnce );
+            if (!this.container._mounted || this.container.responsive) item.pos.autoOnce = true   // 所有响应式都自动排列
+            else if (!this.container.responsive) {
+                if (!item._mounted && item.pos.autoOnce === null) item.pos.autoOnce = true  // 静态且未挂载状态的话自动排列
+
+            }
+
             const success = this.push(item)
             if (success) {
                 // console.log(11111111111111111);
@@ -371,7 +376,7 @@ export default class Engine {
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
         // console.log(item.pos);
-        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.__temp__.autoOnce, true)
+        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
         // console.log(realLayoutPos);
         let success = false
         if (realLayoutPos) {
@@ -541,7 +546,7 @@ export default class Engine {
                 this.layoutManager.addItem(realLayoutPos)
                 item.pos = new ItemPos(merge(this._genItemPosArg(item), realLayoutPos))
                 item.pos.nextStaticPos = null
-                item.pos.__temp__.autoOnce = false
+                item.pos.autoOnce = false
             }
             return realLayoutPos
         } else {
@@ -570,19 +575,19 @@ export default class Engine {
             updateItemList = updateItemList.filter(item => items.includes(item))
             // console.log(items.length, updateItemList);
             const updateResponsiveItemLayout = (item) => {
-                const realPos = this._isCanAddItemToContainer_(item, item.__temp__.autoOnce, true)
+                const realPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
                 if (realPos) {
                     item.updateItemLayout()
                 }
             }
             updateItemList.forEach((item) => {   // 1.先对要进行更新成员占指定静态位
-                item.__temp__.autoOnce = false
+                item.autoOnce = false
                 updateResponsiveItemLayout(item)
             })
 
             items.forEach(item => {   // 2。再对剩余成员按顺序找位置坐下
                 if (updateItemList.includes(item)) return
-                item.__temp__.autoOnce = true
+                item.autoOnce = true
                 updateResponsiveItemLayout(item)
             })
             // console.log(items);
@@ -617,25 +622,25 @@ export default class Engine {
             })
         }
         this.container.updateContainerStyleSize()
-        const genBeforeSize = (container)=>{
+        const genBeforeSize = (container) => {
             return {
-                row:container.row,
-                col:container.col,
-                containerW:container.containerW,
-                containerH:container.containerH,
-                width:container.nowWidth(),
-                height:container.nowHeight()
+                row: container.row,
+                col: container.col,
+                containerW: container.containerW,
+                containerH: container.containerH,
+                width: container.nowWidth(),
+                height: container.nowHeight()
             }
         }
         const container = this.container
-        if (!container.__ownTemp__.beforeContainerSizeInfo){
-            container.__ownTemp__.beforeContainerSizeInfo =  genBeforeSize(container)
-        }else {
+        if (!container.__ownTemp__.beforeContainerSizeInfo) {
+            container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
+        } else {
             const beforeSize = container.__ownTemp__.beforeContainerSizeInfo
-            if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH){
+            if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH) {
                 const nowSize = genBeforeSize(container)
                 container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
-                this.container.eventManager._callback_('containerSizeChange',beforeSize,nowSize,container)
+                this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
             }
         }
 

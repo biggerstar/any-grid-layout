@@ -45,7 +45,8 @@ export default class Container extends DomFunctionImpl {
     events = []
     global = {}
     //----------------内部需要的参数---------------------//
-    element = null
+    element = null       //  container主体元素节点
+    contentElement = null   // 放置Item的元素节点，被element直接包裹
     classList = []
     attr = []
     engine = []
@@ -376,6 +377,7 @@ export default class Container extends DomFunctionImpl {
      *      }
      * */
     add(item) {
+        // console.log(item.autoOnce);
         item.container = this
         item.parentElement = this.contentElement
         if (!(item instanceof Item)) item = this.engine.createItem(item)

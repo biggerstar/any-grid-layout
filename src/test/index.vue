@@ -163,14 +163,14 @@ const layouts = [
     col: 6,
     // margin: [10, 10],
     // size: [60, 80],
-    data: layoutData2,
+    data: layoutData11,
   },
   {
     px: 560,
-    col: 5,
-    // margin: [10, 10],
-    // size: [60, 80],
-    data: layoutData2,
+    col: 9,
+    margin: [20, 20],
+    size: [60, 80],
+    data: layoutData11,
   },
   {
     px: 360,
@@ -214,7 +214,7 @@ const layouts1 = {
   // marginY: 50,
 }
 const globalConf = {
-  responsive: false,
+  responsive: true,
   row: 6,
   responseMode: 'default',
   exchange: true,
@@ -234,7 +234,7 @@ const config1 = reactive({
 })
 
 const layoutChange = (currentLayout) => {
-  console.log(currentLayout);
+  // console.log(currentLayout);
   // console.log(currentLayout.data );
   // useLayout.data = currentLayout.data
   // currentLayout.data[0].static=false
@@ -248,18 +248,18 @@ const render = (currentLayout, layouts) => {
   // console.log(currentLayout.px);
   // Object.assign(useLayout,currentLayout)
 
-  const data = layoutData.filter((item, index) => {
-    item.draggable = true
-    item.resize = true
-    item.close = true
-    return index < 10
-  })
+  // const data = layoutData.filter((item, index) => {
+  //   item.draggable = true
+  //   item.resize = true
+  //   item.close = true
+  //   return index < 10
+  // })
 
   Object.assign(useLayout, currentLayout)
 
   if (!useLayout.data) useLayout.data = []
 
-  useLayout.data = data
+  useLayout.data = layoutData
 
   currentLayout.data.forEach((item, index) => {
     // useLayout.data.push(item)

@@ -85,7 +85,8 @@ const reSetContainerSize = () => {
 onMounted(() => {
   const propsRaw = toRaw(props)
   container = parseContainerFromPrototypeChain(gridItem.value)
-  // console.log(props.pos);
+  props.pos.autoOnce = !props.pos.x || !props.pos.y;
+
   selfItem = container.add({
     el: gridItem.value,
     ...propsRaw,
@@ -94,8 +95,6 @@ onMounted(() => {
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
-  // console.log(props.pos.x,props.pos.y);
-  if (!props.pos.x || !props.pos.y) selfItem.pos.__temp__.autoOnce = true
   selfItem.mount()
   // console.log(selfItem);
   selfItem._VueEvents.vueItemResizing = (fromItem, w, h) => {
