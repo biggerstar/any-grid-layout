@@ -2,7 +2,7 @@
   <div>
     <GridContainer
         class="grid-container"
-        style="height: 500px"
+        style="height: 400px"
         :useLayout="useLayout"
         :events="events"
         :config="config"
@@ -22,28 +22,30 @@
                 :dragIgnoreEls="item.dragIgnoreEls"
                 :dragAllowEls="item.dragAllowEls"
       >
-        {{ item }}
+        {{ index }}
 
-        <span>这是允许的按钮</span>
+        <!--        <span>这是允许的按钮</span>-->
       </gridItem>
     </GridContainer>
-            <GridContainer
-                class="grid-container"
-                style="height: 500px"
-                :config="config1"
-                :useLayout="useLayout1"
-                :events="events"
-            >
-              <gridItem v-for="(item,index) in useLayout1.data"
-                        :key=index
-                        :pos="item.pos"
-                        :draggable= true
-                        :resize= true
-                        :close= true
-              >
-                {{ item }}
-              </gridItem>
-            </GridContainer>
+
+    <GridContainer
+        class="grid-container"
+        style="height: 500px"
+        :config="config1"
+        :useLayout="useLayout1"
+        :events="events"
+    >
+      <gridItem v-for="(item,index) in useLayout1.data"
+                style="color: navy"
+                :key=index
+                :pos="item.pos"
+                :draggable=true
+                :resize=true
+                :close=true
+      >
+        {{ index }}
+      </gridItem>
+    </GridContainer>
 
 
   </div>
@@ -58,6 +60,8 @@ import GridContainer from "@/components/GridContainer.vue";
 const layoutData1 = layoutData.filter((item, index) => index < 10)
 const layoutData2 = layoutData.filter((item, index) => index < 16)
 const layoutData3 = layoutData.filter((item, index) => index < 25)
+const layoutData4 = layoutData.filter((item, index) => index < 32)
+const layoutData5 = layoutData.filter((item, index) => index < 15)
 
 
 const events = {
@@ -153,11 +157,11 @@ const layouts = [
   },
   {
     px: 1000,
-    col: 7,
+    // col: 7,
     // margin: [20, 20],
-    // size: [90, 80],
+    size: [90, 80],
     // minCol: 7,
-    data: layoutData2,
+    data: layoutData1,
   },
   {
     px: 800,
@@ -168,10 +172,10 @@ const layouts = [
   },
   {
     px: 560,
-    col: 9,
-    margin: [20, 20],
-    // size: [60, 80],
-    data: layoutData11,
+    // col: 6,
+    // margin: [20, 20],
+    size: [80, 50],
+    data: layoutData1,
   },
   {
     px: 360,
@@ -189,7 +193,7 @@ const layouts = [
   },
 ]
 const layouts1 = {
-  data: layoutData1 ,
+  data: layoutData3,
   // col: 8,
   row: 8,
   ratio: 0.2,
@@ -202,7 +206,7 @@ const layouts1 = {
   // maxRow: 5,
   followScroll: true,
   scrollWaitTime: 800,
-  responsive: true,
+  responsive: false,
   itemLimit: {
     // minW: 1,
     // minH: 1,
@@ -215,14 +219,14 @@ const layouts1 = {
   // marginY: 50,
 }
 const globalConf = {
-  responsive: false,
+  responsive: true,
   row: 6,
   responseMode: 'default',
   exchange: true,
-  slidePage :true,
+  slidePage: true,
   ratio: 0.2,
 }
-
+//  TODO  autoRow
 let useLayout = reactive({})
 let useLayout1 = reactive({})
 
@@ -263,20 +267,15 @@ const render = (currentLayout, layouts) => {
 
   // useLayout.data = layoutData
 
-  currentLayout.data.forEach((item, index) => {
-    // useLayout.data.push(item)
-    setTimeout(() => {
-      // console.log(useLayout.sizeWidth);
-      // useLayout.sizeWidth++
-      // useLayout.data[index].x++
-    }, 300 * index)
-  })
-
   setTimeout(() => {
+    // useLayout.responsive = false
     // console.log(useLayout.sizeWidth);
     // useLayout.sizeWidth++
-    // useLayout.data[index].x++
-  }, 10000)
+    // useLayout.data[4].pos.w += 2
+    // useLayout.data[4].pos.h += 1
+    // console.log(useLayout.data[1]);
+
+  }, 3000)
 
 }
 

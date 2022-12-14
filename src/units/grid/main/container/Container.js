@@ -161,6 +161,7 @@ export default class Container extends DomFunctionImpl {
     genGridContainerBox = () => {
         this.contentElement = document.createElement('div')
         this.contentElement.classList.add('grid-container-area')
+        this.contentElement._isGridContainerArea = true
         this.element.appendChild(this.contentElement)
         this.updateStyle(defaultStyle.gridContainer, this.contentElement)
         this.contentElement.classList.add(this.className)
@@ -225,30 +226,7 @@ export default class Container extends DomFunctionImpl {
     }
 
     exportData() {
-        return this.engine.items.map((item) => {
-            const exposeConfig = {}
-            let exposePos = {}
-            exposePos = item.pos.export()
-            if (this.responsive) {
-                delete exposePos.x
-                delete exposePos.y
-            }
-            exposeConfig['pos'] = exposePos
-            Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
-                if (item[field] !== false) exposeConfig[field] = item[field]
-            }))
-            Array.from(['follow', 'dragOut']).forEach((field => {
-                if (item[field] !== true) exposeConfig[field] = item[field]
-            }))
-            //transition 特殊导出
-            if (typeof item.transition === 'boolean') exposeConfig.transition = item.transition
-            if (typeof item.transition === 'object') {
-                if (item.transition.time !== 180 || item.transition.field !== 'top,left,width,height') {
-                    exposeConfig.transition = item.transition
-                }
-            }
-            return exposeConfig
-        })
+        return this.engine.items.map((item)=> item.exportConfig())
     }
 
     /** 渲染某一组Data */
@@ -354,7 +332,7 @@ export default class Container extends DomFunctionImpl {
             this.engine.updateLayout(true)
         }
 
-        window.addEventListener('resize',layoutChangeFun)
+        window.addEventListener('resize', layoutChangeFun)
         this.__ownTemp__.observer = new ResizeObserver(throttle(layoutChangeFun, this.resizeReactionDelay))
         this.__ownTemp__.observer.observe(this.element)
     }

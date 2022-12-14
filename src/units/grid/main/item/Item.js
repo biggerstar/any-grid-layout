@@ -147,8 +147,8 @@ export default class Item extends DomFunctionImpl {
                     if (v === false) transition.time = 0
                     if (typeof v === 'number') transition.time = v
                     if (typeof v === 'object') {
-                        if (v.time !== transition.time) transition.time = v.time
-                        if (v.field !== transition.field) transition.field = v.field
+                        if (v.time && v.time !== transition.time) transition.time = v.time
+                        if (v.field && v.field !== transition.field) transition.field = v.field
                     }
                     self.animation(transition)
                 }
@@ -156,6 +156,36 @@ export default class Item extends DomFunctionImpl {
         })
 
 
+    }
+
+    /** 导出当前Item的配置，忽略和默认配置一样的字段 */
+    exportConfig = () => {
+        const item = this
+        const exposeConfig = {}
+        let exposePos = {}
+        exposePos = item.pos.export()
+        if (this.responsive) {
+            delete exposePos.x
+            delete exposePos.y
+        }
+        exposeConfig['pos'] = exposePos
+        Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
+            if (item[field] !== false) exposeConfig[field] = item[field]
+        }))
+        Array.from(['follow', 'dragOut']).forEach((field => {
+            if (item[field] !== true) exposeConfig[field] = item[field]
+        }))
+        //transition 特殊导出
+        let transition = {}
+        if (item.transition.field !== 'top,left,width,height'){
+            transition.field = item.transition.field
+            if (item.transition.time !== 180)   transition.time = item.transition.time
+        }else{
+            transition = item.transition.time
+        }
+        exposeConfig.transition = transition
+        //transition 特殊导出结束
+        return exposeConfig
     }
 
     /** 渲染, 直接渲染添加到 Container 中*/
@@ -205,7 +235,7 @@ export default class Item extends DomFunctionImpl {
                 this.container.contentElement.removeChild(this.element)
                 this.container.eventManager._callback_('itemUnmounted', this)
             } else {
-                this.container.layoutManager._error_('ItemAlreadyRemove', '该Item对应的element未在文档中挂载，可能已经被移除', this)
+                this.container.eventManager._error_('ItemAlreadyRemove', '该Item对应的element未在文档中挂载，可能已经被移除', this)
             }
         })
         if (isForce) this.remove()
@@ -218,7 +248,7 @@ export default class Item extends DomFunctionImpl {
     remove(force = false) {
         this.container.engine.remove(this)
         if (force) {
-            this.container.contentElement.removeChild(this.element)
+            this.unmount()
         }
     }
 

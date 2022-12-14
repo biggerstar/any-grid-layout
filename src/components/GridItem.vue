@@ -7,7 +7,7 @@
 <script setup>
 
 import {parseContainerFromPrototypeChain} from "@/units/grid/other/tool.js";
-import {nextTick, onMounted, ref, toRaw, watch, onUnmounted} from "vue";
+import {nextTick, onMounted, ref, toRaw, watch, onUnmounted, getCurrentInstance} from "vue";
 
 const gridItem = ref()
 let selfItem = null  // 改Item对应的实例，Item内所有变量都非响应
@@ -16,19 +16,19 @@ const props = defineProps({
   //----------------------ItemPos挂载字段-------------------------//
   pos: {
     required: true, type: Object, default: {   // 未有实际效果，为了方便类型
-      w: {required: true, type: Number,default:undefined},
-      h: {required: true, type: Number,default:undefined},
-      x: {required: false, type: Number,default:undefined},
-      y: {required: false, type: Number,default:undefined},
-      minW: {required: false, type: Number,default:undefined},
-      maxW: {required: false, type: Number,default:undefined},
-      minH: {required: false, type: Number,default:undefined},
-      maxH: {required: false, type: Number,default:undefined},
+      w: {required: true, type: Number, default: undefined},
+      h: {required: true, type: Number, default: undefined},
+      x: {required: false, type: Number, default: undefined},
+      y: {required: false, type: Number, default: undefined},
+      minW: {required: false, type: Number, default: undefined},
+      maxW: {required: false, type: Number, default: undefined},
+      minH: {required: false, type: Number, default: undefined},
+      maxH: {required: false, type: Number, default: undefined},
     }
   },
   //----------------------Item挂载字段-------------------------//
-  static: {required: false, type: Boolean, default: undefined},
   transition: {required: false, type: [Boolean, Object, Number], default: undefined},
+  static: {required: false, type: Boolean, default: undefined},
   draggable: {required: false, type: Boolean, default: undefined},
   resize: {required: false, type: Boolean, default: undefined},
   close: {required: false, type: Boolean, default: undefined},
@@ -38,36 +38,56 @@ const props = defineProps({
   dragAllowEls: {required: false, type: Array, default: undefined},
 })
 
-watch(() => props, () => {
-  Object.keys(props).forEach((key) => {
-    if (!selfItem) return;
-    const val = props[key]
-    if (val === undefined) return
-    if (['minW', 'maxW', 'minH', 'maxH'].includes(key)) {
-      if (typeof val === 'number') selfItem.pos[key] = val
-    }
-    if (['w', 'h'].includes(key)) {
-      if (selfItem.container.responsive) {
-        selfItem.pos[key] = val
+const watchItemConfig = () => {
+  watch(() => props.pos, (cur, pre) => {
+    if (!selfItem) return
+    Object.keys(props.pos).forEach(key => {
+      const posFieldVal = props.pos[key]
+      if (!posFieldVal) return
+      if (typeof posFieldVal === 'number') {
+        if (selfItem.pos[key] === posFieldVal) return   // 值未被改变时忽略
+        if (['minW', 'maxW', 'minH', 'maxH'].includes(key)) selfItem.pos[key] = posFieldVal
+        if (['w', 'h'].includes(key)) {
+         selfItem.pos[key] = posFieldVal
+        }
+        if (['x', 'y'].includes(key)) {  // 响应式下不能修改x，y，因为是交给引擎管理的
+          if (!selfItem.container.responsive) selfItem.pos[key] = posFieldVal
+        }
       }
-    }
-    if (['x', 'y'].includes(key)) {  // 任何时候加载后不能修改x，y，都是交给引擎管理的
-      // if (!selfItem.container.responsive)  selfItem.pos[key] = val
-    }
-    if (['draggable', 'resize', 'close', 'follow', 'dragOut'].includes(key)) {
-      if (typeof val === 'boolean') selfItem[key] = val
-    }
-    if (['dragIgnoreEls', 'dragAllowEls'].includes(key)) {
-      if (Array.isArray(val)) selfItem[key] = val
-    }
-    if (key === 'static') {
-      if (typeof val === 'boolean') selfItem.pos.static = val
-    }
+    })
+    selfItem.container.updateLayout(true)
+  }, {deep: true})
+  watch(() => props.transition, (val) => {
     if (typeof val === 'boolean' || typeof val === 'object' || typeof val === 'number') {
-      if (key === 'transition') selfItem[key] = val
+      selfItem.transition = val
     }
+  }, {deep: true})
+  watch(() => props.static, (val) => {
+    if (typeof val === 'boolean') selfItem.static = val
   })
-}, {deep: true})
+  watch(() => props.draggable, (val) => {
+    if (typeof val === 'boolean') selfItem.draggable = val
+  })
+  watch(() => props.resize, (val) => {
+    if (typeof val === 'boolean') selfItem.resize = val
+  })
+  watch(() => props.close, (val) => {
+    if (typeof val === 'boolean') selfItem.close = val
+  })
+  watch(() => props.follow, (val) => {
+    if (typeof val === 'boolean') selfItem.follow = val
+  })
+  watch(() => props.dragOut, (val) => {
+    if (typeof val === 'boolean') selfItem.dragOut = val
+  })
+  watch(() => props.dragIgnoreEls, (val) => {
+    if (Array.isArray(val)) selfItem.dragIgnoreEls = val
+  })
+  watch(() => props.dragAllowEls, (val) => {
+    if (Array.isArray(val)) selfItem.dragAllowEls = val
+  })
+}
+
 
 let container = null
 
@@ -87,16 +107,21 @@ onMounted(() => {
   container = parseContainerFromPrototypeChain(gridItem.value)
   props.pos.autoOnce = !props.pos.x || !props.pos.y
 
+  const doItemCrossContainerExchange = props.pos['doItemCrossContainerExchange']
+  delete props.pos['doItemCrossContainerExchange']
   selfItem = container.add({
     el: gridItem.value,
     ...propsRaw,
   })
-  if (!selfItem) {
+  if (!selfItem) {   // 溢出状态，没位置删除vue控制的节点并触发vue的onUnmounted钩子
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
   selfItem.mount()
-  // console.log(selfItem);
+  if (typeof doItemCrossContainerExchange === 'function') {
+    doItemCrossContainerExchange(selfItem)   // 将生成的最新Item回调给GridContainer组件
+  }
+
   selfItem._VueEvents.vueItemResizing = (fromItem, w, h) => {
     if (props.pos.w && props.pos.w !== w) props.pos.w = w
     if (props.pos.h && props.pos.h !== h) props.pos.h = h
@@ -106,6 +131,7 @@ onMounted(() => {
     if (props.pos.y && props.pos.y !== newY) props.pos.y = newY
   }
   reSetContainerSize()
+  watchItemConfig()
 })
 
 onUnmounted(() => {

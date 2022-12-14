@@ -103,6 +103,7 @@ export const parseContainer = (ev, reverse = false) => {
     return container
 }
 
+
 /** 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item */
 export const parseItem = (ev, reverse = false) => {
     let item

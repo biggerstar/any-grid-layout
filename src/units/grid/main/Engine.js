@@ -360,7 +360,6 @@ export default class Engine {
 
             const success = this.push(item)
             if (success) {
-                // console.log(11111111111111111);
                 eventManager._callback_('addItemSuccess', item)
             } else {
                 if (!this.container.responsive) eventManager._error_('ContainerOverflowError',
