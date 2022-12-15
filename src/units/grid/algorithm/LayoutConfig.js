@@ -160,7 +160,8 @@ export default class LayoutConfig {
             }
         }
         this.useLayoutConfig = Object.assign(this.useLayoutConfig,checkLayoutValue(useLayoutConfig))
-        this.container.useLayout = currentLayout  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
+        this.container.layout = layoutItem
+        this.container.useLayout = useLayoutConfig  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
         return {
             layout:layoutItem,   // 当前使用的layouts中某个布局配置
             global:this.option.global,  //  当前container的全局配置

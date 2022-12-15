@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, getCurrentInstance, nextTick, toRaw, markRaw, isReactive} from 'vue'
+import {onMounted, ref, watch, nextTick, toRaw} from 'vue'
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
 
@@ -18,6 +18,7 @@ const gridContainerArea = ref(null)
 const props = defineProps({
   render: {required: false, type: Function, default: null}, // 若传入该函数初次进行手动渲染，不可直接赋值给useLayout，这样会改变响应式引用地址
   layoutChange: {required: false, type: Function, default: null}, //若传入该函数，布局改变时手动切换布局，不可直接赋值给useLayout，这样会改变响应式引用地址
+  getContainer: {required: false, type: Function, default: null}, // 获取Container的实例
   useLayout: {required: true, type: Object, default: null},
   events: {required: false, type: Object},
   config: {
@@ -54,6 +55,8 @@ onMounted(() => {
     props.render(realLayout, props.config.layouts)
   }
   container.mount()
+  if (typeof props.getContainer === 'function') props.getContainer(container)
+
   //------------------------------------------------------------------------//
 
   if (!window.con) window.con = []
@@ -93,21 +96,36 @@ onMounted(() => {
   /** 跨容器交换Item用，用于将vue控制的Item位置控制权交给事件处理程序管理 */
   container._VueEvents.vueCrossContainerExchange = (sourceItem, tempStore) => {
     const itemConfig = sourceItem.exportConfig()
-    if (sourceItem.pos.nextStaticPos) itemConfig.pos.nextStaticPos = sourceItem.pos.nextStaticPos
+    if (sourceItem.pos.nextStaticPos) {
+      itemConfig.pos.nextStaticPos = sourceItem.pos.nextStaticPos
+      itemConfig.pos.x = sourceItem.pos.nextStaticPos.x
+      itemConfig.pos.y = sourceItem.pos.nextStaticPos.y
+    }
     itemConfig.pos.doItemCrossContainerExchange = (newVueItem) => {    // 不严谨，但是为了方便就临时挂载了,在GridItem使用后会被删除
+      tempStore.exchangeItems.old = tempStore.fromItem
+      tempStore.exchangeItems.new = newVueItem
+      tempStore.moveItem = newVueItem   // 将当前交换操作的Item挂载，便于时间处理程序找到对应的Item成员
+      tempStore.fromItem = newVueItem     // 原Item移除，将新位置作为源Item
       const sourceElementChildren = Array.from(sourceItem.element.childNodes)
       const newVueItemElementChildren = Array.from(newVueItem.element.childNodes)
-      newVueItemElementChildren.forEach(node => node.remove())   // 删除新节点所有子节点作为一个空壳
+      const canIgnoreNode = (node) => {
+        return (node.classList) && (node.classList.contains('grid-item-resizable-handle')
+            || node.classList.contains('grid-item-close-btn'))
+      }
+      newVueItemElementChildren.forEach(node => {
+        if (canIgnoreNode(node)) return
+        node.remove()
+      })   // 删除新节点所有子节点作为一个空壳
       sourceElementChildren.forEach(node => {
+        if (canIgnoreNode(node)) return
         newVueItem.element.appendChild(document.adoptNode(node))   //  将原本交换过来的节点装进空壳节点中，等于把原来所有子节点移动过来了
       })
-      tempStore.moveItem = newVueItem   // 将当前交换操作的Item挂载，便于时间处理程序找到对应的Item成员
     }
     props.useLayout['data'].push(itemConfig)
   }
 })
 
-watch(props.useLayout, (pre, now) => {    //  针对非地址引用(地址引用也可)的修改赋值同步到当前使用的layout,for循环存在极小的计算资源浪费
+watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)的修改赋值同步到当前使用的layout,for循环存在极小的计算资源浪费
   if (isLayoutChange) return
   for (let key in props.useLayout) {
     const val = props.useLayout[key]
@@ -115,13 +133,13 @@ watch(props.useLayout, (pre, now) => {    //  针对非地址引用(地址引用
     if (!Array.isArray(val) && ['data', 'margin', 'size'].includes(key)) {
       console.error(key, '键应该是一个数组');
     }
-    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage'].includes(key)) {
+    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage', 'autoGrowRow'].includes(key)) {
       console.error(key, '键应该是一个boolean值');
     }
-    if (valueType !== 'number' && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',
+    if ((valueType !== 'number' || isNaN(val) || !isFinite(val)) && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',
       'minCol', 'maxCol', 'minRow', 'maxRow', 'ratio', 'sensitivity', 'pressTime',
       'scrollWaitTime', 'scrollSpeedX', 'scrollSpeedY', 'resizeReactionDelay'].includes(key)) {
-      console.error(key, '键应该是一个number值');
+      console.error(key, '键应该是一个非NaN的number值');
     }
     if (valueType !== 'string' && ['responseMode', 'className'].includes(key)) {
       if (key === 'responseMode') {
@@ -132,7 +150,7 @@ watch(props.useLayout, (pre, now) => {    //  针对非地址引用(地址引用
       if (key === 'itemLimit') console.error(key, '键应该是一个object值,包含可选键minW,minH,maxH,maxW作用于所有Item大小限制')
       else console.error(key, '键应该是一个object值')
     }
-
+    // if (key === 'col') console.log(val);
     useLayoutConfig.layout[key] = toRaw(val)
   }
   container.updateLayout(true)

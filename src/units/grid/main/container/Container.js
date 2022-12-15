@@ -51,7 +51,8 @@ export default class Container extends DomFunctionImpl {
     attr = []
     engine = []
     px = null
-    useLayout = {}   //  当前使用的布局方案配置
+    layout = {}     //  当前所使用的用户传入的对应布局方案
+    useLayout = {}   //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
     childContainer = [] // 所有该Container的直接子嵌套容器
     isNesting = false    // 该Container自身是否[被]嵌套
     parentItem = null
@@ -101,7 +102,6 @@ export default class Container extends DomFunctionImpl {
     }
 
     _define() {
-        const self = this
         let col = null
         let row = null
         Object.defineProperties(this, {
@@ -144,11 +144,9 @@ export default class Container extends DomFunctionImpl {
         return this.engine.getItemList()
     }
 
-
-    /** 在页面上添加一行的空间,已弃用 */
+    /** 在页面上添加一行的空间*/
     addRowSpace(num = 1) {
         this.row += num
-        this.updateLayout(true)
     }
 
     /** 在页面上删除一行的空间，已弃用*/

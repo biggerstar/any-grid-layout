@@ -70,22 +70,22 @@ export const cloneDeep = (obj) => {
 /**  用于将在原型链中对象中往root方向最新的的Container解析出来 */
 export const parseContainerFromPrototypeChain = (target) => {
     let container
-    if (target instanceof Element){
-        do{
+    if (target instanceof Element) {
+        do {
             if (target._isGridContainer_) {
                 container = target._gridContainer_
                 break
             }
-            target =  target.parentNode
+            target = target.parentNode
             // console.log(target);
-        }while (target.parentNode)
+        } while (target.parentNode)
     }
     return container
 }
 
 /**  用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container*/
 export const parseContainer = (ev, reverse = false) => {
-    let container
+    let container = null
     const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
     if (target._isGridContainer_) {
         container = target._gridContainer_
@@ -103,10 +103,30 @@ export const parseContainer = (ev, reverse = false) => {
     return container
 }
 
+/**  用于将domEvent对象中往root方向最新的的containerAreaElement解析出来，reverse是最远的靠近root的containerAreaElement*/
+export const parseContainerAreaElement = (ev, reverse = false) => {
+    let containerAreaElement = null
+    const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
+    if (target._isGridContainerArea) {
+        containerAreaElement = target
+    } else {
+        // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是该目标的Container正常是一样的
+        // 后面有相关需求也能通过parentNode进行获取
+        for (let i = 0; i < ev.path.length; i++) {
+            if (ev.path[i]._isGridContainerArea) {
+                containerAreaElement = ev.path[i]
+                if (!reverse) break
+            }
+        }
+    }
+    return containerAreaElement
+
+
+}
 
 /** 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item */
 export const parseItem = (ev, reverse = false) => {
-    let item
+    let item = null
     const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
     if (target._isGridItem_) {
         item = target._gridItem_
@@ -128,8 +148,8 @@ export const parseItem = (ev, reverse = false) => {
 export const singleTouchToCommonEvent = (touchEvent) => {
     let useTouchKey = 'touches'
     if (touchEvent.touches && touchEvent.touches.length === 0) useTouchKey = 'changedTouches'  // 正常用于touchEnd
-    if (touchEvent[useTouchKey] && touchEvent[useTouchKey].length){
-        for(let k in touchEvent[useTouchKey][0]){
+    if (touchEvent[useTouchKey] && touchEvent[useTouchKey].length) {
+        for (let k in touchEvent[useTouchKey][0]) {
             if (['target'].includes(k)) continue
             touchEvent[k] = touchEvent[useTouchKey][0][k];
         }

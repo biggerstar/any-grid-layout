@@ -1,13 +1,14 @@
 <template>
   <div>
     <GridContainer
-        class="grid-container"
+        class="grid-container con1"
         style="height: 400px"
         :useLayout="useLayout"
         :events="events"
         :config="config"
         :render="render"
         :layoutChange="layoutChange"
+        :getContainer="getContainer"
     >
       <gridItem v-for="(item,index) in useLayout.data"
                 :key=index
@@ -21,6 +22,7 @@
                 :dragOut="true"
                 :dragIgnoreEls="item.dragIgnoreEls"
                 :dragAllowEls="item.dragAllowEls"
+
       >
         {{ index }}
 
@@ -29,21 +31,20 @@
     </GridContainer>
 
     <GridContainer
-        class="grid-container"
+        class="grid-container con2"
         style="height: 500px"
         :config="config1"
         :useLayout="useLayout1"
         :events="events"
     >
       <gridItem v-for="(item,index) in useLayout1.data"
-                style="color: navy"
                 :key=index
                 :pos="item.pos"
                 :draggable=true
                 :resize=true
                 :close=true
       >
-        {{ index }}
+        <div style="color: navy"> {{ index }}</div>
       </gridItem>
     </GridContainer>
 
@@ -53,8 +54,6 @@
 <script setup>
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive} from 'vue'
 import {layoutData, layoutData11} from '@/stores/layout.js'
-import GridItem from "@/components/GridItem.vue";
-import GridContainer from "@/components/GridContainer.vue";
 
 
 const layoutData1 = layoutData.filter((item, index) => index < 10)
@@ -144,7 +143,18 @@ const events = {
     // console.log(container,containerWidth,useLayout);
     // if (useLayout.margin[0] < 5) return false
 
-  }
+  },
+  enterContainerArea(container, item) {
+    // 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null
+    // console.log(container, item);
+  },
+  leaveContainerArea(container, item) {
+    // 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null
+    // console.log(container, item);
+    // useLayout.row =  container.row + 1
+    // useLayout.col = container.col + 1
+
+  },
 }
 const layouts = [
   {
@@ -194,7 +204,7 @@ const layouts = [
 ]
 const layouts1 = {
   data: layoutData3,
-  // col: 8,
+  col: 6,
   row: 8,
   ratio: 0.2,
   exchange: true,
@@ -218,10 +228,12 @@ const layouts1 = {
   // marginX: 30,
   // marginY: 50,
 }
+
 const globalConf = {
-  responsive: true,
-  row: 6,
+  responsive: false,
+  row: 4,
   responseMode: 'default',
+  autoGrowRow: true,
   exchange: true,
   slidePage: true,
   ratio: 0.2,
@@ -229,6 +241,7 @@ const globalConf = {
 //  TODO  autoRow
 let useLayout = reactive({})
 let useLayout1 = reactive({})
+let fullLayout = null
 
 const config = reactive({
   layouts,
@@ -238,6 +251,11 @@ const config1 = reactive({
   layouts: layouts1,
   global: globalConf
 })
+let container = null
+const getContainer = (con) => {
+  // console.log(container);
+  container = con
+}
 
 const layoutChange = (currentLayout) => {
   // console.log(currentLayout);
@@ -251,6 +269,7 @@ const layoutChange = (currentLayout) => {
   // useLayout.data = Object.assign([], currentLayout.data)
 }
 const render = (currentLayout, layouts) => {
+  fullLayout = currentLayout
   // console.log(currentLayout.px);
   // Object.assign(useLayout,currentLayout)
 
@@ -260,7 +279,7 @@ const render = (currentLayout, layouts) => {
   //   item.close = true
   //   return index < 10
   // })
-  // console.log(currentLayout.px,currentLayout.data);
+  console.log(currentLayout.px, currentLayout.data)
   Object.assign(useLayout, currentLayout)
 
   if (!useLayout.data) useLayout.data = []
@@ -274,7 +293,9 @@ const render = (currentLayout, layouts) => {
     // useLayout.data[4].pos.w += 2
     // useLayout.data[4].pos.h += 1
     // console.log(useLayout.data[1]);
+    // console.log(container);
 
+    // useLayout.col = fullLayout.col++
   }, 3000)
 
 }

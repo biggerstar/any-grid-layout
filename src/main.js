@@ -1,10 +1,10 @@
 import { createApp } from 'vue';
 import App from './App.vue';
-import Vue3GridLayout from "@/install.js";
+import AnyGridLayout from "@/index.js";
 
 
 const app = createApp(App)
 
-app.use(Vue3GridLayout)
+app.use(AnyGridLayout)
 app.mount('#app')
 

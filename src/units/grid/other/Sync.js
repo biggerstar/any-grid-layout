@@ -20,7 +20,7 @@ export default class Sync {
      * callback: 回调函数，回调func的运行结果在 callback 的第一个形参中能拿到
      * rule函数 : 是否执行判断规则，返回 true 表示执行func，false不执行,会一直轮询,直到 timeout或者max条件不符合才退出本次func的运行,
      *          也可以用于轮询中逻辑操作，以更正运行数据
-     * timout :  timeout  单位ms
+     * timeout :  timeout  单位ms
      * max :  轮询的次数 ,
      * intervalTime :  轮询的间隔  ,
      * }的对象，

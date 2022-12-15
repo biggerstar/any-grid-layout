@@ -57,6 +57,7 @@ export default class LayoutManager {
      * */
     addRow = (num = null) => {
         if (!num) return
+        // console.log(this.col);
         for (let i = 0; i < num; i++) {
             this._layoutMatrix.push(new Array(this.col).fill(false))
         }

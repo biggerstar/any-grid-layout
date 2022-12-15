@@ -48,7 +48,6 @@ export default class Engine {
         if (Object.keys(useLayoutConfig).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
-        // console.log(useLayoutConfig);
         merge(this.container, useLayoutConfig, false, ['events'])      //  更新同步当前Container中的属性值
         // console.log(useLayoutConfig);
         // console.log(this.container.eventManager)

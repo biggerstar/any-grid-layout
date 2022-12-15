@@ -10,18 +10,22 @@ export default class DomFunctionImpl {
     /** 直接将符合style对象形式的表达对象传入，会对Item`自身`的样式进行覆盖更新
      *  isCssText 是否通过 cssText 防止回流重绘
      * */
-    updateStyle(style,element = null,isCssText = true) {
-        if (Object.keys(style).length === 0 ) return
+    updateStyle(style, element = null, isCssText = true) {
+        if (Object.keys(style).length === 0) return
         element = element ? element : this.element
         let cssText = ''
         Object.keys(style).forEach((key) => {
             if (!isCssText) element.style[key] = style[key]
             else cssText = `${cssText} ${getKebabCase(key)}:${style[key]}; `
         })
-        if (isCssText)  element.style.cssText = element.style.cssText + ';' + cssText
+        if (isCssText) element.style.cssText = element.style.cssText + ';' + cssText
     }
 
-    addClass(...arg){
+    hasClass(className) {
+        return this.element.classList.contains(className)
+    }
+
+    addClass(...arg) {
         this.element.classList.add(...arg)
     }
 
@@ -29,8 +33,8 @@ export default class DomFunctionImpl {
         this.element.classList.remove(...arg)
     }
 
-    replaceClass(oldCls,newCls){
-        this.element.classList.replace(oldCls,newCls)
+    replaceClass(oldCls, newCls) {
+        this.element.classList.replace(oldCls, newCls)
     }
 
     /** 添加一个元素的属性
@@ -50,14 +54,15 @@ export default class DomFunctionImpl {
                 attrNode.value = attrs[attrName];
                 this?.element?.attributes?.setNamedItem(attrNode)
             })
-        }catch (e) {  }
+        } catch (e) {
+        }
     }
 
     /**
      * @param {string} dataSetName  该参数为 '' 空时默认返回所有 DataSet
      */
-    getDataSet(dataSetName = ''){
-        if (dataSetName.replace(' ','') === '')  return Object.assign({},this.element.dataset)
+    getDataSet(dataSetName = '') {
+        if (dataSetName.replace(' ', '') === '') return Object.assign({}, this.element.dataset)
         return this.element.dataset[dataSetName]
     }
 
@@ -72,10 +77,9 @@ export default class DomFunctionImpl {
                     this.element.attributes.removeNamedItem(attrName)
                 })
             }
-        }catch (e) {  }
+        } catch (e) {
+        }
     }
-
-
 
 
     /** 用于监听自身属性变化, unObserver结束观测后可在通过调用 observe 观测，观测的配置参数可由新传入的为准
@@ -135,23 +139,24 @@ export default class DomFunctionImpl {
      * 通过直接添加事件集，和上面 onEvent 不同是可以添加多个， 参数见 onEvent 函数
      * */
     addEvent(eventName, callback, dom = null, args = {}) {
-        let throttleTime = 350 ,capture = false
+        let throttleTime = 350, capture = false
         if (args['throttleTime']) throttleTime = args['throttleTime']
         if (args['capture']) capture = args['capture']
 
         const element = dom || this.element
-        const  throttleFun = throttle(callback, throttleTime)
-        element.addEventListener(eventName,throttleFun ,capture)
+        const throttleFun = throttle(callback, throttleTime)
+        element.addEventListener(eventName, throttleFun, capture)
         return throttleFun
     }
+
     /**  移除事件 */
     removeEvent(eventName, callbackFun, dom = null) {
         const element = dom || this.element
-        element.removeEventListener(eventName,callbackFun)
+        element.removeEventListener(eventName, callbackFun)
 
     }
 
-    throttle(callback,throttleTime){
+    throttle(callback, throttleTime) {
         return throttle(callback, throttleTime)
     }
 }

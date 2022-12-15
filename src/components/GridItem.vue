@@ -7,7 +7,7 @@
 <script setup>
 
 import {parseContainerFromPrototypeChain} from "@/units/grid/other/tool.js";
-import {nextTick, onMounted, ref, toRaw, watch, onUnmounted, getCurrentInstance} from "vue";
+import {onMounted, ref, toRaw, watch, onUnmounted} from "vue";
 
 const gridItem = ref()
 let selfItem = null  // 改Item对应的实例，Item内所有变量都非响应
@@ -36,15 +36,17 @@ const props = defineProps({
   dragOut: {required: false, type: Boolean, default: undefined},
   dragIgnoreEls: {required: false, type: Array, default: undefined},
   dragAllowEls: {required: false, type: Array, default: undefined},
+  getItem: {required: false, type: Function, default: null}, // 获取Item的实例
+
 })
 
 const watchItemConfig = () => {
-  watch(() => props.pos, (cur, pre) => {
+  watch(() => props.pos, () => {
     if (!selfItem) return
     Object.keys(props.pos).forEach(key => {
       const posFieldVal = props.pos[key]
       if (!posFieldVal) return
-      if (typeof posFieldVal === 'number') {
+      if (typeof posFieldVal === 'number' || !isNaN(posFieldVal)) {
         if (selfItem.pos[key] === posFieldVal) return   // 值未被改变时忽略
         if (['minW', 'maxW', 'minH', 'maxH'].includes(key)) selfItem.pos[key] = posFieldVal
         if (['w', 'h'].includes(key)) {
@@ -106,7 +108,6 @@ onMounted(() => {
   const propsRaw = toRaw(props)
   container = parseContainerFromPrototypeChain(gridItem.value)
   props.pos.autoOnce = !props.pos.x || !props.pos.y
-
   const doItemCrossContainerExchange = props.pos['doItemCrossContainerExchange']
   delete props.pos['doItemCrossContainerExchange']
   selfItem = container.add({
@@ -118,6 +119,8 @@ onMounted(() => {
     return
   }
   selfItem.mount()
+  if (typeof props.getItem === 'function') props.getItem(selfItem)
+
   if (typeof doItemCrossContainerExchange === 'function') {
     doItemCrossContainerExchange(selfItem)   // 将生成的最新Item回调给GridContainer组件
   }
