@@ -1,6 +1,6 @@
 {
   "name": "@biggerstar/layout",
-  "version": "0.0.8-Beta",
+  "version": "0.0.9-Beta",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "bundle": "microbundle --entry src/index.js -f es,cjs,umd -o ./dist --sourcemap=false",
     "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags && npm publish"
   },
-  "main": "./src/index.js",
+  "main": "./dist/any-grid-layout",
   "exports": {
     "default": "./dist/any-grid-layout",
     "import": "./dist/any-grid-layout",
