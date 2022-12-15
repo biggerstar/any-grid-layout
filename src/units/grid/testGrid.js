@@ -1,5 +1,5 @@
-import {Container, Item} from '@/units/grid/AnyGridLayout.js'
-import tempStore from '@/units/grid/other/TempStore.js'
+import {Container, Item} from '../../units/grid/AnyGridLayout.js'
+import tempStore from '../../units/grid/other/TempStore.js'
 // import Container from 'any-grid-layout/src/units/grid/Container.js'
 import {layoutData, layoutData11} from "@/stores/layout.js";
 
