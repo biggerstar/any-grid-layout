@@ -1,13 +1,13 @@
 {
   "name": "@biggerstar/layout",
-  "version": "0.0.4-Beta",
+  "version": "0.0.5-Beta",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "rimraf dist && vite build",
     "preview": "vite preview",
     "bundle": "microbundle --entry src/index.js -f es,cjs,umd -o ./dist --sourcemap=false",
-    "release": "npm run -s build -s && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+    "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags && npm publish"
   },
   "main": "./src/index.js",
   "exports": {
@@ -36,7 +36,6 @@
     "rimraf": "^3.0.2"
   },
   "eslintIgnore": [
-    "dist",
-    "index.d.ts"
+    "dist"
   ]
 }
