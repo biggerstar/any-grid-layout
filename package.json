@@ -6,14 +6,16 @@
     "dev": "vite",
     "build": "rimraf dist && vite build",
     "preview": "vite preview",
-    "bundle": "microbundle --entry src/index.js -f es,cjs,umd -o ./dist --sourcemap=false",
     "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags && npm publish"
   },
   "main": "./dist/any-grid-layout",
+  "module": "./dist/any-grid-layout",
   "exports": {
-    "default": "./dist/any-grid-layout",
-    "import": "./dist/any-grid-layout",
-    "require": "./dist/any-grid-layout.umd.cjs"
+    ".": {
+      "default": "./dist/any-grid-layout",
+      "import": "./dist/any-grid-layout",
+      "require": "./dist/any-grid-layout.umd.cjs"
+    }
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.1.0",
@@ -25,7 +27,7 @@
     "type": "git",
     "url": "git://github.com/biggerstar/any-grid-layout"
   },
-  "author": "BiggerStar",
+  "author": "biggerstar",
   "license": "GPL-3.0-or-later",
   "description": "",
   "publishConfig": {
@@ -35,6 +37,9 @@
   "dependencies": {
   },
   "eslintIgnore": [
+    "dist"
+  ],
+  "files": [
     "dist"
   ]
 }

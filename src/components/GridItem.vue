@@ -39,7 +39,6 @@ const props = defineProps({
   getItem: {required: false, type: Function, default: null}, // 获取Item的实例
 
 })
-
 const watchItemConfig = () => {
   watch(() => props.pos, () => {
     if (!selfItem) return
@@ -118,7 +117,15 @@ onMounted(() => {
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
+  selfItem.updateStyle({
+    height: '100%',
+    width: '100%',
+    display: 'block',
+    overflow: 'hidden',
+    position: 'absolute'
+  },gridItem.value)
   selfItem.mount()
+
   if (typeof props.getItem === 'function') props.getItem(selfItem)
 
   if (typeof doItemCrossContainerExchange === 'function') {
@@ -143,15 +150,4 @@ onUnmounted(() => {
 })
 
 </script>
-<style>
-</style>
 
-<style scoped>
-.grid-item {
-  height: 100%;
-  width: 100%;
-  display: block;
-  overflow: hidden;
-  position: absolute;
-}
-</style>

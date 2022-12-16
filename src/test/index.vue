@@ -2,7 +2,7 @@
   <div>
     <GridContainer
         class="grid-container con1"
-        style="height: 400px"
+        style="height: 600px"
         :useLayout="useLayout"
         :events="events"
         :config="config"
@@ -31,6 +31,7 @@
     </GridContainer>
 
     <GridContainer
+        v-if="false"
         class="grid-container con2"
         style="height: 500px"
         :config="config1"
@@ -52,7 +53,7 @@
   </div>
 </template>
 <script setup>
-import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive} from 'vue'
+import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw} from 'vue'
 import {layoutData, layoutData11} from '@/stores/layout.js'
 
 
@@ -61,7 +62,6 @@ const layoutData2 = layoutData.filter((item, index) => index < 16)
 const layoutData3 = layoutData.filter((item, index) => index < 25)
 const layoutData4 = layoutData.filter((item, index) => index < 32)
 const layoutData5 = layoutData.filter((item, index) => index < 15)
-
 
 const events = {
   error(err) {
@@ -163,7 +163,7 @@ const layouts = [
     // margin: [30, 30],
     // size: [120, 80],
     // minCol: 9,
-    data: layoutData1,
+    data: layoutData5,
   },
   {
     px: 1000,
@@ -171,28 +171,28 @@ const layouts = [
     // margin: [20, 20],
     size: [90, 80],
     // minCol: 7,
-    data: layoutData1,
+    data: layoutData4,
   },
   {
     px: 800,
     col: 6,
     // margin: [10, 10],
     // size: [60, 80],
-    data: layoutData1,
+    data: layoutData3,
   },
   {
     px: 560,
     // col: 6,
     // margin: [20, 20],
     size: [80, 50],
-    data: layoutData1,
+    data: layoutData2,
   },
   {
     px: 360,
     col: 4,
     // margin: [0, 0],
     // size: [36, 80],
-    data: layoutData3,
+    data: layoutData1,
   },
   {
     px: 200,
@@ -204,8 +204,8 @@ const layouts = [
 ]
 const layouts1 = {
   data: layoutData3,
-  col: 6,
-  row: 8,
+  // col: 6,
+  // row: 8,
   ratio: 0.2,
   exchange: true,
   // margin: [10, 10],
@@ -216,7 +216,7 @@ const layouts1 = {
   // maxRow: 5,
   followScroll: true,
   scrollWaitTime: 800,
-  responsive: false,
+  responsive: true,
   itemLimit: {
     // minW: 1,
     // minH: 1,
@@ -230,15 +230,14 @@ const layouts1 = {
 }
 
 const globalConf = {
-  responsive: false,
-  row: 4,
+  responsive: true,
+  row: 6,
   responseMode: 'default',
   autoGrowRow: true,
   exchange: true,
   slidePage: true,
   ratio: 0.2,
 }
-//  TODO  autoRow
 let useLayout = reactive({})
 let useLayout1 = reactive({})
 let fullLayout = null
@@ -257,21 +256,23 @@ const getContainer = (con) => {
   container = con
 }
 
-const layoutChange = (currentLayout) => {
-  // console.log(currentLayout);
-  // console.log(currentLayout.data );
-  // useLayout.data = currentLayout.data
-  // currentLayout.data[0].static=false
-  Object.assign(useLayout, currentLayout)
-  // for (let k in currentLayout) {
-  //   useLayout[k] = currentLayout[k]
+const layoutChange = (layout,fullLayout,layouts) => {
+  // console.log(layout);
+  // console.log(layout.data );
+  // useLayout.data = layout.data
+  // layout.data[0].static=false
+  // console.log(layout.px,layout,layout.data);
+  // console.log(toRaw(useLayout).size);
+  Object.assign(useLayout, layout)
+  // for (let k in layout) {
+  //   useLayout[k] = layout[k]
   // }
-  // useLayout.data = Object.assign([], currentLayout.data)
+  // useLayout.data = Object.assign([], layout.data)
 }
-const render = (currentLayout, layouts) => {
-  fullLayout = currentLayout
-  // console.log(currentLayout.px);
-  // Object.assign(useLayout,currentLayout)
+const render = (layout,fullLayout, layouts) => {
+  // fullLayout = layout
+  // console.log(layout.px);
+  // Object.assign(useLayout,layout)
 
   // const data = layoutData.filter((item, index) => {
   //   item.draggable = true
@@ -279,8 +280,10 @@ const render = (currentLayout, layouts) => {
   //   item.close = true
   //   return index < 10
   // })
-  console.log(currentLayout.px, currentLayout.data)
-  Object.assign(useLayout, currentLayout)
+  // console.log(layout);
+  // useLayout = layout
+  // console.log(layout.px, layout.data)
+  Object.assign(useLayout, layout)
 
   if (!useLayout.data) useLayout.data = []
 

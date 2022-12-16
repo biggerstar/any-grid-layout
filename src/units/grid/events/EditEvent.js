@@ -324,8 +324,15 @@ export default class EditEvent {
                     const isExchange = fromItem.container.eventManager._callback_('crossContainerExchange', dragItem, newItem)
                     if (isExchange === false || isExchange === null) return   // 通过事件返回值来判断是否继续进行交换
 
+                    const doItemPositionMethod = (newItem)=>{
+                        //注意:必须在不同平台Exchange逻辑之后,保证Item添加进去之后再进行位置确定
+                        // 该函数用于修改确定Item交换之后下次布局更新的位置
+                        if (typeof itemPositionMethod === 'function') { // 回调拿到newItem
+                            itemPositionMethod(newItem)
+                        }
+                    }
                     const vueExchange = () => {
-                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore)
+                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore,doItemPositionMethod)
                         // console.log( dragItem.container);
                         dragItem.unmount()
                         dragItem.remove()
@@ -364,16 +371,12 @@ export default class EditEvent {
                         tempStore.fromItem = newItem   // 原Item移除，将新位置作为源Item
                         tempStore.exchangeItems.old = dragItem
                         tempStore.exchangeItems.new = newItem
+                        doItemPositionMethod(newItem)
                     }
 
                     if (container.platform === 'vue') vueExchange()
                     else nativeExchange()
 
-                    if (typeof itemPositionMethod === 'function') {
-                        // 注意:必须在不同平台Exchange逻辑之后,保证Item添加进去之后再进行位置确定
-                        // 该函数用于修改确定Item交换之后下次布局更新的位置
-                        if (itemPositionMethod(newItem) === false) return
-                    }
                 } catch (e) {
                     console.error('跨容器Item移动出错', e);
                 }
@@ -547,6 +550,9 @@ export default class EditEvent {
                     if (container.__ownTemp__.firstEnterUnLock) {
                         dragItem.pos.autoOnce = true
                         if (toItem) {   // 进入的是容器Item的覆盖位置区域
+                            dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
+                            dragItem.pos.nextStaticPos.x = nextPos.x
+                            dragItem.pos.nextStaticPos.y = nextPos.y
                             EEF.itemDrag.mousemoveExchange(container, (newItem) => {
                                 container.engine.move(newItem, toItem.i)
                             })
@@ -742,7 +748,7 @@ export default class EditEvent {
                                     newExchangeItem.addClass(className)
                                 }
                             },
-                            rule: () => container === tempStore.fromItem.container,
+                            rule: () => container === tempStore.fromItem?.container,
                             intervalTime: 2,
                             timeout: 200
                         })

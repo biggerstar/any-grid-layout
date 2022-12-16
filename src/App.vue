@@ -5,6 +5,3 @@
 <template>
   <LayoutView></LayoutView>
 </template>
-
-<style scoped>
-</style>

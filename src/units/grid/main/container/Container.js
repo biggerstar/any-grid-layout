@@ -190,7 +190,7 @@ export default class Container extends DomFunctionImpl {
                 this.contentElement = this.element.querySelector('.grid-container-area')
             } else {
                 this.genGridContainerBox()
-                this.updateStyle(defaultStyle.mainContainer)   // 必须在engine.init之前
+                this.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
             }
             // this._define()
             this.attr = Array.from(this.element.attributes)

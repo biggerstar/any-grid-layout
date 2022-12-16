@@ -1,5 +1,5 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <div ref="gridContainer">
+  <div ref="gridContainer" >
     <div ref="gridContainerArea" class="grid-container-area">
       <slot></slot>
     </div>
@@ -45,27 +45,37 @@ onMounted(() => {
   container.el = gridContainer.value
   container.engine.init()
   container.vue = props
+  container.updateStyle({
+    display: 'block',
+    background: '#5df8eb'
+  },gridContainer.value)
+  container.updateStyle({
+    position: 'relative',
+    display: 'block',
+    margin:'0 auto'
+  },gridContainerArea.value)
+
   useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
   gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
   //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
-  const realLayout = cloneDeep(useLayoutConfig.currentLayout)
+  const customsLayout = cloneDeep(useLayoutConfig.currentLayout)
   if (props.render === null) {
-    Object.assign(props.useLayout, realLayout)
+    Object.assign(props.useLayout, customsLayout)
   } else if (typeof props.render === 'function') {
-    props.render(realLayout, props.config.layouts)
+    props.render(customsLayout,useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
   }
   container.mount()
+
   if (typeof props.getContainer === 'function') props.getContainer(container)
 
   //------------------------------------------------------------------------//
-
-  if (!window.con) window.con = []
-  console.log(container);
-  window.con.push(container)
+  // if (!window.con) window.con = []
+  // console.log(container);
+  // window.con.push(container)
 
   setTimeout(() => {
     const exportData = container.exportData()
-    if (props.useLayout['data'].length !== exportData.length) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
+    if (props.useLayout['data'] && (props.useLayout['data'].length !== exportData.length)) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
       props.useLayout.data = []
       nextTick(() => {
         useLayoutConfig.layout.data = exportData      //  静态模式可能溢出，此时拿到当前成功添加的Item更新当前使用布局的data数组
@@ -80,21 +90,21 @@ onMounted(() => {
     props.useLayout.data = []
     nextTick(() => {
       useLayoutConfig = useLayout
-      const realLayout = cloneDeep(useLayout.currentLayout)   // 隔离用户操作和layout对应的地址引用，用户修改都由watch同步
+      const customsLayout = cloneDeep(useLayout.currentLayout)   // 隔离用户操作和layout对应的地址引用，用户修改都由watch同步
+      for (let k in props.useLayout) {   // (重置数据,下面重定义布局)让vue配置使用当前的layout,原来有现在不在customsLayout中的键去除
+        delete props.useLayout[k]
+      }
       if (props.layoutChange === null) {
-        for (let k in props.useLayout) {   // 让vue配置使用当前的layout,原来有现在不在realLayout中的键去除
-          if (realLayout[k] === undefined) delete props.useLayout[k]
-        }
-        Object.assign(useLayout, useLayout.currentLayout)
+        Object.assign(props.useLayout, useLayout.currentLayout)
       } else if (typeof props.layoutChange === 'function') {
         isLayoutChange = false
-        props.layoutChange(realLayout) //  手动配置当前vue要使用的layout
+        props.layoutChange(customsLayout,useLayout.useLayoutConfig,container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
       }
-      // console.log(realLayout.px,realLayout.data);
+      // console.log(customsLayout.px,customsLayout.data);
     })
   }
   /** 跨容器交换Item用，用于将vue控制的Item位置控制权交给事件处理程序管理 */
-  container._VueEvents.vueCrossContainerExchange = (sourceItem, tempStore) => {
+  container._VueEvents.vueCrossContainerExchange = (sourceItem, tempStore, doCrossCallback) => {
     const itemConfig = sourceItem.exportConfig()
     if (sourceItem.pos.nextStaticPos) {
       itemConfig.pos.nextStaticPos = sourceItem.pos.nextStaticPos
@@ -106,6 +116,7 @@ onMounted(() => {
       tempStore.exchangeItems.new = newVueItem
       tempStore.moveItem = newVueItem   // 将当前交换操作的Item挂载，便于时间处理程序找到对应的Item成员
       tempStore.fromItem = newVueItem     // 原Item移除，将新位置作为源Item
+      doCrossCallback(newVueItem)
       const sourceElementChildren = Array.from(sourceItem.element.childNodes)
       const newVueItemElementChildren = Array.from(newVueItem.element.childNodes)
       const canIgnoreNode = (node) => {
@@ -158,16 +169,3 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
 
 
 </script>
-
-<style>
-
-.grid-container-area {
-  width: 100%;
-  height: auto;
-  margin: auto;
-  box-sizing: border-box;
-  position: relative;
-  background: #5df8eb;
-}
-
-</style>

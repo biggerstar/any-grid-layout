@@ -1,4 +1,4 @@
-import {cloneDeep, merge} from "@/units/grid/other/tool.js";
+import {cloneDeep} from "@/units/grid/other/tool.js";
 import {layoutConfig} from "@/units/grid/default/defaultLayoutConfig.js";
 
 export default class LayoutConfig {
@@ -42,7 +42,8 @@ export default class LayoutConfig {
         let useLayoutConfig = {}
         let layoutItem = {}
         // console.log(containerWidth,this.container.element.clientWidth);
-        containerWidth = containerWidth ? containerWidth : this.container.element.clientWidth
+        containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
+
         const layouts = this.container.layouts.sort((a,b)=> a.px - b.px )
         for (let i = 0; i < layouts.length; i++) {
             layoutItem = layouts[i]
@@ -57,7 +58,6 @@ export default class LayoutConfig {
         if (containerWidth === 0 && !useLayoutConfig.col) throw new Error("请在layout中传入col的值或者为Container设置一个初始宽度")
         //----------------------------------------------------//
         useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem) ) // 在global值的基础上附加修改克隆符合当前layout的属性
-
         let {
             col = null,   //  缺省值必须为null才能触发自动计算col
             ratio = this.container.ratio,
@@ -70,6 +70,7 @@ export default class LayoutConfig {
             marginY,
             marginLimit = {}
         } = useLayoutConfig
+        // console.log(containerWidth,layoutItem.px,layoutItem.margin,layoutItem.size,layoutItem.col);
 
         if (!col && !(size[0] || sizeWidth)) throw new Error('col或者size[0]必须要设定一个,您也可以设定col或sizeWidth两个中的一个便能进行布局')
         if (marginX) margin[0] = marginX
@@ -156,12 +157,13 @@ export default class LayoutConfig {
         const currentLayout = {}
         for (const key in useLayoutConfig) {
             if (this.option.global[key] !== undefined || layoutItem[key] !== undefined){
-                currentLayout[key] = useLayoutConfig[key]
+                currentLayout[key] = useLayoutConfig[key]   // 筛选出用户传进来的初始配置
             }
         }
         this.useLayoutConfig = Object.assign(this.useLayoutConfig,checkLayoutValue(useLayoutConfig))
         this.container.layout = layoutItem
         this.container.useLayout = useLayoutConfig  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
+
         return {
             layout:layoutItem,   // 当前使用的layouts中某个布局配置
             global:this.option.global,  //  当前container的全局配置
