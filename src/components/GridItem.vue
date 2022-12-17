@@ -37,7 +37,7 @@ const props = defineProps({
   dragOut: {required: false, type: Boolean, default: undefined},
   dragIgnoreEls: {required: false, type: Array, default: undefined},
   dragAllowEls: {required: false, type: Array, default: undefined},
-  getItem: {required: false, type: Function, default: null}, // 获取Item的实例
+  itemAPI: {required: false, type: Object, default: {}}, // 获取Item的实例
 
 })
 const watchItemConfig = () => {
@@ -130,7 +130,9 @@ onMounted(() => {
   },gridItem.value)
   selfItem.mount()
 
-  if (typeof props.getItem === 'function') props.getItem(selfItem)
+  //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
+  props.itemAPI.getItem = ()=> selfItem
+  props.itemAPI.exportConfig = ()=> selfItem.exportConfig()   // 获取当前Item的配置参数
 
   if (typeof doItemCrossContainerExchange === 'function') {
     doItemCrossContainerExchange(selfItem)   // 将生成的最新Item回调给GridContainer组件

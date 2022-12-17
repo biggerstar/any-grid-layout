@@ -18,7 +18,7 @@ const gridContainerArea = ref(null)
 const props = defineProps({
   render: {required: false, type: Function, default: null}, // 若传入该函数初次进行手动渲染，不可直接赋值给useLayout，这样会改变响应式引用地址
   layoutChange: {required: false, type: Function, default: null}, //若传入该函数，布局改变时手动切换布局，不可直接赋值给useLayout，这样会改变响应式引用地址
-  exposeAPI: {required: false, type: Object, default: {}}, // 暴露出内部相关操作的API,container挂载够才能获取到
+  containerAPI: {required: false, type: Object, default: {}}, // 暴露出内部相关操作的API,container挂载够才能获取到
   useLayout: {required: true, type: Object, default: null},
   events: {required: false, type: Object},
   config: {
@@ -47,12 +47,12 @@ onMounted(() => {
   container.vue = props
   container.updateStyle({
     display: 'block',
-    background: '#5df8eb'
   }, gridContainer.value)
   container.updateStyle({
     position: 'relative',
     display: 'block',
-    margin: '0 auto'
+    margin: '0 auto',
+    background: '#5df8eb'
   }, gridContainerArea.value)
 
   useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
@@ -66,10 +66,10 @@ onMounted(() => {
   }
   container.mount()
 
-  //-----------------两个职能函数回调开发者获取到相关参数或信息--------------------//
-  props.exposeAPI.getContainer = () => container
-  props.exposeAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
-  props.exposeAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
+  //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
+  props.containerAPI.getContainer = () => container
+  props.containerAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
+  props.containerAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
 
   //------------------------------------------------------------------------//
   // if (!window.con) window.con = []

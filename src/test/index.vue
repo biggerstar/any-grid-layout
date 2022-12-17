@@ -1,14 +1,14 @@
 <template>
   <div>
     <GridContainer
-        class="grid-container con1"
+        class="grid-container con"
         style="height: 600px"
         :useLayout="useLayout"
         :events="events"
         :config="config"
         :render="render"
         :layoutChange="layoutChange"
-        :exposeAPI="exposeAPI"
+        :containerAPI="containerAPI"
     >
       <gridItem v-for="(item,index) in useLayout.data"
                 :key='index'
@@ -25,15 +25,34 @@
                 :dragAllowEls="item.dragAllowEls"
 
       >
-        {{ item.name }}
+        <div>{{ !(item.pos.w >= 4 && item.pos.h >= 3) ? item.name : '' }}</div>
+
+        <GridContainer
+            v-if="item.pos.w >= 4 && item.pos.h >= 3"
+            class="grid-container con3"
+            style="height: 500px;margin: 3px auto"
+            :config="config2"
+            :useLayout="useLayout2"
+            :events="events"
+        >
+          <gridItem v-for="(item2,index) in useLayout2.data"
+                    :key="index"
+                    :pos="item2.pos"
+                    :draggable=true
+                    :resize=true
+                    :close=true
+          >
+            <div style="color: lemonchiffon"> {{ index  }}</div>
+          </gridItem>
+        </GridContainer>
 
         <!--        <span>这是允许的按钮</span>-->
       </gridItem>
     </GridContainer>
-
+    <!--    ////////////////////////////////////////-->
     <GridContainer
-        v-if="false"
-        class="grid-container con2"
+        v-if="true"
+        class="grid-container con1"
         style="height: 500px"
         :config="config1"
         :useLayout="useLayout1"
@@ -46,7 +65,7 @@
                 :resize=true
                 :close=true
       >
-        <div style="color: navy"> {{ index }}</div>
+        <div style="color: navy"> {{ item.name }}</div>
       </gridItem>
     </GridContainer>
 
@@ -64,7 +83,7 @@ const layoutDataConcatName = layoutData.map((pos, index) => {
 
 const layoutData0 = layoutDataConcatName
 const layoutData1 = layoutDataConcatName.filter((item, index) => index < 10)
-const layoutData2 = layoutDataConcatName.filter((item, index) => index < 16)
+const layoutData2 = layoutDataConcatName.filter((item, index) => index < 15)
 const layoutData3 = layoutDataConcatName.filter((item, index) => index < 25)
 const layoutData4 = layoutDataConcatName.filter((item, index) => index < 32)
 const layoutData5 = layoutDataConcatName.filter((item, index) => index < 15)
@@ -190,9 +209,9 @@ const layouts = [
   {
     px: 820,
     col: 6,
-    // margin: [10, 10],
+    margin: [50, 10],
     // size: [60, 80],
-    data: layoutData3,
+    data: layoutData2,
   },
   {
     px: 560,
@@ -242,6 +261,18 @@ const layouts1 = {
   // marginX: 30,
   // marginY: 50,
 }
+const layouts2 = {
+  data: layoutData11,
+  // col: 6,
+  // row: 8,
+  ratio: 0.2,
+  exchange: true,
+  // margin: [10, 10],
+  size: [50, 60],
+  followScroll: true,
+  scrollWaitTime: 800,
+  responsive: true,
+}
 
 const globalConf = {
   responsive: true,
@@ -254,7 +285,7 @@ const globalConf = {
 }
 let useLayout = reactive({})
 let useLayout1 = reactive({})
-
+let useLayout2 = reactive({})
 
 const config = reactive({
   layouts,
@@ -264,13 +295,17 @@ const config1 = reactive({
   layouts: layouts1,
   global: globalConf
 })
+const config2 = reactive({
+  layouts: layouts2,
+  global: globalConf
+})
 let container = null
-const exposeAPI = {}
+const containerAPI = {}
 onMounted(() => {
-  // console.log(exposeAPI);
-  // console.log(exposeAPI.getContainer());
-  // console.log(exposeAPI.exportUseLayout());
-  // console.log(exposeAPI.exportData());
+  // console.log(containerAPI);
+  // console.log(containerAPI.getContainer());
+  // console.log(containerAPI.exportUseLayout());
+  // console.log(containerAPI.exportData());
 
   nextTick(() => {
   })
@@ -425,7 +460,7 @@ setTimeout(() => {
 
 /* 拖动(drag)时克隆出来跟随鼠标移动的对应元素 */
 .grid-dragging-clone-el {
-  opacity: 0.8;
+  opacity: 0.5;
   transform: scale(1.1);
   z-index: 1;
 }

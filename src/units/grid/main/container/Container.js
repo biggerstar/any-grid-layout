@@ -70,6 +70,7 @@ export default class Container extends DomFunctionImpl {
         exchangeLock: false,
         firstInitColNum: null,
         firstEnterUnLock: false,   //  第一次进入的权限是否解锁
+        nestingEnterUnLock: false,   //  嵌套第一次进入的权限是否解锁
         moveExchangeLock: false,
         beforeOverItems: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
         moveCount: 0,
@@ -207,10 +208,8 @@ export default class Container extends DomFunctionImpl {
                 if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
             }
 
-            // this.render()
-            // this.updateContainerStyleSize()  // updateLayout内已经执行
-            // this._isNestingContainer_()
             this._observer_()
+            setTimeout(() => this._isNestingContainer_())
             this.__ownTemp__.firstInitColNum = this.col
             this.__store__.screenWidth = window.screen.width
             this.__store__.screenHeight = window.screen.height
@@ -231,7 +230,7 @@ export default class Container extends DomFunctionImpl {
         return this.engine.items.map((item) => item.exportConfig())
     }
 
-    exportUseLayout(){
+    exportUseLayout() {
         return this.useLayout
     }
 
@@ -430,7 +429,7 @@ export default class Container extends DomFunctionImpl {
 
     /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */
     _isNestingContainer_(element = null) {
-        element = element ? element : this.contentElement
+        element = element ? element : this.element
         if (!element) return
         while (true) {
             if (element.parentElement === null) {    // 父元素往body方向遍历上去为null表示该Container是第一层
@@ -439,6 +438,8 @@ export default class Container extends DomFunctionImpl {
                 break
             }
             element = element.parentElement    //  不是null在链中往上取父元素
+            // console.log(element._isGridItem_);
+
             if (element._isGridItem_) {      //  上级是Item表示是嵌套的， 父元素是Container元素执行自身offset加上父元素offset
                 const upperItem = element._gridItem_
                 this.__ownTemp__.offsetPageX = upperItem.element.offsetLeft + upperItem.container.__ownTemp__.offsetPageX
@@ -448,6 +449,7 @@ export default class Container extends DomFunctionImpl {
                     container: this,
                     nestingItem: element._gridItem_
                 })
+                element._gridItem_.nesting = true
                 this.isNesting = true
                 this.parentItem = upperItem
                 break
