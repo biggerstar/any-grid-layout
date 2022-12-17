@@ -1,5 +1,5 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <div ref="gridContainer" >
+  <div ref="gridContainer">
     <div ref="gridContainerArea" class="grid-container-area">
       <slot></slot>
     </div>
@@ -18,7 +18,7 @@ const gridContainerArea = ref(null)
 const props = defineProps({
   render: {required: false, type: Function, default: null}, // 若传入该函数初次进行手动渲染，不可直接赋值给useLayout，这样会改变响应式引用地址
   layoutChange: {required: false, type: Function, default: null}, //若传入该函数，布局改变时手动切换布局，不可直接赋值给useLayout，这样会改变响应式引用地址
-  getContainer: {required: false, type: Function, default: null}, // 获取Container的实例
+  exposeAPI: {required: false, type: Object, default: {}}, // 暴露出内部相关操作的API,container挂载够才能获取到
   useLayout: {required: true, type: Object, default: null},
   events: {required: false, type: Object},
   config: {
@@ -48,12 +48,12 @@ onMounted(() => {
   container.updateStyle({
     display: 'block',
     background: '#5df8eb'
-  },gridContainer.value)
+  }, gridContainer.value)
   container.updateStyle({
     position: 'relative',
     display: 'block',
-    margin:'0 auto'
-  },gridContainerArea.value)
+    margin: '0 auto'
+  }, gridContainerArea.value)
 
   useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
   gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
@@ -62,11 +62,14 @@ onMounted(() => {
   if (props.render === null) {
     Object.assign(props.useLayout, customsLayout)
   } else if (typeof props.render === 'function') {
-    props.render(customsLayout,useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
+    props.render(customsLayout, useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
   }
   container.mount()
 
-  if (typeof props.getContainer === 'function') props.getContainer(container)
+  //-----------------两个职能函数回调开发者获取到相关参数或信息--------------------//
+  props.exposeAPI.getContainer = () => container
+  props.exposeAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
+  props.exposeAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
 
   //------------------------------------------------------------------------//
   // if (!window.con) window.con = []
@@ -85,7 +88,14 @@ onMounted(() => {
     }
 
   })
+  // container._VueEvents.vueColChange = (col, preCol) => {
+  //   // 在mount后挂载才监听
+  //   // console.log(preCol,col);
+  // }
+  // container._VueEvents.vueRowChange = (row, preRow) => { }
+
   container._VueEvents.vueUseLayoutChange = (useLayout) => {
+
     isLayoutChange = true
     props.useLayout.data = []
     nextTick(() => {
@@ -98,9 +108,9 @@ onMounted(() => {
         Object.assign(props.useLayout, useLayout.currentLayout)
       } else if (typeof props.layoutChange === 'function') {
         isLayoutChange = false
-        props.layoutChange(customsLayout,useLayout.useLayoutConfig,container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
+        props.layoutChange(customsLayout, useLayout.useLayoutConfig, container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
       }
-      // console.log(customsLayout.px,customsLayout.data);
+      // console.log(customsLayout.px, customsLayout.data);
     })
   }
   /** 跨容器交换Item用，用于将vue控制的Item位置控制权交给事件处理程序管理 */
@@ -161,7 +171,6 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
       if (key === 'itemLimit') console.error(key, '键应该是一个object值,包含可选键minW,minH,maxH,maxW作用于所有Item大小限制')
       else console.error(key, '键应该是一个object值')
     }
-    // if (key === 'col') console.log(val);
     useLayoutConfig.layout[key] = toRaw(val)
   }
   container.updateLayout(true)

@@ -65,6 +65,8 @@ export default class Container extends DomFunctionImpl {
     __store__ = tempStore
     __ownTemp__ = {
         //-----内部可写外部只读变量------//
+        preCol: 0,   // 容器大小改变之前的col
+        preRow: 0,   // 容器大小改变之前的row
         exchangeLock: false,
         firstInitColNum: null,
         firstEnterUnLock: false,   //  第一次进入的权限是否解锁
@@ -110,6 +112,7 @@ export default class Container extends DomFunctionImpl {
                 set: (v) => {
                     if (col === v) return
                     col = v
+                    // console.log(col,v,111111111111111111)
                 }
             },
             row: {
@@ -117,6 +120,7 @@ export default class Container extends DomFunctionImpl {
                 set: (v) => {
                     if (row === v) return
                     row = v
+                    // console.log(row,v,222222222222222222)
                 }
             },
         })
@@ -224,7 +228,11 @@ export default class Container extends DomFunctionImpl {
     }
 
     exportData() {
-        return this.engine.items.map((item)=> item.exportConfig())
+        return this.engine.items.map((item) => item.exportConfig())
+    }
+
+    exportUseLayout(){
+        return this.useLayout
     }
 
     /** 渲染某一组Data */
@@ -304,9 +312,8 @@ export default class Container extends DomFunctionImpl {
             if (containerWidth <= 0) return
             let useLayout = this.engine.layoutConfig.genLayoutConfig(containerWidth)
             let {useLayoutConfig, currentLayout, layout} = useLayout
-            let fullUseLayoutConfig = new LayoutInstantiationField(useLayoutConfig)
+            // let fullUseLayoutConfig = new LayoutInstantiationField(useLayoutConfig)
             const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
-
             if (res === null || res === false) return
             if (typeof res === 'object') useLayoutConfig = res
 
@@ -323,7 +330,8 @@ export default class Container extends DomFunctionImpl {
                         // this.render()
                     }
                     this.eventManager._callback_('useLayoutChange', currentLayout, containerWidth, this.container)
-                    this._VueEvents.vueUseLayoutChange(useLayout)
+                    const vueUseLayoutChange = this._VueEvents.vueUseLayoutChange
+                    if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
                 }
             }
             if (isWindowResize) return

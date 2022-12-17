@@ -143,6 +143,21 @@ export default class Engine {
             this.layoutManager.setColNum(maxCol)
             this.layoutManager.setRowNum(maxRow)
             this.layoutManager.addRow(maxRow - this.layoutManager._layoutMatrix.length)
+            const preCol = this.container.__ownTemp__.preCol
+            const preRow = this.container.__ownTemp__.preRow
+            if (maxCol !== preCol) {
+                this.container.__ownTemp__.preCol = maxCol
+                this.container.eventManager._callback_('colChange', maxCol, preCol, container)
+                const vueColChange = this.container._VueEvents.vueColChange
+                if (typeof vueColChange === 'function') vueColChange(maxCol, preCol, container)
+
+            }
+            if (maxRow !== preRow) {
+                this.container.__ownTemp__.preRow = maxRow
+                this.container.eventManager._callback_('rowChange', maxRow, preRow, container)
+                const vueRowChange = this.container._VueEvents.vueRowChange
+                if (typeof vueRowChange === 'function') vueRowChange(maxRow, preRow, container)
+            }
         }
         return {
             col: maxCol,
@@ -373,6 +388,9 @@ export default class Engine {
 
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
+        // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
+        this.items.push(item)
+        return true
         // console.log(item.pos);
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
         // console.log(realLayoutPos);
@@ -619,6 +637,7 @@ export default class Engine {
                 updateStaticItemLayout(item)
             })
         }
+        this.container.layout.data = this.container.exportData()   // 将最新data同步到当前使用的layout中
         this.container.updateContainerStyleSize()
         const genBeforeSize = (container) => {
             return {

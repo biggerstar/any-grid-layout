@@ -24,6 +24,9 @@ import ErrorTypeIndex from "@/units/grid/events/errorType/ErrorTypeIndex.js";
  *                                                         可通过实例属性resizeReactionDelay控制触发间隔
  *  enterContainerArea(container,item)                     当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小
  *  leaveContainerArea(container,item)                     当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小
+ *  colChange(col,preCol,container)                        col列数改变
+ *  rowChange(row,preRow,container)                        row列数改变
+ *
  * */
 export default class EventCallBack {
     error = null

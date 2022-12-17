@@ -609,6 +609,7 @@ export default class EditEvent {
                     // console.log(dragItem,toItem);
                     if (container.responseMode === 'default') {
                         if (xOrY) {  // X轴
+                            // console.log(111111111111111111)
                             container.engine.sortResponsiveItem()
                             container.engine.move(dragItem, toItem.i)
                         } else { // Y轴

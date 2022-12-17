@@ -175,15 +175,17 @@ export default class Item extends DomFunctionImpl {
         Array.from(['follow', 'dragOut']).forEach((field => {
             if (item[field] !== true) exposeConfig[field] = item[field]
         }))
+        if (typeof item.name === 'string') exposeConfig.name = item.name
         //transition 特殊导出
         let transition = {}
-        if (item.transition.field !== 'top,left,width,height'){
+        if (item.transition.field !== 'top,left,width,height') {
             transition.field = item.transition.field
-            if (item.transition.time !== 180)   transition.time = item.transition.time
-        }else{
+            if (item.transition.time !== 180) transition.time = item.transition.time
+        } else {
             transition = item.transition.time
         }
         exposeConfig.transition = transition
+        // exposeConfig.el = this.element
         //transition 特殊导出结束
         return exposeConfig
     }
@@ -207,10 +209,10 @@ export default class Item extends DomFunctionImpl {
             this.element._isGridItem_ = true
             this._mounted = true
             this.container.eventManager._callback_('itemMounted', this)
-            if (this.static) this.element.innerHTML = this.element.innerHTML + `--
-                ${this.pos.i}</br>
-                ${this.pos.w},${this.pos.h}</br>
-                ${this.pos.x},${this.pos.y} `
+            // if (this.static) this.element.innerHTML = this.element.innerHTML + `--
+            //     ${this.pos.name}</br>
+            //     ${this.pos.w},${this.pos.h}</br>
+            //     ${this.pos.x},${this.pos.y} `
             // else this.element.innerHTML = this.element.innerHTML + '---' + this.i
         }
 
@@ -378,7 +380,7 @@ export default class Item extends DomFunctionImpl {
     }
 
     _handleResize(isResize = false) {
-        const handleResizeFunc = ()=>{
+        const handleResizeFunc = () => {
             const className = 'grid-item-resizable-handle'
             if (isResize && this._resizeTabEl === null) {
                 const handleResizeEls = this.element.querySelectorAll('.' + className)
@@ -405,7 +407,7 @@ export default class Item extends DomFunctionImpl {
 
     /** 创建拖Item关闭按钮 */
     _closeBtn(isDisplayBtn = false) {
-        const closeBtnFunc = ()=>{
+        const closeBtnFunc = () => {
             const className = 'grid-item-close-btn'
             if (isDisplayBtn && this._closeEl === null) {
                 const _closeEl = document.createElement('div')

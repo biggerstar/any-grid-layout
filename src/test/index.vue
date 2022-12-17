@@ -8,11 +8,12 @@
         :config="config"
         :render="render"
         :layoutChange="layoutChange"
-        :getContainer="getContainer"
+        :exposeAPI="exposeAPI"
     >
       <gridItem v-for="(item,index) in useLayout.data"
-                :key=index
+                :key='index'
                 :pos="item.pos"
+                :name="item.name.toString()"
                 :static="item.static"
                 :transition="200"
                 :draggable="true"
@@ -24,7 +25,7 @@
                 :dragAllowEls="item.dragAllowEls"
 
       >
-        {{ index }}
+        {{ item.name }}
 
         <!--        <span>这是允许的按钮</span>-->
       </gridItem>
@@ -56,12 +57,17 @@
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw} from 'vue'
 import {layoutData, layoutData11} from '@/stores/layout.js'
 
+const layoutDataConcatName = layoutData.map((pos, index) => {
+  pos.name = index
+  return pos
+})
 
-const layoutData1 = layoutData.filter((item, index) => index < 10)
-const layoutData2 = layoutData.filter((item, index) => index < 16)
-const layoutData3 = layoutData.filter((item, index) => index < 25)
-const layoutData4 = layoutData.filter((item, index) => index < 32)
-const layoutData5 = layoutData.filter((item, index) => index < 15)
+const layoutData0 = layoutDataConcatName
+const layoutData1 = layoutDataConcatName.filter((item, index) => index < 10)
+const layoutData2 = layoutDataConcatName.filter((item, index) => index < 16)
+const layoutData3 = layoutDataConcatName.filter((item, index) => index < 25)
+const layoutData4 = layoutDataConcatName.filter((item, index) => index < 32)
+const layoutData5 = layoutDataConcatName.filter((item, index) => index < 15)
 
 const events = {
   error(err) {
@@ -155,6 +161,14 @@ const events = {
     // useLayout.col = container.col + 1
 
   },
+  colChange(col, preCol, container) {
+    // col列数改变
+    // console.log(col,preCol);
+  },
+  rowChange(row, preRow, container) {
+    // row行数改变
+    // console.log(row,preRow);
+  },
 }
 const layouts = [
   {
@@ -174,7 +188,7 @@ const layouts = [
     data: layoutData4,
   },
   {
-    px: 800,
+    px: 820,
     col: 6,
     // margin: [10, 10],
     // size: [60, 80],
@@ -240,7 +254,7 @@ const globalConf = {
 }
 let useLayout = reactive({})
 let useLayout1 = reactive({})
-let fullLayout = null
+
 
 const config = reactive({
   layouts,
@@ -251,12 +265,18 @@ const config1 = reactive({
   global: globalConf
 })
 let container = null
-const getContainer = (con) => {
-  // console.log(container);
-  container = con
-}
+const exposeAPI = {}
+onMounted(() => {
+  // console.log(exposeAPI);
+  // console.log(exposeAPI.getContainer());
+  // console.log(exposeAPI.exportUseLayout());
+  // console.log(exposeAPI.exportData());
 
-const layoutChange = (layout,fullLayout,layouts) => {
+  nextTick(() => {
+  })
+})
+
+const layoutChange = (layout, fullLayout, layouts) => {
   // console.log(layout);
   // console.log(layout.data );
   // useLayout.data = layout.data
@@ -269,7 +289,7 @@ const layoutChange = (layout,fullLayout,layouts) => {
   // }
   // useLayout.data = Object.assign([], layout.data)
 }
-const render = (layout,fullLayout, layouts) => {
+const render = (layout, fullLayout, layouts) => {
   // fullLayout = layout
   // console.log(layout.px);
   // Object.assign(useLayout,layout)

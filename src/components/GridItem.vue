@@ -27,6 +27,7 @@ const props = defineProps({
     }
   },
   //----------------------Item挂载字段-------------------------//
+  name: {required: false, type: String, default: undefined},
   transition: {required: false, type: [Boolean, Object, Number], default: undefined},
   static: {required: false, type: Boolean, default: undefined},
   draggable: {required: false, type: Boolean, default: undefined},
@@ -63,6 +64,9 @@ const watchItemConfig = () => {
       selfItem.transition = val
     }
   }, {deep: true})
+  watch(() => props.name, (val) => {
+    if (typeof val === 'string') selfItem.name = val
+  })
   watch(() => props.static, (val) => {
     if (typeof val === 'boolean') selfItem.static = val
   })
