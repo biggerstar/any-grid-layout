@@ -70,7 +70,7 @@ export default class Container extends DomFunctionImpl {
         exchangeLock: false,
         firstInitColNum: null,
         firstEnterUnLock: false,   //  第一次进入的权限是否解锁
-        nestingEnterUnLock: false,   //  嵌套第一次进入的权限是否解锁
+        nestingEnterBlankUnLock: false,   //  嵌套第一次进入是否是空白处
         moveExchangeLock: false,
         beforeOverItems: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
         moveCount: 0,
@@ -209,7 +209,11 @@ export default class Container extends DomFunctionImpl {
             }
 
             this._observer_()
-            setTimeout(() => this._isNestingContainer_())
+            let nestingTimer = setTimeout(() => {
+                this._isNestingContainer_()
+                clearTimeout(nestingTimer)
+                nestingTimer = null
+            })
             this.__ownTemp__.firstInitColNum = this.col
             this.__store__.screenWidth = window.screen.width
             this.__store__.screenHeight = window.screen.height
@@ -254,7 +258,7 @@ export default class Container extends DomFunctionImpl {
         for (let i = 0; i < this.engine.items.length; i++) {
             const item = this.engine.items[i]
             for (let j = 0; j < ntList.length; j++) {
-                if (ntList[j].id === (item.nesting || '').replace('#', '')) {
+                if (ntList[j].id === (item.nested || '').replace('#', '')) {
                     let ntNode = ntList[j]
                     // console.log(11111111111111, container);
                     // console.log(ntNode);
@@ -449,7 +453,7 @@ export default class Container extends DomFunctionImpl {
                     container: this,
                     nestingItem: element._gridItem_
                 })
-                element._gridItem_.nesting = true
+                element._gridItem_.nested = true
                 this.isNesting = true
                 this.parentItem = upperItem
                 break
@@ -487,9 +491,10 @@ export default class Container extends DomFunctionImpl {
     testUnmount() {
         this.engine.getItemList().forEach((item, index) => {
             item.mount()
-            const timer = setTimeout(() => {
+            let timer = setTimeout(() => {
                 item.unmount()
                 clearTimeout(timer)
+                timer = null
             }, index * 1000)
         })
     }

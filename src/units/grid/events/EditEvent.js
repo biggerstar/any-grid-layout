@@ -239,10 +239,10 @@ export default class EditEvent {
                 if (toContainer.isNesting) {   //  修复快速短距重复拖放情况下概率识别成父容器移动到子容器当Item的情况
                     if (toContainer.parentItem === dragItem
                         || toContainer.parentItem.element === dragItem.element) {
-                        return;
+                        return
                     }
                 }
-                toContainer.__ownTemp__.nestingEnterUnLock = true
+                toContainer.__ownTemp__.nestingEnterBlankUnLock = true
                 this.mouseenter(null, toContainer)
                 //  如果现在点击嵌套容器空白部分选择的Item会是父容器的Item,按照mouseenter逻辑对应不可能删除当前Item(和前面一样是fromItem)在插入
                 //  接上:因为这样是会直接附加在父级Container最后面，这倒不如什么都不做直接等待后面逻辑执行换位功能
@@ -276,18 +276,12 @@ export default class EditEvent {
                 let moveItem = tempStore.moveItem
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 container.__ownTemp__.firstEnterUnLock = false
-                container.__ownTemp__.nestingEnterUnLock = false
+                container.__ownTemp__.nestingEnterBlankUnLock = false
                 if (tempStore.isLeftMousedown) {
                     container.eventManager._callback_('leaveContainerArea', container, dragItem)
+                    // container._VueEvents.vueLeaveContainerArea(container, dragItem)
                 }
 
-                // if (!tempStore.isDragging || fromItem === null || !container || !tempStore.isLeftMousedown) return
-                // dragItem.container.engine.updateLayout([dragItem])
-
-                // if (container && container.isNesting) {  //  如果是个嵌套Item   离开该嵌套后该嵌套Item重置到可以进行
-                //     //动态交换 === false   不可动态交换 === true    // 这里取舍选了不可
-                //     // container.parentItem.pos.static = !container.nestedOutExchange
-                // }
             }
         },
         itemDrag: {
@@ -313,6 +307,7 @@ export default class EditEvent {
                         margin: container['margin'],
                         el: dragItemElement,
                         name: dragItem.name,
+                        nested: dragItem.nested,
                         draggable: dragItem.draggable,
                         resize: dragItem.resize,
                         close: dragItem.close,
@@ -335,18 +330,19 @@ export default class EditEvent {
                         }
                     }
                     const vueExchange = () => {
-                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore, doItemPositionMethod)
-                        // console.log( dragItem.container);
-                        dragItem.unmount()
-                        dragItem.remove()
-
-                        if (container) {
-                            if (dragItem !== newItem && !dragItem.container.responsive) {
-                                dragItem.container.engine.updateLayout([dragItem])
-                            } else {
-                                dragItem.container.engine.updateLayout(true)
+                        // dragItem._mounted = false
+                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore, (newItem)=>{
+                            dragItem.unmount()  // 这里不卸载  交给vue管理
+                            dragItem.remove()
+                            doItemPositionMethod(newItem)
+                            if (container) {
+                                if (dragItem !== newItem && !dragItem.container.responsive) {
+                                    dragItem.container.engine.updateLayout([dragItem])
+                                } else {
+                                    dragItem.container.engine.updateLayout(true)
+                                }
                             }
-                        }
+                        })
                     }
                     const nativeExchange = () => {
                         if (container['responsive']) newItem.pos.autoOnce = true
@@ -375,7 +371,7 @@ export default class EditEvent {
                         doItemPositionMethod(newItem)
                     }
                     container.__ownTemp__.firstEnterUnLock = false
-                    container.__ownTemp__.nestingEnterUnLock = false
+                    container.__ownTemp__.nestingEnterBlankUnLock = false
 
                     if (container.platform === 'vue') vueExchange()
                     else nativeExchange()
@@ -507,18 +503,17 @@ export default class EditEvent {
                         return {distance, speed}
                     }
                     //------对移动速度和距离做出限制,某个周期内移动速度太慢或距离太短忽略本次移动(only mouse event)------//
-                    // if (!container.__ownTemp__.firstEnterUnLock) {
-                    //     if (tempStore.deviceEventMode === 'mouse') {
-                    //         const {distance, speed} = mouseSpeed()
-                    //         if (container.size[0] < 30 || container.size[1] < 30) {
-                    //             if (distance < 3) return
-                    //         } else if (container.size[0] < 60 || container.size[1] < 60) {
-                    //             if (distance < 7) return
-                    //         } else if (distance < 10 || speed < 10) return
-                    //         if (dragItem === null) return
-                    //     }
-                    // }
-
+                    if (!container.__ownTemp__.firstEnterUnLock) {
+                        if (tempStore.deviceEventMode === 'mouse') {
+                            const {distance, speed} = mouseSpeed()
+                            if (container.size[0] < 30 || container.size[1] < 30) {
+                                if (distance < 3) return
+                            } else if (container.size[0] < 60 || container.size[1] < 60) {
+                                if (distance < 7) return
+                            } else if (distance < 10 || speed < 10) return
+                            if (dragItem === null) return
+                        }
+                    }
 
                     //-----------找到dragItem当前移动覆盖的Item位置，取左上角第一个设定成toItem-------------//
                     const nextPos = {
@@ -527,15 +522,17 @@ export default class EditEvent {
                         w: dragItem.pos.w,
                         h: dragItem.pos.h,
                     }
-
+                    let moveInBlank = false   // 当前移动到的位置是否是container的空白处
                     const innerContentArea = () => {
-                        // 在响应式流Items覆盖区域内的交换
-                        if (!toItem && !dragItem.follow) return
+                        // 在containerArea覆盖区域内的交换
+                        if (!dragItem.follow) return
                         const rangeLimitItems = container.engine.findCoverItemFromPosition(nextPos.x, nextPos.y, nextPos.w, nextPos.h)
+                        // console.log(rangeLimitItems)
                         if (rangeLimitItems.length > 0) {
                             let updateItems = rangeLimitItems.filter(item => dragItem !== item)
                             toItem = updateItems[0]
-                        }
+                            // console.log(toItem,container);
+                        } else moveInBlank = true
                     }
                     const outerContentArea = () => {
                         // 在响应式流Items覆盖区域外的检测，为了使得鼠标拖拽超出Items覆盖区域后dragItem还能跟随鼠标位置在流区域进行移动或交换
@@ -545,16 +542,24 @@ export default class EditEvent {
                         if (!rangeLimitItems) return
                         toItem = rangeLimitItems
                     }
-                    if (dragItem.follow) {
-                        if (toItem) innerContentArea()
-                        else outerContentArea()
-                    } else innerContentArea()
+                    if (container.__ownTemp__.firstEnterUnLock) {
+                        innerContentArea()
+                    } else {
+                        if (dragItem.follow) {   // 是否可以拖动跟随和在container里面
+                            if (toItem) innerContentArea()
+                            else outerContentArea()
+                        } else innerContentArea()
+                    }
+                    // console.log(moveInBlank);
+                    // 如果是嵌套，toItem是和当前fromItem同级的，移动到空白处toItem置成null忽略才能直接让Item和子容器交换
+                    if (moveInBlank && toItem && toItem.nested) toItem = null
 
+                    // console.log(moveInBlank,toItem);
+                    // console.log(container.__ownTemp__.firstEnterUnLock);
                     // console.log(nowMoveWidth,nowMoveHeight)
-
                     //---------------------------响应模式【跨】容器交换(跨容器交换后直接跳出)------------------------------//
                     if (container.__ownTemp__.firstEnterUnLock) {
-                        if (container.__ownTemp__.nestingEnterUnLock) {
+                        if (!moveInBlank) {
                             if (!toItem) return   // 相邻容器移出来进入margin的空白区域不进行Item 交换
                         }
                         dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
@@ -597,16 +602,18 @@ export default class EditEvent {
                     }
                     if (continuousOverCount >= contLimit) {
                         container.__ownTemp__.exchangeLock = true
-                        const timer = setTimeout(() => {
+                        let timer = setTimeout(() => {
                             container.__ownTemp__.exchangeLock = false
                             clearTimeout(timer)
+                            timer = null
                         }, 200)
                     } else if (beforeOverItems.length < contLimit && toItem.draggable) {   // 前contLimit(默认是上面的3个)个连续反应时间为toItem.transition.time
                         if (toItem.transition && toItem.transition.time) {
                             container.__ownTemp__.exchangeLock = true
-                            const timer = setTimeout(() => {
+                            let timer = setTimeout(() => {
                                 container.__ownTemp__.exchangeLock = false
                                 clearTimeout(timer)
+                                timer = null
                             }, toItem.transition.time)
                         }
                     }
@@ -1030,6 +1037,7 @@ export default class EditEvent {
                             dragItem.__temp__.dragging = false
                             fromItem.__temp__.dragging = false
                             clearTimeout(timer)
+                            timer = null
                         }
 
                         if (dragItem.transition) {
@@ -1093,11 +1101,14 @@ export default class EditEvent {
                         let timeCont = 500
                         const container = tempStore.fromContainer
                         if (container.slidePage && (offsetTop >= 20 || offsetLeft >= 20)) {
-                            const timer = setInterval(() => {
+                            let timer = setInterval(() => {
                                 timeCont -= 20
                                 container.element.scrollTop += parseInt((((offsetTop / 100 * timeCont) / 30) || 0).toString())
                                 container.element.scrollLeft += parseInt((((offsetLeft / 100 * timeCont) / 30) || 0).toString())
-                                if (timeCont <= 0 || tempStore.isLeftMousedown) clearInterval(timer)
+                                if (timeCont <= 0 || tempStore.isLeftMousedown) {
+                                    clearInterval(timer)
+                                    timer = null
+                                }
                             }, 20)
                         }
                     }
@@ -1145,9 +1156,10 @@ export default class EditEvent {
                     tempStore.timeOutEvent = setTimeout(() => {
                         tempStore.allowTouchMoveItem = true
                         EPF.container.mousemove(ev)   // 触屏模式下只为了触发生成克隆元素
-                        const timer = setTimeout(() => {
+                        let timer = setTimeout(() => {
                             document.removeEventListener('contextmenu', EEF.prevent.contextmenu)
                             clearTimeout(timer)
+                            timer = null
                         }, 600)
                         clearTimeout(tempStore.timeOutEvent)
                     }, pressTime)

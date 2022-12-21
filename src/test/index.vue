@@ -11,10 +11,12 @@
         :containerAPI="containerAPI"
     >
       <gridItem v-for="(item,index) in useLayout.data"
-                :key='index'
+                :item="item"
+                :key="index"
                 :pos="item.pos"
                 :name="item.name.toString()"
                 :static="item.static"
+                :nested="item.nested"
                 :transition="200"
                 :draggable="true"
                 :resize="true"
@@ -25,10 +27,16 @@
                 :dragAllowEls="item.dragAllowEls"
 
       >
-        <div>{{ !(item.pos.w >= 4 && item.pos.h >= 3) ? item.name : '' }}</div>
+        <test>
+          <test>
+            <test>
+              {{ item.name }}
+            </test>
+          </test>
+        </test>
 
         <GridContainer
-            v-if="item.pos.w >= 4 && item.pos.h >= 3"
+            v-if="item.nested"
             class="grid-container con3"
             style="height: 500px;margin: 3px auto"
             :config="config2"
@@ -36,13 +44,21 @@
             :events="events"
         >
           <gridItem v-for="(item2,index) in useLayout2.data"
+                    :item="item2"
                     :key="index"
                     :pos="item2.pos"
                     :draggable=true
+
                     :resize=true
                     :close=true
           >
-            <div style="color: lemonchiffon"> {{ index  }}</div>
+            <test>
+              <test>
+                <test>
+                  {{ index }}
+                </test>
+              </test>
+            </test>
           </gridItem>
         </GridContainer>
 
@@ -59,6 +75,7 @@
         :events="events"
     >
       <gridItem v-for="(item,index) in useLayout1.data"
+                :item="item"
                 :key=index
                 :pos="item.pos"
                 :draggable=true
@@ -66,6 +83,24 @@
                 :close=true
       >
         <div style="color: navy"> {{ item.name }}</div>
+        <!--        <GridContainer-->
+        <!--            v-if="item.nested"-->
+        <!--            class="grid-container con3"-->
+        <!--            style="height: 500px;margin: 3px auto"-->
+        <!--            :config="config2"-->
+        <!--            :useLayout="useLayout2"-->
+        <!--            :events="events"-->
+        <!--        >-->
+        <!--          <gridItem v-for="(item2,index) in useLayout2.data"-->
+        <!--                    :key="index"-->
+        <!--                    :pos="item2.pos"-->
+        <!--                    :draggable=true-->
+        <!--                    :resize=true-->
+        <!--                    :close=true-->
+        <!--          >-->
+        <!--            <div style="color: lemonchiffon"> {{ index  }}</div>-->
+        <!--          </gridItem>-->
+        <!--        </GridContainer>-->
       </gridItem>
     </GridContainer>
 
@@ -74,12 +109,19 @@
 </template>
 <script setup>
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw} from 'vue'
-import {layoutData, layoutData11} from '@/stores/layout.js'
+import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
+import Test from "@/components/Test.vue";
 
 const layoutDataConcatName = layoutData.map((pos, index) => {
   pos.name = index
   return pos
 })
+
+const layoutData22ConcatName = layoutData22.map((pos, index) => {
+  pos.name = index
+  return pos
+})
+console.log(layoutData22ConcatName);
 
 const layoutData0 = layoutDataConcatName
 const layoutData1 = layoutDataConcatName.filter((item, index) => index < 10)
@@ -209,9 +251,9 @@ const layouts = [
   {
     px: 820,
     col: 6,
-    margin: [50, 10],
+    margin: [50, 30],
     // size: [60, 80],
-    data: layoutData2,
+    data: layoutData22ConcatName,
   },
   {
     px: 560,
@@ -267,7 +309,7 @@ const layouts2 = {
   // row: 8,
   ratio: 0.2,
   exchange: true,
-  // margin: [10, 10],
+  margin: [25, 20],
   size: [50, 60],
   followScroll: true,
   scrollWaitTime: 800,

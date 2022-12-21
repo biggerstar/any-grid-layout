@@ -43,7 +43,8 @@ export default class LayoutConfig {
         let layoutItem = {}
         // console.log(containerWidth,this.container.element.clientWidth);
         containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
-
+        // console.log(containerWidth);
+        // if (containerWidth === 0) containerWidth = 300
         const layouts = this.container.layouts.sort((a,b)=> a.px - b.px )
         for (let i = 0; i < layouts.length; i++) {
             layoutItem = layouts[i]

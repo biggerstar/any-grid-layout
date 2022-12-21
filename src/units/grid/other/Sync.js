@@ -62,14 +62,17 @@ export default class Sync {
             // 最大次数
             if (typeof obj["max"] === 'number' && obj["max"] < maxCount) {
                 clearInterval(timer)
+                timer = null
             }
             // 超时停止
             if (timeout < (maxCount * intervalTime)) {
                 clearInterval(timer)
+                timer = null
             }
             // 符合条件即运行
             if (isObeyRule()) {
                 clearInterval(timer)
+                timer = null
                 doSync()
             }
             maxCount++

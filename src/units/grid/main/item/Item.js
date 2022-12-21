@@ -34,6 +34,7 @@ export default class Item extends DomFunctionImpl {
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
 
+    nested = false
     //----------------内部需要的参数---------------------//
     i = null   //  每次重新布局给的自动正整数编号,对应的是Item的len
     element = null
@@ -44,7 +45,6 @@ export default class Item extends DomFunctionImpl {
     pos = {}
     edit = null   // 该Item是否正在被编辑(只读)
     parentElement = null
-    nesting = null
     _VueEvents = {}   // 用于 vue 携带的内置事件
     //----------------保持状态所用参数---------------------//
     _mounted = false
@@ -169,7 +169,7 @@ export default class Item extends DomFunctionImpl {
             delete exposePos.y
         }
         exposeConfig['pos'] = exposePos
-        Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
+        Array.from(['static', 'draggable', 'resize', 'close','nested']).forEach((field => {
             if (item[field] !== false) exposeConfig[field] = item[field]
         }))
         Array.from(['follow', 'dragOut']).forEach((field => {
@@ -379,6 +379,8 @@ export default class Item extends DomFunctionImpl {
         if (isStyle === false) return this.__temp__.styleLock = false
     }
 
+    /**  手动生成resize元素，可以将resize字段设置成false，然后在被Item包裹的子元素中将某个要指定为resize按钮的标签
+     * 的class设置成grid-item-resizable-handle也能将该元素当成作为resize的触发按钮 */
     _handleResize(isResize = false) {
         const handleResizeFunc = () => {
             const className = 'grid-item-resizable-handle'
@@ -405,7 +407,9 @@ export default class Item extends DomFunctionImpl {
         else Sync.run(handleResizeFunc)
     }
 
-    /** 创建拖Item关闭按钮 */
+    /**  手动生成close关闭按钮，可以将close字段设置成false，然后在被Item包裹
+     * 的子元素中将某个要指定为close按钮的标签的class设置成grid-item-close-btn也能将该元素当成作为close的触发按钮 */
+
     _closeBtn(isDisplayBtn = false) {
         const closeBtnFunc = () => {
             const className = 'grid-item-close-btn'
