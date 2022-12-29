@@ -126,82 +126,18 @@ onMounted(() => {
       itemConfig.pos.x = sourceItem.pos.nextStaticPos.x
       itemConfig.pos.y = sourceItem.pos.nextStaticPos.y
     }
-    const sourceElementChildren = Array.from(sourceItem.element.childNodes)
+    // const sourceElementChildren = Array.from(sourceItem.element.childNodes)
     itemConfig.pos.doItemCrossContainerExchange = (newVueItem) => {    // 该挂载位置不严谨，但是为了方便就临时挂载了,在GridItem使用后会被删除，后面有优化通过mitt去做
       tempStore.exchangeItems.old = tempStore.fromItem
       tempStore.exchangeItems.new = newVueItem
       tempStore.moveItem = newVueItem   // 将当前交换操作的Item挂载，便于时间处理程序找到对应的Item成员
       tempStore.fromItem = newVueItem     // 原Item移除，将新位置作为源Item
       doCrossCallback(newVueItem)
-      return
-      const newVueItemElementChildren = Array.from(newVueItem.element.childNodes)
-      const canIgnoreNode = (node) => {
-        return (node.classList) && (node.classList.contains('grid-item-resizable-handle')
-            || node.classList.contains('grid-item-close-btn'))
-      }
-      newVueItemElementChildren.forEach(node => {
-        if (canIgnoreNode(node)) return
-        node.remove()
-      })   // 删除新Item原本新节点的所有子节点作为一个新Item的空壳
-
-      sourceElementChildren.forEach(node => {
-        if (canIgnoreNode(node)) return
-        newVueItem.element.appendChild(document.adoptNode(node))   //  将原本交换过来的节点装进空壳节点中，等于把原来所有子节点移动过来了
-      })
-      const sourceVueVnodeElementChildren = Array.from(newVueItem.element.childNodes)
-      let vNodes = sourceVueVnodeElementChildren.map(node => {
-        if (canIgnoreNode(node)) return
-        const vNode = node['__vnode']
-        if (!vNode) return
-        // console.log(vNode,node);
-        // console.log(newVueItem.element);
-        // console.log(node);
-        // newVueItem.element.appendChild(document.adoptNode(node))   //  将原本交换过来的节点装进空壳节点中，等于把原来所有子节点移动过来了
-        // const newVnode = cloneVNode(node['__vnode'])
-        // console.log(isVNode(newVnode));
-        // console.log(newVnode);
-        // render(newVnode,newVueItem.element,false)
-        return node['__vnode']
-      })
-      // console.log(vNodes.length);
-
-      // render(h('div', vNodes), newVueItem.element)
-      // vNodes = null
-
-      // nextTick(()=>{  removeSourceVueItem() })
-
+      // console.log(newVueItem.type);
     }
-
-    const leaveContainer = tempStore.fromItem.container
-    const leaveContainerProps = leaveContainer?.element['__vnode']['ctx']['props']
-    const useData = leaveContainerProps['useLayout']['data']
-
-    // const leaveContainerSetup = leaveContainer?.element['__vnode']['ctx']['setupState']
-
-    const leaveItemVNode = sourceItem?.element['__vnode']
-    const leaveItemConfig = leaveItemVNode['ctx']['props']['item']
-    /** 删除vue通过dataList控制的Item和对应的element */
-    const removeSourceVueItem = () => {
-      // console.log(leaveItemConfig);
-      // console.log(sourceItem.element['__vnode']);
-      // leaveContainerSetup.isLayoutChange = true
-      for (let i = 0; i < useData.length; i++) {
-        if (leaveItemConfig === useData[i]) {
-          console.log(leaveItemConfig)
-          // useData.splice(i, 1)
-          break
-        }
-      }
-      // leaveContainerSetup.isLayoutChange = false
-
-      console.log(useData.length);
-    }
-
+    // console.log(itemConfig.type);
     props.useLayout['data'].push(itemConfig)
-    // removeSourceVueItem()
-    // nextTick(()=>{  removeSourceVueItem() })
   }
-
 })
 
 watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)的修改赋值同步到当前使用的layout,for循环存在极小的计算资源浪费

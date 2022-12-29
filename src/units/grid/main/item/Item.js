@@ -19,6 +19,7 @@ export default class Item extends DomFunctionImpl {
     //------------实例化Item外部传进的的参数,不建议在Container中传进来--------------//
     el = ''   // 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
     name = '' //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
+    type = null //  该Item的类型，可用于区分组件
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
     dragOut = true     // 是否可以将Item拖动到容器外
     className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
@@ -176,6 +177,7 @@ export default class Item extends DomFunctionImpl {
             if (item[field] !== true) exposeConfig[field] = item[field]
         }))
         if (typeof item.name === 'string') exposeConfig.name = item.name
+        if (typeof item.type === 'string') exposeConfig.type = item.type
         //transition 特殊导出
         let transition = {}
         if (item.transition.field !== 'top,left,width,height') {

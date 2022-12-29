@@ -307,6 +307,7 @@ export default class EditEvent {
                         margin: container['margin'],
                         el: dragItemElement,
                         name: dragItem.name,
+                        type: dragItem.type,
                         nested: dragItem.nested,
                         draggable: dragItem.draggable,
                         resize: dragItem.resize,

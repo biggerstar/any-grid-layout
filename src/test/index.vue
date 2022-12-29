@@ -12,6 +12,7 @@
         :components="components"
     >
       <gridItem v-for="(item,index) in useLayout.data"
+                :type = 'item.type ? item.type : "text"'
                 :item="item"
                 :key="index"
                 :pos="item.pos"
@@ -27,8 +28,7 @@
                 :dragIgnoreEls="item.dragIgnoreEls"
                 :dragAllowEls="item.dragAllowEls"
       >
-        <GridItemLoader :type='item.type ? item.type: "text"' :item='item'></GridItemLoader>
-
+        {{item.name}}
       </gridItem>
     </GridContainer>
 
@@ -44,14 +44,15 @@
         :components="components"
     >
       <gridItem v-for="(item,index) in useLayout1.data"
+                :type = 'item.type ? item.type : "text"'
                 :item="item"
                 :key=index
                 :pos="item.pos"
                 :draggable=true
                 :resize=true
                 :close=true
+                :item1 = "item"
       >
-        <GridItemLoader type='text'></GridItemLoader>
       </gridItem>
     </GridContainer>
 
@@ -61,11 +62,8 @@
 <script setup>
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw, getCurrentInstance} from 'vue'
 import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
-import GridItemLoader from "@/components/GridItemLoader.vue";
 import Test from "@/components/Test.vue";
 
-
-// console.log(getCurrentInstance());
 
 
 const layoutDataConcatName = layoutData.map((pos, index) => {
@@ -259,18 +257,6 @@ const layouts1 = {
   // marginX: 30,
   // marginY: 50,
 }
-const layouts2 = {
-  data: layoutData11,
-  // col: 6,
-  // row: 8,
-  ratio: 0.2,
-  exchange: true,
-  margin: [25, 20],
-  size: [50, 60],
-  followScroll: true,
-  scrollWaitTime: 800,
-  responsive: true,
-}
 
 const globalConf = {
   responsive: true,
@@ -283,7 +269,6 @@ const globalConf = {
 }
 let useLayout = reactive({})
 let useLayout1 = reactive({})
-let useLayout2 = reactive({})
 
 const config = reactive({
   layouts,
@@ -293,10 +278,7 @@ const config1 = reactive({
   layouts: layouts1,
   global: globalConf
 })
-const config2 = reactive({
-  layouts: layouts2,
-  global: globalConf
-})
+
 let container = null
 const containerAPI = {}
 onMounted(() => {

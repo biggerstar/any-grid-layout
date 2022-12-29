@@ -1,16 +1,13 @@
 import GridItem from '@/components/GridItem.vue';
 import GridContainer from '@/components/GridContainer.vue';
-import GridItemLoader from '@/components/GridItemLoader.vue';
 
 const Components = {
     GridContainer,
     GridItem,
-    GridItemLoader
 }
 export {
     GridContainer,
     GridItem,
-    GridItemLoader
 }
 
 

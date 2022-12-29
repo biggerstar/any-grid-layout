@@ -1,6 +1,7 @@
 <template>
   <div class="grid-item" ref="gridItem">
-    <slot></slot>
+    <AsyncComponent v-if="isAutoComp" :attrs="attrs"></AsyncComponent>
+    <slot v-else ></slot>
   </div>
 </template>
 
@@ -8,16 +9,15 @@
 
 import {parseContainerFromPrototypeChain} from "@/units/grid/other/tool.js";
 import {
-  onMounted,
   ref,
+  onMounted,
+  inject,
+  useAttrs,
   toRaw,
   watch,
   onUnmounted,
   getCurrentInstance,
-  onUpdated,
-  onDeactivated,
-  render,
-  nextTick
+  defineAsyncComponent,
 } from "vue";
 
 const ins = getCurrentInstance()
@@ -41,6 +41,7 @@ const props = defineProps({
   },
   //----------------------Item挂载字段-------------------------//
   name: {required: false, type: String, default: undefined},
+  type: {required: false, type: String, default: undefined}, //  要加载的组件名称，需能在GridContainer的components中定义且其名字是一致的才能正确加载
   transition: {required: false, type: [Boolean, Object, Number], default: undefined},
   static: {required: false, type: Boolean, default: undefined},
   nested: {required: false, type: Boolean, default: undefined},
@@ -81,6 +82,9 @@ const watchItemConfig = () => {
   watch(() => props.name, (val) => {
     if (typeof val === 'string') selfItem.name = val
   })
+  watch(() => props.type, (val) => {
+    if (typeof val === 'string') selfItem.type = val
+  })
   watch(() => props.static, (val) => {
     if (typeof val === 'boolean') selfItem.static = val
   })
@@ -110,9 +114,33 @@ const watchItemConfig = () => {
   })
 }
 
-
+// 动态加载type指定的组件
+let AsyncComponent
 let container = null
 let tempStore = null
+let attrs = {}
+let isAutoComp = ref(false)
+const components = inject('_grid_item_components_')
+
+const autoComponent = ()=>{
+  //  如果有定义props.type，则自动找到对应要加载的组件
+  const compFunc = components[props.type]
+  if (!compFunc) {
+    console.error('未在components中定义', props.type, '组件')
+  } else if (typeof compFunc !== 'function') {
+    console.error('components中的', props.type, '应该是一个函数,并使用import("XXX")异步导入')
+  }
+  AsyncComponent = defineAsyncComponent(compFunc)
+
+}
+if (props.type && Object.keys(components).length > 0){
+  attrs = {
+    ...useAttrs(),
+    ...toRaw(props)
+  }
+  autoComponent()
+  isAutoComp.value = true
+}
 
 const reSetContainerSize = () => {
   //---------如果当前Item添加之后改变了Container的高度，则重新修改Container高度-----------//
@@ -140,6 +168,7 @@ onMounted(() => {
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
+
   selfItem.updateStyle({
     height: '100%',
     width: '100%',
@@ -148,8 +177,6 @@ onMounted(() => {
     position: 'absolute'
   }, gridItem.value)
   selfItem.mount()
-  // setTimeout(() => container._isNestingContainer_())
-  // console.log(props.nested);
   //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
   props.itemAPI.getItem = () => selfItem
   props.itemAPI.exportConfig = () => selfItem.exportConfig()   // 获取当前Item的配置参数
@@ -198,4 +225,9 @@ onUnmounted(() => {
 })
 
 </script>
-
+<script>
+export default {
+  name:'GridItem',
+  inheritAttrs: false    // 禁止属性透传
+}
+</script>
