@@ -191,7 +191,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // console.log(selfItem);
-  console.log('onUnmounted')
+  // console.log('onUnmounted')
 
   if (selfItem) selfItem.remove()
   reSetContainerSize()

@@ -24,7 +24,7 @@ export const layoutData22 = [
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},
-    {pos: {w: 4, h: 3}, nested: true},
+    {pos: {w: 4, h: 3}, type: 'folder'},
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},
     {pos: {w: 1, h: 1}},

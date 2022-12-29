@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, nextTick, toRaw, render, cloneVNode, isVNode, h} from 'vue'
+import {onMounted, ref, watch, nextTick, toRaw, render, cloneVNode, isVNode, h, provide} from 'vue'
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
 
@@ -22,6 +22,7 @@ const props = defineProps({
   containerAPI: {required: false, type: Object, default: {}}, // 暴露出内部相关操作的API,container挂载够才能获取到
   useLayout: {required: true, type: Object, default: null},
   events: {required: false, type: Object},
+  components: {required: false, type: Object,default:{}},    // 要进行渲染的名字和对应要加载的组件
   config: {
     required: true, type: Object,
     default: {
@@ -39,8 +40,11 @@ const container = new Container({
   global: props.config.global
 })
 
+
 let useLayoutConfig = {}
 let isLayoutChange = false   // 用于layoutChange的时候锁定data的引用地址和数据不被改变
+
+provide('_grid_item_components_',props.components)
 
 onMounted(() => {
   container.el = gridContainer.value

@@ -9,6 +9,7 @@
         :render="render"
         :layoutChange="layoutChange"
         :containerAPI="containerAPI"
+        :components="components"
     >
       <gridItem v-for="(item,index) in useLayout.data"
                 :item="item"
@@ -25,46 +26,13 @@
                 :dragOut="true"
                 :dragIgnoreEls="item.dragIgnoreEls"
                 :dragAllowEls="item.dragAllowEls"
-
       >
-        <test>
-          <test>
-            <test>
-              {{ item.name }}
-            </test>
-          </test>
-        </test>
+        <GridItemLoader :type='item.type ? item.type: "text"' :item='item'></GridItemLoader>
 
-        <GridContainer
-            v-if="item.nested"
-            class="grid-container con3"
-            style="height: 500px;margin: 3px auto"
-            :config="config2"
-            :useLayout="useLayout2"
-            :events="events"
-        >
-          <gridItem v-for="(item2,index) in useLayout2.data"
-                    :item="item2"
-                    :key="index"
-                    :pos="item2.pos"
-                    :draggable=true
-
-                    :resize=true
-                    :close=true
-          >
-            <test>
-              <test>
-                <test>
-                  {{ index }}
-                </test>
-              </test>
-            </test>
-          </gridItem>
-        </GridContainer>
-
-        <!--        <span>这是允许的按钮</span>-->
       </gridItem>
     </GridContainer>
+
+
     <!--    ////////////////////////////////////////-->
     <GridContainer
         v-if="true"
@@ -73,6 +41,7 @@
         :config="config1"
         :useLayout="useLayout1"
         :events="events"
+        :components="components"
     >
       <gridItem v-for="(item,index) in useLayout1.data"
                 :item="item"
@@ -82,25 +51,7 @@
                 :resize=true
                 :close=true
       >
-        <div style="color: navy"> {{ item.name }}</div>
-        <!--        <GridContainer-->
-        <!--            v-if="item.nested"-->
-        <!--            class="grid-container con3"-->
-        <!--            style="height: 500px;margin: 3px auto"-->
-        <!--            :config="config2"-->
-        <!--            :useLayout="useLayout2"-->
-        <!--            :events="events"-->
-        <!--        >-->
-        <!--          <gridItem v-for="(item2,index) in useLayout2.data"-->
-        <!--                    :key="index"-->
-        <!--                    :pos="item2.pos"-->
-        <!--                    :draggable=true-->
-        <!--                    :resize=true-->
-        <!--                    :close=true-->
-        <!--          >-->
-        <!--            <div style="color: lemonchiffon"> {{ index  }}</div>-->
-        <!--          </gridItem>-->
-        <!--        </GridContainer>-->
+        <GridItemLoader type='text'></GridItemLoader>
       </gridItem>
     </GridContainer>
 
@@ -108,9 +59,14 @@
   </div>
 </template>
 <script setup>
-import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw} from 'vue'
+import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw, getCurrentInstance} from 'vue'
 import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
+import GridItemLoader from "@/components/GridItemLoader.vue";
 import Test from "@/components/Test.vue";
+
+
+// console.log(getCurrentInstance());
+
 
 const layoutDataConcatName = layoutData.map((pos, index) => {
   pos.name = index
@@ -121,7 +77,7 @@ const layoutData22ConcatName = layoutData22.map((pos, index) => {
   pos.name = index
   return pos
 })
-console.log(layoutData22ConcatName);
+// console.log(layoutData22ConcatName);
 
 const layoutData0 = layoutDataConcatName
 const layoutData1 = layoutDataConcatName.filter((item, index) => index < 10)
@@ -352,6 +308,13 @@ onMounted(() => {
   nextTick(() => {
   })
 })
+
+const components = {
+  text: () => import('@/components/ItemView/Text.vue'),
+  icon: () => import('@/components/ItemView/Icon.vue'),
+  folder: () => import('@/components/ItemView/Folder.vue'),
+}
+
 
 const layoutChange = (layout, fullLayout, layouts) => {
   // console.log(layout);
