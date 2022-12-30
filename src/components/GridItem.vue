@@ -72,7 +72,7 @@ const watchItemConfig = () => {
         }
       }
     })
-    selfItem.container.updateLayout(true)
+    // selfItem.container.updateLayout(true)
   }, {deep: true})
   watch(() => props.transition, (val) => {
     if (typeof val === 'boolean' || typeof val === 'object' || typeof val === 'number') {

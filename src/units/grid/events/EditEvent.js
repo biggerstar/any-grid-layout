@@ -35,7 +35,6 @@ export default class EditEvent {
                 const containerElRect = fromItem.container.contentElement.getBoundingClientRect()
                 let width = ev.pageX - containerElRect.left - window.scrollX - fromItem.offsetLeft()
                 let height = ev.pageY - containerElRect.top - window.scrollY - fromItem.offsetTop()
-
                 //-----------------判断克隆Item当前对应栅格中的w，h---------------------//
                 const resized = {
                     w: Math.ceil(width / (fromItem.size[0] + fromItem.margin[0])),
@@ -43,7 +42,6 @@ export default class EditEvent {
                 }
                 if (resized.w < 1) resized.w = 1
                 if (resized.h < 1) resized.h = 1
-
                 //-----------------限制信息计算函数定义---------------------//
                 const limitGrid = ({w, h}) => {
                     // w，h是新的resize克隆元素对应生成大小的w，和h
@@ -857,6 +855,8 @@ export default class EditEvent {
                 if (downTagClassName.includes('grid-item-close-btn')) return
                 if (downTagClassName.includes('grid-item-resizable-handle')) {   //   用于resize
                     tempStore.dragOrResize = 'resize'
+                    if (tempStore.fromItem)  tempStore.fromItem.__temp__.resizeLock = true
+
                 } else if (tempStore.fromItem) {    //  用于drag
                     if (!tempStore.fromItem.container.responsive) {  // 静态布局下如果pos中是要求static则取消该Item的drag
                         if (tempStore.fromItem.static) return
@@ -1125,6 +1125,7 @@ export default class EditEvent {
 
 
                 //-------------------------------重置相关缓存-------------------------------//
+                if (tempStore.fromItem)  tempStore.fromItem.__temp__.resizeLock = false
                 tempStore.fromContainer = null
                 tempStore.moveContainer = null
                 tempStore.dragContainer = null

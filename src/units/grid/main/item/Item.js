@@ -63,6 +63,7 @@ export default class Item extends DomFunctionImpl {
         maskEl: null,
         height: 0,
         width: 0,
+        resizeLock:false,
         dragging: false,
         clientWidth: 0,
         clientHeight: 0,
