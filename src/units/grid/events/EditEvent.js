@@ -332,7 +332,7 @@ export default class EditEvent {
                     }
                     const vueExchange = () => {
                         // dragItem._mounted = false
-                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore, (newItem)=>{
+                        container._VueEvents.vueCrossContainerExchange(newItem, tempStore, (newItem) => {
                             dragItem.unmount()  // 这里不卸载  交给vue管理
                             dragItem.remove()
                             doItemPositionMethod(newItem)
@@ -1078,6 +1078,14 @@ export default class EditEvent {
                 //-------------------------更新所有相关操作的容器布局---------------------------//
                 if (fromItem) {
                     fromItem.container.engine.updateLayout(true)
+                    // resize下操作有包含内嵌容器的外部Item
+                    const resizeIncludeNestedContainer = fromItem.container
+                    const childContainers = resizeIncludeNestedContainer.childContainer
+                    childContainers.forEach((info) => {
+                        if (info.nestingItem === fromItem) {
+                            info.container.engine.updateLayout(true)   // 更新内部内嵌的Item
+                        }
+                    })
                 }
                 if (fromItem && dragItem.container !== fromItem.container) {
                     dragItem?.container.engine.updateLayout(true)

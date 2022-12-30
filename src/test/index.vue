@@ -356,7 +356,7 @@ setTimeout(() => {
 }, 3000)
 
 </script>
-<style scoped>
+<style  >
 
 /*----------------any-grad-layout相关默认样式------------------*/
 /* 仅编辑模式生效   */
@@ -460,6 +460,7 @@ setTimeout(() => {
 /* 重置大小(resize)时克隆出来跟随鼠标移动的对应元素 */
 .grid-resizing-clone-el {
   background-color: red;
+  opacity: 0.8;
 }
 
 /* 点击进行重置大小(resize)的来源元素，也就是容器内的Item，正在拖动时候的样式*/

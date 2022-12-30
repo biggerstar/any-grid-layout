@@ -1,5 +1,5 @@
 <template>
-  <div>Text {{ props.attrs?.item?.name }}</div>
+  <div>Text <br/>{{ props.attrs?.item?.name }}</div>
 
 </template>
 

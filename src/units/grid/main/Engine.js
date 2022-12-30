@@ -388,9 +388,9 @@ export default class Engine {
 
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
-        // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
-        this.items.push(item)
-        return true
+        // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
+        // this.items.push(item)
+        // return true
         // console.log(item.pos);
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
         // console.log(realLayoutPos);

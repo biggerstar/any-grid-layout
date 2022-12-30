@@ -111,7 +111,7 @@ export default class Container extends DomFunctionImpl {
             col: {
                 get: () => col,
                 set: (v) => {
-                    if (col === v) return
+                    if (col === v || v <= 0 || !isFinite(v)) return
                     col = v
                     // console.log(col,v,111111111111111111)
                 }
@@ -119,7 +119,7 @@ export default class Container extends DomFunctionImpl {
             row: {
                 get: () => row,
                 set: (v) => {
-                    if (row === v) return
+                    if (row === v || v <= 0 || !isFinite(v)) return
                     row = v
                     // console.log(row,v,222222222222222222)
                 }

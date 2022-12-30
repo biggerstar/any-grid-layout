@@ -22,7 +22,7 @@ const props = defineProps({
   containerAPI: {required: false, type: Object, default: {}}, // 暴露出内部相关操作的API,container挂载够才能获取到
   useLayout: {required: true, type: Object, default: null},
   events: {required: false, type: Object},
-  components: {required: false, type: Object,default:{}},    // 要进行渲染的名字和对应要加载的组件
+  components: {required: false, type: Object, default: {}},    // 要进行渲染的名字和对应要加载的组件
   config: {
     required: true, type: Object,
     default: {
@@ -44,13 +44,15 @@ const container = new Container({
 let useLayoutConfig = {}
 let isLayoutChange = false   // 用于layoutChange的时候锁定data的引用地址和数据不被改变
 
-provide('_grid_item_components_',props.components)
+provide('_grid_item_components_', props.components)
 
 onMounted(() => {
   container.el = gridContainer.value
   container.engine.init()
   container.vue = props
   container.updateStyle({
+    width: '100%',
+    height: '100%',
     display: 'block',
   }, gridContainer.value)
   container.updateStyle({
@@ -86,12 +88,11 @@ onMounted(() => {
     if (props.useLayout['data'] && (props.useLayout['data'].length !== exportData.length)) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
       props.useLayout.data = []
       nextTick(() => {
-        useLayoutConfig.layout.data = exportData      //  静态模式可能溢出，此时拿到当前成功添加的Item更新当前使用布局的data数组
         props.useLayout.data = exportData
+        useLayoutConfig.layout.data = exportData      //  静态模式可能溢出，此时拿到当前成功添加的Item更新当前使用布局的data数组
         container.updateLayout(true)
       })
     }
-
   })
   // container._VueEvents.vueColChange = (col, preCol) => {
   //   // 在mount后挂载才监听

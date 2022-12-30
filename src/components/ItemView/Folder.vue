@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div style="width: 100%; height: 100%">
     <GridContainer
         class="grid-container con3"
-        style="height: 500px;margin: 3px auto"
+        style=" margin: 3px auto"
         :config="config2"
         :useLayout="useLayout2"
         :components = "components"
@@ -33,6 +33,10 @@
 import {reactive} from "vue";
 import {layoutData11} from "@/stores/layout.js";
 import Test from "@/components/Test.vue";
+
+const props = defineProps({
+  attrs: Object
+})
 
 let useLayout2 = reactive({})
 const components = {
@@ -72,6 +76,5 @@ const config2 = reactive({
 
 </script>
 
-<style scoped>
 
-</style>
+
