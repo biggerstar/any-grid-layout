@@ -600,14 +600,12 @@ export default class Engine {
             }
             updateItemList.forEach((item) => {   // 1.先对要进行更新成员占指定静态位
                 item.autoOnce = false
-                console.log(1111111111111111);
                 // console.log(item.pos.x,item.pos.y)
                 updateResponsiveItemLayout(item)
             })
 
             items.forEach(item => {   // 2。再对剩余成员按顺序找位置坐下
                 if (updateItemList.includes(item)) return
-                console.log(222222222222222222)
                 item.autoOnce = true
                 updateResponsiveItemLayout(item)
             })

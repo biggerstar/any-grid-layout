@@ -1,6 +1,6 @@
 {
   "name": "@biggerstar/layout",
-  "version": "0.0.11-Beta",
+  "version": "0.0.12-Beta",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1847,9 +1847,9 @@ class Qe {
         this._isCanAddItemToContainer_(a, a.autoOnce, !0) && a.updateItemLayout();
       };
       o.forEach((a) => {
-        a.autoOnce = !1, console.log(1111111111111111), l(a);
+        a.autoOnce = !1, l(a);
       }), e.forEach((a) => {
-        o.includes(a) || (console.log(222222222222222200), a.autoOnce = !0, l(a));
+        o.includes(a) || (a.autoOnce = !0, l(a));
       }), this.autoSetColAndRows(this.container);
     } else if (!this.container.responsive) {
       let o = [];
