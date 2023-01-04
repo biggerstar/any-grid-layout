@@ -44,6 +44,7 @@ const props = defineProps({
   type: {required: false, type: String, default: undefined}, //  要加载的组件名称，需能在GridContainer的components中定义且其名字是一致的才能正确加载
   transition: {required: false, type: [Boolean, Object, Number], default: undefined},
   static: {required: false, type: Boolean, default: undefined},
+  exchange: {required: false, type: Boolean, default: undefined},
   nested: {required: false, type: Boolean, default: undefined},
   draggable: {required: false, type: Boolean, default: undefined},
   resize: {required: false, type: Boolean, default: undefined},
@@ -87,6 +88,9 @@ const watchItemConfig = () => {
   })
   watch(() => props.static, (val) => {
     if (typeof val === 'boolean') selfItem.static = val
+  })
+  watch(() => props.exchange, (val) => {
+    if (typeof val === 'boolean') selfItem.exchange = val
   })
   watch(() => props.nested, (val) => {
     if (typeof val === 'boolean') selfItem.nested = val

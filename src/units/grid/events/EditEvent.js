@@ -393,16 +393,19 @@ export default class EditEvent {
                 const mousedownEvent = tempStore.mousedownEvent
                 if (fromItem === null || mousedownEvent === null || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
-                const overContainer = parseContainer(ev)
-                let container = overContainer || dragItem.container
-
-                if(dragItem.exchange){  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
-                    container   = dragItem.container  // 如果没开exchange则移动默认将container设置成当前dragItem所在的容器
-                    // if (container.parentItem && container.parentItem === dragItem) return
-                }else {
-                    const target = ev.touchTarget ? ev.touchTarget : ev.target
-                    if (!target._isGridContainerArea) return   // 只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
+                let container = dragItem.container
+                let overContainer = null
+                if (dragItem.exchange) {  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
+                    overContainer = parseContainer(ev)
+                    if (overContainer) container = overContainer // 如果开了exchange则移动将overContainer重置目标容器
+                    if (dragItem.container !== overContainer){
+                        if (container.parentItem && container.parentItem === dragItem) return
+                        const target = ev.touchTarget ? ev.touchTarget : ev.target
+                        if (!target._isGridContainerArea) return   // 跨容器只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
+                    }
                 }
+
+
                 //-----------------------是否符合交换环境参数检测结束-----------------------//
                 // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
                 const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.size[0] / tempStore.fromContainer.size[0])
@@ -484,7 +487,7 @@ export default class EditEvent {
 
                 let nowMoveWidth = pxToGridPosW(offsetLeftPx)
                 let nowMoveHeight = pxToGridPosH(offsetTopPx)
-                console.log(nowMoveWidth,nowMoveHeight)
+                // console.log(nowMoveWidth,nowMoveHeight)
 
                 if (nowMoveWidth < 1) nowMoveWidth = 1
                 if (nowMoveHeight < 1) nowMoveHeight = 1
@@ -696,11 +699,9 @@ export default class EditEvent {
                 Sync.run(() => {
                     //  判断使用的是静态布局还是响应式布局并执行响应的算法
                     const oldPos = Object.assign({}, dragItem.pos)
+                    if (container.responsive) responsiveLayoutAlgorithm()
+                    else staticLayoutAlgorithm()
                     if (oldPos.x !== dragItem.pos.x || oldPos.y !== dragItem.pos.y) {
-                        //位置改变了才进行重新计算
-                        if (container.responsive) responsiveLayoutAlgorithm()
-                        else staticLayoutAlgorithm()
-
                         const vuePosChange = dragItem._VueEvents.vueItemMovePositionChange
                         if (typeof vuePosChange === 'function') {
                             vuePosChange(oldPos.x, oldPos.y, dragItem.pos.x, dragItem.pos.y)
@@ -867,7 +868,7 @@ export default class EditEvent {
                 if (downTagClassName.includes('grid-item-close-btn')) return
                 if (downTagClassName.includes('grid-item-resizable-handle')) {   //   用于resize
                     tempStore.dragOrResize = 'resize'
-                    if (tempStore.fromItem)  tempStore.fromItem.__temp__.resizeLock = true
+                    if (tempStore.fromItem) tempStore.fromItem.__temp__.resizeLock = true
 
                 } else if (tempStore.fromItem) {    //  用于drag
                     if (!tempStore.fromItem.container.responsive) {  // 静态布局下如果pos中是要求static则取消该Item的drag
@@ -1137,7 +1138,7 @@ export default class EditEvent {
 
 
                 //-------------------------------重置相关缓存-------------------------------//
-                if (tempStore.fromItem)  tempStore.fromItem.__temp__.resizeLock = false
+                if (tempStore.fromItem) tempStore.fromItem.__temp__.resizeLock = false
                 tempStore.fromContainer = null
                 tempStore.moveContainer = null
                 tempStore.dragContainer = null
