@@ -23,7 +23,8 @@ export default class LayoutInstantiationField {
     autoGrowRow = true // 响应式下resize自动撑开Row
     // autoGrowCol = true     // 暂未支持
 
-    ratio = 0.1    // 只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
+    ratioCol = 0.1    // 只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
+    ratioRow = 0.1    // 只有col的情况下(margin和size都没有指定)......
     followScroll = true  // 是否在有上层滚动盒子包裹住容器的时候拖动到容器边缘时进行自动滚动
     sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制

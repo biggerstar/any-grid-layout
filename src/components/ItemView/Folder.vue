@@ -49,7 +49,7 @@ const layouts2 = {
   data: layoutData11,
   // col: 6,
   // row: 8,
-  ratio: 0.2,
+  ratioCol: 0.2,
   exchange: true,
   margin: [25, 20],
   size: [50, 60],
@@ -65,7 +65,7 @@ const globalConf = {
   autoGrowRow: true,
   exchange: true,
   slidePage: true,
-  ratio: 0.2,
+  ratioCol: 0.2,
 }
 
 const config2 = reactive({

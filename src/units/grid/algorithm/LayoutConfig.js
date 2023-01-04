@@ -43,9 +43,10 @@ export default class LayoutConfig {
         let layoutItem = {}
         // console.log(containerWidth,this.container.element.clientWidth);
         containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
+        const containerHeight = this.container.element?.clientHeight
         // console.log(containerWidth);
         // if (containerWidth === 0) containerWidth = 300
-        const layouts = this.container.layouts.sort((a,b)=> a.px - b.px )
+        const layouts = this.container.layouts.sort((a, b) => a.px - b.px)
         for (let i = 0; i < layouts.length; i++) {
             layoutItem = layouts[i]
             if (!Array.isArray(layoutItem.data)) layoutItem.data = []
@@ -58,12 +59,14 @@ export default class LayoutConfig {
         // console.log(containerWidth,layoutItem.px);
         if (containerWidth === 0 && !useLayoutConfig.col) throw new Error("请在layout中传入col的值或者为Container设置一个初始宽度")
         //----------------------------------------------------//
-        useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem) ) // 在global值的基础上附加修改克隆符合当前layout的属性
+        useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem)) // 在global值的基础上附加修改克隆符合当前layout的属性
         let {
             col = null,   //  缺省值必须为null才能触发自动计算col
-            ratio = this.container.ratio,
-            size = [null,null],
-            margin = [null,null],
+            row = this.container.row,
+            ratioCol = this.container.ratioCol,
+            ratioRow = this.container.ratioRow,
+            size = [null, null],
+            margin = [null, null],
             padding = 0,
             sizeWidth,
             sizeHeight,
@@ -91,11 +94,11 @@ export default class LayoutConfig {
                     //     (margin[0]  + size[0]) * col
                     // containerWidth +  margin[0] = (margin[0]  + size[0]) * col
                     // size[0] = (containerWidth - ((col - 1) *  margin[0])) / col
-                    // margin[0] =  size[0] * ratio
+                    // margin[0] =  size[0] * ratioCol
                     // 通过消元法消去 size[0]
-                    // 得到： margin[0]    = containerWidth /  ( col - 1 + (col / ratio) )
-                    margin[0] = containerWidth / (col - 1 + (col / ratio))
-                    size[0] = margin[0] / ratio
+                    // 得到： margin[0]    = containerWidth /  ( col - 1 + (col / ratioCol) )
+                    margin[0] = containerWidth / (col - 1 + (col / ratioCol))
+                    size[0] = margin[0] / ratioCol
                     size[0] = (containerWidth - (col - 1) * margin[0]) / col
                     // console.log(size[0] * col + (margin[0] * (col - 1)));
                 }
@@ -140,9 +143,20 @@ export default class LayoutConfig {
         let checkLayoutValue = (useLayoutConfig) => {   // 里面就是缺啥补啥
             let {margin, size, minCol, maxCol, col, padding} = useLayoutConfig
             margin[0] = margin[0] ? parseFloat(margin[0].toFixed(1)) : 0
-            margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : parseFloat(margin[0].toFixed(1))
             size[0] = size[0] ? parseFloat(size[0].toFixed(1)) : 0
-            size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : parseFloat(size[0].toFixed(1))  // 如果未传入sizeHeight，默认和sizeWidth一样
+            if (containerHeight) {
+                //  对row放方向解二元一次方程
+                margin[1] = containerHeight / (row - 1 + (col / ratioRow))
+                size[1] = margin[1] / ratioRow
+                size[1] = (containerHeight - (row - 1) * margin[1]) / row
+                //转小数点
+                margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : 0
+                size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : 0
+            } else {
+                margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : parseFloat(margin[0].toFixed(1))
+                size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : parseFloat(size[0].toFixed(1))  // 如果未传入sizeHeight，默认和sizeWidth一样
+            }
+
             if (col < minCol) useLayoutConfig.col = minCol
             if (col > maxCol) useLayoutConfig.col = maxCol
             // let computedPadding = () => {
@@ -157,19 +171,19 @@ export default class LayoutConfig {
 
         const currentLayout = {}
         for (const key in useLayoutConfig) {
-            if (this.option.global[key] !== undefined || layoutItem[key] !== undefined){
+            if (this.option.global[key] !== undefined || layoutItem[key] !== undefined) {
                 currentLayout[key] = useLayoutConfig[key]   // 筛选出用户传进来的初始配置
             }
         }
-        this.useLayoutConfig = Object.assign(this.useLayoutConfig,checkLayoutValue(useLayoutConfig))
+        this.useLayoutConfig = Object.assign(this.useLayoutConfig, checkLayoutValue(useLayoutConfig))
         this.container.layout = layoutItem
         this.container.useLayout = useLayoutConfig  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
 
         return {
-            layout:layoutItem,   // 当前使用的layouts中某个布局配置
-            global:this.option.global,  //  当前container的全局配置
-            useLayoutConfig:useLayoutConfig,  // currentLayout情况下包含margin，size等等布局必须字段
-            currentLayout:currentLayout,   //  当前global和layoutItem 合并后使用的布局配置
+            layout: layoutItem,   // 当前使用的layouts中某个布局配置
+            global: this.option.global,  //  当前container的全局配置
+            useLayoutConfig: useLayoutConfig,  // currentLayout情况下包含margin，size等等布局必须字段
+            currentLayout: currentLayout,   //  当前global和layoutItem 合并后使用的布局配置
         }
     }
 

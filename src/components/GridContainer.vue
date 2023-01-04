@@ -153,7 +153,7 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
       console.error(key, '键应该是一个boolean值');
     }
     if ((valueType !== 'number' || isNaN(val) || !isFinite(val)) && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',
-      'minCol', 'maxCol', 'minRow', 'maxRow', 'ratio', 'sensitivity', 'pressTime',
+      'minCol', 'maxCol', 'minRow', 'maxRow', 'ratioCol', 'sensitivity', 'pressTime',
       'scrollWaitTime', 'scrollSpeedX', 'scrollSpeedY', 'resizeReactionDelay'].includes(key)) {
       console.error(key, '键应该是一个非NaN的number值');
     }

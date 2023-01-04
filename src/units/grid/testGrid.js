@@ -21,7 +21,7 @@ const container = new Container({
         data : layoutData11,
         // col: 3,
         // row: 5,
-        ratio: 0.2,
+        ratioCol: 0.2,
         // margin: [10, 10],
         size:[120,80],
         // size: [120, 90],
@@ -123,7 +123,7 @@ const container = new Container({
         responseMode:'default',
         dragOut: true,
         exchange: true,
-        ratio: 0.2,
+        ratioCol: 0.2,
         from1: '来自global',
     }
 })
@@ -176,7 +176,7 @@ const container1 = new Container({
 
     layout: {
         from: '来自layout1',
-        // ratio: 0.1,
+        // ratioCol: 0.1,
         col:6,
         row:5,
         margin: [20, 10],
@@ -217,7 +217,7 @@ const container2 = new Container({
     // el: document.getElementById('container'),
     layout: {
         from: '来自layout2',
-        ratio: 0.1,
+        ratioCol: 0.1,
         col: 9,
         row:39,
         margin: [10, 10],
@@ -243,7 +243,7 @@ const container3 = new Container({
     // el: document.getElementById('container'),
     layout: {
         from: '来自layout3',
-        ratio: 0.1,
+        ratioCol: 0.1,
         // col: 6,
         row:6,
         margin: [10, 10],

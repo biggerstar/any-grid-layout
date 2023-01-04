@@ -1,57 +1,57 @@
 <template>
   <div>
-    <GridContainer
-        class="grid-container con"
-        style="height: 600px"
-        :useLayout="useLayout"
-        :events="events"
-        :config="config"
-        :render="render"
-        :layoutChange="layoutChange"
-        :containerAPI="containerAPI"
-        :components="components"
-    >
-      <gridItem v-for="(item,index) in useLayout.data"
-                :type = 'item.type ? item.type : "text"'
-                :item="item"
-                :key="index"
-                :pos="item.pos"
-                :name="item.name.toString()"
-                :static="item.static"
-                :nested="item.nested"
-                :transition="200"
-                :draggable="true"
-                :resize="true"
-                :close="true"
-                :follow="true"
-                :dragOut="true"
-                :dragIgnoreEls="item.dragIgnoreEls"
-                :dragAllowEls="item.dragAllowEls"
-      >
-        {{item.name}}
-      </gridItem>
-    </GridContainer>
+    <!--    <GridContainer-->
+    <!--        class="grid-container con"-->
+    <!--        style="height: 600px"-->
+    <!--        :useLayout="useLayout"-->
+    <!--        :events="events"-->
+    <!--        :config="config"-->
+    <!--        :render="render"-->
+    <!--        :layoutChange="layoutChange"-->
+    <!--        :containerAPI="containerAPI"-->
+    <!--        :components="components"-->
+    <!--    >-->
+    <!--      <gridItem v-for="(item,index) in useLayout.data"-->
+    <!--                :type = 'item.type ? item.type : "text"'-->
+    <!--                :item="item"-->
+    <!--                :key="index"-->
+    <!--                :pos="item.pos"-->
+    <!--                :name="item.name.toString()"-->
+    <!--                :static="item.static"-->
+    <!--                :nested="item.nested"-->
+    <!--                :transition="200"-->
+    <!--                :draggable="true"-->
+    <!--                :resize="true"-->
+    <!--                :close="true"-->
+    <!--                :follow="true"-->
+    <!--                :dragOut="true"-->
+    <!--                :dragIgnoreEls="item.dragIgnoreEls"-->
+    <!--                :dragAllowEls="item.dragAllowEls"-->
+    <!--      >-->
+    <!--        {{item.name}}-->
+    <!--      </gridItem>-->
+    <!--    </GridContainer>-->
 
 
     <!--    ////////////////////////////////////////-->
     <GridContainer
         v-if="true"
         class="grid-container con1"
-        style="height: 500px"
+        style="height: 100vh;width: 100vw"
         :config="config1"
         :useLayout="useLayout1"
         :events="events"
         :components="components"
     >
       <gridItem v-for="(item,index) in useLayout1.data"
-                :type = 'item.type ? item.type : "text"'
+                :type='item.type ? item.type : "text"'
                 :item="item"
                 :key=index
                 :pos="item.pos"
                 :draggable=true
                 :resize=true
                 :close=true
-                :item1 = "item"
+                :item1="item"
       >
       </gridItem>
     </GridContainer>
@@ -63,7 +63,6 @@
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw, getCurrentInstance} from 'vue'
 import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
 import Test from "@/components/Test.vue";
-
 
 
 const layoutDataConcatName = layoutData.map((pos, index) => {
@@ -232,16 +231,16 @@ const layouts = [
   },
 ]
 const layouts1 = {
-  data: layoutData3,
+  data: layoutData1,
   col: 6,
-  // row: 8,
-  ratio: 0.2,
+  row: 8,
+  ratioCol: 0.2,
   exchange: true,
   // margin: [10, 10],
-  size: [80, 60],
+  // size: [80, 60],
   // minCol: 5,
   // maxCol: 5,
-  // minRow: 5,
+  // minRow: 8,
   // maxRow: 5,
   followScroll: true,
   scrollWaitTime: 800,
@@ -260,12 +259,12 @@ const layouts1 = {
 
 const globalConf = {
   responsive: true,
-  row: 6,
+  // row: 6,
   responseMode: 'default',
   autoGrowRow: true,
   exchange: true,
   slidePage: true,
-  ratio: 0.2,
+  ratioCol: 0.2,
 }
 let useLayout = reactive({})
 let useLayout1 = reactive({})
@@ -356,7 +355,7 @@ setTimeout(() => {
 }, 3000)
 
 </script>
-<style  >
+<style>
 
 /*----------------any-grad-layout相关默认样式------------------*/
 /* 仅编辑模式生效   */
@@ -427,13 +426,13 @@ setTimeout(() => {
 .grid-container {
   border-radius: 10px;
   background-color: skyblue;
-  margin: 50px auto auto;
+  /*margin: 50px auto auto;*/
   overflow: scroll;
 }
 
 .grid-container-area {
   height: auto;
-  width: 90%;
+  /*width: 90%;*/
   box-sizing: border-box;
   position: relative;
   background-color: #5df8eb !important;
