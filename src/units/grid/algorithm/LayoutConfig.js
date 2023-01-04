@@ -76,6 +76,18 @@ export default class LayoutConfig {
         } = useLayoutConfig
         // console.log(containerWidth,layoutItem.px,layoutItem.margin,layoutItem.size,layoutItem.col);
 
+        const checkMarginOrSize = (name = '') => {
+            const curArr = useLayoutConfig[name]
+            if (Array.isArray(curArr)) {
+                if (!['number', 'string'].includes(typeof curArr[0])
+                    || !['number', 'string'].includes(typeof curArr[1])) {
+                    console.error(name, '数组内的参数值只能为数字或者数字形式的字符串');
+                }
+            }
+        }
+        checkMarginOrSize('margin')
+        checkMarginOrSize('size')
+
         if (!col && !(size[0] || sizeWidth)) throw new Error('col或者size[0]必须要设定一个,您也可以设定col或sizeWidth两个中的一个便能进行布局')
         if (marginX) margin[0] = marginX
         if (marginY) margin[1] = marginY
@@ -145,14 +157,14 @@ export default class LayoutConfig {
             margin[0] = margin[0] ? parseFloat(margin[0].toFixed(1)) : 0
             size[0] = size[0] ? parseFloat(size[0].toFixed(1)) : 0
             //  对row放方向解二元一次方程
-            const marginRow = null, sizeRow = null
-            if (containerHeight && !margin[1] && !size[1]) {
-                margin[1] = containerHeight / (row - 1 + (col / ratioRow))
-                size[1] = margin[1] / ratioRow
-                size[1] = (containerHeight - (row - 1) * margin[1]) / row
+            let marginRow = null, sizeRow = null
+            if (containerHeight && !margin[1] && !size[1]) {//row方向的margin[1]和size[1]没有设定的时候
+                marginRow = containerHeight / (row - 1 + (col / ratioRow))
+                sizeRow = marginRow / ratioRow
+                sizeRow = (containerHeight - (row - 1) * marginRow) / row
                 //转小数点
-                margin[1] = parseFloat(margin[1].toFixed(1))
-                size[1] = parseFloat(size[1].toFixed(1))
+                margin[1] = parseFloat(marginRow.toFixed(1))
+                size[1] = parseFloat(sizeRow.toFixed(1))
             } else {
                 margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : parseFloat(margin[0].toFixed(1))
                 size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : parseFloat(size[0].toFixed(1))  // 如果未传入sizeHeight，默认和sizeWidth一样

@@ -9,10 +9,10 @@ export default class LayoutInstantiationField {
     data = []   // 当前布局使用的数据
     col = null
     row = null    //  响应模式下如果溢出指定效果是和maxRow一样的，如果未溢出按实际占用row计算
-    margin = [null, null]
+    margin = [null, null]   //  禁止传入的数组内出现单个null
     marginX = null    //  如果和margin[0]优先级大于 marginX
     marginY = null    //  如果和margin[1]优先级大于 marginY
-    size = [null, null]   //size[1]如果不传入的话长度将和size[1]一样
+    size = [null, null]   //size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null
     sizeWidth = null    //  如果和size[0]优先级大于 sizeWidth
     sizeHeight = null   //  如果和size[1]优先级大于 sizeHeight
     minCol = null
