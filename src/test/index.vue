@@ -234,7 +234,7 @@ const layouts1 = {
   data: layoutData1,
   col: 6,
   row: 8,
-  ratioCol: 0.2,
+  ratioCol: 0.1,
   exchange: true,
   // margin: [10, 10],
   // size: [80, 60],
