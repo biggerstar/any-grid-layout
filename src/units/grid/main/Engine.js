@@ -211,10 +211,13 @@ export default class Engine {
         let pointItem = null
         let lastY = 1
         if (this.items.length > 0) {
-            lastY = this.items[this.items.length - 1].pos.y
+            const item = this.items[this.items.length - 1]
+            if (!item) return null
+            lastY = item.pos.y
         }
         for (let i = 0; i < this.items.length; i++) {
             let item = this.items[i]
+            if (!item) continue
             const xItemStart = item.pos.x
             const yItemStart = item.pos.y
             const xItemEnd = item.pos.x + item.pos.w - 1

@@ -1675,9 +1675,16 @@ class Qe {
   }
   findResponsiveItemFromPosition(e, t, n, i) {
     let o = null, l = 1;
-    this.items.length > 0 && (l = this.items[this.items.length - 1].pos.y);
+    if (this.items.length > 0) {
+      const a = this.items[this.items.length - 1];
+      if (!a)
+        return null;
+      l = a.pos.y;
+    }
     for (let a = 0; a < this.items.length; a++) {
       let s = this.items[a];
+      if (!s)
+        continue;
       const m = s.pos.x, d = s.pos.y, g = s.pos.x + s.pos.w - 1, u = s.pos.y + s.pos.h - 1;
       m === e && (t > l && (t = l), e === m && t === d && (o = s));
     }
@@ -2512,7 +2519,7 @@ const vt = {
         background: "#5df8eb"
       }, n.value), o = i.engine.layoutConfig.genLayoutConfig(t.value.clientWidth), n.value._isGridContainerArea = !0;
       const a = V(o.currentLayout);
-      e.render === null ? Object.assign(e.useLayout, a) : typeof e.render == "function" && e.render(a, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), setTimeout(() => {
+      e.render === null ? Object.assign(e.useLayout, a) : typeof e.render == "function" && e.render(a, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), console.log(i), setTimeout(() => {
         const s = i.exportData();
         e.useLayout.data && e.useLayout.data.length !== s.length && (e.useLayout.data = [], we(() => {
           e.useLayout.data = s, o.layout.data = s, i.updateLayout(!0);

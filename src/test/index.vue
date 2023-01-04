@@ -233,7 +233,7 @@ const layouts = [
 ]
 const layouts1 = {
   data: layoutData3,
-  // col: 6,
+  col: 6,
   // row: 8,
   ratio: 0.2,
   exchange: true,
@@ -245,7 +245,7 @@ const layouts1 = {
   // maxRow: 5,
   followScroll: true,
   scrollWaitTime: 800,
-  responsive: true,
+  responsive: false,
   itemLimit: {
     // minW: 1,
     // minH: 1,
