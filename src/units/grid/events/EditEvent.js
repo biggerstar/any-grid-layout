@@ -309,7 +309,6 @@ export default class EditEvent {
                         el: dragItemElement,
                         name: dragItem.name,
                         type: dragItem.type,
-                        nested: dragItem.nested,
                         draggable: dragItem.draggable,
                         resize: dragItem.resize,
                         close: dragItem.close,

@@ -37,7 +37,6 @@ export default class Item extends DomFunctionImpl {
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
 
-    nested = false
     //----------------内部需要的参数---------------------//
     i = null   //  每次重新布局给的自动正整数编号,对应的是Item的len
     element = null
@@ -47,6 +46,7 @@ export default class Item extends DomFunctionImpl {
     attr = []
     pos = {}
     edit = null   // 该Item是否正在被编辑(只读)
+    nested = false
     parentElement = null
     _VueEvents = {}   // 用于 vue 携带的内置事件
     //----------------保持状态所用参数---------------------//
@@ -65,7 +65,7 @@ export default class Item extends DomFunctionImpl {
         maskEl: null,
         height: 0,
         width: 0,
-        resizeLock:false,
+        resizeLock: false,
         dragging: false,
         clientWidth: 0,
         clientHeight: 0,
@@ -173,10 +173,10 @@ export default class Item extends DomFunctionImpl {
             delete exposePos.y
         }
         exposeConfig['pos'] = exposePos
-        Array.from(['static', 'draggable', 'resize', 'close','nested']).forEach((field => {
+        Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
             if (item[field] !== false) exposeConfig[field] = item[field]
         }))
-        Array.from(['follow', 'dragOut','exchange']).forEach((field => {
+        Array.from(['follow', 'dragOut', 'exchange']).forEach((field => {
             if (item[field] !== true) exposeConfig[field] = item[field]
         }))
         if (typeof item.name === 'string') exposeConfig.name = item.name
@@ -186,10 +186,12 @@ export default class Item extends DomFunctionImpl {
         if (item.transition.field !== 'top,left,width,height') {
             transition.field = item.transition.field
             if (item.transition.time !== 180) transition.time = item.transition.time
+            exposeConfig.transition = transition
         } else {
-            transition = item.transition.time
+            if (item.transition.time !== 180){
+                exposeConfig.transition = item.transition.time
+            }
         }
-        exposeConfig.transition = transition
         // exposeConfig.el = this.element
         //transition 特殊导出结束
         return exposeConfig

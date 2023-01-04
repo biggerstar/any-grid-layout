@@ -80,8 +80,11 @@ onMounted(() => {
 
   //------------------------------------------------------------------------//
   // if (!window.con) window.con = []
-  // console.log(container);
+  console.log(container);
   // window.con.push(container)
+  setTimeout(()=>{
+    console.log(container.exportData());
+  },3000)
 
   setTimeout(() => {
     const exportData = container.exportData()   // 拿到未溢出的最新dataList

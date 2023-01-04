@@ -45,7 +45,6 @@ const props = defineProps({
   transition: {required: false, type: [Boolean, Object, Number], default: undefined},
   static: {required: false, type: Boolean, default: undefined},
   exchange: {required: false, type: Boolean, default: undefined},
-  nested: {required: false, type: Boolean, default: undefined},
   draggable: {required: false, type: Boolean, default: undefined},
   resize: {required: false, type: Boolean, default: undefined},
   close: {required: false, type: Boolean, default: undefined},
@@ -91,9 +90,6 @@ const watchItemConfig = () => {
   })
   watch(() => props.exchange, (val) => {
     if (typeof val === 'boolean') selfItem.exchange = val
-  })
-  watch(() => props.nested, (val) => {
-    if (typeof val === 'boolean') selfItem.nested = val
   })
   watch(() => props.draggable, (val) => {
     if (typeof val === 'boolean') selfItem.draggable = val

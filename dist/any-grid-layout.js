@@ -97,7 +97,6 @@ const X = (u = {}, e = {}, t = !1, n = []) => {
     transition: { required: !1, type: [Boolean, Object, Number], default: void 0 },
     static: { required: !1, type: Boolean, default: void 0 },
     exchange: { required: !1, type: Boolean, default: void 0 },
-    nested: { required: !1, type: Boolean, default: void 0 },
     draggable: { required: !1, type: Boolean, default: void 0 },
     resize: { required: !1, type: Boolean, default: void 0 },
     close: { required: !1, type: Boolean, default: void 0 },
@@ -132,8 +131,6 @@ const X = (u = {}, e = {}, t = !1, n = []) => {
         typeof a == "boolean" && (n.static = a);
       }), M(() => e.exchange, (a) => {
         typeof a == "boolean" && (n.exchange = a);
-      }), M(() => e.nested, (a) => {
-        typeof a == "boolean" && (n.nested = a);
       }), M(() => e.draggable, (a) => {
         typeof a == "boolean" && (n.draggable = a);
       }), M(() => e.resize, (a) => {
@@ -546,7 +543,6 @@ f(F, "_eventEntrustFunctor", {
             el: s,
             name: o.name,
             type: o.type,
-            nested: o.nested,
             draggable: o.draggable,
             resize: o.resize,
             close: o.close,
@@ -1060,7 +1056,6 @@ class te extends ze {
     f(this, "exchange", !0);
     f(this, "margin", [null, null]);
     f(this, "size", [null, null]);
-    f(this, "nested", !1);
     f(this, "i", null);
     f(this, "element", null);
     f(this, "container", null);
@@ -1069,6 +1064,7 @@ class te extends ze {
     f(this, "attr", []);
     f(this, "pos", {});
     f(this, "edit", null);
+    f(this, "nested", !1);
     f(this, "parentElement", null);
     f(this, "_VueEvents", {});
     f(this, "_mounted", !1);
@@ -1094,13 +1090,13 @@ class te extends ze {
     f(this, "exportConfig", () => {
       const t = this, n = {};
       let i = {};
-      i = t.pos.export(), this.responsive && (delete i.x, delete i.y), n.pos = i, Array.from(["static", "draggable", "resize", "close", "nested"]).forEach((s) => {
+      i = t.pos.export(), this.responsive && (delete i.x, delete i.y), n.pos = i, Array.from(["static", "draggable", "resize", "close"]).forEach((s) => {
         t[s] !== !1 && (n[s] = t[s]);
       }), Array.from(["follow", "dragOut", "exchange"]).forEach((s) => {
         t[s] !== !0 && (n[s] = t[s]);
       }), typeof t.name == "string" && (n.name = t.name), typeof t.type == "string" && (n.type = t.type);
       let o = {};
-      return t.transition.field !== "top,left,width,height" ? (o.field = t.transition.field, t.transition.time !== 180 && (o.time = t.transition.time)) : o = t.transition.time, n.transition = o, n;
+      return t.transition.field !== "top,left,width,height" ? (o.field = t.transition.field, t.transition.time !== 180 && (o.time = t.transition.time), n.transition = o) : t.transition.time !== 180 && (n.transition = t.transition.time), n;
     });
     f(this, "nowWidth", (t) => {
       let n = 0;
@@ -2531,7 +2527,9 @@ const xt = {
         background: "#5df8eb"
       }, n.value), o = i.engine.layoutConfig.genLayoutConfig(t.value.clientWidth), n.value._isGridContainerArea = !0;
       const l = $(o.currentLayout);
-      e.render === null ? Object.assign(e.useLayout, l) : typeof e.render == "function" && e.render(l, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), setTimeout(() => {
+      e.render === null ? Object.assign(e.useLayout, l) : typeof e.render == "function" && e.render(l, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), console.log(i), setTimeout(() => {
+        console.log(i.exportData());
+      }, 3e3), setTimeout(() => {
         const c = i.exportData();
         e.useLayout.data && e.useLayout.data.length !== c.length && (e.useLayout.data = [], we(() => {
           e.useLayout.data = c, o.layout.data = c, i.updateLayout(!0);
