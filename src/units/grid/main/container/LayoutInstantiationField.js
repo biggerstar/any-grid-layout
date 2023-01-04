@@ -19,7 +19,6 @@ export default class LayoutInstantiationField {
     maxCol = null
     minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
-
     autoGrowRow = true // 响应式下resize自动撑开Row
     // autoGrowCol = true     // 暂未支持
 
@@ -28,7 +27,7 @@ export default class LayoutInstantiationField {
     followScroll = true  // 是否在有上层滚动盒子包裹住容器的时候拖动到容器边缘时进行自动滚动
     sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
-    exchange = false
+    exchange = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
     pressTime = 360   // 触屏下长按多久响应拖拽事件,默认360ms
     scrollWaitTime = 800   // 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
     scrollSpeedX = null    // 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null

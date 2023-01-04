@@ -295,7 +295,10 @@ export default class EditEvent {
                 const moveItem = tempStore.moveItem
                 if (!tempStore.isDragging || fromItem === null || !container || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
-                if (!fromItem.container.exchange || !dragItem.container.exchange) return
+                if (!fromItem.container.exchange
+                    || !dragItem.container.exchange
+                    || !dragItem.exchange
+                ) return
                 try {
                     dragItem.pos.el = null   // 要将原本pos中的对应文档清除掉换克隆后的
                     let dragItemElement = fromItem.element
@@ -391,10 +394,15 @@ export default class EditEvent {
                 if (fromItem === null || mousedownEvent === null || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 const overContainer = parseContainer(ev)
-                const container = overContainer || dragItem.container
-                if (container.parentItem && container.parentItem === dragItem) return
-                const target = ev.touchTarget ? ev.touchTarget : ev.target
-                if (target._isGridContainer_) return   // 只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
+                let container = overContainer || dragItem.container
+
+                if(dragItem.exchange){  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
+                    container   = dragItem.container  // 如果没开exchange则移动默认将container设置成当前dragItem所在的容器
+                    // if (container.parentItem && container.parentItem === dragItem) return
+                }else {
+                    const target = ev.touchTarget ? ev.touchTarget : ev.target
+                    if (!target._isGridContainerArea) return   // 只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
+                }
                 //-----------------------是否符合交换环境参数检测结束-----------------------//
                 // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
                 const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.size[0] / tempStore.fromContainer.size[0])
@@ -405,6 +413,7 @@ export default class EditEvent {
                 const offsetLeftPx = ev.pageX - offsetDragItemX - (window.scrollX + dragContainerElRect.left)
                 const offsetTopPx = ev.pageY - offsetDragItemY - (window.scrollY + dragContainerElRect.top)
                 // console.log(dragItem);
+
                 //------如果容器内容超出滚动条盒子在边界的时候自动滚动(上高0.25倍下高0.75倍触发，左宽0.25倍右宽0.75倍触发)-----//
                 if (dragItem.container.followScroll) {
                     const scrollContainerBoxEl = container.contentElement.parentElement
@@ -475,11 +484,12 @@ export default class EditEvent {
 
                 let nowMoveWidth = pxToGridPosW(offsetLeftPx)
                 let nowMoveHeight = pxToGridPosH(offsetTopPx)
+                console.log(nowMoveWidth,nowMoveHeight)
+
                 if (nowMoveWidth < 1) nowMoveWidth = 1
                 if (nowMoveHeight < 1) nowMoveHeight = 1
 
                 // console.log(offsetLeftPx,offsetTopPx);
-                // console.log(nowMoveWidth,nowMoveHeight)
                 dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
 
                 const responsiveLayoutAlgorithm = () => {
@@ -686,9 +696,11 @@ export default class EditEvent {
                 Sync.run(() => {
                     //  判断使用的是静态布局还是响应式布局并执行响应的算法
                     const oldPos = Object.assign({}, dragItem.pos)
-                    if (container.responsive) responsiveLayoutAlgorithm()
-                    else staticLayoutAlgorithm()
                     if (oldPos.x !== dragItem.pos.x || oldPos.y !== dragItem.pos.y) {
+                        //位置改变了才进行重新计算
+                        if (container.responsive) responsiveLayoutAlgorithm()
+                        else staticLayoutAlgorithm()
+
                         const vuePosChange = dragItem._VueEvents.vueItemMovePositionChange
                         if (typeof vuePosChange === 'function') {
                             vuePosChange(oldPos.x, oldPos.y, dragItem.pos.x, dragItem.pos.y)

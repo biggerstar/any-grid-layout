@@ -31,6 +31,8 @@ export default class Item extends DomFunctionImpl {
     resize = null     //  自身是否可以调整大小
     close = null
     static = false
+    exchange = true   // 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
+
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
     margin = [null, null]   //   间距 [左右, 上下]
     size = [null, null]   //   宽高 [宽度, 高度]
@@ -174,7 +176,7 @@ export default class Item extends DomFunctionImpl {
         Array.from(['static', 'draggable', 'resize', 'close','nested']).forEach((field => {
             if (item[field] !== false) exposeConfig[field] = item[field]
         }))
-        Array.from(['follow', 'dragOut']).forEach((field => {
+        Array.from(['follow', 'dragOut','exchange']).forEach((field => {
             if (item[field] !== true) exposeConfig[field] = item[field]
         }))
         if (typeof item.name === 'string') exposeConfig.name = item.name

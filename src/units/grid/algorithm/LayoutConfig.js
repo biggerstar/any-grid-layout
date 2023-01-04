@@ -122,7 +122,8 @@ export default class LayoutConfig {
                 if (parseInt(col) === 1) margin[0] = 0
                 size[0] = (containerWidth - ((col - 1) * margin[0])) / col
                 if (size[0] <= 0) throw new Error('在margin[0]或在marginX为' + margin[0] +
-                    '的情况下,size[0]或sizeWidth的Item主体宽度已经小于0,您可以调小margin或者设定Container最小宽度或者高度(css:min-XXX)')
+                    '的情况下,size[0]或sizeWidth的Item主体宽度已经小于0,' +
+                    '您可以调小margin或者设定Container最小宽度或者高度(css:min-XXX),且保证margin*(col||row)大于最小宽度')
             } else if (size[0] !== null && margin[0] !== null) {
             } // margin和size都固定,啥事都不做，用户给的太多了,都不用计算了
         } else if (col === null) {   // col不指定执行动态布局， 主算 col数量，次算margin,size中的一个,缺啥算啥
