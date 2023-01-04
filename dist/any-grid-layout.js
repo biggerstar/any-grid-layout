@@ -2527,9 +2527,7 @@ const xt = {
         background: "#5df8eb"
       }, n.value), o = i.engine.layoutConfig.genLayoutConfig(t.value.clientWidth), n.value._isGridContainerArea = !0;
       const l = $(o.currentLayout);
-      e.render === null ? Object.assign(e.useLayout, l) : typeof e.render == "function" && e.render(l, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), console.log(i), setTimeout(() => {
-        console.log(i.exportData());
-      }, 3e3), setTimeout(() => {
+      e.render === null ? Object.assign(e.useLayout, l) : typeof e.render == "function" && e.render(l, o.useLayoutConfig, e.config.layouts), i.mount(), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), setTimeout(() => {
         const c = i.exportData();
         e.useLayout.data && e.useLayout.data.length !== c.length && (e.useLayout.data = [], we(() => {
           e.useLayout.data = c, o.layout.data = c, i.updateLayout(!0);
