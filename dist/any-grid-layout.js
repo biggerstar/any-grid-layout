@@ -1576,7 +1576,7 @@ class Ze {
     });
     let A = (_) => {
       let { margin: I, size: E, minCol: b, maxCol: k, col: R, padding: D } = _;
-      return I[0] = I[0] ? parseFloat(I[0].toFixed(1)) : 0, E[0] = E[0] ? parseFloat(E[0].toFixed(1)) : 0, i ? (I[1] = i / (c - 1 + R / m), E[1] = I[1] / m, E[1] = (i - (c - 1) * I[1]) / c, I[1] = I[1] ? parseFloat(I[1].toFixed(1)) : 0, E[1] = E[1] ? parseFloat(E[1].toFixed(1)) : 0) : (I[1] = I[1] ? parseFloat(I[1].toFixed(1)) : parseFloat(I[0].toFixed(1)), E[1] = E[1] ? parseFloat(E[1].toFixed(1)) : parseFloat(E[0].toFixed(1))), R < b && (_.col = b), R > k && (_.col = k), _;
+      return I[0] = I[0] ? parseFloat(I[0].toFixed(1)) : 0, E[0] = E[0] ? parseFloat(E[0].toFixed(1)) : 0, i && !I[1] && !E[1] ? (I[1] = i / (c - 1 + R / m), E[1] = I[1] / m, E[1] = (i - (c - 1) * I[1]) / c, I[1] = parseFloat(I[1].toFixed(1)), E[1] = parseFloat(E[1].toFixed(1))) : (I[1] = I[1] ? parseFloat(I[1].toFixed(1)) : parseFloat(I[0].toFixed(1)), E[1] = E[1] ? parseFloat(E[1].toFixed(1)) : parseFloat(E[0].toFixed(1))), R < b && (_.col = b), R > k && (_.col = k), _;
     };
     const V = {};
     for (const _ in t)

@@ -144,14 +144,15 @@ export default class LayoutConfig {
             let {margin, size, minCol, maxCol, col, padding} = useLayoutConfig
             margin[0] = margin[0] ? parseFloat(margin[0].toFixed(1)) : 0
             size[0] = size[0] ? parseFloat(size[0].toFixed(1)) : 0
-            if (containerHeight) {
-                //  对row放方向解二元一次方程
+            //  对row放方向解二元一次方程
+            const marginRow = null, sizeRow = null
+            if (containerHeight && !margin[1] && !size[1]) {
                 margin[1] = containerHeight / (row - 1 + (col / ratioRow))
                 size[1] = margin[1] / ratioRow
                 size[1] = (containerHeight - (row - 1) * margin[1]) / row
                 //转小数点
-                margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : 0
-                size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : 0
+                margin[1] = parseFloat(margin[1].toFixed(1))
+                size[1] = parseFloat(size[1].toFixed(1))
             } else {
                 margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : parseFloat(margin[0].toFixed(1))
                 size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : parseFloat(size[0].toFixed(1))  // 如果未传入sizeHeight，默认和sizeWidth一样
