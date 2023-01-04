@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "rimraf dist && vite build",
     "preview": "vite preview",
-    "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags && npm publish"
+    "release": "npm run -s build && npm publish && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
   },
   "main": "./dist/any-grid-layout",
   "module": "./dist/any-grid-layout",
