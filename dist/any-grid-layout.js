@@ -1567,7 +1567,7 @@ class Ze {
         parseInt(s) === 1 ? d[0] = 0 : d[0] = (e - s * h[0]) / (s - 1), d[0] <= 0 && (d[0] = 0);
       else if (h[0] === null && d[0] !== null) {
         if (parseInt(s) === 1 && (d[0] = 0), h[0] = (e - (s - 1) * d[0]) / s, h[0] <= 0)
-          throw new Error("\u5728margin[0]\u6216\u5728marginX\u4E3A" + d[0] + "\u7684\u60C5\u51B5\u4E0B,size[0]\u6216sizeWidth\u7684Item\u4E3B\u9898\u5BBD\u5EA6\u5DF2\u7ECF\u5C0F\u4E8E0");
+          throw new Error("\u5728margin[0]\u6216\u5728marginX\u4E3A" + d[0] + "\u7684\u60C5\u51B5\u4E0B,size[0]\u6216sizeWidth\u7684Item\u4E3B\u4F53\u5BBD\u5EA6\u5DF2\u7ECF\u5C0F\u4E8E0,\u60A8\u53EF\u4EE5\u8C03\u5C0Fmargin\u6216\u8005\u8BBE\u5B9AContainer\u6700\u5C0F\u5BBD\u5EA6\u6216\u8005\u9AD8\u5EA6(css:min-XXX)");
       } else
         h[0] !== null && d[0];
     else
