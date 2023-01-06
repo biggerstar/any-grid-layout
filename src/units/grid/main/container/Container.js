@@ -10,7 +10,6 @@ import LayoutInstantiationField from "@/units/grid/main/container/LayoutInstanti
 import {throttle} from "@/units/grid/other/tool.js";
 import ResizeObserver from '@/units/grid/modules/resize-observer-polyfill/ResizeObserver.es';
 
-
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
 //---------------------------------------------------------------------------------------------//
@@ -80,6 +79,7 @@ export default class Container extends DomFunctionImpl {
         exchangeLockY: false, // 锁定Item是否可以纵向向移动
         beforeContainerSizeInfo: null,
         observer: null,
+        deferUpdatingLayoutTimer: null,  // 是否正在等待最后一次延时更新布局
         nestingFirstMounted: false // 嵌套模式下第一次是否挂载，决定是否执行render函数
         //----------可写变量-----------//
     }
@@ -307,8 +307,9 @@ export default class Container extends DomFunctionImpl {
         this.__ownTemp__.observer.disconnect()
     }
 
+
     _observer_() {
-        let isWindowResize = false
+        const store = this.__store__
         const layoutChangeFun = () => {
             if (!this._mounted) return
             const containerWidth = this.element.clientWidth
@@ -337,12 +338,45 @@ export default class Container extends DomFunctionImpl {
                     if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
                 }
             }
-            if (isWindowResize) return
             this.engine.updateLayout(true)
         }
+        const debounce = (fn, delay = 350) => {
+            let ownTemp = this.__ownTemp__
+            return function () {
+                if (ownTemp.deferUpdatingLayoutTimer) {
+                    clearTimeout(ownTemp.deferUpdatingLayoutTimer)
+                }
+                ownTemp.deferUpdatingLayoutTimer = setTimeout(() => {
+                    fn.apply(this, arguments)
+                    ownTemp.deferUpdatingLayoutTimer = null
+                }, delay)
+            }
+        }
 
-        window.addEventListener('resize', layoutChangeFun)
-        this.__ownTemp__.observer = new ResizeObserver(throttle(layoutChangeFun, this.resizeReactionDelay))
+        const windowResize = () => {
+            if (store.isWindowResize) {
+                layoutChangeFun()
+                // debounce(() => {
+                //     console.log(111111111111111111)
+                //     layoutChangeFun()
+                //     const containers = [...document.querySelectorAll('.grid-container')]
+                //     containers.forEach((node)=>{
+                //         const container = node._gridContainer_
+                //         if (!container) return
+                //         container.updateLayout(true)
+                //     })
+                // }, 500)()
+            }
+        }
+        const observerResize = () => {
+            layoutChangeFun()
+            debounce(() => {
+                layoutChangeFun()
+            }, 100)()
+            // if (!store.isWindowResize) layoutChangeFun()
+        }
+        // window.addEventListener('resize', throttle(windowResize))
+        this.__ownTemp__.observer = new ResizeObserver(throttle(observerResize, 50))
         this.__ownTemp__.observer.observe(this.element)
     }
 

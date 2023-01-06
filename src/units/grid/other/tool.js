@@ -12,14 +12,16 @@ export function throttle(func, wait = 350) {  // 节流函数：返回的是函�
     }
 }
 
-export function debounce(fn, delay) {
-    let timer;
-    return function () {
+export function debounce(fn, delay = 500) {
+    let timer = null;
+    return function() {
         if (timer) {
             clearTimeout(timer)
-            timer = null
         }
-        timer = setTimeout(fn, delay);
+        timer = setTimeout(() => {
+            fn.apply(this, arguments)
+            timer = null
+        }, delay)
     }
 }
 

@@ -1,36 +1,36 @@
 <template>
   <div>
-    <!--    <GridContainer-->
-    <!--        class="grid-container con"-->
-    <!--        style="height: 600px"-->
-    <!--        :useLayout="useLayout"-->
-    <!--        :events="events"-->
-    <!--        :config="config"-->
-    <!--        :render="render"-->
-    <!--        :layoutChange="layoutChange"-->
-    <!--        :containerAPI="containerAPI"-->
-    <!--        :components="components"-->
-    <!--    >-->
-    <!--      <gridItem v-for="(item,index) in useLayout.data"-->
-    <!--                :type = 'item.type ? item.type : "text"'-->
-    <!--                :item="item"-->
-    <!--                :key="index"-->
-    <!--                :pos="item.pos"-->
-    <!--                :name="item.name.toString()"-->
-    <!--                :static="item.static"-->
-    <!--                :nested="item.nested"-->
-    <!--                :transition="200"-->
-    <!--                :draggable="true"-->
-    <!--                :resize="true"-->
-    <!--                :close="true"-->
-    <!--                :follow="true"-->
-    <!--                :dragOut="true"-->
-    <!--                :dragIgnoreEls="item.dragIgnoreEls"-->
-    <!--                :dragAllowEls="item.dragAllowEls"-->
-    <!--      >-->
-    <!--        {{item.name}}-->
-    <!--      </gridItem>-->
-    <!--    </GridContainer>-->
+        <GridContainer
+            class="grid-container con"
+            style="height: 600px"
+            :useLayout="useLayout"
+            :events="events"
+            :config="config"
+            :render="render"
+            :layoutChange="layoutChange"
+            :containerAPI="containerAPI"
+            :components="components"
+        >
+          <gridItem v-for="(item,index) in useLayout.data"
+                    :type = 'item.type ? item.type : "text"'
+                    :item="item"
+                    :key="index"
+                    :pos="item.pos"
+                    :name="item.name.toString()"
+                    :static="item.static"
+                    :nested="item.nested"
+                    :transition="200"
+                    :draggable="true"
+                    :resize="true"
+                    :close="true"
+                    :follow="true"
+                    :dragOut="true"
+                    :dragIgnoreEls="item.dragIgnoreEls"
+                    :dragAllowEls="item.dragAllowEls"
+          >
+            {{item.name}}
+          </gridItem>
+        </GridContainer>
 
 
     <!--    ////////////////////////////////////////-->

@@ -54,6 +54,7 @@ export default class TempStore {
             newestPageX:0,
             newestPageY:0,
         },
+        isWindowResize:true,  // 弃用可删除
         //----------触屏相关-----------//
         deviceEventMode: 'mouse',   //   mouse || touch
         allowTouchMoveItem: false,   // 是否允许触屏下拖动Item

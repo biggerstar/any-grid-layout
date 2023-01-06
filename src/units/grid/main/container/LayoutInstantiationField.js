@@ -20,6 +20,7 @@ export default class LayoutInstantiationField {
     minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     autoGrowRow = true // 响应式下resize自动撑开Row
+    autoReorder = true   // 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
     // autoGrowCol = true     // 暂未支持
 
     ratioCol = 0.1    // (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
@@ -32,7 +33,7 @@ export default class LayoutInstantiationField {
     scrollWaitTime = 800   // 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
     scrollSpeedX = null    // 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
     scrollSpeedY = null    // 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
-    resizeReactionDelay = 200    // 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔
+    resizeReactionDelay = 50    // 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔
     slidePage = true    // 点击container的空白处是否能拖拽进行滑动容器
     nestedOutExchange = false   //  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
     //------------------------------------------------------//

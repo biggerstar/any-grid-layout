@@ -153,6 +153,7 @@ const reSetContainerSize = () => {
   }
 }
 onMounted(() => {
+
   const propsRaw = toRaw(props)
   container = parseContainerFromPrototypeChain(gridItem.value)
   if (!container) new Error('请保证GridItem被GridContainer直接包裹')
@@ -164,19 +165,26 @@ onMounted(() => {
     el: gridItem.value,
     ...propsRaw,
   })
+
   if (!selfItem) {   // 溢出状态，没位置删除vue控制的节点并触发vue的onUnmounted钩子
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
+  selfItem.mount()
 
   selfItem.updateStyle({
+    display: 'block',
+    position: 'absolute',
+    overflow: 'hidden',
     height: '100%',
     width: '100%',
-    display: 'block',
-    overflow: 'hidden',
-    position: 'absolute'
   }, gridItem.value)
-  selfItem.mount()
+
+
+  // if (!selfItem.close ){
+  //   console.log('gridItem',gridItem.value.clientWidth, gridItem.value);
+  // }
+
   //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
   props.itemAPI.getItem = () => selfItem
   props.itemAPI.exportConfig = () => selfItem.exportConfig()   // 获取当前Item的配置参数

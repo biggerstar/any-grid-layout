@@ -212,7 +212,6 @@ export default class Engine {
         let lastY = 1
         if (this.items.length > 0) {
             const item = this.items[this.items.length - 1]
-            if (!item) return null
             lastY = item.pos.y
         }
         for (let i = 0; i < this.items.length; i++) {
@@ -367,7 +366,7 @@ export default class Engine {
         else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`, item, item)
         else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
         else {
-            item.pos.i = item.i = this.__temp__.staticIndexCount++
+            // item.pos.i = item.i = this.__temp__.staticIndexCount++  // 有bug
             // console.log(item.pos.autoOnce );
             if (!this.container._mounted || this.container.responsive) item.pos.autoOnce = true   // 所有响应式都自动排列
             else if (!this.container.responsive) {
@@ -395,6 +394,10 @@ export default class Engine {
         // this.items.push(item)
         // return true
         // console.log(item.pos);
+        if (!this.container.autoReorder){
+            this.items.push(item)
+            return true
+        }
         const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
         // console.log(realLayoutPos);
         let success = false
@@ -442,6 +445,7 @@ export default class Engine {
             for (let x = 1; x <= this.container.col; x++) {
                 for (let index = 0; index < this.items.length; index++) {
                     const item = this.items[index]
+                    if (!item ) debugger
                     if (item.pos.x === x && item.pos.y === y) {
                         items.push(item)
                         break
@@ -678,7 +682,7 @@ export default class Engine {
     }
 
     _genItemPosArg(item) {
-        item.pos.i = item.i
+        // item.pos.i = item.i
         item.pos.col = (() => this.container.col)()
         item.pos.row = (() => this.container.row)()
         return item.pos

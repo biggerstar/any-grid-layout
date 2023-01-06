@@ -11,7 +11,8 @@ import {onMounted, ref, watch, nextTick, toRaw, render, cloneVNode, isVNode, h, 
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
 
-h
+
+
 
 const gridContainer = ref(null)
 const gridContainerArea = ref(null)
@@ -50,10 +51,11 @@ onMounted(() => {
   container.el = gridContainer.value
   container.engine.init()
   container.vue = props
+
   container.updateStyle({
+    display: 'block',
     width: '100%',
     height: '100%',
-    display: 'block',
   }, gridContainer.value)
   container.updateStyle({
     position: 'relative',
@@ -62,16 +64,23 @@ onMounted(() => {
     background: '#5df8eb'
   }, gridContainerArea.value)
 
-  useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
-  gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
-  //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
-  const customsLayout = cloneDeep(useLayoutConfig.currentLayout)
-  if (props.render === null) {
-    Object.assign(props.useLayout, customsLayout)
-  } else if (typeof props.render === 'function') {
-    props.render(customsLayout, useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
-  }
   container.mount()
+
+  nextTick(()=>{  // 必须nextTick在嵌套下获取正确的最新width
+    // console.log('gridContainer',gridContainer.value.clientWidth,gridContainer.value);
+
+    useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
+    gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
+    //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
+    const customsLayout = cloneDeep(useLayoutConfig.currentLayout)
+    if (props.render === null) {
+      Object.assign(props.useLayout, customsLayout)
+    } else if (typeof props.render === 'function') {
+      props.render(customsLayout, useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
+    }
+  })
+
+  // if (customsLayout.px) console.log(gridContainer.value.clientWidth,customsLayout.px, customsLayout.data);
 
   //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
   props.containerAPI.getContainer = () => container
@@ -86,7 +95,7 @@ onMounted(() => {
   //   console.log(container.exportData());
   // },3000)
 
-  setTimeout(() => {
+  let timer = setTimeout(() => {
     const exportData = container.exportData()   // 拿到未溢出的最新dataList
     if (props.useLayout['data'] && (props.useLayout['data'].length !== exportData.length)) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
       props.useLayout.data = []
@@ -94,6 +103,7 @@ onMounted(() => {
         props.useLayout.data = exportData
         useLayoutConfig.layout.data = exportData      //  静态模式可能溢出，此时拿到当前成功添加的Item更新当前使用布局的data数组
         container.updateLayout(true)
+        timer = null
       })
     }
   })
@@ -118,7 +128,7 @@ onMounted(() => {
         isLayoutChange = false
         props.layoutChange(customsLayout, useLayout.useLayoutConfig, container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
       }
-      // console.log(customsLayout.px, customsLayout.data);
+      console.log(gridContainer.value.clientWidth, customsLayout.px, customsLayout.data);
     })
   }
   /** 跨容器交换Item用，用于将vue控制的Item位置控制权交给事件处理程序管理 */
@@ -152,11 +162,11 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
     if (!Array.isArray(val) && ['data', 'margin', 'size'].includes(key)) {
       console.error(key, '键应该是一个数组');
     }
-    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage', 'autoGrowRow'].includes(key)) {
+    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage', 'autoGrowRow','autoReorder'].includes(key)) {
       console.error(key, '键应该是一个boolean值');
     }
     if ((valueType !== 'number' || isNaN(val) || !isFinite(val)) && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',
-      'minCol', 'maxCol', 'minRow', 'maxRow', 'ratioCol','ratioRow', 'sensitivity', 'pressTime',
+      'minCol', 'maxCol', 'minRow', 'maxRow', 'ratioCol', 'ratioRow', 'sensitivity', 'pressTime',
       'scrollWaitTime', 'scrollSpeedX', 'scrollSpeedY', 'resizeReactionDelay'].includes(key)) {
       console.error(key, '键应该是一个非NaN的number值');
     }

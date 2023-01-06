@@ -211,6 +211,10 @@ export default class EditEvent {
             false: (ev) => false,
             contextmenu: (ev) => ev.preventDefault()
         },
+        windowResize: {
+            setResizeFlag: () => tempStore.isWindowResize = true,
+            removeResizeFlag: () => tempStore.isWindowResize = false,
+        },
         moveOuterContainer: {  //  用于跨容器Item通信，转移的各种处理
             /**用于嵌套情况两个【相邻】Container的直接过渡
              * @param {Container}  fromContainer   从那个Container中来
@@ -397,13 +401,12 @@ export default class EditEvent {
                 if (dragItem.exchange) {  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
                     overContainer = parseContainer(ev)
                     if (overContainer) container = overContainer // 如果开了exchange则移动将overContainer重置目标容器
-                    if (dragItem.container !== overContainer){
+                    if (dragItem.container !== overContainer) {
                         if (container.parentItem && container.parentItem === dragItem) return
-                        const target = ev.touchTarget ? ev.touchTarget : ev.target
-                        if (!target._isGridContainerArea) return   // 跨容器只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
+                        // const target = ev.touchTarget ? ev.touchTarget : ev.target
+                        // if (!target._isGridContainerArea) return   // (该代码bug：exchange toItem无响应)跨容器只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
                     }
                 }
-
 
                 //-----------------------是否符合交换环境参数检测结束-----------------------//
                 // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
@@ -515,8 +518,8 @@ export default class EditEvent {
                     }
                     //------对移动速度和距离做出限制,某个周期内移动速度太慢或距离太短忽略本次移动(only mouse event)------//
                     if (!container.__ownTemp__.firstEnterUnLock) {
-                        if (tempStore.deviceEventMode === 'mouse') {
-                            const {distance, speed} = mouseSpeed()
+                        const {distance, speed} = mouseSpeed()
+                        if (tempStore.deviceEventMode === 'mouse' && toItem && toItem.pos.w > 2 && toItem.pos.h > 2) {
                             if (container.size[0] < 30 || container.size[1] < 30) {
                                 if (distance < 3) return
                             } else if (container.size[0] < 60 || container.size[1] < 60) {
@@ -1257,6 +1260,9 @@ export default class EditEvent {
         document.addEventListener('mouseup', EPF.container.touchendOrMouseup)
         document.addEventListener('touchend', EPF.container.touchendOrMouseup, {passive: false})
 
+        document.addEventListener('mouseleave', EEF.windowResize.setResizeFlag)
+        document.addEventListener('mouseenter', EEF.windowResize.removeResizeFlag)
+
     }
 
     static removeGlobalEvent() {
@@ -1272,6 +1278,9 @@ export default class EditEvent {
 
         document.removeEventListener('mouseup', EPF.container.touchendOrMouseup)
         document.removeEventListener('touchend', EPF.container.touchendOrMouseup)
+
+        document.removeEventListener('mouseleave', EEF.windowResize.setResizeFlag)
+        document.removeEventListener('mouseenter', EEF.windowResize.removeResizeFlag)
     }
 
     static startEvent(container = null, item = null) {
