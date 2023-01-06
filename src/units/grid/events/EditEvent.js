@@ -299,7 +299,11 @@ export default class EditEvent {
                 const moveItem = tempStore.moveItem
                 if (!tempStore.isDragging || fromItem === null || !container || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
-                if (!fromItem.container.exchange
+                // console.log(container);
+                // console.log(fromItem,fromItem.container.exchange,dragItem.container.exchange,dragItem.exchange);
+
+                if (!container['exchange']
+                    || !fromItem.container.exchange
                     || !dragItem.container.exchange
                     || !dragItem.exchange
                 ) return

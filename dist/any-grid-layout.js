@@ -537,7 +537,7 @@ c(D, "_eventEntrustFunctor", {
       if (!l.isDragging || n === null || !e || !l.isLeftMousedown)
         return;
       let o = l.moveItem !== null ? i : n;
-      if (!(!n.container.exchange || !o.container.exchange || !o.exchange))
+      if (!(!e.exchange || !n.container.exchange || !o.container.exchange || !o.exchange))
         try {
           o.pos.el = null;
           let r = n.element;
