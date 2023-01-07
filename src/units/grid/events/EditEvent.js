@@ -73,11 +73,11 @@ export default class EditEvent {
                         height
                     }
                 }
-                //-----------------响应式和静态的分别resize算法实现---------------------//
                 const newResize = limitGrid(resized)    //当前鼠标距离x,y的距离构成的矩形
                 // console.log(fromItem.pos.w,fromItem.pos.h);
 
-                if (!fromItem.container.responsive) {
+                const resizeSpaceLimit = () => {
+                    //-----------------响应式和静态的resize最大可调整空间算法实现---------------------//
                     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
                     const nowElSize = limitCloneEl()
                     const maxBlankMatrixLimit = fromItem.container.engine.findStaticBlankMaxMatrixFromItem(fromItem)
@@ -101,15 +101,9 @@ export default class EditEvent {
                     }
                     // console.log(fromItem.pos.w,fromItem.pos.h, container.col, fromItem.pos.col);
 
-                } else if (fromItem.container.responsive) {
-                    //---------------------动态模式resize判断是否w和h是否改变并更新---------------------//
-                    merge(fromItem.pos, newResize)
-                    const nowElSize = limitCloneEl()
-                    fromItem.updateStyle({
-                        width: nowElSize.width + 'px',
-                        height: nowElSize.height + 'px',
-                    }, tempStore.cloneElement)
                 }
+
+                resizeSpaceLimit()
                 if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
                     fromItem.__temp__.resized = newResize
@@ -638,7 +632,7 @@ export default class EditEvent {
                     if (dragItem !== toItem) {
                         container.__ownTemp__.beforeOverItems.unshift(toItem)
                         if (beforeOverItems.length > 20) container.__ownTemp__.beforeOverItems.pop()  // 最多保存20个经过的Item
-                    }else return false // 必要，减少重排
+                    } else return false // 必要，减少重排
                     //---------Item跨容器交换方式,根据Items的顺序将会影响也能控制在容器中顺序布局位置--------//
                     // 同容器成员间交换方式
                     const isExchange = dragItem.container.eventManager._callback_('itemExchange', fromItem, toItem)
