@@ -1,6 +1,6 @@
 <template xmlns="http://www.w3.org/1999/html">
-  <div ref="gridContainer">
-    <div ref="gridContainerArea" class="grid-container-area">
+  <div ref="gridContainer" style="display: block">
+    <div ref="gridContainerArea" class="grid-container-area" style="display: block;position: relative">
       <slot></slot>
     </div>
   </div>
@@ -10,9 +10,6 @@
 import {onMounted, ref, watch, nextTick, toRaw, render, cloneVNode, isVNode, h, provide} from 'vue'
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
-
-
-
 
 const gridContainer = ref(null)
 const gridContainerArea = ref(null)
@@ -52,23 +49,20 @@ onMounted(() => {
   container.engine.init()
   container.vue = props
 
-  container.updateStyle({
-    display: 'block',
-    width: '100%',
-    height: '100%',
-  }, gridContainer.value)
-  container.updateStyle({
-    position: 'relative',
-    display: 'block',
-    margin: '0 auto',
-    background: '#5df8eb'
-  }, gridContainerArea.value)
+  // container.updateStyle({
+  //   display: 'block',
+  //   // width: '100%',
+  //   // height: '100%',
+  // }, gridContainer.value)
+  // container.updateStyle({
+  //   position: 'relative',
+  //   display: 'block',
+  //   margin: '0 auto',
+  // }, gridContainerArea.value)
 
-  container.mount()
-
-  nextTick(()=>{  // 必须nextTick在嵌套下获取正确的最新width
-    // console.log('gridContainer',gridContainer.value.clientWidth,gridContainer.value);
-
+  nextTick(() => {
+    // 必须nextTick在嵌套下且多px的layouts下获取正确的最新width
+    // console.log('gridContainer', gridContainer.value.clientWidth, gridContainer.value);
     useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
     gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
     //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
@@ -78,14 +72,10 @@ onMounted(() => {
     } else if (typeof props.render === 'function') {
       props.render(customsLayout, useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
     }
+    container.mount()
   })
 
   // if (customsLayout.px) console.log(gridContainer.value.clientWidth,customsLayout.px, customsLayout.data);
-
-  //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
-  props.containerAPI.getContainer = () => container
-  props.containerAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
-  props.containerAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
 
   //------------------------------------------------------------------------//
   // if (!window.con) window.con = []
@@ -112,6 +102,12 @@ onMounted(() => {
   //   // console.log(preCol,col);
   // }
   // container._VueEvents.vueRowChange = (row, preRow) => { }
+  //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
+  props.containerAPI.getContainer = () => container
+  props.containerAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
+  props.containerAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
+
+  //------------------------------------------------------------------------//
 
   container._VueEvents.vueUseLayoutChange = (useLayout) => {
     isLayoutChange = true
@@ -128,7 +124,7 @@ onMounted(() => {
         isLayoutChange = false
         props.layoutChange(customsLayout, useLayout.useLayoutConfig, container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
       }
-      console.log(gridContainer.value.clientWidth, customsLayout.px, customsLayout.data);
+      // console.log(gridContainer.value.clientWidth, customsLayout.px, customsLayout.data);
     })
   }
   /** 跨容器交换Item用，用于将vue控制的Item位置控制权交给事件处理程序管理 */
@@ -142,8 +138,8 @@ onMounted(() => {
     }
     // const sourceElementChildren = Array.from(sourceItem.element.childNodes)
     itemConfig.pos.doItemCrossContainerExchange = (newVueItem) => {    // 该挂载位置不严谨，但是为了方便就临时挂载了,在GridItem使用后会被删除，后面有优化通过mitt去做
-      tempStore.exchangeItems.old = tempStore.fromItem
-      tempStore.exchangeItems.new = newVueItem
+      tempStore.exchangeItems.old = tempStore.fromItem   // 记录当前交换的旧Item
+      tempStore.exchangeItems.new = newVueItem   // 记录当前交换的新Item
       tempStore.moveItem = newVueItem   // 将当前交换操作的Item挂载，便于时间处理程序找到对应的Item成员
       tempStore.fromItem = newVueItem     // 原Item移除，将新位置作为源Item
       doCrossCallback(newVueItem)
@@ -151,6 +147,9 @@ onMounted(() => {
     }
     // console.log(itemConfig.type);
     props.useLayout['data'].push(itemConfig)
+    nextTick(()=>{
+      container.updateLayout(true)
+    })
   }
 })
 
@@ -162,7 +161,7 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
     if (!Array.isArray(val) && ['data', 'margin', 'size'].includes(key)) {
       console.error(key, '键应该是一个数组');
     }
-    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage', 'autoGrowRow','autoReorder'].includes(key)) {
+    if (valueType !== 'boolean' && ['responsive', 'followScroll', 'exchange', 'slidePage', 'autoGrowRow', 'autoReorder'].includes(key)) {
       console.error(key, '键应该是一个boolean值');
     }
     if ((valueType !== 'number' || isNaN(val) || !isFinite(val)) && ['col', 'row', 'marginX', 'marginY', 'sizeWidth', 'sizeHeight',

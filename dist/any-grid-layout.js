@@ -1,7 +1,7 @@
 var ke = Object.defineProperty;
 var Pe = (a, e, t) => e in a ? ke(a, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : a[e] = t;
 var c = (a, e, t) => (Pe(a, typeof e != "symbol" ? e + "" : e, t), t);
-import { getCurrentInstance as He, ref as ee, inject as We, useAttrs as Ne, toRaw as fe, onMounted as be, onUnmounted as Fe, openBlock as me, createElementBlock as Ce, unref as le, createBlock as De, renderSlot as Ee, watch as R, defineAsyncComponent as Be, provide as Xe, nextTick as ae, createElementVNode as Ye } from "vue";
+import { getCurrentInstance as He, ref as te, inject as We, useAttrs as Ne, toRaw as fe, onMounted as be, onUnmounted as Fe, openBlock as me, createElementBlock as Ce, unref as ae, createBlock as De, renderSlot as Ee, watch as R, defineAsyncComponent as Be, provide as Xe, nextTick as K, createElementVNode as Ye } from "vue";
 function W(a, e = 350) {
   let t, n, i = 0;
   return function() {
@@ -109,7 +109,7 @@ const X = (a = {}, e = {}, t = !1, n = []) => {
   setup(a) {
     const e = a;
     He();
-    const t = ee();
+    const t = te();
     let n = null;
     const i = () => {
       R(() => e.pos, () => {
@@ -147,7 +147,7 @@ const X = (a = {}, e = {}, t = !1, n = []) => {
         Array.isArray(u) && (n.dragAllowEls = u);
       });
     };
-    let o, r = null, s = {}, f = ee(!1);
+    let o, r = null, s = {}, f = te(!1);
     const m = We("_grid_item_components_"), h = () => {
       const u = m[e.type];
       u ? typeof u != "function" && console.error("components\u4E2D\u7684", e.type, '\u5E94\u8BE5\u662F\u4E00\u4E2A\u51FD\u6570,\u5E76\u4F7F\u7528import("XXX")\u5F02\u6B65\u5BFC\u5165') : console.error("\u672A\u5728components\u4E2D\u5B9A\u4E49", e.type, "\u7EC4\u4EF6"), o = Be(u);
@@ -173,13 +173,7 @@ const X = (a = {}, e = {}, t = !1, n = []) => {
         t.value.parentNode.removeChild(t.value);
         return;
       }
-      n.mount(), n.updateStyle({
-        display: "block",
-        position: "absolute",
-        overflow: "hidden",
-        height: "100%",
-        width: "100%"
-      }, t.value), e.itemAPI.getItem = () => n, e.itemAPI.exportConfig = () => n.exportConfig(), typeof g == "function" && g(n), n._VueEvents.vueItemResizing = (y, p, C) => {
+      n.mount(), e.itemAPI.getItem = () => n, e.itemAPI.exportConfig = () => n.exportConfig(), typeof g == "function" && g(n), n._VueEvents.vueItemResizing = (y, p, C) => {
         e.pos.w && e.pos.w !== p && (e.pos.w = p), e.pos.h && e.pos.h !== C && (e.pos.h = C);
       }, n._VueEvents.vueItemMovePositionChange = (y, p, C, M) => {
         e.pos.x && e.pos.x !== C && (e.pos.x = C), e.pos.y && e.pos.y !== M && (e.pos.y = M);
@@ -189,11 +183,12 @@ const X = (a = {}, e = {}, t = !1, n = []) => {
     }), (u, g) => (me(), Ce("div", {
       class: "grid-item",
       ref_key: "gridItem",
-      ref: t
+      ref: t,
+      style: { display: "block", position: "absolute", overflow: "hidden" }
     }, [
-      le(f) ? (me(), De(le(o), {
+      ae(f) ? (me(), De(ae(o), {
         key: 0,
-        attrs: le(s)
+        attrs: ae(s)
       }, null, 8, ["attrs"])) : Ee(u.$slots, "default", { key: 1 })
     ], 512));
   }
@@ -373,7 +368,7 @@ c(F, "ins", !1), c(F, "store", {
   timeOutEvent: null,
   nestingMountPointList: []
 }), c(F, "ItemStore", {});
-const l = F.store, oe = class {
+const l = F.store, se = class {
   static startEventFromItem(e) {
   }
   static removeEventFromItem(e) {
@@ -389,13 +384,13 @@ const l = F.store, oe = class {
     document.removeEventListener("mousedown", E.container.touchstartOrMousedown), document.removeEventListener("touchstart", E.container.touchstartOrMousedown), document.removeEventListener("mousemove", E.container.touchmoveOrMousemove), document.removeEventListener("touchmove", E.container.touchmoveOrMousemove), document.removeEventListener("mouseup", E.container.touchendOrMouseup), document.removeEventListener("touchend", E.container.touchendOrMouseup), document.removeEventListener("mouseleave", _.windowResize.setResizeFlag), document.removeEventListener("mouseenter", _.windowResize.removeResizeFlag);
   }
   static startEvent(e = null, t = null) {
-    l.editItemNum === 0 && oe.startGlobalEvent();
+    l.editItemNum === 0 && se.startGlobalEvent();
   }
   static removeEvent(e = null, t = null) {
-    t && !t.draggable && t.resize, l.editItemNum === 0 && oe.removeGlobalEvent();
+    t && !t.draggable && t.resize, l.editItemNum === 0 && se.removeGlobalEvent();
   }
 };
-let D = oe;
+let D = se;
 c(D, "_eventEntrustFunctor", {
   itemResize: {
     doResize: W((e) => {
@@ -541,7 +536,7 @@ c(D, "_eventEntrustFunctor", {
         try {
           o.pos.el = null;
           let r = n.element;
-          const s = new te({
+          const s = new ne({
             pos: o.pos,
             size: e.size,
             margin: e.margin,
@@ -685,7 +680,7 @@ c(D, "_eventEntrustFunctor", {
         r !== n && (s.__ownTemp__.beforeOverItems.unshift(n), Z.length > 20 && s.__ownTemp__.beforeOverItems.pop());
         const ye = r.container.eventManager._callback_("itemExchange", t, n);
         ye === !1 || ye === null || (s.responseMode === "default" ? U ? (s.engine.sortResponsiveItem(), s.engine.move(r, n.i)) : s.engine.exchange(r, n) : s.responseMode === "stream" ? (s.engine.sortResponsiveItem(), s.engine.move(r, n.i)) : s.responseMode === "exchange" && s.engine.exchange(r, n), s.engine.updateLayout());
-      }, re = () => {
+      }, le = () => {
         if (!r.follow && !H(e))
           return;
         r.pos.nextStaticPos = new V(r.pos), r.pos.nextStaticPos.x = C < 1 ? 1 : C, r.pos.nextStaticPos.y = M < 1 ? 1 : M;
@@ -705,7 +700,7 @@ c(D, "_eventEntrustFunctor", {
       };
       z.run(() => {
         const I = Object.assign({}, r.pos);
-        if (s.responsive ? J() : re(), I.x !== r.pos.x || I.y !== r.pos.y) {
+        if (s.responsive ? J() : le(), I.x !== r.pos.x || I.y !== r.pos.y) {
           const w = r._VueEvents.vueItemMovePositionChange;
           typeof w == "function" && w(I.x, I.y, r.pos.x, r.pos.y), r.container.eventManager._callback_("itemMovePositionChange", I.x, I.y, r.pos.x, r.pos.y);
         }
@@ -1044,7 +1039,7 @@ class ze {
   }
 }
 const ce = F.store;
-class te extends ze {
+class ne extends ze {
   constructor(t) {
     super();
     c(this, "el", "");
@@ -1577,14 +1572,14 @@ class Je {
       } else
         h[0] !== null && d[0];
     else
-      r === null && (d[0] === null && h[0] !== null ? e <= h[0] ? (d[0] = 0, r = 1) : (r = Math.floor(e / h[0]), d[0] = (e - h[0] * r) / r) : d[0] !== null && h[0] !== null && (e <= h[0] ? (d[0] = 0, r = 1) : r = Math.floor((e - d[0]) / (d[0] + h[0]))));
+      r === null && (d[0] === null && h[0] !== null ? e <= h[0] ? (d[0] = 0, r = 1) : (r = Math.floor(e / h[0]), d[0] = (e - h[0] * r) / r) : d[0] !== null && h[0] !== null && (e <= h[0] ? (d[0] = 0, r = 1) : r = Math.floor((e + d[0]) / (d[0] + h[0]))));
     t = Object.assign(t, {
       padding: u,
       margin: d,
       size: h,
       col: r
     });
-    let re = (b) => {
+    let le = (b) => {
       let { margin: x, size: L, minCol: A, maxCol: k, col: S, padding: O } = b;
       x[0] = x[0] ? parseFloat(x[0].toFixed(1)) : 0, L[0] = L[0] ? parseFloat(L[0].toFixed(1)) : 0;
       let P = null, U = null;
@@ -1593,7 +1588,7 @@ class Je {
     const I = {};
     for (const b in t)
       (this.option.global[b] !== void 0 || n[b] !== void 0) && (I[b] = t[b]);
-    return this.useLayoutConfig = Object.assign(this.useLayoutConfig, re(t)), this.container.layout = n, this.container.useLayout = t, {
+    return this.useLayoutConfig = Object.assign(this.useLayoutConfig, le(t)), this.container.layout = n, this.container.useLayout = t, {
       layout: n,
       global: this.option.global,
       useLayoutConfig: t,
@@ -1734,7 +1729,7 @@ class Ze {
   sortStatic() {
     const e = [], t = [];
     return this.items.forEach((n) => {
-      !n instanceof te || !n._mounted || n.element.parentNode === null || (n.pos.static === !0 ? e.push(n) : t.push(n));
+      !n instanceof ne || !n._mounted || n.element.parentNode === null || (n.pos.static === !0 ? e.push(n) : t.push(n));
     }), this.renumber(), e.concat(t);
   }
   mountAll() {
@@ -1769,9 +1764,9 @@ class Ze {
     return null;
   }
   push(e) {
+    const t = this._isCanAddItemToContainer_(e, e.pos.autoOnce, !0);
     if (!this.container.autoReorder)
       return this.items.push(e), !0;
-    const t = this._isCanAddItemToContainer_(e, e.pos.autoOnce, !0);
     let n = !1;
     if (t)
       if (this.items.length <= 1)
@@ -1849,7 +1844,7 @@ class Ze {
     });
   }
   createItem(e) {
-    return e.container = this.container, e.size = this.container.size, e.margin = this.container.margin, e.resize = Boolean(e.resize), e.draggable = Boolean(e.draggable), e.close = Boolean(e.close), e.i = this.len(), new te(e);
+    return e.container = this.container, e.size = this.container.size, e.margin = this.container.margin, e.resize = Boolean(e.resize), e.draggable = Boolean(e.draggable), e.close = Boolean(e.close), e.i = this.len(), new ne(e);
   }
   findItem(e) {
     return this.items.filter((t) => t.name === e || t.classList.includes(e) || t.element === e);
@@ -2025,10 +2020,10 @@ const Re = function() {
       }
     }, e;
   }();
-}(), he = typeof window < "u" && typeof document < "u" && window.document === document, ne = function() {
+}(), he = typeof window < "u" && typeof document < "u" && window.document === document, ie = function() {
   return typeof global < "u" && global.Math === Math ? global : typeof self < "u" && self.Math === Math ? self : typeof window < "u" && window.Math === Math ? window : Function("return this")();
 }(), tt = function() {
-  return typeof requestAnimationFrame == "function" ? requestAnimationFrame.bind(ne) : function(a) {
+  return typeof requestAnimationFrame == "function" ? requestAnimationFrame.bind(ie) : function(a) {
     return setTimeout(function() {
       return a(Date.now());
     }, 1e3 / 60);
@@ -2101,9 +2096,9 @@ const ot = 20, st = ["top", "right", "bottom", "left", "width", "height", "size"
   }
   return a;
 }, G = function(a) {
-  return a && a.ownerDocument && a.ownerDocument.defaultView || ne;
-}, Me = se(0, 0, 0, 0);
-function ie(a) {
+  return a && a.ownerDocument && a.ownerDocument.defaultView || ie;
+}, Me = re(0, 0, 0, 0);
+function oe(a) {
   return parseFloat(a) || 0;
 }
 function ve(a) {
@@ -2112,32 +2107,32 @@ function ve(a) {
     e[t - 1] = arguments[t];
   return e.reduce(function(t, n) {
     const i = a["border-" + n + "-width"];
-    return t + ie(i);
+    return t + oe(i);
   }, 0);
 }
 function at(a) {
   const e = ["top", "right", "bottom", "left"], t = {};
   for (let n = 0, i = e; n < i.length; n++) {
     const o = i[n], r = a["padding-" + o];
-    t[o] = ie(r);
+    t[o] = oe(r);
   }
   return t;
 }
 function ut(a) {
   const e = a.getBBox();
-  return se(0, 0, e.width, e.height);
+  return re(0, 0, e.width, e.height);
 }
 function ct(a) {
   const e = a.clientWidth, t = a.clientHeight;
   if (!e && !t)
     return Me;
   const n = G(a).getComputedStyle(a), i = at(n), o = i.left + i.right, r = i.top + i.bottom;
-  let s = ie(n.width), f = ie(n.height);
+  let s = oe(n.width), f = oe(n.height);
   if (n.boxSizing === "border-box" && (Math.round(s + o) !== e && (s -= ve(n, "left", "right") + o), Math.round(f + r) !== t && (f -= ve(n, "top", "bottom") + r)), !mt(a)) {
     const m = Math.round(s + o) - e, h = Math.round(f + r) - t;
     Math.abs(m) !== 1 && (s -= m), Math.abs(h) !== 1 && (f -= h);
   }
-  return se(i.left, i.top, s, f);
+  return re(i.left, i.top, s, f);
 }
 const ft = function() {
   return typeof SVGGraphicsElement < "u" ? function(a) {
@@ -2165,12 +2160,12 @@ function dt(a) {
     left: e
   }), r;
 }
-function se(a, e, t, n) {
+function re(a, e, t, n) {
   return { x: a, y: e, width: t, height: n };
 }
 const gt = function() {
   function a(e) {
-    this.broadcastWidth = 0, this.broadcastHeight = 0, this.contentRect_ = se(0, 0, 0, 0), this.target = e;
+    this.broadcastWidth = 0, this.broadcastHeight = 0, this.contentRect_ = re(0, 0, 0, 0), this.target = e;
   }
   return a.prototype.isActive = function() {
     var e = ht(this.target);
@@ -2250,8 +2245,8 @@ const gt = function() {
   };
 });
 const yt = function() {
-  return typeof ne.ResizeObserver < "u" ? ne.ResizeObserver : Oe;
-}(), K = F.store;
+  return typeof ie.ResizeObserver < "u" ? ie.ResizeObserver : Oe;
+}(), ee = F.store;
 class wt extends ze {
   constructor(t) {
     super();
@@ -2277,7 +2272,7 @@ class wt extends ze {
     c(this, "eventManager", null);
     c(this, "_VueEvents", {});
     c(this, "_mounted", !1);
-    c(this, "__store__", K);
+    c(this, "__store__", ee);
     c(this, "__ownTemp__", {
       preCol: 0,
       preRow: 0,
@@ -2318,13 +2313,13 @@ class wt extends ze {
     let t = null, n = null;
     Object.defineProperties(this, {
       col: {
-        get: () => t,
+        get: () => t || 1,
         set: (i) => {
           t === i || i <= 0 || !isFinite(i) || (t = i);
         }
       },
       row: {
-        get: () => n,
+        get: () => n || 1,
         set: (i) => {
           n === i || i <= 0 || !isFinite(i) || (n = i);
         }
@@ -2387,7 +2382,7 @@ class wt extends ze {
     });
   }
   _nestingMount(t = null) {
-    t = t || K.nestingMountPointList;
+    t = t || ee.nestingMountPointList;
     for (let n = 0; n < this.engine.items.length; n++) {
       const i = this.engine.items[n];
       for (let o = 0; o < t.length; o++)
@@ -2454,7 +2449,7 @@ class wt extends ze {
     return this.engine._isCanAddItemToContainer_(t, n);
   }
   add(t) {
-    return t.container = this, t.parentElement = this.contentElement, t instanceof te || (t = this.engine.createItem(t)), this.engine.addItem(t);
+    return t.container = this, t.parentElement = this.contentElement, t instanceof ne || (t = this.engine.createItem(t)), this.engine.addItem(t);
   }
   find(t) {
     return this.engine.findItem(t);
@@ -2464,7 +2459,7 @@ class wt extends ze {
   }
   _collectNestingMountPoint() {
     for (let t = 0; t < this.element.children.length; t++)
-      K.nestingMountPointList.includes(this.element.children[t]) || K.nestingMountPointList.push(document.adoptNode(this.element.children[t]));
+      ee.nestingMountPointList.includes(this.element.children[t]) || ee.nestingMountPointList.push(document.adoptNode(this.element.children[t]));
   }
   _isNestingContainer_(t = null) {
     if (t = t || this.element, !!t)
@@ -2528,7 +2523,7 @@ const xt = {
     }
   },
   setup(a) {
-    const e = a, t = ee(null), n = ee(null), i = new wt({
+    const e = a, t = te(null), n = te(null), i = new wt({
       platform: "vue",
       layouts: e.config.layouts,
       events: e.events,
@@ -2536,37 +2531,30 @@ const xt = {
     });
     let o = {}, r = !1;
     return Xe("_grid_item_components_", e.components), be(() => {
-      i.el = t.value, i.engine.init(), i.vue = e, i.updateStyle({
-        display: "block",
-        width: "100%",
-        height: "100%"
-      }, t.value), i.updateStyle({
-        position: "relative",
-        display: "block",
-        margin: "0 auto",
-        background: "#5df8eb"
-      }, n.value), i.mount(), ae(() => {
+      i.el = t.value, i.engine.init(), i.vue = e, K(() => {
         o = i.engine.layoutConfig.genLayoutConfig(t.value.clientWidth), n.value._isGridContainerArea = !0;
         const s = $(o.currentLayout);
-        e.render === null ? Object.assign(e.useLayout, s) : typeof e.render == "function" && e.render(s, o.useLayoutConfig, e.config.layouts);
-      }), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), setTimeout(() => {
+        e.render === null ? Object.assign(e.useLayout, s) : typeof e.render == "function" && e.render(s, o.useLayoutConfig, e.config.layouts), i.mount();
+      }), setTimeout(() => {
         const s = i.exportData();
-        e.useLayout.data && e.useLayout.data.length !== s.length && (e.useLayout.data = [], ae(() => {
+        e.useLayout.data && e.useLayout.data.length !== s.length && (e.useLayout.data = [], K(() => {
           e.useLayout.data = s, o.layout.data = s, i.updateLayout(!0);
         }));
-      }), i._VueEvents.vueUseLayoutChange = (s) => {
-        r = !0, e.useLayout.data = [], ae(() => {
+      }), e.containerAPI.getContainer = () => i, e.containerAPI.exportData = () => i.exportUseLayout().data, e.containerAPI.exportUseLayout = () => i.exportUseLayout(), i._VueEvents.vueUseLayoutChange = (s) => {
+        r = !0, e.useLayout.data = [], K(() => {
           o = s;
           const f = $(s.currentLayout);
           for (let m in e.useLayout)
             delete e.useLayout[m];
-          e.layoutChange === null ? Object.assign(e.useLayout, s.currentLayout) : typeof e.layoutChange == "function" && (r = !1, e.layoutChange(f, s.useLayoutConfig, i.layouts)), console.log(t.value.clientWidth, f.px, f.data);
+          e.layoutChange === null ? Object.assign(e.useLayout, s.currentLayout) : typeof e.layoutChange == "function" && (r = !1, e.layoutChange(f, s.useLayoutConfig, i.layouts));
         });
       }, i._VueEvents.vueCrossContainerExchange = (s, f, m) => {
         const h = s.exportConfig();
         s.pos.nextStaticPos && (h.pos.nextStaticPos = s.pos.nextStaticPos, h.pos.x = s.pos.nextStaticPos.x, h.pos.y = s.pos.nextStaticPos.y), h.pos.doItemCrossContainerExchange = (d) => {
           f.exchangeItems.old = f.fromItem, f.exchangeItems.new = d, f.moveItem = d, f.fromItem = d, m(d);
-        }, e.useLayout.data.push(h);
+        }, e.useLayout.data.push(h), K(() => {
+          i.updateLayout(!0);
+        });
       };
     }), R(e.useLayout, () => {
       if (!r) {
@@ -2597,12 +2585,14 @@ const xt = {
       }
     }, { deep: !0 }), (s, f) => (me(), Ce("div", {
       ref_key: "gridContainer",
-      ref: t
+      ref: t,
+      style: { display: "block" }
     }, [
       Ye("div", {
         ref_key: "gridContainerArea",
         ref: n,
-        class: "grid-container-area"
+        class: "grid-container-area",
+        style: { display: "block", position: "relative" }
       }, [
         Ee(s.$slots, "default")
       ], 512)

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid-item" ref="gridItem">
+  <div class="grid-item" ref="gridItem" style="display: block;position: absolute;overflow: hidden">
     <AsyncComponent v-if="isAutoComp" :attrs="attrs"></AsyncComponent>
     <slot v-else ></slot>
   </div>
@@ -153,7 +153,6 @@ const reSetContainerSize = () => {
   }
 }
 onMounted(() => {
-
   const propsRaw = toRaw(props)
   container = parseContainerFromPrototypeChain(gridItem.value)
   if (!container) new Error('请保证GridItem被GridContainer直接包裹')
@@ -172,13 +171,13 @@ onMounted(() => {
   }
   selfItem.mount()
 
-  selfItem.updateStyle({
-    display: 'block',
-    position: 'absolute',
-    overflow: 'hidden',
-    height: '100%',
-    width: '100%',
-  }, gridItem.value)
+  // selfItem.updateStyle({
+  //   display: 'block',
+  //   position: 'absolute',
+  //   overflow: 'hidden',
+  //   // width:'100%',
+  //   // height:'100%',
+  // }, gridItem.value)
 
 
   // if (!selfItem.close ){

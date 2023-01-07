@@ -500,7 +500,6 @@ export default class EditEvent {
 
                 // console.log(offsetLeftPx,offsetTopPx);
                 dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
-
                 const responsiveLayoutAlgorithm = () => {
                     // 响应式Item交换算法
                     //------计算鼠标的移动速度，太慢不做操作-----------//

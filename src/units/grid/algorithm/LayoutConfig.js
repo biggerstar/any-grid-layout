@@ -141,7 +141,7 @@ export default class LayoutConfig {
                     margin[0] = 0
                     col = 1
                 } else {     //  上面不是一行那这里就是多行了~~~~~~
-                    col = Math.floor((containerWidth - margin[0]) / (margin[0] + size[0]))
+                    col = Math.floor((containerWidth + margin[0]) / (margin[0] + size[0]))
                 }
             }
         }

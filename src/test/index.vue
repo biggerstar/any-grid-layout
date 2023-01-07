@@ -19,7 +19,7 @@
                     :name="item.name.toString()"
                     :static="item.static"
                     :nested="item.nested"
-                    :transition="200"
+                    :transition="180"
                     :draggable="true"
                     :resize="true"
                     :close="true"

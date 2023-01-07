@@ -109,7 +109,7 @@ export default class Container extends DomFunctionImpl {
         let row = null
         Object.defineProperties(this, {
             col: {
-                get: () => col,
+                get: () => col || 1,
                 set: (v) => {
                     if (col === v || v <= 0 || !isFinite(v)) return
                     col = v
@@ -117,7 +117,7 @@ export default class Container extends DomFunctionImpl {
                 }
             },
             row: {
-                get: () => row,
+                get: () => row || 1,
                 set: (v) => {
                     if (row === v || v <= 0 || !isFinite(v)) return
                     row = v
