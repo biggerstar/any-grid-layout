@@ -49,17 +49,6 @@ onMounted(() => {
   container.engine.init()
   container.vue = props
 
-  // container.updateStyle({
-  //   display: 'block',
-  //   // width: '100%',
-  //   // height: '100%',
-  // }, gridContainer.value)
-  // container.updateStyle({
-  //   position: 'relative',
-  //   display: 'block',
-  //   margin: '0 auto',
-  // }, gridContainerArea.value)
-
   nextTick(() => {
     // 必须nextTick在嵌套下且多px的layouts下获取正确的最新width
     // console.log('gridContainer', gridContainer.value.clientWidth, gridContainer.value);

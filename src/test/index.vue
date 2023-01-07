@@ -34,27 +34,27 @@
 
 
     <!--    ////////////////////////////////////////-->
-    <GridContainer
-        v-if="true"
-        class="grid-container con1"
-        style="height: 100vh;width: 100vw"
-        :config="config1"
-        :useLayout="useLayout1"
-        :events="events"
-        :components="components"
-    >
-      <gridItem v-for="(item,index) in useLayout1.data"
-                :type='item.type ? item.type : "text"'
-                :item="item"
-                :key=index
-                :pos="item.pos"
-                :draggable=true
-                :resize=true
-                :close=true
-                :item1="item"
-      >
-      </gridItem>
-    </GridContainer>
+<!--    <GridContainer-->
+<!--        v-if="true"-->
+<!--        class="grid-container con1"-->
+<!--        style="height: 100vh;width: 100vw"-->
+<!--        :config="config1"-->
+<!--        :useLayout="useLayout1"-->
+<!--        :events="events"-->
+<!--        :components="components"-->
+<!--    >-->
+<!--      <gridItem v-for="(item,index) in useLayout1.data"-->
+<!--                :type='item.type ? item.type : "text"'-->
+<!--                :item="item"-->
+<!--                :key=index-->
+<!--                :pos="item.pos"-->
+<!--                :draggable=true-->
+<!--                :resize=true-->
+<!--                :close=true-->
+<!--                :item1="item"-->
+<!--      >-->
+<!--      </gridItem>-->
+<!--    </GridContainer>-->
 
 
   </div>
@@ -69,7 +69,10 @@ const layoutDataConcatName = layoutData.map((pos, index) => {
   pos.name = index
   return pos
 })
-
+const layoutData11ConcatName = layoutData11.map((pos, index) => {
+  pos.name = index
+  return pos
+})
 const layoutData22ConcatName = layoutData22.map((pos, index) => {
   pos.name = index
   return pos
@@ -204,9 +207,12 @@ const layouts = [
   {
     px: 820,
     col: 6,
+    // row:4,
     margin: [50, 30],
     // size: [60, 80],
-    data: layoutData22ConcatName,
+    autoReorder:false,
+    responsive:true,
+    data: layoutData11ConcatName,
   },
   {
     px: 560,

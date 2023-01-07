@@ -1,6 +1,6 @@
 import ItemPos from "@/units/grid/main/item/ItemPos.js";
 
-export default class ItemPosList {
+export default class ItemPosListDiscard {
     data = []
     i = 0  // 和Item的i一样一一对应
     constructor(data = []) {

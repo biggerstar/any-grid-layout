@@ -44,7 +44,7 @@ export default class LayoutManager {
         this.row = row
     }
 
-    toINameHash(i){
+    toINameHash(i) {
         return this.iNameHash + i
     }
 
@@ -166,6 +166,8 @@ export default class LayoutManager {
             // for (let i = 0; i < this._layoutMatrix.length; i++) {
             //     console.log(this._layoutMatrix[i]);
             // }
+            //     console.log(posOption);
+
             if (this.isStaticBlank(posOption)) {
                 findItemLayout = this.itemPosToItemLayout(posOption)
                 return findItemLayout

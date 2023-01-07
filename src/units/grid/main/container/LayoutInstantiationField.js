@@ -8,7 +8,7 @@ export default class LayoutInstantiationField {
     responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
     data = []   // 当前布局使用的数据
     col = null
-    row = null    //  响应模式下如果溢出指定效果是和maxRow一样的，如果未溢出按实际占用row计算
+    row = null    //  响应模式下row由引擎管理且row不可固定，用户指定的row永远不会生效
     margin = [null, null]   //  禁止传入的数组内出现单个null
     marginX = null    //  如果和margin[0]优先级大于 marginX
     marginY = null    //  如果和margin[1]优先级大于 marginY

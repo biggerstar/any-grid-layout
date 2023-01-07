@@ -169,16 +169,8 @@ onMounted(() => {
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
+
   selfItem.mount()
-
-  // selfItem.updateStyle({
-  //   display: 'block',
-  //   position: 'absolute',
-  //   overflow: 'hidden',
-  //   // width:'100%',
-  //   // height:'100%',
-  // }, gridItem.value)
-
 
   // if (!selfItem.close ){
   //   console.log('gridItem',gridItem.value.clientWidth, gridItem.value);

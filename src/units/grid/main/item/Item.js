@@ -30,7 +30,7 @@ export default class Item extends DomFunctionImpl {
     draggable = null  //  自身是否可以拖动
     resize = null     //  自身是否可以调整大小
     close = null
-    static = false
+    static = false  // 优先级比autoOnce高，但是只有pos中指定x和y才生效
     exchange = true   // 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
 
     //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//

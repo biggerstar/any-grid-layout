@@ -401,6 +401,7 @@ export default class EditEvent {
                 if (fromItem === null || mousedownEvent === null || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 let container = dragItem.container
+                if (dragItem === toItem) return
                 let overContainer = null
                 if (dragItem.exchange) {  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
                     overContainer = parseContainer(ev)
@@ -634,11 +635,10 @@ export default class EditEvent {
                             }, toItem.transition.time)
                         }
                     }
-
                     if (dragItem !== toItem) {
                         container.__ownTemp__.beforeOverItems.unshift(toItem)
                         if (beforeOverItems.length > 20) container.__ownTemp__.beforeOverItems.pop()  // 最多保存20个经过的Item
-                    }
+                    }else return false // 必要，减少重排
                     //---------Item跨容器交换方式,根据Items的顺序将会影响也能控制在容器中顺序布局位置--------//
                     // 同容器成员间交换方式
                     const isExchange = dragItem.container.eventManager._callback_('itemExchange', fromItem, toItem)
@@ -660,7 +660,7 @@ export default class EditEvent {
                         container.engine.exchange(dragItem, toItem)
                     }
 
-                    container.engine.updateLayout()
+                    container.engine.updateLayout(true)
                 }
                 const staticLayoutAlgorithm = () => {
                     // 静态布局的Item交换算法
@@ -684,7 +684,9 @@ export default class EditEvent {
                         if (container.__ownTemp__.firstEnterUnLock) {
                             EEF.itemDrag.mousemoveExchange(container)
                             tempStore.dragContainer = container
-                        } else {
+                        } else if (dragItem.pos.x !== dragItem.pos.nextStaticPos.x
+                            || dragItem.pos.y !== dragItem.pos.nextStaticPos.y
+                        ) {
                             dragItem.pos.x = dragItem.pos.nextStaticPos.x
                             dragItem.pos.y = dragItem.pos.nextStaticPos.y
                             dragItem.pos.nextStaticPos = null
@@ -694,10 +696,6 @@ export default class EditEvent {
                     } else {
                         // 静态模式下移动到Item上,这里的作用是在有margin的时候保证移动到margin也是禁止状态
                         dragItem.pos.nextStaticPos = null   // 必须在这里，不可缺，作用:找不到空位清除nextStaticPos
-                        const overItem = parseItem(ev)
-                        if (overItem && dragItem !== overItem) {
-                            if (EEF.cursor.cursor !== 'drag-to-item-no-drop') EEF.cursor.dragToItemNoDrop()
-                        }
                     }
 
                 }
@@ -876,9 +874,7 @@ export default class EditEvent {
                     if (tempStore.fromItem) tempStore.fromItem.__temp__.resizeLock = true
 
                 } else if (tempStore.fromItem) {    //  用于drag
-                    if (!tempStore.fromItem.container.responsive) {  // 静态布局下如果pos中是要求static则取消该Item的drag
-                        if (tempStore.fromItem.static) return
-                    }
+                    if (tempStore.fromItem.static) return  // 如果pos中是要求static则取消该Item的drag
                     const fromItem = tempStore.fromItem
                     if ((fromItem.dragIgnoreEls || []).length > 0) {    // 拖拽触发元素的黑名单
                         let isAllowDrag = true
@@ -970,14 +966,17 @@ export default class EditEvent {
                     const mousedownDragCursor = () => {
                         // 鼠标按下状态的样式
                         // console.log(container);
+                        const dragItem = tempStore.moveItem || tempStore.fromItem
                         if (!container) {
                             if (EEF.cursor.cursor !== 'no-drop') EEF.cursor.notDrop()  // 容器外
                         } else if (container) {
-                            if (container.responsive) {
+                            if (overItem) {
+                                if (overItem.static) {
+                                    if (EEF.cursor.cursor !== 'drag-to-item-no-drop') EEF.cursor.dragToItemNoDrop()
+                                }
+                            } else if (!overItem && container.responsive) {
                                 // 拖动中的样式，这里只写的响应式，静态模式拖动中的逻辑在交换算法那里
                                 if (EEF.cursor.cursor !== 'mousedown') EEF.cursor.mousedown()
-                            } else if (!container.responsive) {
-                                // if (!overItem) { }
                             }
                         }
                     }
@@ -995,7 +994,7 @@ export default class EditEvent {
                             if (EEF.cursor.cursor !== 'item-close') EEF.cursor.itemClose()
                         } else if (evClassList.contains('grid-item-resizable-handle')) {
                             if (EEF.cursor.cursor !== 'item-resize') EEF.cursor.itemResize()
-                        } else if (overItem.static && container && !container.responsive) {
+                        } else if (overItem.static && container) {
                             if (EEF.cursor.cursor !== 'static-no-drop') EEF.cursor.staticItemNoDrop()   // 静态模式才notDrop
                         } else {
                             if (EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()

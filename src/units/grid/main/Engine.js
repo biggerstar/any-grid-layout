@@ -17,6 +17,7 @@ export default class Engine {
     layoutManager = null
     container = null
     layoutConfig = null
+    useLayoutConfig = null
     initialized = false
     __temp__ = {
         responsiveFunc: null,
@@ -39,6 +40,7 @@ export default class Engine {
     /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
+        this.useLayoutConfig = useLayoutConfig
         this._syncLayoutConfig(useLayoutConfig.useLayoutConfig)
     }
 
@@ -84,6 +86,7 @@ export default class Engine {
                     if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
                 })
             }
+            // console.log(smartCol,smartRow);
             return {smartCol, smartRow}
         }
         const computeLimitLength = (maxCol, maxRow) => {
@@ -116,7 +119,7 @@ export default class Engine {
                 this.layoutManager.autoRow()
                 const smartInfo = computeSmartRowAndCol(items)
                 // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
-                // maxCol = smartInfo.smartCol  这里因为当前设定col必须要有，所以col从始至终都是固定的，不进行动态调整
+                // maxCol = smartInfo.smartCol  //这里因为当前设定col必须要有，所以col从始至终都是固定的，不进行动态调整
                 maxRow = smartInfo.smartRow
                 const limitInfo = computeLimitLength(maxCol, maxRow)
                 //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
@@ -125,7 +128,21 @@ export default class Engine {
             }
         }
         const staticAutoSetting = () => {
-            const limitInfo = computeLimitLength(container.col, container.row)
+            const useLayoutConfig = this.useLayoutConfig
+            if (useLayoutConfig && !useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
+                //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
+                const smartInfo = computeSmartRowAndCol(items)
+                // console.log(smartInfo);
+                maxCol = smartInfo.smartCol
+                maxRow = smartInfo.smartRow
+                // console.log(useLayoutConfig.layout.col,useLayoutConfig.layout.row);
+                // console.log(maxRow);
+            }
+            // console.log(useLayoutConfig.layout.col,useLayoutConfig.layout.row);
+            if (useLayoutConfig.layout.col) maxCol = container.col
+            if (useLayoutConfig.layout.row) maxRow = container.row
+
+            const limitInfo = computeLimitLength(maxCol, maxRow)
             containerW = maxCol = limitInfo.limitCol
             containerH = maxRow = limitInfo.limitRow
         }
@@ -135,6 +152,7 @@ export default class Engine {
         } else if (!container["responsive"]) {  // 静态模式下老老实实row多少就多少
             staticAutoSetting()
         }
+        // console.log(maxCol,maxRow);
         if (isSetConfig) {
             this.container.col = maxCol
             this.container.row = maxRow
@@ -148,14 +166,14 @@ export default class Engine {
             if (maxCol !== preCol) {
                 this.container.__ownTemp__.preCol = maxCol
                 this.container.eventManager._callback_('colChange', maxCol, preCol, container)
-                const vueColChange = this.container._VueEvents.vueColChange
+                const vueColChange = this.container._VueEvents['vueColChange']
                 if (typeof vueColChange === 'function') vueColChange(maxCol, preCol, container)
 
             }
             if (maxRow !== preRow) {
                 this.container.__ownTemp__.preRow = maxRow
                 this.container.eventManager._callback_('rowChange', maxRow, preRow, container)
-                const vueRowChange = this.container._VueEvents.vueRowChange
+                const vueRowChange = this.container._VueEvents['vueRowChange']
                 if (typeof vueRowChange === 'function') vueRowChange(maxRow, preRow, container)
             }
         }
@@ -330,7 +348,7 @@ export default class Engine {
         // console.log(this.items.filter(item => !item._mounted));
         this.items.forEach((item) => {
             if (!item instanceof Item || !item._mounted || item.element.parentNode === null) return
-            if (item.pos.static === true) staticItems.push(item)
+            if (item.static === true) staticItems.push(item)
             else items.push(item)
         })
         // items.sort((itemA, itemB) => itemA.i - itemB.i)
@@ -390,16 +408,9 @@ export default class Engine {
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
         // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
-        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
-        if (!this.container.autoReorder){
-            this.items.push(item)
-            return true
-        }
-        // console.log(item.pos);
-        // console.log(realLayoutPos);
-        let success = false
-        if (realLayoutPos) {
-            // 用于自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
+        const autoReorder = () => {
+            let success = false
+            // 用于响应式下自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
             // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
             // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
             if (this.items.length <= 1) {
@@ -427,8 +438,26 @@ export default class Engine {
                     }
                 }
             }
+            return success
         }
-        return success
+        // console.log(item.pos);
+        if (item.static) item.pos.autoOnce = false
+        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
+
+        if (!realLayoutPos) {
+            if (!this.container.responsive) {
+                // 静态下如果col和row有一个没有指定
+                if (this.useLayoutConfig && (!this.useLayoutConfig.layout.col || !this.useLayoutConfig.layout.row)) {
+                    this.items.push(item)
+                    return true
+                } else return false  // 只有静态找不到座位才返回false，响应式必然存在座位
+            }
+        }
+        if (this.container.autoReorder) return autoReorder()
+        else {
+            this.items.push(item)
+            return true
+        }
     }
 
     /** 已经挂载后的情况下重新排列响应式Item的顺序，排序后的布局和原本的布局是一样的，只是顺序可能有变化，在拖动交换的时候不会出错
@@ -442,7 +471,7 @@ export default class Engine {
             for (let x = 1; x <= this.container.col; x++) {
                 for (let index = 0; index < this.items.length; index++) {
                     const item = this.items[index]
-                    if (!item ) debugger
+                    if (!item) debugger
                     if (item.pos.x === x && item.pos.y === y) {
                         items.push(item)
                         break
@@ -559,6 +588,7 @@ export default class Engine {
         let realLayoutPos
         let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
         nextStaticPos.i = item.i
+        // console.log(nextStaticPos);
         realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
         // console.log(realLayoutPos);
         if (realLayoutPos !== null) {
@@ -585,6 +615,13 @@ export default class Engine {
      * */
     updateLayout(items = null, ignoreList = []) {
         //更新响应式布局
+        const staticItems = this.items.filter((item) => {
+            if (item.static && item.pos.x && item.pos.y) {
+                return item
+            }
+            return false
+        })
+        // console.log(staticItems);
         if (this.container.responsive) {
             this.reset()
             this._sync()
@@ -592,24 +629,32 @@ export default class Engine {
             let updateItemList = items
             if (items === true || updateItemList === null) updateItemList = []
             items = this.items
-            updateItemList = updateItemList.filter(item => items.includes(item))
+            updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
             if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)
 
             // console.log(items.length, updateItemList);
             const updateResponsiveItemLayout = (item) => {
                 const realPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
+                // console.log(item.static,realPos);
                 if (realPos) {
                     item.updateItemLayout()
                 }
             }
-            updateItemList.forEach((item) => {   // 1.先对要进行更新成员占指定静态位
+
+            staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
                 item.autoOnce = false
-                // console.log(item.pos.x,item.pos.y)
+                // console.log(item.static, item.pos.x, item.pos.y);
                 updateResponsiveItemLayout(item)
             })
 
-            items.forEach(item => {   // 2。再对剩余成员按顺序找位置坐下
-                if (updateItemList.includes(item)) return
+            updateItemList.forEach((item) => {   // 2.先对要进行更新成员占指定静态位
+                // console.log(item.pos.x,item.pos.y)
+                item.autoOnce = false
+                updateResponsiveItemLayout(item)
+            })
+
+            items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
+                if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
                 item.autoOnce = true
                 updateResponsiveItemLayout(item)
             })
@@ -629,15 +674,19 @@ export default class Engine {
             this._sync()
             this.renumber()
             items = this.items
-            updateItemList = updateItemList.filter(item => items.includes(item))
+            updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
             this._sync()
             //----------------------------------------------------//
             const updateStaticItemLayout = (item) => {
                 this._isCanAddItemToContainer_(item, false, true)
                 item.updateItemLayout()
             }
+            staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
+                item.autoOnce = false
+                updateStaticItemLayout(item)
+            })
             items.forEach(item => {  // 1.先把不进行改变的成员占位
-                if (updateItemList.includes(item)) return   //  后面处理
+                if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
                 updateStaticItemLayout(item)
             })
             updateItemList.forEach((item) => {  // 2。再对要进行更新的Item进行查询和改变位置
