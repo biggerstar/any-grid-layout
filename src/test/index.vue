@@ -206,12 +206,12 @@ const layouts = [
   },
   {
     px: 820,
-    col: 6,
+    // col: 6,
     // row:4,
-    margin: [50, 30],
-    // size: [60, 80],
-    autoReorder:false,
-    responsive:true,
+    // margin: [50, 30],
+    size: [60, 80],
+    autoReorder:true,
+    responsive:false,
     data: layoutData11ConcatName,
   },
   {
@@ -268,7 +268,7 @@ const layouts1 = {
 }
 
 const globalConf = {
-  responsive: true,
+  responsive: false,
   // row: 6,
   responseMode: 'default',
   autoGrowRow: true,

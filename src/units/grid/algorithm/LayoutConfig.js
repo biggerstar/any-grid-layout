@@ -134,6 +134,7 @@ export default class LayoutConfig {
                     col = 1
                 } else {
                     col = Math.floor(containerWidth / size[0])
+                    console.log(col)
                     margin[0] = (containerWidth - (size[0] * col)) / col
                 }
             } else if (margin[0] !== null && size[0] !== null) {   // margin[0]和size[0]固定，自动计算col

@@ -117,10 +117,18 @@ export default class Engine {
                     "您如果想要限制Container显示区域且获得内容滚动能力，您可以在Container外部加上一层盒子并设置成overflow:scroll")
             } else if (this.initialized) {   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
                 this.layoutManager.autoRow()
+                const useLayoutConfig = this.useLayoutConfig
                 const smartInfo = computeSmartRowAndCol(items)
                 // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
-                // maxCol = smartInfo.smartCol  //这里因为当前设定col必须要有，所以col从始至终都是固定的，不进行动态调整
-                maxRow = smartInfo.smartRow
+                if (!useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
+                    //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
+                    maxRow = smartInfo.smartRow
+                }
+                if (!useLayoutConfig.layout.margin && !useLayoutConfig.layout.size) {
+                    maxCol = smartInfo.smartCol
+                }
+                if (useLayoutConfig.layout.col) maxCol = container.col
+                if (useLayoutConfig.layout.row) maxRow = container.row
                 const limitInfo = computeLimitLength(maxCol, maxRow)
                 //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
                 containerW = limitInfo.limitCol
@@ -129,13 +137,16 @@ export default class Engine {
         }
         const staticAutoSetting = () => {
             const useLayoutConfig = this.useLayoutConfig
-            if (useLayoutConfig && !useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
-                //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
+            if (useLayoutConfig) {
                 const smartInfo = computeSmartRowAndCol(items)
                 // console.log(smartInfo);
-                maxCol = smartInfo.smartCol
-                maxRow = smartInfo.smartRow
-                // console.log(useLayoutConfig.layout.col,useLayoutConfig.layout.row);
+                if (!useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
+                    //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
+                    maxRow = smartInfo.smartRow
+                }
+                if (!useLayoutConfig.layout.margin && !useLayoutConfig.layout.size) {
+                    maxCol = smartInfo.smartCol
+                }
                 // console.log(maxRow);
             }
             // console.log(useLayoutConfig.layout.col,useLayoutConfig.layout.row);
