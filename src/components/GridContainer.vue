@@ -52,7 +52,7 @@ onMounted(() => {
   nextTick(() => {
     // 必须nextTick在嵌套下且多px的layouts下获取正确的最新width
     // console.log('gridContainer', gridContainer.value.clientWidth, gridContainer.value);
-    useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth)
+    useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth, gridContainer.value.clientHeight)
     gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
     //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
     const customsLayout = cloneDeep(useLayoutConfig.currentLayout)
@@ -75,7 +75,17 @@ onMounted(() => {
   // },3000)
 
   let timer = setTimeout(() => {
-    const exportData = container.exportData()   // 拿到未溢出的最新dataList
+    let exportData = container.exportData(['initialX', 'initialY'])   // 拿到未溢出的最新dataList
+    exportData = exportData.map(itemConfig => {
+      const pos = itemConfig.pos
+      if (!pos.initialX) delete pos.x // 使用X的初始值，也就是外部定义的值
+      if (!pos.initialY) delete pos.y // 使用Y的初始值......
+      delete pos.initialX
+      delete pos.initialY
+      return itemConfig
+    })
+    // console.log(exportData);
+
     if (props.useLayout['data'] && (props.useLayout['data'].length !== exportData.length)) {   // 两者不等于说明有Item添加不成功，最终结果以网页中已经成功添加的为主
       props.useLayout.data = []
       nextTick(() => {
@@ -136,7 +146,7 @@ onMounted(() => {
     }
     // console.log(itemConfig.type);
     props.useLayout['data'].push(itemConfig)
-    nextTick(()=>{
+    nextTick(() => {
       container.updateLayout(true)
     })
   }

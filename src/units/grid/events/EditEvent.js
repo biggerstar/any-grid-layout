@@ -73,39 +73,43 @@ export default class EditEvent {
                         height
                     }
                 }
-                const newResize = limitGrid(resized)    //当前鼠标距离x,y的距离构成的矩形
+                let newResize = limitGrid(resized)    //当前鼠标距离x,y的距离构成的矩形
                 // console.log(fromItem.pos.w,fromItem.pos.h);
 
-                const resizeSpaceLimit = () => {
+                const resizeSpaceLimit = ({w, h}) => {
                     //-----------------响应式和静态的resize最大可调整空间算法实现---------------------//
                     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
                     const nowElSize = limitCloneEl()
                     const maxBlankMatrixLimit = fromItem.container.engine.findStaticBlankMaxMatrixFromItem(fromItem)
                     const updateStyle = {}
                     // console.log(maxBlankMatrixLimit);
-                    if (newResize.w > maxBlankMatrixLimit.minW && newResize.h > maxBlankMatrixLimit.minH) return  // 最低要求限制不能同时超过
-                    if (maxBlankMatrixLimit.maxW >= newResize.w) {    // 横向调整
+                    if (w > maxBlankMatrixLimit.minW && h > maxBlankMatrixLimit.minH) return false // 最低要求限制不能同时超过
+                    if (maxBlankMatrixLimit.maxW >= w) {    // 横向调整
                         updateStyle.width = nowElSize.width + 'px'
-                        fromItem.pos.w = newResize.w
+                        fromItem.pos.w = w
                     } else {
-                        newResize.w = fromItem.pos.w      //必要，将当前实际宽给newResize
+                        w = fromItem.pos.w      //必要，将当前实际宽给newResize
                     }
-                    if (maxBlankMatrixLimit.maxH >= newResize.h) {  // 纵向调整
+                    if (maxBlankMatrixLimit.maxH >= h) {  // 纵向调整
                         updateStyle.height = nowElSize.height + 'px'
-                        fromItem.pos.h = newResize.h
+                        fromItem.pos.h = h
                     } else {
-                        newResize.h = fromItem.pos.h   //必要，将当前实际高给newResize
+                        h = fromItem.pos.h   //必要，将当前实际高给newResize
                     }
                     if (Object.keys(updateStyle).length > 0) {
                         fromItem.updateStyle(updateStyle, tempStore.cloneElement)
                     }
+                    return {
+                        w,
+                        h
+                    }
                     // console.log(fromItem.pos.w,fromItem.pos.h, container.col, fromItem.pos.col);
-
                 }
 
-                resizeSpaceLimit()
+                newResize = resizeSpaceLimit(newResize)
                 if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
+                    if (!newResize) return
                     fromItem.__temp__.resized = newResize
                     if (typeof fromItem._VueEvents.vueItemResizing === 'function') {
                         fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)

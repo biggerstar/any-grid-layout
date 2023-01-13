@@ -66,6 +66,24 @@ export default class LayoutManager {
         // console.log(this._layoutMatrix);
     }
 
+    /**
+     * @param {Number} num  添加的行数
+     * */
+    addCol = (num = null) => {
+        if (!num) return
+        // console.log(this.col);
+        for (let i = 0; i < this._layoutMatrix.length; i++) {  // 遍历row
+            for (let j = 0; j < num; j++) {     // 往col添加指定num个默认值
+                this._layoutMatrix[i].push(false)
+            }
+        }
+        // console.log(this.row);
+        if (this._layoutMatrix.length > 0) {
+            this.col = this._layoutMatrix[0].length
+        }
+        // console.log(this._layoutMatrix);
+    }
+
     /** 删除空白的最后一行,若已被占用不进行删除 TODO 弃用 */
     removeOneRow = () => {
         if (this._layoutMatrix.length === 0) {
@@ -156,7 +174,7 @@ export default class LayoutManager {
         let findItemLayout
         // console.log(posOption);
         // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-        if (auto) {
+        if (!!auto) {
             findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
 
             if (findItemLayout === undefined) return null
@@ -267,10 +285,7 @@ export default class LayoutManager {
         let xPointEnd = this.col - 1
         let yPointStart = 0
         let rowPointData = []
-        if (w > this.col) {
-            console.warn('ITEM:', 'w:' + w, 'x', 'h:' + h, '的宽度', w, '超过栅格大小，自动调整该ITEM宽度为栅格最大宽度', this.col);
-            w = this.col
-        }
+
         let counter = 0
         while (counter++ < 500) {  // counter 加一次索引行数加1,500表示最大500行,正常这够用了吧？
             if (this._layoutMatrix.length < (h + yPointStart)) {

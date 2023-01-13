@@ -107,19 +107,20 @@ export default class Container extends DomFunctionImpl {
     _define() {
         let col = null
         let row = null
+        let responsive = false
         Object.defineProperties(this, {
             col: {
-                get: () => col || 1,
+                get: () => col,
                 set: (v) => {
-                    if (col === v || v <= 0 || !isFinite(v)) return
+                    if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
                     col = v
                     // console.log(col,v,111111111111111111)
                 }
             },
             row: {
-                get: () => row || 1,
+                get: () => row,
                 set: (v) => {
-                    if (row === v || v <= 0 || !isFinite(v)) return
+                    if (row === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
                     row = v
                     // console.log(row,v,222222222222222222)
                 }
@@ -230,8 +231,9 @@ export default class Container extends DomFunctionImpl {
         this.engine.mountAll()
     }
 
-    exportData() {
-        return this.engine.items.map((item) => item.exportConfig())
+
+    exportData(otherFieldList = []) {
+        return this.engine.items.map((item) => item.exportConfig(otherFieldList))
     }
 
     exportUseLayout() {
@@ -313,8 +315,9 @@ export default class Container extends DomFunctionImpl {
         const layoutChangeFun = () => {
             if (!this._mounted) return
             const containerWidth = this.element.clientWidth
-            if (containerWidth <= 0) return
-            let useLayout = this.engine.layoutConfig.genLayoutConfig(containerWidth)
+            const containerHeight = this.element.clientHeight
+            if (containerWidth <= 0 || containerHeight <= 0) return
+            let useLayout = this.engine.layoutConfig.genLayoutConfig(containerWidth, containerHeight)
             let {useLayoutConfig, currentLayout, layout} = useLayout
             // let fullUseLayoutConfig = new LayoutInstantiationField(useLayoutConfig)
             const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)

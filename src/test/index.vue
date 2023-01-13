@@ -1,60 +1,60 @@
 <template>
   <div>
-        <GridContainer
-            class="grid-container con"
-            style="height: 600px"
-            :useLayout="useLayout"
-            :events="events"
-            :config="config"
-            :render="render"
-            :layoutChange="layoutChange"
-            :containerAPI="containerAPI"
-            :components="components"
-        >
-          <gridItem v-for="(item,index) in useLayout.data"
-                    :type = 'item.type ? item.type : "text"'
-                    :item="item"
-                    :key="index"
-                    :pos="item.pos"
-                    :name="item.name.toString()"
-                    :static="item.static"
-                    :nested="item.nested"
-                    :transition="180"
-                    :draggable="true"
-                    :resize="true"
-                    :close="true"
-                    :follow="true"
-                    :dragOut="true"
-                    :dragIgnoreEls="item.dragIgnoreEls"
-                    :dragAllowEls="item.dragAllowEls"
-          >
-            {{item.name}}
-          </gridItem>
-        </GridContainer>
+    <GridContainer
+        class="grid-container con"
+        style="height: 600px"
+        :useLayout="useLayout"
+        :events="events"
+        :config="config"
+        :render="render"
+        :layoutChange="layoutChange"
+        :containerAPI="containerAPI"
+        :components="components"
+    >
+      <gridItem v-for="(item,index) in useLayout.data"
+                :type='item.type ? item.type : "text"'
+                :item="item"
+                :key="index"
+                :pos="item.pos"
+                :name="item.name.toString()"
+                :static="item.static"
+                :nested="item.nested"
+                :transition="180"
+                :draggable="true"
+                :resize="true"
+                :close="true"
+                :follow="true"
+                :dragOut="true"
+                :dragIgnoreEls="item.dragIgnoreEls"
+                :dragAllowEls="item.dragAllowEls"
+      >
+        {{ item.name + item.static ? 'static' : '' }}
+      </gridItem>
+    </GridContainer>
 
 
     <!--    ////////////////////////////////////////-->
-<!--    <GridContainer-->
-<!--        v-if="true"-->
-<!--        class="grid-container con1"-->
-<!--        style="height: 100vh;width: 100vw"-->
-<!--        :config="config1"-->
-<!--        :useLayout="useLayout1"-->
-<!--        :events="events"-->
-<!--        :components="components"-->
-<!--    >-->
-<!--      <gridItem v-for="(item,index) in useLayout1.data"-->
-<!--                :type='item.type ? item.type : "text"'-->
-<!--                :item="item"-->
-<!--                :key=index-->
-<!--                :pos="item.pos"-->
-<!--                :draggable=true-->
-<!--                :resize=true-->
-<!--                :close=true-->
-<!--                :item1="item"-->
-<!--      >-->
-<!--      </gridItem>-->
-<!--    </GridContainer>-->
+    <!--    <GridContainer-->
+    <!--        v-if="true"-->
+    <!--        class="grid-container con1"-->
+    <!--        style="height: 100vh;width: 100vw"-->
+    <!--        :config="config1"-->
+    <!--        :useLayout="useLayout1"-->
+    <!--        :events="events"-->
+    <!--        :components="components"-->
+    <!--    >-->
+    <!--      <gridItem v-for="(item,index) in useLayout1.data"-->
+    <!--                :type='item.type ? item.type : "text"'-->
+    <!--                :item="item"-->
+    <!--                :key=index-->
+    <!--                :pos="item.pos"-->
+    <!--                :draggable=true-->
+    <!--                :resize=true-->
+    <!--                :close=true-->
+    <!--                :item1="item"-->
+    <!--      >-->
+    <!--      </gridItem>-->
+    <!--    </GridContainer>-->
 
 
   </div>
@@ -84,12 +84,16 @@ const layoutData1 = layoutDataConcatName.filter((item, index) => index < 10)
 const layoutData2 = layoutDataConcatName.filter((item, index) => index < 15)
 const layoutData3 = layoutDataConcatName.filter((item, index) => index < 25)
 const layoutData4 = layoutDataConcatName.filter((item, index) => index < 32)
-const layoutData5 = layoutDataConcatName.filter((item, index) => index < 15)
+const layoutData5 = layoutDataConcatName.filter((item, index) => index < 40)
 
 const events = {
   error(err) {
     // if (["itemLimitError"].includes(err.name)) return
-    // console.log(err);
+    console.log(err);
+  },
+  warn(warn) {
+    // if (["itemLimitError"].includes(err.name)) return
+    console.log(warn);
   },
   containerMounted(container) {
     // Container成功挂载事件
@@ -188,51 +192,70 @@ const events = {
   },
 }
 const layouts = [
-  {
-    px: 1200,
-    col: 9,
-    // margin: [30, 30],
-    // size: [120, 80],
-    // minCol: 9,
-    data: layoutData5,
-  },
-  {
-    px: 1000,
-    // col: 7,
-    // margin: [20, 20],
-    size: [90, 80],
-    // minCol: 7,
-    data: layoutData4,
-  },
-  {
-    px: 820,
-    // col: 6,
-    // row:4,
-    // margin: [50, 30],
-    size: [60, 80],
-    autoReorder:true,
-    responsive:false,
-    data: layoutData11ConcatName,
-  },
+  // {
+  //   px: 1200,
+  //   // col: 9,
+  //   // row: 20,
+  //   // margin: [30, 10],
+  //   // marginX:50,
+  //   marginY: 20,
+  //   sizeWidth: 120,
+  //   // cover:true,
+  //   sizeHeight: 100,
+  //   // size:[120,null],
+  //   responsive: true,
+  //   // autoReorder:true,
+  //   // size: [120, 80],
+  //   // minCol: 9,
+  //   data: layoutData5,
+  // },
+  // {
+  //   px: 1000,
+  //   // col: 7,
+  //   // margin: [20, 20],
+  //   size: [90, 80],
+  //   // minCol: 7,
+  //   data: layoutData4,
+  // },
+  // {
+  //   px: 820,
+  //   // col: 6,
+  //   // row:4,
+  //   // margin: [50, 30],
+  //   size: [60, 80],
+  //   // sizeWidth: 120,
+  //
+  //   // autoReorder: true,
+  //   responsive: false,
+  //   data: layoutData11ConcatName,
+  // },
   {
     px: 560,
     // col: 6,
     // margin: [20, 20],
-    size: [80, 50],
+    size: [30, 50],
     data: layoutData2,
   },
   {
     px: 360,
-    col: 4,
+    // col: 4,
+    // row:3,
     // margin: [0, 0],
-    // size: [36, 80],
+    size: [40, 60],
+    // responsive: true,
     data: layoutData1,
   },
   {
     px: 200,
-    col: 3,
+    // col: 3,
+    row:20,
     // margin: [5, 5],
     // size: [12, 30],
+    // margin: [null, 5],
+    // size: [null, 30],
+    autoReorder:true,
+    responsive: true,
+
     data: layoutData,
   },
 ]
@@ -268,7 +291,7 @@ const layouts1 = {
 }
 
 const globalConf = {
-  responsive: false,
+  responsive: true,
   // row: 6,
   responseMode: 'default',
   autoGrowRow: true,

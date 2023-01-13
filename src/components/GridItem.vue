@@ -147,7 +147,7 @@ const reSetContainerSize = () => {
   if (!container) return
   const oldCol = container.col
   const oldRow = container.row
-  const nowContainerSize = container.engine.autoSetColAndRows(container)
+  const nowContainerSize = container.engine.layoutConfig.autoSetColAndRows(container)
   if (oldCol !== nowContainerSize.col || oldRow !== nowContainerSize.row) {
     container.updateContainerStyleSize()
   }

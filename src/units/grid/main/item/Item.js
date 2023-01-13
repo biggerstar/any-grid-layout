@@ -45,6 +45,7 @@ export default class Item extends DomFunctionImpl {
     classList = []
     attr = []
     pos = {}
+    autoOnce = null
     edit = null   // 该Item是否正在被编辑(只读)
     nested = false
     parentElement = null
@@ -162,12 +163,14 @@ export default class Item extends DomFunctionImpl {
 
     }
 
-    /** 导出当前Item的配置，忽略和默认配置一样的字段 */
-    exportConfig = () => {
+    /** 导出当前Item的配置，忽略和默认配置一样的字段
+     * @param otherFieldList {Array} 要导出的除了默认以外其他存在的字段
+     * */
+    exportConfig = (otherFieldList) => {
         const item = this
         const exposeConfig = {}
         let exposePos = {}
-        exposePos = item.pos.export()
+        exposePos = item.pos.export(otherFieldList)
         if (this.responsive) {
             delete exposePos.x
             delete exposePos.y
@@ -188,7 +191,7 @@ export default class Item extends DomFunctionImpl {
             if (item.transition.time !== 180) transition.time = item.transition.time
             exposeConfig.transition = transition
         } else {
-            if (item.transition.time !== 180){
+            if (item.transition.time !== 180) {
                 exposeConfig.transition = item.transition.time
             }
         }
@@ -331,7 +334,7 @@ export default class Item extends DomFunctionImpl {
     /**  @return  获取该Item 当前的宽度 */
     nowWidth = (w) => {
         let marginWidth = 0
-        const nowW = w ? w : this.pos.w
+        const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
         if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
         // console.log(this.pos.w, marginWidth);
         // if (this.pos.i === 0) console.log(this,this.pos.x);
@@ -341,7 +344,7 @@ export default class Item extends DomFunctionImpl {
     /**  @return  获取该Item 当前的高度 */
     nowHeight = (h) => {
         let marginHeight = 0
-        const nowH = h ? h : this.pos.h
+        const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
         if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
         // console.log(this.pos.h, marginHeight);
         return (nowH * this.size[1]) + marginHeight

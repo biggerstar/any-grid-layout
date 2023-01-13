@@ -13,18 +13,19 @@ export default class LayoutInstantiationField {
     marginX = null    //  如果和margin[0]优先级大于 marginX
     marginY = null    //  如果和margin[1]优先级大于 marginY
     size = [null, null]   //size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null
-    sizeWidth = null    //  如果和size[0]优先级大于 sizeWidth
-    sizeHeight = null   //  如果和size[1]优先级大于 sizeHeight
+    sizeWidth = null    //  如果和size[0]优先级大于 sizeWidth,在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
+    sizeHeight = null   //  如果和size[1]优先级大于 sizeHeight，sizeHeight,row,marginY都未指定的情况下将和sizeWidth大小一致
     minCol = null
     maxCol = null
     minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
+    // firstAutoLoad = true
     autoGrowRow = true // 响应式下resize自动撑开Row
     autoReorder = true   // 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
     // autoGrowCol = true     // 暂未支持
 
-    ratioCol = 0.1    // (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定)margin和size自动分配margin/size的比例 1:1 ratio值为1
-    ratioRow = 0.1    // (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定)......
+    ratioCol = 0.1    // (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),或者没有col只有margin情况下， margin和size自动分配margin/size的比例 1:1 ratio值为1
+    ratioRow = 0.1    // (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定),或者没有col只有margin情况下，......
     followScroll = true  // 是否在有上层滚动盒子包裹住容器的时候拖动到容器边缘时进行自动滚动
     sensitivity = 0.45   //  拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
     itemLimit = {} // 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制

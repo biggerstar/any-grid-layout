@@ -21,6 +21,7 @@ export default class Engine {
     initialized = false
     __temp__ = {
         responsiveFunc: null,
+        firstLoaded: false,
         staticIndexCount: 0
     }
 
@@ -40,6 +41,7 @@ export default class Engine {
     /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
         let useLayoutConfig = this.layoutConfig.genLayoutConfig()
+        this.layoutConfig.autoSetColAndRows(this.container)
         this.useLayoutConfig = useLayoutConfig
         this._syncLayoutConfig(useLayoutConfig.useLayoutConfig)
     }
@@ -53,7 +55,6 @@ export default class Engine {
         merge(this.container, useLayoutConfig, false, ['events'])      //  更新同步当前Container中的属性值
         // console.log(useLayoutConfig);
         // console.log(this.container.eventManager)
-        this.autoSetColAndRows(this.container)
         this.items.forEach(item => {
             //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
             merge(item, {
@@ -63,138 +64,6 @@ export default class Engine {
         })
     }
 
-    /** 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
-     * 这里Container挂载(mount)的时候会执行两次，一次是预同步容器大小信息，一次是执行最终挂载后容器信息，可以算是没架构好，
-     * 后面有机会再优化吧
-     * @param {Container} container 容器实例
-     * @param {Boolean} isSetConfig 是否设置最终col和row的运算结果
-     * @return {Object} 一个包含最大col和row，containerW，ContainerH的集合
-     * TODO 优化初始化执行两次问题，方案是收集所有Item后再调用该函数进行同步
-     * */
-    autoSetColAndRows(container, isSetConfig = true) {
-        let maxCol = container.col
-        let maxRow = container.row
-        let containerW = maxCol
-        let containerH = maxRow
-        const items = container.engine.items
-        const computeSmartRowAndCol = (items) => {
-            let smartCol = 1
-            let smartRow = 1
-            if (items.length > 0) {
-                items.forEach((item) => {
-                    if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1
-                    if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
-                })
-            }
-            // console.log(smartCol,smartRow);
-            return {smartCol, smartRow}
-        }
-        const computeLimitLength = (maxCol, maxRow) => {
-            //-----------------------------Col确定---------------------------------//
-            if (container["minCol"] && container["maxCol"] && (container["minCol"] > container["maxCol"])) {
-                maxCol = container["maxCol"]
-                console.warn("minCol指定的值大于maxCol,将以maxCol指定的值为主")
-            } else if (container["maxCol"] && maxCol > container["maxCol"]) maxCol = container["maxCol"]
-            else if (container["minCol"] && maxCol < container["minCol"]) maxCol = container["minCol"]
-
-            //-----------------------------Row确定---------------------------------//
-            if (container["minRow"] && container["maxRow"] && (container["minRow"] > container["maxRow"])) {
-                maxRow = container["maxRow"]
-                console.warn("minRow指定的值大于maxRow,将以maxRow指定的值为主")
-            } else if (container["maxRow"] && maxRow > container["maxRow"]) maxRow = container["maxRow"]
-            else if (container["minRow"] && maxRow < container["minRow"]) maxRow = container["minRow"]
-            return {
-                limitCol: maxCol,
-                limitRow: maxRow
-            }
-        }
-        const responsiveAutoSetting = () => {
-            if (!this.initialized) {   // 响应式模式第一次添加,为了固定初始row值，并在addItem部分去除溢出该row值的Item
-                if (!container.row) this.layoutManager.autoRow()
-                else maxRow = container.row
-                if (container["maxRow"]) console.warn("【响应式】模式中不建议使用maxRow,您如果使用该值，" +
-                    "只会限制容器盒子(Container)的高度,不能限制成员排列的row值 因为响应式设计是能自动管理容器的高度，" +
-                    "您如果想要限制Container显示区域且获得内容滚动能力，您可以在Container外部加上一层盒子并设置成overflow:scroll")
-            } else if (this.initialized) {   //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
-                this.layoutManager.autoRow()
-                const useLayoutConfig = this.useLayoutConfig
-                const smartInfo = computeSmartRowAndCol(items)
-                // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
-                if (!useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
-                    //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
-                    maxRow = smartInfo.smartRow
-                }
-                if (!useLayoutConfig.layout.margin && !useLayoutConfig.layout.size) {
-                    maxCol = smartInfo.smartCol
-                }
-                if (useLayoutConfig.layout.col) maxCol = container.col
-                if (useLayoutConfig.layout.row) maxRow = container.row
-                const limitInfo = computeLimitLength(maxCol, maxRow)
-                //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
-                containerW = limitInfo.limitCol
-                containerH = limitInfo.limitRow
-            }
-        }
-        const staticAutoSetting = () => {
-            const useLayoutConfig = this.useLayoutConfig
-            if (useLayoutConfig) {
-                const smartInfo = computeSmartRowAndCol(items)
-                // console.log(smartInfo);
-                if (!useLayoutConfig.layout.col || !useLayoutConfig.layout.row) {
-                    //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
-                    maxRow = smartInfo.smartRow
-                }
-                if (!useLayoutConfig.layout.margin && !useLayoutConfig.layout.size) {
-                    maxCol = smartInfo.smartCol
-                }
-                // console.log(maxRow);
-            }
-            // console.log(useLayoutConfig.layout.col,useLayoutConfig.layout.row);
-            if (useLayoutConfig.layout.col) maxCol = container.col
-            if (useLayoutConfig.layout.row) maxRow = container.row
-
-            const limitInfo = computeLimitLength(maxCol, maxRow)
-            containerW = maxCol = limitInfo.limitCol
-            containerH = maxRow = limitInfo.limitRow
-        }
-
-        if (container["responsive"]) {    // 响应模式会检测第一次给出的row进行初始容器固定
-            responsiveAutoSetting()
-        } else if (!container["responsive"]) {  // 静态模式下老老实实row多少就多少
-            staticAutoSetting()
-        }
-        // console.log(maxCol,maxRow);
-        if (isSetConfig) {
-            this.container.col = maxCol
-            this.container.row = maxRow
-            this.container.containerW = containerW
-            this.container.containerH = containerH
-            this.layoutManager.setColNum(maxCol)
-            this.layoutManager.setRowNum(maxRow)
-            this.layoutManager.addRow(maxRow - this.layoutManager._layoutMatrix.length)
-            const preCol = this.container.__ownTemp__.preCol
-            const preRow = this.container.__ownTemp__.preRow
-            if (maxCol !== preCol) {
-                this.container.__ownTemp__.preCol = maxCol
-                this.container.eventManager._callback_('colChange', maxCol, preCol, container)
-                const vueColChange = this.container._VueEvents['vueColChange']
-                if (typeof vueColChange === 'function') vueColChange(maxCol, preCol, container)
-
-            }
-            if (maxRow !== preRow) {
-                this.container.__ownTemp__.preRow = maxRow
-                this.container.eventManager._callback_('rowChange', maxRow, preRow, container)
-                const vueRowChange = this.container._VueEvents['vueRowChange']
-                if (typeof vueRowChange === 'function') vueRowChange(maxRow, preRow, container)
-            }
-        }
-        return {
-            col: maxCol,
-            row: maxRow,
-            containerW,
-            containerH
-        }
-    }
 
     /** 寻找某个指定矩阵范围内包含的所有Item,下方四个变量构成一个域范围;
      *  Item可能不完全都在该指定矩阵范围内落点，只是有一部分落在范围内，该情况也会被查找收集起来
@@ -259,7 +128,7 @@ export default class Engine {
         return pointItem
     }
 
-    /** 在静态布局中通过指定的Item找到该Item在矩阵中最大的resize空间，函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
+    /** 在静态和响应式布局中通过指定的Item找到该Item在矩阵中最大的resize空间，函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
      * 数据来源于this.items的实时计算
      * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
      * @return {{maxW: number, maxH: number,minW: number, minH: number}}  maxW最大伸展宽度，maxH最大伸展高度,minW最小伸展宽度，maxH最小伸展高度
@@ -276,6 +145,7 @@ export default class Engine {
         for (let i = 0; i < this.items.length; i++) {
             const item = this.items[i]
             const pos = item.pos
+            if (this.container.responsive && !item.static) continue   // 响应式布局中只找限定static的Item空间
             if (itemPoint === item) continue
             if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue   // 上和左在x,y点外的Item不考虑
             //  思路：右方向最大(maxW && minH) :上方向最大(minW && maxH)
@@ -395,18 +265,13 @@ export default class Engine {
         else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`, item, item)
         else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
         else {
-            // item.pos.i = item.i = this.__temp__.staticIndexCount++  // 有bug
-            // console.log(item.pos.autoOnce );
-            if (!this.container._mounted || this.container.responsive) item.pos.autoOnce = true   // 所有响应式都自动排列
-            else if (!this.container.responsive) {
-                if (!item._mounted && item.pos.autoOnce === null) item.pos.autoOnce = true  // 静态且未挂载状态的话自动排列
-            }
-
+            item.autoOnce = !(item.pos.x && item.pos.y)
             const success = this.push(item)
             if (success) {
+                // console.log(this.layoutManager._layoutMatrix);
                 eventManager._callback_('addItemSuccess', item)
             } else {
-                if (!this.container.responsive) eventManager._error_('ContainerOverflowError',
+                eventManager._error_('ContainerOverflowError',
                     "getErrAttr=>[name|message] 容器溢出，只有静态模式下会出现此错误,您可以使用error事件函数接收该错误，" +
                     "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
                     , item, item)
@@ -437,6 +302,7 @@ export default class Engine {
                     if (nextIndexItem) {
                         const nowPos = nowIndexItem.pos
                         const nextPos = nextIndexItem.pos
+                        if (!realLayoutPos) return false
                         if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
                             this.insert(item, i + 1)
                             success = true
@@ -451,24 +317,25 @@ export default class Engine {
             }
             return success
         }
-        // console.log(item.pos);
-        if (item.static) item.pos.autoOnce = false
-        const realLayoutPos = this._isCanAddItemToContainer_(item, item.pos.autoOnce, true)
-
-        if (!realLayoutPos) {
-            if (!this.container.responsive) {
-                // 静态下如果col和row有一个没有指定
-                if (this.useLayoutConfig && (!this.useLayoutConfig.layout.col || !this.useLayoutConfig.layout.row)) {
-                    this.items.push(item)
-                    return true
-                } else return false  // 只有静态找不到座位才返回false，响应式必然存在座位
+        //-----------------------添加新Item的逻辑---------------------------//
+        let realLayoutPos = null
+        if (item.autoOnce === false) {
+            // 如果是指定了x和y，必然能添加进去
+            this.items.push(item)
+            this.layoutConfig.autoSetColAndRows(this.container)
+            this._isCanAddItemToContainer_(item, item.autoOnce, true)
+            return true
+        } else {
+            realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
+            if (!realLayoutPos) return false
+            if (this.container.autoReorder && this.container.responsive) {
+                return autoReorder()  // 只有响应式下生效
+            } else {
+                this.items.push(item)
+                return true
             }
         }
-        if (this.container.autoReorder) return autoReorder()
-        else {
-            this.items.push(item)
-            return true
-        }
+
     }
 
     /** 已经挂载后的情况下重新排列响应式Item的顺序，排序后的布局和原本的布局是一样的，只是顺序可能有变化，在拖动交换的时候不会出错
@@ -590,6 +457,62 @@ export default class Engine {
         })
     }
 
+    /**  检查该Item在某个位置是否溢出，溢出的话则进行修改
+     *  @param item {Item} item
+     *  @param modify {Boolean} 是否对该溢出容器的Item大小进行修改成适配容器大小的尺寸
+     * */
+    checkOverflow(item, modify = true) {
+        const pos = item.pos
+        const w = pos.w
+        const h = pos.h
+        let itemResized = false
+        const newW = item.container.col - pos.x + 1
+        const newH = item.container.row - pos.y + 1
+        // if (item.name === '87') {
+        //     // console.log(item.pos.w,item.pos.h,item.pos.tempW,item.pos.tempH);
+        //     console.log(newH, h, pos.y, this.container.row);
+        // }
+        if (w + pos.x - 1 > this.container.col || pos.tempW) {
+            if (!this.container.responsive) {
+                if (pos.tempW !== newW && pos.tempW <= w) itemResized = true
+                if (modify && w > pos.tempW && newW <= w) {
+                    if (newW <= w) pos.tempW = newW
+                }
+            }
+        }
+        if (h + pos.y - 1 > this.container.row || pos.tempH) {
+            if (!this.container.responsive) {
+                if (pos.tempH !== newH && pos.tempH <= h) itemResized = true
+                if (modify && h > pos.tempH && newH <= h) {
+                    if (newH <= h) pos.tempH = newH
+                }
+            }
+        }
+
+        if (w > this.container.col || pos.tempW) { // 一列只有一个成员，w比容器都大
+            if (pos.tempW !== newW && pos.tempW <= w) itemResized = true
+            if (modify && w > pos.tempW && newW <= w) {
+                if (newW <= w) pos.tempW = newW
+            }
+        }
+        if (h > this.container.row || pos.tempH) {  // 一行只有一个成员，y比容器都大
+            if (pos.tempH !== newH && pos.tempH <= h) itemResized = true
+            if (modify && h > pos.tempH && newH <= h) {
+                if (newH <= h) pos.tempH = newH
+            }
+        }
+
+        if (itemResized) {
+            this.container.eventManager._warn_('temporaryResetItemSize',
+                'ITEM: ' + 'w:' + w + ' h:' + h
+                + '超过栅格大小，临时调整该ITEM尺寸为'
+                + 'w:' + (pos.tempW ? pos.tempW : pos.w) + ' h:'
+                + (pos.tempH ? pos.tempH : pos.h)
+                + '进行适配容器空间,此时pos.w和pos.h还是原来的尺寸,'
+                + '在容器中一但存在足够空间则该Item便会恢复原来的尺寸', item)
+        }
+    }
+
     /**  是否可以添加Item到当前的Container,请注意addSeat为true时该操作将会影响布局管理器中的_layoutMatrix,每次检查成功将会占用该检查成功所指定的空间
      *  @param item {Item}
      *  @param responsive {Boolean}  是否响应式还是静态布局
@@ -599,22 +522,26 @@ export default class Engine {
         let realLayoutPos
         let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
         nextStaticPos.i = item.i
+        const cloneNextStaticPos = Object.assign({}, nextStaticPos)
+        if (item.pos.tempW) cloneNextStaticPos.w = item.pos.tempW
+        if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
         // console.log(nextStaticPos);
-        realLayoutPos = this.layoutManager.findItem(nextStaticPos, responsive)
-        // console.log(realLayoutPos);
+        realLayoutPos = this.layoutManager.findItem(cloneNextStaticPos, responsive)
+
         if (realLayoutPos !== null) {
             if (addSeat) {
                 this.layoutManager.addItem(realLayoutPos)
-                item.pos = new ItemPos(merge(this._genItemPosArg(item), realLayoutPos))
+                realLayoutPos.w = nextStaticPos.w
+                realLayoutPos.h = nextStaticPos.h
+                merge(item.pos, Object.assign(this._genItemPosArg(item), realLayoutPos))
                 item.pos.nextStaticPos = null
-                item.pos.autoOnce = false
+                item.autoOnce = false
             }
             return realLayoutPos
         } else {
             return null
         }
     }
-
 
     /**  根据是否响应式布局或者静态布局更新容器内的Item布局
      *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
@@ -625,85 +552,58 @@ export default class Engine {
      *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
      * */
     updateLayout(items = null, ignoreList = []) {
-        //更新响应式布局
+        //---------------------------更新响应式布局-------------------------------//
         const staticItems = this.items.filter((item) => {
-            if (item.static && item.pos.x && item.pos.y) {
+            if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {
                 return item
             }
             return false
         })
-        // console.log(staticItems);
-        if (this.container.responsive) {
-            this.reset()
-            this._sync()
-            this.renumber()
-            let updateItemList = items
-            if (items === true || updateItemList === null) updateItemList = []
-            items = this.items
-            updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
-            if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)
 
-            // console.log(items.length, updateItemList);
-            const updateResponsiveItemLayout = (item) => {
-                const realPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
-                // console.log(item.static,realPos);
-                if (realPos) {
-                    item.updateItemLayout()
-                }
-            }
-
-            staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
-                item.autoOnce = false
-                // console.log(item.static, item.pos.x, item.pos.y);
-                updateResponsiveItemLayout(item)
-            })
-
-            updateItemList.forEach((item) => {   // 2.先对要进行更新成员占指定静态位
-                // console.log(item.pos.x,item.pos.y)
-                item.autoOnce = false
-                updateResponsiveItemLayout(item)
-            })
-
-            items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
-                if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
-                item.autoOnce = true
-                updateResponsiveItemLayout(item)
-            })
-            // console.log(items);
-            // for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
-            //     console.log(this.layoutManager._layoutMatrix[i]);
-            // }
-            // console.log('-----------------------------------------');
-            this.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-        } else if (!this.container.responsive) {
-            //更新静态布局
-            let updateItemList = []
-            if (items === null) updateItemList = []
-            else if (Array.isArray(items)) updateItemList = items
-            else if (items !== true && updateItemList.length === 0) return
-            this.reset()
-            this._sync()
-            this.renumber()
-            items = this.items
-            updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
-            this._sync()
-            //----------------------------------------------------//
-            const updateStaticItemLayout = (item) => {
-                this._isCanAddItemToContainer_(item, false, true)
-                item.updateItemLayout()
-            }
-            staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
-                item.autoOnce = false
-                updateStaticItemLayout(item)
-            })
-            items.forEach(item => {  // 1.先把不进行改变的成员占位
-                if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
-                updateStaticItemLayout(item)
-            })
-            updateItemList.forEach((item) => {  // 2。再对要进行更新的Item进行查询和改变位置
-                updateStaticItemLayout(item)
-            })
+        let updateItemList = []
+        if (items === null) updateItemList = []
+        else if (Array.isArray(items)) updateItemList = items
+        else if (items !== true && updateItemList.length === 0) return
+        if (items === true) items = this.items
+        this.reset()
+        this._sync()
+        this.renumber()
+        updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
+        if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)
+        // console.log(items.length, updateItemList);
+        const updateItemLayout = (item) => {
+            const realPos = this._isCanAddItemToContainer_(item, !!item.autoOnce, true)
+            this.checkOverflow(item)
+            // console.log(item.static,realPos);
+            item.updateItemLayout()
         }
+
+        staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
+            item.autoOnce = false
+            // console.log(item.static, item.pos.x, item.pos.y);
+            updateItemLayout(item)
+        })
+
+        updateItemList.forEach((item) => {   // 2.先对要进行更新成员占指定静态位
+            // console.log(item.pos.x,item.pos.y)
+            item.autoOnce = false
+            updateItemLayout(item)
+        })
+
+        items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
+            if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
+            if (this.container.responsive) item.autoOnce = true
+            updateItemLayout(item)
+        })
+
+        // console.log(items);
+        // for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
+        //     console.log(this.layoutManager._layoutMatrix[i]);
+        // }
+        // console.log('-----------------------------------------');
+
+        //---------------------------更新数据和存储-------------------------------//
+        this.layoutConfig.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
         this.container.layout.data = this.container.exportData()   // 将最新data同步到当前使用的layout中
         this.container.updateContainerStyleSize()
         const genBeforeSize = (container) => {
