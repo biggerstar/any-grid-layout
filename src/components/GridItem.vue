@@ -50,6 +50,7 @@ const props = defineProps({
   close: {required: false, type: Boolean, default: undefined},
   follow: {required: false, type: Boolean, default: undefined},
   dragOut: {required: false, type: Boolean, default: undefined},
+  resizeOut: {required: false, type: Boolean, default: undefined},
   dragIgnoreEls: {required: false, type: Array, default: undefined},
   dragAllowEls: {required: false, type: Array, default: undefined},
   itemAPI: {required: false, type: Object, default: {}}, // 获取Item的实例
@@ -105,6 +106,9 @@ const watchItemConfig = () => {
   })
   watch(() => props.dragOut, (val) => {
     if (typeof val === 'boolean') selfItem.dragOut = val
+  })
+  watch(() => props.resizeOut, (val) => {
+    if (typeof val === 'boolean') selfItem.resizeOut = val
   })
   watch(() => props.dragIgnoreEls, (val) => {
     if (Array.isArray(val)) selfItem.dragIgnoreEls = val

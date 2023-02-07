@@ -20,7 +20,12 @@ export default class LayoutInstantiationField {
     minRow = null  // 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     maxRow = null  // 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
     // firstAutoLoad = true
-    autoGrowRow = true // 响应式下resize自动撑开Row
+
+    autoGrowRow = true // 响应式下resize自动撑开Row，内部暂未进行实现  TODO  实现该功能，有空做的优雅一点
+    //   autoGrowRow for vue 外部开发者主动设置自动增长容器大小演示，作用于leaveContainerArea事件，自动缩小内部会自动计算
+    //   col 自动增长似乎有点问题，能用就用不能就不用。。。。。。。
+    //   const container = containerAPI.getContainer()
+    //   container.row =  container.row + 1
     autoReorder = true   // 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
     // autoGrowCol = true     // 暂未支持
 

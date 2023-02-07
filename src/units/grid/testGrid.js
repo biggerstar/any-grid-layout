@@ -13,6 +13,11 @@ ItemAlreadyRemove
 
 `
 
+//  该文件用于函数式开发测试，vue组件开发形式使用vue模板开发，和该文件无关
+
+
+
+
 const container = new Container({
     el: '#container',
     // el: document.getElementById('container'),

@@ -21,7 +21,8 @@ export default class Item extends DomFunctionImpl {
     name = '' //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
     type = null //  该Item的类型，可用于区分组件
     follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-    dragOut = true     // 是否可以将Item拖动到容器外
+    dragOut = true    // 是否可以将Item拖动到容器外
+    resizeOut = false     // 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
     className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
     dragIgnoreEls = []   // 【不】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
     dragAllowEls = []    // 【只】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
@@ -179,7 +180,7 @@ export default class Item extends DomFunctionImpl {
         Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
             if (item[field] !== false) exposeConfig[field] = item[field]
         }))
-        Array.from(['follow', 'dragOut', 'exchange']).forEach((field => {
+        Array.from(['follow', 'dragOut', 'resizeOut', 'exchange']).forEach((field => {
             if (item[field] !== true) exposeConfig[field] = item[field]
         }))
         if (typeof item.name === 'string') exposeConfig.name = item.name

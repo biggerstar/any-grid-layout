@@ -47,11 +47,12 @@ export default class EditEvent {
                     // w，h是新的resize克隆元素对应生成大小的w，和h
                     const pos = fromItem.pos
                     //----------------检测改变的大小是否符合用户限制 -------------//
-                    if ((w + pos.x) > container.col) w = container.col - pos.x + 1     //item调整大小时在容器右边边界超出时进行限制
+                    if (fromItem.resizeOut) {
+                        if ((w + pos.x) > container.col) w = container.col - pos.x + 1     //item调整大小时在容器右边边界超出时进行限制
+                    }
                     if (w < pos.minW) w = pos.minW
                     if (w > pos.maxW && pos.maxW !== Infinity) w = pos.maxW
-
-                    if (!fromItem.container.autoGrowRow) {
+                    if (fromItem.resizeOut) {
                         if ((h + pos.y) > container.row) h = container.row - pos.y + 1
                     }
                     if (h < pos.minH) h = pos.minH
@@ -75,7 +76,7 @@ export default class EditEvent {
                 }
                 let newResize = limitGrid(resized)    //当前鼠标距离x,y的距离构成的矩形
                 // console.log(fromItem.pos.w,fromItem.pos.h);
-
+                // console.log(newResize);
                 const resizeSpaceLimit = ({w, h}) => {
                     //-----------------响应式和静态的resize最大可调整空间算法实现---------------------//
                     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
@@ -107,6 +108,7 @@ export default class EditEvent {
                 }
 
                 newResize = resizeSpaceLimit(newResize)
+
                 if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
                 if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
                     if (!newResize) return
@@ -114,7 +116,6 @@ export default class EditEvent {
                     if (typeof fromItem._VueEvents.vueItemResizing === 'function') {
                         fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)
                     }
-
                     fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
                     tempStore.fromContainer.updateLayout([fromItem])
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
@@ -255,18 +256,24 @@ export default class EditEvent {
                 let fromItem = tempStore.fromItem
                 const moveItem = tempStore.moveItem
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
-                if (dragItem && dragItem.container === container) return   // 非常必要，防止嵌套拖动容器互相包含
-                if (tempStore.isLeftMousedown) {
-                    Sync.run({
-                        func: () => {
-                            container.eventManager._callback_('enterContainerArea', container, tempStore.exchangeItems.new)
-                            tempStore.exchangeItems.new = null
-                            tempStore.exchangeItems.old = null
-                        },
-                        rule: () => tempStore.exchangeItems.new,
-                        intervalTime: 2, // 每2ms查询是否vue的新Item创建成功,
-                        timeout: 200
-                    })
+                if (tempStore.isLeftMousedown) {  //   事件响应必须在前
+                    if (dragItem && dragItem.container !== container) {
+                        // 跨容器进入不同域,异步操作是为了获取到新容器vue创建的新Item
+                        Sync.run({
+                            func: () => {
+                                container.eventManager._callback_('enterContainerArea', container, tempStore.exchangeItems.new)
+                                tempStore.exchangeItems.new = null
+                                tempStore.exchangeItems.old = null
+                            },
+                            rule: () => tempStore.exchangeItems.new,
+                            intervalTime: 2, // 每2ms查询是否vue的新Item创建成功,
+                            timeout: 200
+                        })
+                    } else {
+                        // 同容器拖动未进入其他容器
+                        container.eventManager._callback_('enterContainerArea', container, dragItem)
+                        if (dragItem && dragItem.container === container) return   // 非常必要，防止嵌套拖动容器互相包含
+                    }
                 }
                 container.__ownTemp__.firstEnterUnLock = true
                 tempStore.moveContainer = container
@@ -322,6 +329,7 @@ export default class EditEvent {
                         static: dragItem.static,
                         follow: dragItem.follow,
                         dragOut: dragItem.dragOut,
+                        resizeOut: dragItem.resizeOut,
                         className: dragItem.className,
                         dragIgnoreEls: dragItem.dragIgnoreEls,
                         dragAllowEls: dragItem.dragAllowEls,

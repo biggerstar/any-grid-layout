@@ -25,6 +25,7 @@
                 :close="true"
                 :follow="true"
                 :dragOut="true"
+                :resizeOut="false"
                 :dragIgnoreEls="item.dragIgnoreEls"
                 :dragAllowEls="item.dragAllowEls"
       >
@@ -63,6 +64,8 @@
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw, getCurrentInstance} from 'vue'
 import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
 import Test from "@/components/Test.vue";
+import GridContainer from "@/components/GridContainer.vue";
+import GridItem from "@/components/GridItem.vue";
 
 
 const layoutDataConcatName = layoutData.map((pos, index) => {
@@ -174,12 +177,16 @@ const events = {
   enterContainerArea(container, item) {
     // 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null
     // console.log(container, item);
+    // console.log(container.row);
+    // const container1 = containerAPI.getContainer()
+    // container1.row =  container1.row - 1
   },
   leaveContainerArea(container, item) {
     // 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null
     // console.log(container, item);
-    // useLayout.row =  container.row + 1
-    // useLayout.col = container.col + 1
+    // console.log(container.row);
+    const container1 = containerAPI.getContainer()
+    container1.row =  container1.row + 1
 
   },
   colChange(col, preCol, container) {
@@ -231,6 +238,7 @@ const layouts = [
   // },
   {
     px: 560,
+    // row: 16,
     // col: 6,
     // margin: [20, 20],
     size: [30, 50],
@@ -248,14 +256,13 @@ const layouts = [
   {
     px: 200,
     // col: 3,
-    row:20,
+    // row:20,
     // margin: [5, 5],
     // size: [12, 30],
     // margin: [null, 5],
     // size: [null, 30],
-    autoReorder:true,
-    responsive: true,
-
+    // autoReorder:true,
+    // responsive: true,
     data: layoutData,
   },
 ]
@@ -291,10 +298,9 @@ const layouts1 = {
 }
 
 const globalConf = {
-  responsive: true,
-  // row: 6,
+  responsive: false,
   responseMode: 'default',
-  autoGrowRow: true,
+  autoGrowRow: false,
   exchange: true,
   slidePage: true,
   ratioCol: 0.2,

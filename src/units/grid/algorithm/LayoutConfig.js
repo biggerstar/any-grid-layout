@@ -325,7 +325,7 @@ export default class LayoutConfig {
         }
         AutoSetting()
         // console.log(maxCol, maxRow)
-
+        // autoGrowRow
         if (isSetConfig) {
             container.col = maxCol
             container.row = maxRow
