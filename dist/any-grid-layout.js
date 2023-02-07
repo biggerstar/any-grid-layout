@@ -102,6 +102,7 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
     close: { required: !1, type: Boolean, default: void 0 },
     follow: { required: !1, type: Boolean, default: void 0 },
     dragOut: { required: !1, type: Boolean, default: void 0 },
+    resizeOut: { required: !1, type: Boolean, default: void 0 },
     dragIgnoreEls: { required: !1, type: Array, default: void 0 },
     dragAllowEls: { required: !1, type: Array, default: void 0 },
     itemAPI: { required: !1, type: Object, default: {} }
@@ -141,6 +142,8 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
         typeof f == "boolean" && (n.follow = f);
       }), M(() => e.dragOut, (f) => {
         typeof f == "boolean" && (n.dragOut = f);
+      }), M(() => e.resizeOut, (f) => {
+        typeof f == "boolean" && (n.resizeOut = f);
       }), M(() => e.dragIgnoreEls, (f) => {
         Array.isArray(f) && (n.dragIgnoreEls = f);
       }), M(() => e.dragAllowEls, (f) => {
@@ -441,7 +444,7 @@ c(F, "_eventEntrustFunctor", {
       m.w < 1 && (m.w = 1), m.h < 1 && (m.h = 1);
       const h = ({ w: v, h: I }) => {
         const g = i.pos;
-        return v + g.x > o.col && (v = o.col - g.x + 1), v < g.minW && (v = g.minW), v > g.maxW && g.maxW !== 1 / 0 && (v = g.maxW), i.container.autoGrowRow || I + g.y > o.row && (I = o.row - g.y + 1), I < g.minH && (I = g.minH), I > g.maxH && g.maxH !== 1 / 0 && (I = g.maxH), {
+        return i.resizeOut && v + g.x > o.col && (v = o.col - g.x + 1), v < g.minW && (v = g.minW), v > g.maxW && g.maxW !== 1 / 0 && (v = g.maxW), i.resizeOut && I + g.y > o.row && (I = o.row - g.y + 1), I < g.minH && (I = g.minH), I > g.maxH && g.maxH !== 1 / 0 && (I = g.maxH), {
           w: v,
           h: I
         };
@@ -540,14 +543,20 @@ c(F, "_eventEntrustFunctor", {
       let n = r.fromItem;
       const i = r.moveItem;
       let o = r.moveItem !== null ? i : n;
-      o && o.container === t || (r.isLeftMousedown && T.run({
-        func: () => {
-          t.eventManager._callback_("enterContainerArea", t, r.exchangeItems.new), r.exchangeItems.new = null, r.exchangeItems.old = null;
-        },
-        rule: () => r.exchangeItems.new,
-        intervalTime: 2,
-        timeout: 200
-      }), t.__ownTemp__.firstEnterUnLock = !0, r.moveContainer = t);
+      if (r.isLeftMousedown) {
+        if (o && o.container !== t)
+          T.run({
+            func: () => {
+              t.eventManager._callback_("enterContainerArea", t, r.exchangeItems.new), r.exchangeItems.new = null, r.exchangeItems.old = null;
+            },
+            rule: () => r.exchangeItems.new,
+            intervalTime: 2,
+            timeout: 200
+          });
+        else if (t.eventManager._callback_("enterContainerArea", t, o), o && o.container === t)
+          return;
+      }
+      t.__ownTemp__.firstEnterUnLock = !0, r.moveContainer = t;
     },
     mouseleave: function(e, t = null) {
       let n = r.fromItem, i = r.moveItem, o = r.moveItem !== null ? i : n;
@@ -579,6 +588,7 @@ c(F, "_eventEntrustFunctor", {
             static: o.static,
             follow: o.follow,
             dragOut: o.dragOut,
+            resizeOut: o.resizeOut,
             className: o.className,
             dragIgnoreEls: o.dragIgnoreEls,
             dragAllowEls: o.dragAllowEls
@@ -1076,6 +1086,7 @@ class ne extends Le {
     c(this, "type", null);
     c(this, "follow", !0);
     c(this, "dragOut", !0);
+    c(this, "resizeOut", !1);
     c(this, "className", "grid-item");
     c(this, "dragIgnoreEls", []);
     c(this, "dragAllowEls", []);
@@ -1124,7 +1135,7 @@ class ne extends Le {
       let o = {};
       o = n.pos.export(t), this.responsive && (delete o.x, delete o.y), i.pos = o, Array.from(["static", "draggable", "resize", "close"]).forEach((s) => {
         n[s] !== !1 && (i[s] = n[s]);
-      }), Array.from(["follow", "dragOut", "exchange"]).forEach((s) => {
+      }), Array.from(["follow", "dragOut", "resizeOut", "exchange"]).forEach((s) => {
         n[s] !== !0 && (i[s] = n[s]);
       }), typeof n.name == "string" && (i.name = n.name), typeof n.type == "string" && (i.type = n.type);
       let l = {};
