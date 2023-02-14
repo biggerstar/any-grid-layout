@@ -109,7 +109,7 @@ export default class LayoutConfig {
     }
 
 
-    /**  传入屏幕的宽度，会在预定的layout布局配置中找到符合该屏幕的px对应的layoutConfig,
+    /** [这里只会计算size，margin] 传入屏幕的宽度，会在预定的layout布局配置中找到符合该屏幕的px对应的layoutConfig,
      * 之后返回该屏幕尺寸下的col size margin style  等等等配置信息，还有很多字段不写出来，
      * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
     genLayoutConfig(containerWidth = null, containerHeight = null,) {
@@ -208,8 +208,9 @@ export default class LayoutConfig {
         }
 
         const currentLayout = {}
+        const global = this.option.global || {}
         for (const key in useLayoutConfig) {
-            if (this.option.global[key] !== undefined || layoutItem[key] !== undefined) {
+            if (global !== undefined || layoutItem[key] !== undefined) {
                 currentLayout[key] = useLayoutConfig[key]   // 筛选出用户传进来的初始配置
             }
         }
@@ -224,7 +225,7 @@ export default class LayoutConfig {
     }
 
 
-    /** 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
+    /**[这里会计算col，row，不计算margin，size] 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
      * 这里Container挂载(mount)的时候会执行两次，一次是预同步容器大小信息，一次是执行最终挂载后容器信息，可以算是没架构好，
      * 后面有机会再优化吧
      * @param {Container} container 容器实例
@@ -294,27 +295,25 @@ export default class LayoutConfig {
 
             // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
             // console.log(smartInfo);
-
             // console.log(maxCol,maxRow)
-
 
             const smartInfo = computeSmartRowAndCol(items)
             if (!col && !margin[0] && !size[0]) {
                 maxCol = smartInfo.smartCol   // 如果都没有指定则根据当前配置自适应
             } else {
                 const containerWidth = this.container.element?.clientWidth
+                if (!useLayoutConfig['responsive'] && !col && this.container.col) col = this.container.col // 静态直接使用指定的col值
                 const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
-                if (!useLayoutConfig['responsive'] && col) maxCol = col   // 静态直接使用指定的col值
-                else maxCol = sizeColInfo.direction
+                maxCol = sizeColInfo.direction
             }
             if (!row || useLayoutConfig['responsive']) {  // 没有给出row则自适应，自动计算
                 //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
                 maxRow = smartInfo.smartRow
             } else {
                 const containerHeight = this.container.element?.clientHeight
+                if (!useLayoutConfig['responsive'] && !row && this.container.row) row = this.container.row // 静态直接使用指定的row值
                 const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
-                if (!useLayoutConfig['responsive'] && row) maxRow = row   // 静态直接使用指定的row值
-                else maxRow = sizeRowInfo.direction
+                maxRow = sizeRowInfo.direction
             }
 
             // console.log(maxRow);

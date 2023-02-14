@@ -501,8 +501,8 @@ export default class Engine {
                 if (newH <= h) pos.tempH = newH
             }
         }
-
-        if (itemResized) {
+        /** 在溢出情况下警告，警告前需要确认该Item是否还在容器中，因为可能已经清除或者移动到其他容器中 */
+        if (itemResized && this.items.includes(item)) {
             this.container.eventManager._warn_('temporaryResetItemSize',
                 'ITEM: ' + 'w:' + w + ' h:' + h
                 + '超过栅格大小，临时调整该ITEM尺寸为'

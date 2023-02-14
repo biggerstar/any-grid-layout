@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, nextTick, toRaw, render, cloneVNode, isVNode, h, provide} from 'vue'
+import {onMounted, ref, watch, nextTick, toRaw,onUpdated, provide} from 'vue'
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
 
@@ -43,7 +43,6 @@ let useLayoutConfig = {}
 let isLayoutChange = false   // 用于layoutChange的时候锁定data的引用地址和数据不被改变
 
 provide('_grid_item_components_', props.components)
-
 onMounted(() => {
   container.el = gridContainer.value
   container.engine.init()

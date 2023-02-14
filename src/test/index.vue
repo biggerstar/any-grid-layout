@@ -224,18 +224,18 @@ const layouts = [
   //   // minCol: 7,
   //   data: layoutData4,
   // },
-  // {
-  //   px: 820,
-  //   // col: 6,
-  //   // row:4,
-  //   // margin: [50, 30],
-  //   size: [60, 80],
-  //   // sizeWidth: 120,
-  //
-  //   // autoReorder: true,
-  //   responsive: false,
-  //   data: layoutData11ConcatName,
-  // },
+  {
+    px: 820,
+    col: 6,
+    // row:4,
+    // margin: [50, 30],
+    size: [160, 80],
+    // sizeWidth: 120,
+
+    // autoReorder: true,
+    responsive: false,
+    data: layoutData11ConcatName,
+  },
   {
     px: 560,
     // row: 16,

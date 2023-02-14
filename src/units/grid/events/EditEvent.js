@@ -117,7 +117,7 @@ export default class EditEvent {
                         fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)
                     }
                     fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
-                    tempStore.fromContainer.updateLayout([fromItem])
+                    tempStore?.fromContainer.updateLayout([fromItem])
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
                     fromItem.container.updateContainerStyleSize()
                 }
@@ -306,12 +306,12 @@ export default class EditEvent {
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 // console.log(container);
                 // console.log(fromItem,fromItem.container.exchange,dragItem.container.exchange,dragItem.exchange);
-
                 if (!container['exchange']
                     || !fromItem.container.exchange
                     || !dragItem.container.exchange
                     || !dragItem.exchange
                 ) return
+
                 try {
                     dragItem.pos.el = null   // 要将原本pos中的对应文档清除掉换克隆后的
                     let dragItemElement = fromItem.element
@@ -407,7 +407,6 @@ export default class EditEvent {
                 if (fromItem === null || mousedownEvent === null || !tempStore.isLeftMousedown) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 let container = dragItem.container
-                if (dragItem === toItem) return
                 let overContainer = null
                 if (dragItem.exchange) {  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
                     overContainer = parseContainer(ev)
@@ -418,7 +417,12 @@ export default class EditEvent {
                         // if (!target._isGridContainerArea) return   // (该代码bug：exchange toItem无响应)跨容器只有移动到gridContainerArea才进行响应，只移动到GridContainer元素上忽略掉
                     }
                 }
-
+                if (!container.__ownTemp__.firstEnterUnLock) {
+                    if (dragItem.container && overContainer
+                        && dragItem.container !== overContainer
+                        && (dragItem.container.childContainer.length > 0
+                            || overContainer.childContainer.length > 0) ) return  // 非firstXXX标记下移出去容器外将不进行反应,此时正常是嵌套容器下发生
+                }
                 //-----------------------是否符合交换环境参数检测结束-----------------------//
                 // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
                 const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.size[0] / tempStore.fromContainer.size[0])
@@ -429,6 +433,7 @@ export default class EditEvent {
                 const offsetLeftPx = ev.pageX - offsetDragItemX - (window.scrollX + dragContainerElRect.left)
                 const offsetTopPx = ev.pageY - offsetDragItemY - (window.scrollY + dragContainerElRect.top)
                 // console.log(dragItem);
+
 
                 //------如果容器内容超出滚动条盒子在边界的时候自动滚动(上高0.25倍下高0.75倍触发，左宽0.25倍右宽0.75倍触发)-----//
                 if (dragItem.container.followScroll) {
@@ -485,7 +490,6 @@ export default class EditEvent {
 
                 const pxToGridPosW = (offsetLeftPx) => {
                     const w = (offsetLeftPx) / (container.size[0] + container.margin[0])
-                    // console.log(w);
                     if (w + dragItem.pos.w >= container.containerW) {
                         return container.containerW - dragItem.pos.w + 1
                     } else return Math.round(w) + 1
@@ -508,6 +512,7 @@ export default class EditEvent {
                 // console.log(offsetLeftPx,offsetTopPx);
                 dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
                 const responsiveLayoutAlgorithm = () => {
+                    if (dragItem === toItem) return   // 减少执行，和静态移动的话不同，对静态不进行限制，使得静态能在大Item下对微距的[移动move]调整更精确反应
                     // 响应式Item交换算法
                     //------计算鼠标的移动速度，太慢不做操作-----------//
                     let startY, startX
@@ -665,7 +670,6 @@ export default class EditEvent {
                     } else if (container.responseMode === 'exchange') {
                         container.engine.exchange(dragItem, toItem)
                     }
-
                     container.engine.updateLayout(true)
                 }
                 const staticLayoutAlgorithm = () => {
@@ -703,7 +707,6 @@ export default class EditEvent {
                         // 静态模式下移动到Item上,这里的作用是在有margin的时候保证移动到margin也是禁止状态
                         dragItem.pos.nextStaticPos = null   // 必须在这里，不可缺，作用:找不到空位清除nextStaticPos
                     }
-
                 }
                 Sync.run(() => {
                     //  判断使用的是静态布局还是响应式布局并执行响应的算法
@@ -839,7 +842,7 @@ export default class EditEvent {
             }),
             slidePage: (ev) => {
                 // 拖拽滑动整个容器元素
-                const container = tempStore.fromContainer
+                const container = parseContainer(ev)
                 if (!container) return
                 if (!container.slidePage) return
                 const element = container.element
@@ -859,8 +862,11 @@ export default class EditEvent {
                 if (!container) return   // 只有点击Container或里面元素才生效
                 tempStore.fromItem = parseItem(ev)
                 if (!container && !tempStore.fromItem) return
-                if (tempStore.fromItem && !tempStore.fromItem.static) EEF.cursor.mousedown()
-                else if (container && !tempStore.fromItem && !ev.touches) {
+
+                if ((tempStore.fromItem && tempStore?.fromItem.container === container)
+                    && !tempStore.fromItem.static) EEF.cursor.mousedown()
+                else if (container && (!tempStore.fromItem
+                    || tempStore?.fromItem.container !== container) && !ev.touches) {
                     EEF.cursor.mousedown()
                     tempStore.slidePageOffsetInfo = {
                         offsetTop: container.element.scrollTop,
@@ -878,8 +884,8 @@ export default class EditEvent {
                 if (downTagClassName.includes('grid-item-resizable-handle')) {   //   用于resize
                     tempStore.dragOrResize = 'resize'
                     if (tempStore.fromItem) tempStore.fromItem.__temp__.resizeLock = true
-
-                } else if (tempStore.fromItem) {    //  用于drag
+                } else if ((tempStore.fromItem && tempStore.dragOrResize !== 'slidePage')
+                    || (tempStore.fromItem && tempStore.fromItem.draggable)) {    //  用于drag
                     if (tempStore.fromItem.static) return  // 如果pos中是要求static则取消该Item的drag
                     const fromItem = tempStore.fromItem
                     if ((fromItem.dragIgnoreEls || []).length > 0) {    // 拖拽触发元素的黑名单
@@ -915,7 +921,6 @@ export default class EditEvent {
                         }
                         if (isAllowDrag === false) return
                     }
-
                     tempStore.dragOrResize = 'drag'
                     if (tempStore.fromItem.__temp__.dragging) return
                     const fromEl = tempStore.fromItem.element.getBoundingClientRect()
@@ -925,7 +930,7 @@ export default class EditEvent {
                 //----------------------------------------------------------------//
                 tempStore.isLeftMousedown = true
                 tempStore.mousedownEvent = ev
-                tempStore.fromContainer = container
+                tempStore.fromContainer =  tempStore?.fromItem?.container || container  // 必要，表明Item来源
                 EEF.check.resizeOrDrag(ev)
 
                 if (tempStore.fromItem) {

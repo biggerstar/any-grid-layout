@@ -1,7 +1,7 @@
 var ke = Object.defineProperty;
 var He = (u, e, t) => e in u ? ke(u, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : u[e] = t;
 var c = (u, e, t) => (He(u, typeof e != "symbol" ? e + "" : e, t), t);
-import { getCurrentInstance as We, ref as ee, inject as Pe, useAttrs as Ne, toRaw as ce, onMounted as Ie, onUnmounted as De, openBlock as fe, createElementBlock as Ce, unref as le, createBlock as Fe, renderSlot as be, watch as M, defineAsyncComponent as Xe, provide as Ye, nextTick as Q, createElementVNode as Be } from "vue";
+import { getCurrentInstance as We, ref as ee, inject as Pe, useAttrs as Ne, toRaw as ce, onMounted as ve, onUnmounted as De, openBlock as fe, createElementBlock as Ce, unref as le, createBlock as Fe, renderSlot as be, watch as M, defineAsyncComponent as Xe, provide as Ye, nextTick as Q, createElementVNode as Be } from "vue";
 function N(u, e = 350) {
   let t, n, i = 0;
   return function() {
@@ -37,7 +37,7 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
       u = u.parentNode;
     } while (u.parentNode);
   return e;
-}, P = (u, e = !1) => {
+}, W = (u, e = !1) => {
   let t = null;
   const n = u.touchTarget ? u.touchTarget : u.target;
   if (n._isGridContainer_)
@@ -162,10 +162,10 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
     const d = () => {
       if (!l)
         return;
-      const f = l.col, y = l.row, v = l.engine.layoutConfig.autoSetColAndRows(l);
-      (f !== v.col || y !== v.row) && l.updateContainerStyleSize();
+      const f = l.col, y = l.row, x = l.engine.layoutConfig.autoSetColAndRows(l);
+      (f !== x.col || y !== x.row) && l.updateContainerStyleSize();
     };
-    return Ie(() => {
+    return ve(() => {
       const f = ce(e);
       l = Ee(t.value), l.__ownTemp__, e.pos.autoOnce = !e.pos.x || !e.pos.y;
       const y = e.pos.doItemCrossContainerExchange;
@@ -176,10 +176,10 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
         t.value.parentNode.removeChild(t.value);
         return;
       }
-      n.mount(), e.itemAPI.getItem = () => n, e.itemAPI.exportConfig = () => n.exportConfig(), typeof y == "function" && y(n), n._VueEvents.vueItemResizing = (v, I, g) => {
-        e.pos.w && e.pos.w !== I && (e.pos.w = I), e.pos.h && e.pos.h !== g && (e.pos.h = g);
-      }, n._VueEvents.vueItemMovePositionChange = (v, I, g, L) => {
-        e.pos.x && e.pos.x !== g && (e.pos.x = g), e.pos.y && e.pos.y !== L && (e.pos.y = L);
+      n.mount(), e.itemAPI.getItem = () => n, e.itemAPI.exportConfig = () => n.exportConfig(), typeof y == "function" && y(n), n._VueEvents.vueItemResizing = (x, v, p) => {
+        e.pos.w && e.pos.w !== v && (e.pos.w = v), e.pos.h && e.pos.h !== p && (e.pos.h = p);
+      }, n._VueEvents.vueItemMovePositionChange = (x, v, p, z) => {
+        e.pos.x && e.pos.x !== p && (e.pos.x = p), e.pos.y && e.pos.y !== z && (e.pos.y = z);
       }, d(), i();
     }), De(() => {
       n && n.remove(), d();
@@ -195,20 +195,20 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
       }, null, 8, ["attrs"])) : be(f.$slots, "default", { key: 1 })
     ], 512));
   }
-}), A = class {
+}), O = class {
   constructor() {
-    A.intervalTime = 10;
+    O.intervalTime = 10;
     const e = () => {
-      A.ready = !0, A.intervalTime = 50, document.removeEventListener("readystatechange", e);
+      O.ready = !0, O.intervalTime = 50, document.removeEventListener("readystatechange", e);
     };
-    document.addEventListener("readystatechange", e);
+    document.readyState === "complete" || document.readyState === "interactive" ? e() : document.addEventListener("readystatechange", e);
   }
   static init() {
-    A.ins || (new A(), A.ins = !0);
+    O.ins || (new O(), O.ins = !0);
   }
   static run(e, ...t) {
-    A.init();
-    let n = 0, i = typeof e.timeout == "number" ? e.timeout : A.timeout, o = typeof e.intervalTime == "number" ? e.intervalTime : A.intervalTime, l = () => {
+    O.init();
+    let n = 0, i = typeof e.timeout == "number" ? e.timeout : O.timeout, o = typeof e.intervalTime == "number" ? e.intervalTime : O.intervalTime, l = () => {
       let m;
       if (typeof e == "function")
         m = e.call(e, ...t);
@@ -218,7 +218,7 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
         m = e.func.call(e.func, ...t) || void 0;
       }
       e.callback && e.callback(m);
-    }, s = () => e.rule ? e.rule() : A.ready;
+    }, s = () => e.rule ? e.rule() : O.ready;
     if (s())
       return l(), !0;
     let a = setInterval(() => {
@@ -226,7 +226,7 @@ const q = (u = {}, e = {}, t = !1, n = []) => {
     }, o);
   }
 };
-let T = A;
+let T = O;
 c(T, "ready", !1), c(T, "ins", !1), c(T, "timeout", 12e3), c(T, "intervalTime", 50);
 class te {
   constructor(e) {
@@ -284,7 +284,7 @@ class te {
   update(e) {
     return q(this, this._typeCheck(e)), this;
   }
-  export(e) {
+  export(e = []) {
     const t = {};
     return Object.keys(this).forEach((n) => {
       ["w", "h", "x", "y"].includes(n) && (t[n] = this[n]), ["minW", "minH"].includes(n) && this[n] > 1 && (t[n] = this[n]), ["maxW", "maxH"].includes(n) && this[n] !== 1 / 0 && (t[n] = this[n]), e.includes(n) && this[n] && (t[n] = this[n]);
@@ -442,27 +442,27 @@ c(F, "_eventEntrustFunctor", {
         h: Math.ceil(a / (i.size[1] + i.margin[1]))
       };
       m.w < 1 && (m.w = 1), m.h < 1 && (m.h = 1);
-      const h = ({ w: v, h: I }) => {
-        const g = i.pos;
-        return i.resizeOut && v + g.x > o.col && (v = o.col - g.x + 1), v < g.minW && (v = g.minW), v > g.maxW && g.maxW !== 1 / 0 && (v = g.maxW), i.resizeOut && I + g.y > o.row && (I = o.row - g.y + 1), I < g.minH && (I = g.minH), I > g.maxH && g.maxH !== 1 / 0 && (I = g.maxH), {
-          w: v,
-          h: I
+      const h = ({ w: x, h: v }) => {
+        const p = i.pos;
+        return i.resizeOut && x + p.x > o.col && (x = o.col - p.x + 1), x < p.minW && (x = p.minW), x > p.maxW && p.maxW !== 1 / 0 && (x = p.maxW), i.resizeOut && v + p.y > o.row && (v = o.row - p.y + 1), v < p.minH && (v = p.minH), v > p.maxH && p.maxH !== 1 / 0 && (v = p.maxH), {
+          w: x,
+          h: v
         };
       }, d = () => (s > i.maxWidth() && (s = i.maxWidth()), a > i.maxHeight() && (a = i.maxHeight()), s < i.minWidth() && (s = i.minWidth()), a < i.minHeight() && (a = i.minHeight()), {
         width: s,
         height: a
       });
       let f = h(m);
-      if (f = (({ w: v, h: I }) => {
-        const g = d(), L = i.container.engine.findStaticBlankMaxMatrixFromItem(i), S = {};
-        return v > L.minW && I > L.minH ? !1 : (L.maxW >= v ? (S.width = g.width + "px", i.pos.w = v) : v = i.pos.w, L.maxH >= I ? (S.height = g.height + "px", i.pos.h = I) : I = i.pos.h, Object.keys(S).length > 0 && i.updateStyle(S, r.cloneElement), {
-          w: v,
-          h: I
+      if (f = (({ w: x, h: v }) => {
+        const p = d(), z = i.container.engine.findStaticBlankMaxMatrixFromItem(i), S = {};
+        return x > z.minW && v > z.minH ? !1 : (z.maxW >= x ? (S.width = p.width + "px", i.pos.w = x) : x = i.pos.w, z.maxH >= v ? (S.height = p.height + "px", i.pos.h = v) : v = i.pos.h, Object.keys(S).length > 0 && i.updateStyle(S, r.cloneElement), {
+          w: x,
+          h: v
         });
       })(f), i.__temp__.resized || (i.__temp__.resized = { w: 1, h: 1 }), i.__temp__.resized.w !== m.w || i.__temp__.resized.h !== m.h) {
         if (!f)
           return;
-        i.__temp__.resized = f, typeof i._VueEvents.vueItemResizing == "function" && i._VueEvents.vueItemResizing(i, f.w, f.h), i.container.eventManager._callback_("itemResizing", f.w, f.h, i), r.fromContainer.updateLayout([i]), i.updateStyle(i._genLimitSizeStyle()), i.container.updateContainerStyleSize();
+        i.__temp__.resized = f, typeof i._VueEvents.vueItemResizing == "function" && i._VueEvents.vueItemResizing(i, f.w, f.h), i.container.eventManager._callback_("itemResizing", f.w, f.h, i), r == null || r.fromContainer.updateLayout([i]), i.updateStyle(i._genLimitSizeStyle()), i.container.updateContainerStyleSize();
       }
     }, 15),
     mouseup: (e) => {
@@ -473,7 +473,7 @@ c(F, "_eventEntrustFunctor", {
   check: {
     resizeOrDrag: (e) => {
       var n, i;
-      if (!!P(e)) {
+      if (!!W(e)) {
         if (((n = r.fromItem) == null ? void 0 : n.draggable) && r.dragOrResize === "drag")
           return r.isDragging = !0, r.isResizing = !1, "drag";
         if (((i = r.fromItem) == null ? void 0 : i.resize) && r.dragOrResize === "resize")
@@ -617,82 +617,81 @@ c(F, "_eventEntrustFunctor", {
       const i = r.moveItem, o = r.mousedownEvent;
       if (t === null || o === null || !r.isLeftMousedown)
         return;
-      let l = r.moveItem !== null ? i : t, s = l.container;
-      if (l === n)
-        return;
-      let a = null;
-      if (l.exchange && (a = P(e), a && (s = a), l.container !== a && s.parentItem && s.parentItem === l))
+      let l = r.moveItem !== null ? i : t, s = l.container, a = null;
+      if (l.exchange && (a = W(e), a && (s = a), l.container !== a && s.parentItem && s.parentItem === l) || !s.__ownTemp__.firstEnterUnLock && l.container && a && l.container !== a && (l.container.childContainer.length > 0 || a.childContainer.length > 0))
         return;
       const m = r.mousedownItemOffsetLeft * (s.size[0] / r.fromContainer.size[0]), h = r.mousedownItemOffsetTop * (s.size[1] / r.fromContainer.size[1]), d = s.contentElement.getBoundingClientRect(), f = e.pageX - m - (window.scrollX + d.left), y = e.pageY - h - (window.scrollY + d.top);
       if (l.container.followScroll) {
-        const C = s.contentElement.parentElement.getBoundingClientRect(), W = s.scrollSpeedX ? s.scrollSpeedX : Math.round(C.width / 20), w = s.scrollSpeedY ? s.scrollSpeedY : Math.round(C.height / 20), p = (k, O) => {
-          const H = l.container.eventManager._callback_("autoScroll", k, O, l.container);
-          if (H === !1 || H === null)
+        const C = s.contentElement.parentElement.getBoundingClientRect(), P = s.scrollSpeedX ? s.scrollSpeedX : Math.round(C.width / 20), E = s.scrollSpeedY ? s.scrollSpeedY : Math.round(C.height / 20), g = (A, H) => {
+          const k = l.container.eventManager._callback_("autoScroll", A, H, l.container);
+          if (k === !1 || k === null)
             return;
-          typeof H == "object" && (typeof H.offset == "number" && (O = H.offset), ["X", "Y"].includes(H.direction) && (k = H.direction));
+          typeof k == "object" && (typeof k.offset == "number" && (H = k.offset), ["X", "Y"].includes(k.direction) && (A = k.direction));
           const V = s ? s.scrollWaitTime : 800;
           r.scrollReactionStatic === "stop" && (r.scrollReactionStatic = "wait", r.scrollReactionTimer = setTimeout(() => {
             r.scrollReactionStatic = "scroll", clearTimeout(r.scrollReactionTimer);
-          }, V)), k === "X" && r.scrollReactionStatic === "scroll" && (s.contentElement.parentElement.scrollLeft += O), k === "Y" && r.scrollReactionStatic === "scroll" && (s.contentElement.parentElement.scrollTop += O);
+          }, V)), A === "X" && r.scrollReactionStatic === "scroll" && (s.contentElement.parentElement.scrollLeft += H), A === "Y" && r.scrollReactionStatic === "scroll" && (s.contentElement.parentElement.scrollTop += H);
         };
-        let x = !1, z = !1;
-        e.pageX - window.scrollX - C.left < C.width * 0.25 ? p("X", -W) : e.pageX - window.scrollX - C.left > C.width * 0.75 ? p("X", W) : x = !0, e.pageY - window.scrollY - C.top < C.height * 0.25 ? p("Y", -w) : e.pageY - window.scrollY - C.top > C.height * 0.75 ? p("Y", w) : z = !0, x && z && (r.scrollReactionStatic = "stop", clearTimeout(r.scrollReactionTimer));
+        let w = !1, I = !1;
+        e.pageX - window.scrollX - C.left < C.width * 0.25 ? g("X", -P) : e.pageX - window.scrollX - C.left > C.width * 0.75 ? g("X", P) : w = !0, e.pageY - window.scrollY - C.top < C.height * 0.25 ? g("Y", -E) : e.pageY - window.scrollY - C.top > C.height * 0.75 ? g("Y", E) : I = !0, w && I && (r.scrollReactionStatic = "stop", clearTimeout(r.scrollReactionTimer));
       }
-      const v = (b) => {
+      const x = (b) => {
         const C = b / (s.size[0] + s.margin[0]);
         return C + l.pos.w >= s.containerW ? s.containerW - l.pos.w + 1 : Math.round(C) + 1;
-      }, I = (b) => {
+      }, v = (b) => {
         const C = b / (s.size[1] + s.margin[1]);
         return C + l.pos.h >= s.containerH ? s.containerH - l.pos.h + 1 : Math.round(C) + 1;
       };
-      let g = v(f), L = I(y);
-      g < 1 && (g = 1), L < 1 && (L = 1), l.container.eventManager._callback_("itemMoving", g, L, l);
+      let p = x(f), z = v(y);
+      p < 1 && (p = 1), z < 1 && (z = 1), l.container.eventManager._callback_("itemMoving", p, z, l);
       const S = () => {
-        let b, C, W = Date.now();
+        if (l === n)
+          return;
+        let b, C, P = Date.now();
         C = e.screenX, b = e.screenY;
-        const w = () => {
-          let E = W - r.mouseSpeed.timestamp, U = Math.abs(C - r.mouseSpeed.endX), Z = Math.abs(b - r.mouseSpeed.endY), ye = U > Z ? U : Z, Ae = Math.round(ye / E * 1e3);
-          return r.mouseSpeed.endX = C, r.mouseSpeed.endY = b, r.mouseSpeed.timestamp = W, { distance: ye, speed: Ae };
+        const E = () => {
+          let L = P - r.mouseSpeed.timestamp, U = Math.abs(C - r.mouseSpeed.endX), Z = Math.abs(b - r.mouseSpeed.endY), ye = U > Z ? U : Z, Ae = Math.round(ye / L * 1e3);
+          return r.mouseSpeed.endX = C, r.mouseSpeed.endY = b, r.mouseSpeed.timestamp = P, { distance: ye, speed: Ae };
         };
         if (!s.__ownTemp__.firstEnterUnLock) {
-          const { distance: E, speed: U } = w();
+          const { distance: L, speed: U } = E();
           if (r.deviceEventMode === "mouse" && n && n.pos.w > 2 && n.pos.h > 2) {
             if (s.size[0] < 30 || s.size[1] < 30) {
-              if (E < 3)
+              if (L < 3)
                 return;
             } else if (s.size[0] < 60 || s.size[1] < 60) {
-              if (E < 7)
+              if (L < 7)
                 return;
-            } else if (E < 10 || U < 10)
+            } else if (L < 10 || U < 10)
               return;
             if (l === null)
               return;
           }
         }
-        const p = {
-          x: g < 1 ? 1 : g,
-          y: L < 1 ? 1 : L,
+        const g = {
+          x: p < 1 ? 1 : p,
+          y: z < 1 ? 1 : z,
           w: l.pos.w,
           h: l.pos.h
         };
-        let x = !1;
-        const z = () => {
+        let w = !1;
+        const I = () => {
           if (!l.follow)
             return;
-          const E = s.engine.findCoverItemFromPosition(p.x, p.y, p.w, p.h);
-          E.length > 0 ? n = E.filter((Z) => l !== Z)[0] : x = !0;
-        }, k = () => {
-          const E = s.engine.findResponsiveItemFromPosition(p.x, p.y, p.w, p.h);
-          !E || (n = E);
+          const L = s.engine.findCoverItemFromPosition(g.x, g.y, g.w, g.h);
+          L.length > 0 ? n = L.filter((Z) => l !== Z)[0] : w = !0;
+        }, A = () => {
+          const L = s.engine.findResponsiveItemFromPosition(g.x, g.y, g.w, g.h);
+          !L || (n = L);
         };
-        if (s.__ownTemp__.firstEnterUnLock ? z() : l.follow ? n ? z() : k() : z(), x && n && n.nested && (n = null), s.__ownTemp__.firstEnterUnLock) {
-          if (!x && !n)
+        if (s.__ownTemp__.firstEnterUnLock ? I() : l.follow ? n ? I() : A() : I(), w && n && n.nested && (n = null), s.__ownTemp__.firstEnterUnLock) {
+          if (!w && !n)
             return;
-          if (l.pos.nextStaticPos = new te(l.pos), l.pos.nextStaticPos.x = p.x, l.pos.nextStaticPos.y = p.y, l.pos.autoOnce = !0, n) {
+          if (l.pos.nextStaticPos = new te(l.pos), l.pos.nextStaticPos.x = g.x, l.pos.nextStaticPos.y = g.y, l.pos.autoOnce = !0, n) {
             if (r.fromItem.container.parentItem === n || l.container === n.container)
               return;
-            _.itemDrag.mousemoveExchange(s, (E) => {
-              s.engine.move(E, n.i);
+            _.itemDrag.mousemoveExchange(s, (L) => {
+              s.engine.move(L, n.i);
             });
           } else
             _.itemDrag.mousemoveExchange(s);
@@ -701,22 +700,22 @@ c(F, "_eventEntrustFunctor", {
         }
         if (!n)
           return;
-        const O = l.element.getBoundingClientRect(), H = Math.abs(e.pageX - O.left - r.mousedownItemOffsetLeft) / n.element.clientWidth, V = Math.abs(e.pageY - O.top - r.mousedownItemOffsetTop) / n.element.clientHeight, Oe = H > V;
-        if (Math.abs(H - V) < s.sensitivity || s.__ownTemp__.exchangeLock === !0)
+        const H = l.element.getBoundingClientRect(), k = Math.abs(e.pageX - H.left - r.mousedownItemOffsetLeft) / n.element.clientWidth, V = Math.abs(e.pageY - H.top - r.mousedownItemOffsetTop) / n.element.clientHeight, Oe = k > V;
+        if (Math.abs(k - V) < s.sensitivity || s.__ownTemp__.exchangeLock === !0)
           return;
-        const pe = 3, J = s.__ownTemp__.beforeOverItems;
-        let ge = 0;
-        for (let E = 0; E < J.length && !(E >= 3); E++)
-          J[E] === n && ge++;
-        if (ge >= pe) {
+        const ge = 3, J = s.__ownTemp__.beforeOverItems;
+        let pe = 0;
+        for (let L = 0; L < J.length && !(L >= 3); L++)
+          J[L] === n && pe++;
+        if (pe >= ge) {
           s.__ownTemp__.exchangeLock = !0;
-          let E = setTimeout(() => {
-            s.__ownTemp__.exchangeLock = !1, clearTimeout(E), E = null;
+          let L = setTimeout(() => {
+            s.__ownTemp__.exchangeLock = !1, clearTimeout(L), L = null;
           }, 200);
-        } else if (J.length < pe && n.draggable && n.transition && n.transition.time) {
+        } else if (J.length < ge && n.draggable && n.transition && n.transition.time) {
           s.__ownTemp__.exchangeLock = !0;
-          let E = setTimeout(() => {
-            s.__ownTemp__.exchangeLock = !1, clearTimeout(E), E = null;
+          let L = setTimeout(() => {
+            s.__ownTemp__.exchangeLock = !1, clearTimeout(L), L = null;
           }, n.transition.time);
         }
         if (l !== n)
@@ -726,9 +725,9 @@ c(F, "_eventEntrustFunctor", {
         const _e = l.container.eventManager._callback_("itemExchange", t, n);
         _e === !1 || _e === null || (s.responseMode === "default" ? Oe ? (s.engine.sortResponsiveItem(), s.engine.move(l, n.i)) : s.engine.exchange(l, n) : s.responseMode === "stream" ? (s.engine.sortResponsiveItem(), s.engine.move(l, n.i)) : s.responseMode === "exchange" && s.engine.exchange(l, n), s.engine.updateLayout(!0));
       }, G = () => {
-        if (!l.follow && !P(e))
+        if (!l.follow && !W(e))
           return;
-        l.pos.nextStaticPos = new te(l.pos), l.pos.nextStaticPos.x = g < 1 ? 1 : g, l.pos.nextStaticPos.y = L < 1 ? 1 : L;
+        l.pos.nextStaticPos = new te(l.pos), l.pos.nextStaticPos.x = p < 1 ? 1 : p, l.pos.nextStaticPos.y = z < 1 ? 1 : z;
         let b = s.engine.findCoverItemFromPosition(
           l.pos.nextStaticPos.x,
           l.pos.nextStaticPos.y,
@@ -750,7 +749,7 @@ c(F, "_eventEntrustFunctor", {
       if (t === null || n === null)
         return;
       let o = r.moveItem !== null ? i : n;
-      const l = P(e);
+      const l = W(e);
       o.__temp__.dragging = !0, r.cloneElement === null ? (r.cloneElement = o.element.cloneNode(!0), r.cloneElement.classList.add("grid-clone-el", "grid-dragging-clone-el"), document.body.appendChild(r.cloneElement), o.addClass("grid-dragging-source-el"), o.updateStyle({
         pointerEvents: "none",
         transitionProperty: "none",
@@ -781,7 +780,7 @@ c(F, "_eventEntrustFunctor", {
 }), c(F, "_eventPerformer", {
   item: {
     mouseenter: (e) => {
-      if (e.stopPropagation(), !!P(e) && (e.target._gridItem_ && (r.toItem = $(e)), r.toItem === null))
+      if (e.stopPropagation(), !!W(e) && (e.target._gridItem_ && (r.toItem = $(e)), r.toItem === null))
         return !1;
     }
   },
@@ -790,7 +789,7 @@ c(F, "_eventEntrustFunctor", {
       r.slidePageOffsetInfo.newestPageX = e, r.slidePageOffsetInfo.newestPageY = t;
     }),
     slidePage: (e) => {
-      const t = r.fromContainer;
+      const t = W(e);
       if (!t || !t.slidePage)
         return;
       const n = t.element;
@@ -801,12 +800,13 @@ c(F, "_eventEntrustFunctor", {
   },
   container: {
     mousedown: (e) => {
+      var i;
       if (r.isDragging || r.isResizing)
         return;
-      const t = P(e);
+      const t = W(e);
       if (!t || (r.fromItem = $(e), !t && !r.fromItem))
         return;
-      r.fromItem && !r.fromItem.static ? _.cursor.mousedown() : t && !r.fromItem && !e.touches && (_.cursor.mousedown(), r.slidePageOffsetInfo = {
+      r.fromItem && (r == null ? void 0 : r.fromItem.container) === t && !r.fromItem.static ? _.cursor.mousedown() : t && (!r.fromItem || (r == null ? void 0 : r.fromItem.container) !== t) && !e.touches && (_.cursor.mousedown(), r.slidePageOffsetInfo = {
         offsetTop: t.element.scrollTop,
         offsetLeft: t.element.scrollLeft,
         newestPageX: 0,
@@ -816,51 +816,51 @@ c(F, "_eventEntrustFunctor", {
       if (r.mouseDownElClassName = n, !n.includes("grid-clone-el") && !n.includes("grid-item-close-btn")) {
         if (n.includes("grid-item-resizable-handle"))
           r.dragOrResize = "resize", r.fromItem && (r.fromItem.__temp__.resizeLock = !0);
-        else if (r.fromItem) {
+        else if (r.fromItem && r.dragOrResize !== "slidePage" || r.fromItem && r.fromItem.draggable) {
           if (r.fromItem.static)
             return;
-          const i = r.fromItem;
-          if ((i.dragIgnoreEls || []).length > 0) {
-            let l = !0;
-            for (let s = 0; s < i.dragIgnoreEls.length; s++) {
-              const a = i.dragIgnoreEls[s];
-              if (a instanceof Element)
-                e.target === a && (l = !1);
-              else if (typeof a == "string") {
-                const m = i.element.querySelectorAll(a);
-                Array.from(m).forEach((h) => {
-                  e.path.includes(h) && (l = !1);
+          const o = r.fromItem;
+          if ((o.dragIgnoreEls || []).length > 0) {
+            let s = !0;
+            for (let a = 0; a < o.dragIgnoreEls.length; a++) {
+              const m = o.dragIgnoreEls[a];
+              if (m instanceof Element)
+                e.target === m && (s = !1);
+              else if (typeof m == "string") {
+                const h = o.element.querySelectorAll(m);
+                Array.from(h).forEach((d) => {
+                  e.path.includes(d) && (s = !1);
                 });
               }
-              if (l === !1)
+              if (s === !1)
                 return;
             }
           }
-          if ((i.dragAllowEls || []).length > 0) {
-            let l = !1;
-            for (let s = 0; s < i.dragAllowEls.length; s++) {
-              const a = i.dragAllowEls[s];
-              if (a instanceof Element) {
-                if (e.target === a) {
-                  l = !0;
+          if ((o.dragAllowEls || []).length > 0) {
+            let s = !1;
+            for (let a = 0; a < o.dragAllowEls.length; a++) {
+              const m = o.dragAllowEls[a];
+              if (m instanceof Element) {
+                if (e.target === m) {
+                  s = !0;
                   break;
                 }
-              } else if (typeof a == "string") {
-                const m = i.element.querySelectorAll(a);
-                Array.from(m).forEach((h) => {
-                  e.path.includes(h) && (l = !0);
+              } else if (typeof m == "string") {
+                const h = o.element.querySelectorAll(m);
+                Array.from(h).forEach((d) => {
+                  e.path.includes(d) && (s = !0);
                 });
               }
             }
-            if (l === !1)
+            if (s === !1)
               return;
           }
           if (r.dragOrResize = "drag", r.fromItem.__temp__.dragging)
             return;
-          const o = r.fromItem.element.getBoundingClientRect();
-          r.mousedownItemOffsetLeft = e.pageX - (o.left + window.scrollX), r.mousedownItemOffsetTop = e.pageY - (o.top + window.scrollY);
+          const l = r.fromItem.element.getBoundingClientRect();
+          r.mousedownItemOffsetLeft = e.pageX - (l.left + window.scrollX), r.mousedownItemOffsetTop = e.pageY - (l.top + window.scrollY);
         }
-        r.isLeftMousedown = !0, r.mousedownEvent = e, r.fromContainer = t, _.check.resizeOrDrag(e), r.fromItem && (r.fromItem.__temp__.clientWidth = r.fromItem.nowWidth(), r.fromItem.__temp__.clientHeight = r.fromItem.nowHeight(), r.offsetPageX = r.fromItem.offsetLeft(), r.offsetPageY = r.fromItem.offsetTop());
+        r.isLeftMousedown = !0, r.mousedownEvent = e, r.fromContainer = ((i = r == null ? void 0 : r.fromItem) == null ? void 0 : i.container) || t, _.check.resizeOrDrag(e), r.fromItem && (r.fromItem.__temp__.clientWidth = r.fromItem.nowWidth(), r.fromItem.__temp__.clientHeight = r.fromItem.nowHeight(), r.offsetPageX = r.fromItem.offsetLeft(), r.offsetPageY = r.fromItem.offsetTop());
       }
     },
     mousemove: N((e) => {
@@ -878,10 +878,10 @@ c(F, "_eventEntrustFunctor", {
         const o = e.target.classList;
         o.contains("grid-item-close-btn") ? _.cursor.cursor !== "item-close" && _.cursor.itemClose() : o.contains("grid-item-resizable-handle") ? _.cursor.cursor !== "item-resize" && _.cursor.itemResize() : i.static && n ? _.cursor.cursor !== "static-no-drop" && _.cursor.staticItemNoDrop() : _.cursor.cursor !== "in-container" && _.cursor.inContainer();
       } else
-        P(e) ? _.cursor.cursor !== "in-container" && _.cursor.inContainer() : _.cursor.cursor !== "default" && _.cursor.default();
+        W(e) ? _.cursor.cursor !== "in-container" && _.cursor.inContainer() : _.cursor.cursor !== "default" && _.cursor.default();
     }, 12),
     mouseup: (e) => {
-      const t = P(e);
+      const t = W(e);
       r.isResizing && _.itemResize.mouseup(e), t && _.cursor.cursor !== "in-container" && _.cursor.inContainer();
       const n = r.fromItem, i = r.moveItem ? r.moveItem : r.fromItem;
       if (r.cloneElement !== null) {
@@ -900,14 +900,14 @@ c(F, "_eventEntrustFunctor", {
           if (i.transition) {
             const y = i.container.contentElement.getBoundingClientRect();
             if (r.isDragging) {
-              let v = window.scrollX + y.left + i.offsetLeft(), I = window.scrollY + y.top + i.offsetTop();
+              let x = window.scrollX + y.left + i.offsetLeft(), v = window.scrollY + y.top + i.offsetTop();
               i.updateStyle({
                 transitionProperty: `${i.transition.field}`,
                 transitionDuration: `${i.transition.time}ms`,
                 width: `${i.nowWidth()}px`,
                 height: `${i.nowHeight()}px`,
-                left: `${v}px`,
-                top: `${I}px`
+                left: `${x}px`,
+                top: `${v}px`
               }, d);
             } else
               r.isResizing && i.updateStyle({
@@ -953,7 +953,7 @@ c(F, "_eventEntrustFunctor", {
     touchstartOrMousedown: (e) => {
       if (e = e || window.event, e.touches ? (e.stopPropagation && e.stopPropagation(), r.deviceEventMode = "touch", e = ae(e)) : r.deviceEventMode = "mouse", r.deviceEventMode === "touch") {
         r.allowTouchMoveItem = !1;
-        const t = P(e);
+        const t = W(e);
         document.addEventListener("contextmenu", _.prevent.contextmenu);
         const n = t ? t.pressTime : 360;
         r.timeOutEvent = setTimeout(() => {
@@ -1594,11 +1594,11 @@ class Je {
     };
   }
   genLayoutConfig(e = null, t = null) {
-    var C, W;
+    var P, E;
     let n = {}, i = {};
-    e = e || ((C = this.container.element) == null ? void 0 : C.clientWidth), t = t || ((W = this.container.element) == null ? void 0 : W.clientHeight);
-    const o = this.container.layouts.sort((w, p) => w.px - p.px);
-    for (let w = 0; w < o.length && (i = o[w], Array.isArray(i.data) || (i.data = []), o.length !== 1); w++)
+    e = e || ((P = this.container.element) == null ? void 0 : P.clientWidth), t = t || ((E = this.container.element) == null ? void 0 : E.clientHeight);
+    const o = this.container.layouts.sort((g, w) => g.px - w.px);
+    for (let g = 0; g < o.length && (i = o[g], Array.isArray(i.data) || (i.data = []), o.length !== 1); g++)
       if (!(i.px < e))
         break;
     if (this.container.layout = i, e === 0 && !n.col)
@@ -1613,26 +1613,26 @@ class Je {
       margin: d = [null, null],
       padding: f = 0,
       sizeWidth: y,
-      sizeHeight: v,
-      marginX: I,
-      marginY: g
+      sizeHeight: x,
+      marginX: v,
+      marginY: p
     } = n;
-    I && (d[0] = I), g && (d[1] = g), y && (h[0] = y), v && (h[1] = v);
-    const L = this.autoComputeSizeInfo(l, e, h[0], d[0], a);
-    d[0] = L.margin, h[0] = L.size;
+    v && (d[0] = v), p && (d[1] = p), y && (h[0] = y), x && (h[1] = x);
+    const z = this.autoComputeSizeInfo(l, e, h[0], d[0], a);
+    d[0] = z.margin, h[0] = z.size;
     const S = this.autoComputeSizeInfo(s, t, h[1], d[1], m);
     d[1] = S.margin, h[1] = S.size, n = Object.assign(n, {
       padding: f,
       margin: d,
       size: h
     });
-    let G = (w) => {
-      let { margin: p, size: x, minCol: z, maxCol: k, col: O } = w;
-      return p[0] !== null && (p[0] = p[0] ? parseFloat(p[0].toFixed(1)) : 0, p[1] === null && (p[1] = p[0])), x[0] !== null && (x[0] = x[0] ? parseFloat(x[0].toFixed(1)) : 0, x[1] === null && (x[1] = x[0])), p[1] !== null && (p[1] = p[1] ? parseFloat(p[1].toFixed(1)) : 0, p[0] === null && (p[0] = p[1])), x[1] !== null && (x[1] = x[1] ? parseFloat(x[1].toFixed(1)) : 0, x[0] === null && (x[0] = x[1])), w;
+    let G = (g) => {
+      let { margin: w, size: I, minCol: A, maxCol: H, col: k } = g;
+      return w[0] !== null && (w[0] = w[0] ? parseFloat(w[0].toFixed(1)) : 0, w[1] === null && (w[1] = w[0])), I[0] !== null && (I[0] = I[0] ? parseFloat(I[0].toFixed(1)) : 0, I[1] === null && (I[1] = I[0])), w[1] !== null && (w[1] = w[1] ? parseFloat(w[1].toFixed(1)) : 0, w[0] === null && (w[0] = w[1])), I[1] !== null && (I[1] = I[1] ? parseFloat(I[1].toFixed(1)) : 0, I[0] === null && (I[0] = I[1])), g;
     };
-    const b = {};
-    for (const w in n)
-      (this.option.global[w] !== void 0 || i[w] !== void 0) && (b[w] = n[w]);
+    const b = {}, C = this.option.global || {};
+    for (const g in n)
+      (C !== void 0 || i[g] !== void 0) && (b[g] = n[g]);
     return this.useLayoutConfig = Object.assign(this.useLayoutConfig, G(n)), this.container.useLayout = n, {
       layout: i,
       global: this.option.global,
@@ -1650,55 +1650,55 @@ class Je {
       size: d = [null, null],
       margin: f = [null, null],
       sizeWidth: y,
-      sizeHeight: v,
-      marginX: I,
-      marginY: g
-    } = l, L = i, S = o;
-    const G = e.engine.items, b = (w) => {
-      let p = 1, x = 1;
-      return w.length > 0 && w.forEach((z) => {
-        z.pos.x + z.pos.w - 1 > p && (p = z.pos.x + z.pos.w - 1), z.pos.y + z.pos.h - 1 > x && (x = z.pos.y + z.pos.h - 1);
-      }), { smartCol: p, smartRow: x };
-    }, C = (w, p) => (e.minCol && e.maxCol && e.minCol > e.maxCol ? (w = e.maxCol, this.container.eventManager.warn("limitOverlap", "minCol\u6307\u5B9A\u7684\u503C\u5927\u4E8EmaxCol,\u5C06\u4EE5maxCol\u6307\u5B9A\u7684\u503C\u4E3A\u4E3B")) : e.maxCol && w > e.maxCol ? w = e.maxCol : e.minCol && w < e.minCol && (w = e.minCol), e.minRow && e.maxRow && e.minRow > e.maxRow ? (p = e.maxRow, this.container.eventManager.warn("limitOverlap", "minRow\u6307\u5B9A\u7684\u503C\u5927\u4E8EmaxRow,\u5C06\u4EE5maxRow\u6307\u5B9A\u7684\u503C\u4E3A\u4E3B")) : e.maxRow && p > e.maxRow ? p = e.maxRow : e.minRow && p < e.minRow && (p = e.minRow), {
-      limitCol: w,
-      limitRow: p
+      sizeHeight: x,
+      marginX: v,
+      marginY: p
+    } = l, z = i, S = o;
+    const G = e.engine.items, b = (E) => {
+      let g = 1, w = 1;
+      return E.length > 0 && E.forEach((I) => {
+        I.pos.x + I.pos.w - 1 > g && (g = I.pos.x + I.pos.w - 1), I.pos.y + I.pos.h - 1 > w && (w = I.pos.y + I.pos.h - 1);
+      }), { smartCol: g, smartRow: w };
+    }, C = (E, g) => (e.minCol && e.maxCol && e.minCol > e.maxCol ? (E = e.maxCol, this.container.eventManager.warn("limitOverlap", "minCol\u6307\u5B9A\u7684\u503C\u5927\u4E8EmaxCol,\u5C06\u4EE5maxCol\u6307\u5B9A\u7684\u503C\u4E3A\u4E3B")) : e.maxCol && E > e.maxCol ? E = e.maxCol : e.minCol && E < e.minCol && (E = e.minCol), e.minRow && e.maxRow && e.minRow > e.maxRow ? (g = e.maxRow, this.container.eventManager.warn("limitOverlap", "minRow\u6307\u5B9A\u7684\u503C\u5927\u4E8EmaxRow,\u5C06\u4EE5maxRow\u6307\u5B9A\u7684\u503C\u4E3A\u4E3B")) : e.maxRow && g > e.maxRow ? g = e.maxRow : e.minRow && g < e.minRow && (g = e.minRow), {
+      limitCol: E,
+      limitRow: g
     });
     if ((() => {
-      var x, z;
-      n.autoRow(!a || l.responsive), I && (f[0] = I), g && (f[1] = g), y && (d[0] = y), v && (d[1] = v);
-      const w = b(G);
+      var w, I;
+      n.autoRow(!a || l.responsive), v && (f[0] = v), p && (f[1] = p), y && (d[0] = y), x && (d[1] = x);
+      const E = b(G);
       if (!s && !f[0] && !d[0])
-        i = w.smartCol;
+        i = E.smartCol;
       else {
-        const k = (x = this.container.element) == null ? void 0 : x.clientWidth, O = this.autoComputeSizeInfo(s, k, d[0], f[0], m);
-        !l.responsive && s ? i = s : i = O.direction;
+        const A = (w = this.container.element) == null ? void 0 : w.clientWidth;
+        !l.responsive && !s && this.container.col && (s = this.container.col), i = this.autoComputeSizeInfo(s, A, d[0], f[0], m).direction;
       }
       if (!a || l.responsive)
-        o = w.smartRow;
+        o = E.smartRow;
       else {
-        const k = (z = this.container.element) == null ? void 0 : z.clientHeight, O = this.autoComputeSizeInfo(a, k, d[1], f[1], h);
-        !l.responsive && a ? o = a : o = O.direction;
+        const A = (I = this.container.element) == null ? void 0 : I.clientHeight;
+        !l.responsive && !a && this.container.row && (a = this.container.row), o = this.autoComputeSizeInfo(a, A, d[1], f[1], h).direction;
       }
-      const p = C(i, o);
-      L = p.limitCol, S = p.limitRow;
+      const g = C(i, o);
+      z = g.limitCol, S = g.limitRow;
     })(), t) {
-      e.col = i, e.row = o, e.containerW = L, e.containerH = S, n.setColNum(i), n.setRowNum(o), n.addRow(o - n._layoutMatrix.length), n.addCol(i - n._layoutMatrix[0].length);
-      const w = e.__ownTemp__.preCol, p = e.__ownTemp__.preRow;
-      if (i !== w) {
-        e.__ownTemp__.preCol = i, e.eventManager._callback_("colChange", i, w, e);
-        const x = e._VueEvents.vueColChange;
-        typeof x == "function" && x(i, w, e);
+      e.col = i, e.row = o, e.containerW = z, e.containerH = S, n.setColNum(i), n.setRowNum(o), n.addRow(o - n._layoutMatrix.length), n.addCol(i - n._layoutMatrix[0].length);
+      const E = e.__ownTemp__.preCol, g = e.__ownTemp__.preRow;
+      if (i !== E) {
+        e.__ownTemp__.preCol = i, e.eventManager._callback_("colChange", i, E, e);
+        const w = e._VueEvents.vueColChange;
+        typeof w == "function" && w(i, E, e);
       }
-      if (o !== p) {
-        e.__ownTemp__.preRow = o, e.eventManager._callback_("rowChange", o, p, e);
-        const x = e._VueEvents.vueRowChange;
-        typeof x == "function" && x(o, p, e);
+      if (o !== g) {
+        e.__ownTemp__.preRow = o, e.eventManager._callback_("rowChange", o, g, e);
+        const w = e._VueEvents.vueRowChange;
+        typeof w == "function" && w(o, g, e);
       }
     }
     return {
       col: i,
       row: o,
-      containerW: L,
+      containerW: z,
       containerH: S
     };
   }
@@ -1743,8 +1743,8 @@ class Ze {
     const l = [];
     for (let s = 0; s < o.length; s++) {
       let a = o[s];
-      const m = e, h = t, d = e + n - 1, f = t + i - 1, y = a.pos.x, v = a.pos.y, I = a.pos.x + a.pos.w - 1, g = a.pos.y + a.pos.h - 1;
-      ((I >= m && I <= d || y >= m && y <= d || m >= y && d <= I) && (g >= h && g <= f || v >= h && v <= f || h >= v && f <= g) || m >= y && d <= I && h >= v && f <= g) && l.push(a);
+      const m = e, h = t, d = e + n - 1, f = t + i - 1, y = a.pos.x, x = a.pos.y, v = a.pos.x + a.pos.w - 1, p = a.pos.y + a.pos.h - 1;
+      ((v >= m && v <= d || y >= m && y <= d || m >= y && d <= v) && (p >= h && p <= f || x >= h && x <= f || h >= x && f <= p) || m >= y && d <= v && h >= x && f <= p) && l.push(a);
     }
     return l;
   }
@@ -1921,7 +1921,7 @@ class Ze {
     const n = e.pos, i = n.w, o = n.h;
     let l = !1;
     const s = e.container.col - n.x + 1, a = e.container.row - n.y + 1;
-    (i + n.x - 1 > this.container.col || n.tempW) && (this.container.responsive || (n.tempW !== s && n.tempW <= i && (l = !0), t && i > n.tempW && s <= i && s <= i && (n.tempW = s))), (o + n.y - 1 > this.container.row || n.tempH) && (this.container.responsive || (n.tempH !== a && n.tempH <= o && (l = !0), t && o > n.tempH && a <= o && a <= o && (n.tempH = a))), (i > this.container.col || n.tempW) && (n.tempW !== s && n.tempW <= i && (l = !0), t && i > n.tempW && s <= i && s <= i && (n.tempW = s)), (o > this.container.row || n.tempH) && (n.tempH !== a && n.tempH <= o && (l = !0), t && o > n.tempH && a <= o && a <= o && (n.tempH = a)), l && this.container.eventManager._warn_(
+    (i + n.x - 1 > this.container.col || n.tempW) && (this.container.responsive || (n.tempW !== s && n.tempW <= i && (l = !0), t && i > n.tempW && s <= i && s <= i && (n.tempW = s))), (o + n.y - 1 > this.container.row || n.tempH) && (this.container.responsive || (n.tempH !== a && n.tempH <= o && (l = !0), t && o > n.tempH && a <= o && a <= o && (n.tempH = a))), (i > this.container.col || n.tempW) && (n.tempW !== s && n.tempW <= i && (l = !0), t && i > n.tempW && s <= i && s <= i && (n.tempW = s)), (o > this.container.row || n.tempH) && (n.tempH !== a && n.tempH <= o && (l = !0), t && o > n.tempH && a <= o && a <= o && (n.tempH = a)), l && this.items.includes(e) && this.container.eventManager._warn_(
       "temporaryResetItemSize",
       "ITEM: w:" + i + " h:" + o + "\u8D85\u8FC7\u6805\u683C\u5927\u5C0F\uFF0C\u4E34\u65F6\u8C03\u6574\u8BE5ITEM\u5C3A\u5BF8\u4E3Aw:" + (n.tempW ? n.tempW : n.w) + " h:" + (n.tempH ? n.tempH : n.h) + "\u8FDB\u884C\u9002\u914D\u5BB9\u5668\u7A7A\u95F4,\u6B64\u65F6pos.w\u548Cpos.h\u8FD8\u662F\u539F\u6765\u7684\u5C3A\u5BF8,\u5728\u5BB9\u5668\u4E2D\u4E00\u4F46\u5B58\u5728\u8DB3\u591F\u7A7A\u95F4\u5219\u8BE5Item\u4FBF\u4F1A\u6062\u590D\u539F\u6765\u7684\u5C3A\u5BF8",
       e
@@ -2241,7 +2241,7 @@ function dt(u) {
 function re(u, e, t, n) {
   return { x: u, y: e, width: t, height: n };
 }
-const pt = function() {
+const gt = function() {
   function u(e) {
     this.broadcastWidth = 0, this.broadcastHeight = 0, this.contentRect_ = re(0, 0, 0, 0), this.target = e;
   }
@@ -2252,7 +2252,7 @@ const pt = function() {
     var e = this.contentRect_;
     return this.broadcastWidth = e.width, this.broadcastHeight = e.height, e;
   }, u;
-}(), gt = function() {
+}(), pt = function() {
   function u(e, t) {
     var n = dt(t);
     Re(this, { target: e, contentRect: n });
@@ -2272,7 +2272,7 @@ const pt = function() {
     if (!(e instanceof j(e).Element))
       throw new TypeError('parameter 1 is not of type "Element".');
     const t = this.observations_;
-    t.has(e) || (t.set(e, new pt(e)), this.controller_.addObserver(this), this.controller_.refresh());
+    t.has(e) || (t.set(e, new gt(e)), this.controller_.addObserver(this), this.controller_.refresh());
   }, u.prototype.unobserve = function(e) {
     if (!arguments.length)
       throw new TypeError("1 argument required, but only 0 present.");
@@ -2293,7 +2293,7 @@ const pt = function() {
     if (!this.hasActive())
       return;
     const e = this.callbackCtx_, t = this.activeObservations_.map(function(n) {
-      return new gt(n.target, n.broadcastRect());
+      return new pt(n.target, n.broadcastRect());
     });
     this.callback_.call(e, t, e), this.clearActive();
   }, u.prototype.clearActive = function() {
@@ -2373,10 +2373,13 @@ class wt extends Le {
     c(this, "genGridContainerBox", () => {
       this.contentElement = document.createElement("div"), this.contentElement.classList.add("grid-container-area"), this.contentElement._isGridContainerArea = !0, this.element.appendChild(this.contentElement), this.updateStyle(B.gridContainer, this.contentElement), this.contentElement.classList.add(this.className);
     });
-    c(this, "genContainerStyle", () => ({
-      width: this.nowWidth() + "px",
-      height: this.nowHeight() + "px"
-    }));
+    c(this, "genContainerStyle", () => {
+      const t = this.nowWidth() + "px", n = this.nowHeight() + "px";
+      return {
+        width: t,
+        height: n
+      };
+    });
     c(this, "nowWidth", () => {
       let t = 0, n = this.containerW;
       return n > 1 && (t = (n - 1) * this.margin[0]), n * this.size[0] + t || 0;
@@ -2608,7 +2611,7 @@ const xt = {
       global: e.config.global
     });
     let o = {}, l = !1;
-    return Ye("_grid_item_components_", e.components), Ie(() => {
+    return Ye("_grid_item_components_", e.components), ve(() => {
       i.el = t.value, i.engine.init(), i.vue = e, Q(() => {
         o = i.engine.layoutConfig.genLayoutConfig(t.value.clientWidth, t.value.clientHeight), n.value._isGridContainerArea = !0;
         const s = Y(o.currentLayout);
@@ -2679,11 +2682,11 @@ const xt = {
       ], 512)
     ], 512));
   }
-}, ve = {
+}, Ie = {
   GridContainer: xt,
   GridItem: Ue
 }, he = (u) => {
-  he.installed || (he.installed = !0, Object.keys(ve).forEach((e) => u.component(e, ve[e])));
+  he.installed || (he.installed = !0, Object.keys(Ie).forEach((e) => u.component(e, Ie[e])));
 }, Ct = {
   install: he
 };

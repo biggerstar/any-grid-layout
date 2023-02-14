@@ -12,8 +12,8 @@ export default class TempStore {
         //----------通用可写变量-----------//
         editItemNum: 0,   // 当前处于编辑模式的Item个数
         belongContainer: null,
-        fromContainer: null,
-        dragContainer: null,
+        fromContainer: null,    //  当前Item的初始来源
+        dragContainer: null,    //  当前Item拖动多次跨容器后的最新所处容器位置来源
         draggingLock: false,    // 拖动限制锁
         currentContainer: null,  //  当前鼠标在哪个Container
         beforeContainer: null,  //  来自上一个的Container

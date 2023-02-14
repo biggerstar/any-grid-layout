@@ -9,10 +9,11 @@ export default class Sync {
         const readystatechange = () => {
             Sync.ready = true
             Sync.intervalTime = 50
-            document.removeEventListener('readystatechange',readystatechange)
+            document.removeEventListener('readystatechange', readystatechange)
         }
-        document.addEventListener('readystatechange',readystatechange)
-        // window.onload = () => Sync.ready = true
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            readystatechange()
+        } else document.addEventListener('readystatechange', readystatechange)
     }
 
     /** 接受一个函数或者包含obj = {

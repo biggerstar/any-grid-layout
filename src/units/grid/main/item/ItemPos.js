@@ -107,7 +107,7 @@ export default class ItemPos {
         return this
     }
 
-    export(otherFieldList) {
+    export(otherFieldList=[]) {
         const exportFields = {}
         Object.keys(this).forEach((posKey) => {
             if (['w', 'h', 'x', 'y'].includes(posKey)) {

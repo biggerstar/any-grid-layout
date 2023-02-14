@@ -107,7 +107,6 @@ export default class Container extends DomFunctionImpl {
     _define() {
         let col = null
         let row = null
-        let responsive = false
         Object.defineProperties(this, {
             col: {
                 get: () => col,
@@ -422,9 +421,11 @@ export default class Container extends DomFunctionImpl {
 
     /** 生成该栅格容器布局样式  */
     genContainerStyle = () => {
+        const nowWidth = this.nowWidth() + 'px'
+        const nowHeight = this.nowHeight() + 'px'
         return {
-            width: this.nowWidth() + 'px',
-            height: this.nowHeight() + 'px',
+            width: nowWidth,
+            height: nowHeight,
         }
         // containerStyle.overflowX = this.col > (this.maxCol || this.col) ? 'scroll' : 'hidden'
         // containerStyle.overflowY = this.row > (this.maxRow || this.row) ? 'scroll' : 'hidden'
