@@ -1079,6 +1079,10 @@ export default class EditEvent {
                     maskEl.parentElement.removeChild(maskEl)
                 }
 
+                //-------------------------更新映射最新的位置到Items---------------------------//
+                if (container || fromItem && fromItem.container.responsive) container.engine.sortResponsiveItem()
+
+
                 //--------------------------点击关闭按钮-----------------------------//
                 const downTagClassName = tempStore.mouseDownElClassName
                 if (downTagClassName && downTagClassName.includes('grid-item-close-btn')) {
@@ -1089,6 +1093,7 @@ export default class EditEvent {
                             const isClose = evItem.container.eventManager._callback_('itemClosing', evItem)
                             if (!(isClose === null || isClose === false)) {
                                 evItem.remove(true)
+                                evItem.container.engine.updateLayout(true)
                                 evItem.container.eventManager._callback_('itemClosed', evItem)
                             }
                         }
@@ -1106,9 +1111,6 @@ export default class EditEvent {
                         tempStore.fromContainer.__ownTemp__.firstEnterUnLock = false
                     }
                 }
-
-                //-------------------------更新映射最新的位置到Items---------------------------//
-                if (container || fromItem && fromItem.container.responsive) container.engine.sortResponsiveItem()
 
                 //-------------------------更新所有相关操作的容器布局---------------------------//
                 if (fromItem) {

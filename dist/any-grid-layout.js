@@ -927,16 +927,17 @@ c(F, "_eventEntrustFunctor", {
         const m = o[l];
         m.parentElement.removeChild(m);
       }
+      (t || n && n.container.responsive) && t.engine.sortResponsiveItem();
       const a = r.mouseDownElClassName;
       if (a && a.includes("grid-item-close-btn") && (e.touchTarget ? e.touchTarget : e.target).classList.contains("grid-item-close-btn")) {
         const m = $(e);
         if (m === r.fromItem) {
           const h = m.container.eventManager._callback_("itemClosing", m);
-          h === null || h === !1 || (m.remove(!0), m.container.eventManager._callback_("itemClosed", m));
+          h === null || h === !1 || (m.remove(!0), m.container.engine.updateLayout(!0), m.container.eventManager._callback_("itemClosed", m));
         }
       }
       const s = r.moveContainer ? r.moveContainer : r.fromContainer;
-      if (s && (s.__ownTemp__.firstEnterUnLock = !1, s.__ownTemp__.exchangeLock = !1, s.__ownTemp__.beforeOverItems = [], s.__ownTemp__.moveCount = 0, r.fromContainer && s !== r.fromContainer && (r.fromContainer.__ownTemp__.firstEnterUnLock = !1)), (t || n && n.container.responsive) && t.engine.sortResponsiveItem(), n && (n.container.engine.updateLayout(!0), n.container.childContainer.forEach((h) => {
+      if (s && (s.__ownTemp__.firstEnterUnLock = !1, s.__ownTemp__.exchangeLock = !1, s.__ownTemp__.beforeOverItems = [], s.__ownTemp__.moveCount = 0, r.fromContainer && s !== r.fromContainer && (r.fromContainer.__ownTemp__.firstEnterUnLock = !1)), n && (n.container.engine.updateLayout(!0), n.container.childContainer.forEach((h) => {
         h.nestingItem === n && h.container.engine.updateLayout(!0);
       })), n && i.container !== n.container && (i == null || i.container.engine.updateLayout(!0)), i && (r.isDragging && i.container.eventManager._callback_("itemMoved", i.pos.x, i.pos.y, i), r.isResizing && i.container.eventManager._callback_("itemResized", i.pos.w, i.pos.h, i)), r.isLeftMousedown && r.dragOrResize === "slidePage") {
         const l = r.slidePageOffsetInfo, m = l.newestPageX - e.pageX, h = l.newestPageY - e.pageY;
