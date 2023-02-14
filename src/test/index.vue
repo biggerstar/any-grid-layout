@@ -106,6 +106,15 @@ const events = {
     // Container成功卸载事件
     // console.log(container);
   },
+  itemClosing(item) {
+    //item关闭前事件,返回null或者false阻止关闭
+    // console.log(item);
+  },
+  itemClosed(item) {
+    //item关闭后事件
+    // console.log(item);
+    // updateConfigToDB()
+  },
   itemMounted(item) {
     // Item成功挂载事件
     // console.log(item);

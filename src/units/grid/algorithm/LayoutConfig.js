@@ -142,7 +142,6 @@ export default class LayoutConfig {
             ratioRow = this.container.ratioRow,
             size = [null, null],
             margin = [null, null],
-            padding = 0,
             sizeWidth,
             sizeHeight,
             marginX,
@@ -179,7 +178,6 @@ export default class LayoutConfig {
         size[1] = sizeRowInfo.size
 
         useLayoutConfig = Object.assign(useLayoutConfig, {
-            padding,
             margin,
             size,
         })   // 被修改的几个值再次合并回去
@@ -302,7 +300,7 @@ export default class LayoutConfig {
                 maxCol = smartInfo.smartCol   // 如果都没有指定则根据当前配置自适应
             } else {
                 const containerWidth = this.container.element?.clientWidth
-                if (!useLayoutConfig['responsive'] && !col && this.container.col) col = this.container.col // 静态直接使用指定的col值
+                if (!useLayoutConfig['responsive'] && !col && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1
                 const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
                 maxCol = sizeColInfo.direction
             }
@@ -311,7 +309,7 @@ export default class LayoutConfig {
                 maxRow = smartInfo.smartRow
             } else {
                 const containerHeight = this.container.element?.clientHeight
-                if (!useLayoutConfig['responsive'] && !row && this.container.row) row = this.container.row // 静态直接使用指定的row值
+                if (!useLayoutConfig['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
                 const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
                 maxRow = sizeRowInfo.direction
             }

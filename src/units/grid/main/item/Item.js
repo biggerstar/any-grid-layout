@@ -166,16 +166,17 @@ export default class Item extends DomFunctionImpl {
 
     /** 导出当前Item的配置，忽略和默认配置一样的字段
      * @param otherFieldList {Array} 要导出的除了默认以外其他存在的字段
+     * @param banFieldList {Array} 要禁止导出的字段
      * */
-    exportConfig = (otherFieldList) => {
+    exportConfig = (otherFieldList = [], banFieldList = []) => {
         const item = this
         const exposeConfig = {}
         let exposePos = {}
         exposePos = item.pos.export(otherFieldList)
-        if (this.responsive) {
-            delete exposePos.x
-            delete exposePos.y
-        }
+
+        if (banFieldList.includes('x')) delete exposePos.x
+        if (banFieldList.includes('y')) delete exposePos.y
+
         exposeConfig['pos'] = exposePos
         Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
             if (item[field] !== false) exposeConfig[field] = item[field]

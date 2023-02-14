@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch, nextTick, toRaw,onUpdated, provide} from 'vue'
+import {onMounted, ref, watch, nextTick, toRaw, onUpdated, provide} from 'vue'
 import {Container} from "@/units/grid/AnyGridLayout.js";
 import {cloneDeep} from "@/units/grid/other/tool.js"
 
@@ -102,8 +102,10 @@ onMounted(() => {
   // container._VueEvents.vueRowChange = (row, preRow) => { }
   //-----------------职能函数回调开发者获取到相关参数或信息--------------------//
   props.containerAPI.getContainer = () => container
-  props.containerAPI.exportData = () => container.exportUseLayout().data   // 获取当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
-  props.containerAPI.exportUseLayout = () => container.exportUseLayout()   // 获取当前使用的完整布局构成参数
+  props.containerAPI.exportData = () => container.exportData()  // 导出当前真实顺序的data，正常用于响应式获取，和当前使用的layout.data数据一致
+  props.containerAPI.exportGlobal = () => container.exportGlobal()   // 导出当前使用的config中的global参数
+  props.containerAPI.exportLayouts = () => container.exportLayouts()   // 导出当前使用的config中的layouts参数
+  props.containerAPI.exportConfig = () => container.exportConfig()  // 导出当前使用的完整布局构成参数
 
   //------------------------------------------------------------------------//
 

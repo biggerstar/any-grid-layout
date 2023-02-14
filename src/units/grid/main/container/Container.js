@@ -40,7 +40,7 @@ export default class Container extends DomFunctionImpl {
     el = ''
     parent = null  // 嵌套情况下上级Container
     platform = 'native'   //  native(默认原生js) || vue || react(计划)
-    layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案
+    layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
     events = []
     global = {}
     //----------------内部需要的参数---------------------//
@@ -225,18 +225,31 @@ export default class Container extends DomFunctionImpl {
         else Sync.run(_mountedFun)
     }
 
-    mountItems(items) {
-        items.forEach(item => container.add(item))
-        this.engine.mountAll()
-    }
 
-
+    /** 导出当前使用的data列表 */
     exportData(otherFieldList = []) {
         return this.engine.items.map((item) => item.exportConfig(otherFieldList))
     }
 
-    exportUseLayout() {
-        return this.useLayout
+    /** 导出用户初始化传进来的global配置信息 */
+    exportGlobal() {
+        return this.global
+    }
+
+    /** 导出用户初始化传进来的的useLayout配置信息 ,若未传入size或margin，导出后将添加上当前的值 */
+    exportLayouts() {
+        let layouts = this.layouts
+        if (layouts && layouts.length === 1) {
+            layouts = layouts[0]
+        }
+        return layouts
+    }
+
+    exportConfig() {
+        return {
+            global: this.exportGlobal(),
+            layouts: this.exportLayouts(),
+        }
     }
 
     /** 渲染某一组Data */

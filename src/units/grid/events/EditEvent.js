@@ -125,6 +125,7 @@ export default class EditEvent {
             mouseup: (ev) => {
                 const fromItem = tempStore.fromItem
                 if (fromItem === null) return
+                const container = fromItem.container
                 //----------------------------------------//
                 fromItem.__temp__.clientWidth = fromItem.nowWidth()
                 fromItem.__temp__.clientHeight = fromItem.nowHeight()
@@ -421,7 +422,7 @@ export default class EditEvent {
                     if (dragItem.container && overContainer
                         && dragItem.container !== overContainer
                         && (dragItem.container.childContainer.length > 0
-                            || overContainer.childContainer.length > 0) ) return  // 非firstXXX标记下移出去容器外将不进行反应,此时正常是嵌套容器下发生
+                            || overContainer.childContainer.length > 0)) return  // 非firstXXX标记下移出去容器外将不进行反应,此时正常是嵌套容器下发生
                 }
                 //-----------------------是否符合交换环境参数检测结束-----------------------//
                 // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
@@ -655,18 +656,15 @@ export default class EditEvent {
                     const isExchange = dragItem.container.eventManager._callback_('itemExchange', fromItem, toItem)
                     if (isExchange === false || isExchange === null) return
                     // console.log(dragItem,toItem);
+                    container.engine.sortResponsiveItem()
                     if (container.responseMode === 'default') {
                         if (xOrY) {  // X轴
-                            // console.log(111111111111111111)
-                            container.engine.sortResponsiveItem()
                             container.engine.move(dragItem, toItem.i)
                         } else { // Y轴
                             container.engine.exchange(dragItem, toItem)
                         }
                     } else if (container.responseMode === 'stream') {
-                        container.engine.sortResponsiveItem()
                         container.engine.move(dragItem, toItem.i)
-                        // container.engine.sortResponsiveItem()
                     } else if (container.responseMode === 'exchange') {
                         container.engine.exchange(dragItem, toItem)
                     }
@@ -930,7 +928,7 @@ export default class EditEvent {
                 //----------------------------------------------------------------//
                 tempStore.isLeftMousedown = true
                 tempStore.mousedownEvent = ev
-                tempStore.fromContainer =  tempStore?.fromItem?.container || container  // 必要，表明Item来源
+                tempStore.fromContainer = tempStore?.fromItem?.container || container  // 必要，表明Item来源
                 EEF.check.resizeOrDrag(ev)
 
                 if (tempStore.fromItem) {
@@ -1087,7 +1085,13 @@ export default class EditEvent {
                     const target = ev.touchTarget ? ev.touchTarget : ev.target
                     if (target.classList.contains('grid-item-close-btn')) {
                         const evItem = parseItem(ev)
-                        if (evItem === tempStore.fromItem) evItem.remove(true)
+                        if (evItem === tempStore.fromItem) {
+                            const isClose = evItem.container.eventManager._callback_('itemClosing', evItem)
+                            if (!(isClose === null || isClose === false)) {
+                                evItem.remove(true)
+                                evItem.container.eventManager._callback_('itemClosed', evItem)
+                            }
+                        }
                     }
                 }
 
@@ -1102,6 +1106,9 @@ export default class EditEvent {
                         tempStore.fromContainer.__ownTemp__.firstEnterUnLock = false
                     }
                 }
+
+                //-------------------------更新映射最新的位置到Items---------------------------//
+                if (container || fromItem && fromItem.container.responsive) container.engine.sortResponsiveItem()
 
                 //-------------------------更新所有相关操作的容器布局---------------------------//
                 if (fromItem) {

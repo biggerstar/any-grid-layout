@@ -4,14 +4,16 @@ import ErrorTypeIndex from "@/units/grid/events/errorType/ErrorTypeIndex.js";
  *  error(err)                                             所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
  *  containerMounted(container)                            Container成功挂载事件
  *  containerUnmounted(container)                          Container成功卸载事件
- *  itemMounted(item)                                      tem成功挂载事件
- *  itemUnmounted(item)                                    tem成功卸载事件
- *  addItemSuccess(item)                                   tem添加成功事件
- *  itemResizing(item,w,h)                                   item每次大小被改变时
+ *  itemMounted(item)                                      item成功挂载事件
+ *  itemUnmounted(item)                                    item成功卸载事件
+ *  addItemSuccess(item)                                   item添加成功事件
+ *  itemClosing(item)                                      item关闭前事件,返回null或者false将会阻止关闭该Item
+ *  itemClosed(item)                                       item关闭后事件
+ *  itemResizing(item,w,h)                                 item每次大小被改变时
  *  itemResized(item,w,h)                                  item在鼠标抬起后在容器中的最终大小
- *  itemMoving(item,nowX,nowY)                               item拖动时在容器内所属位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
+ *  itemMoving(item,nowX,nowY)                             item拖动时在容器内所属位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
  *  itemMoved(item,nowX,nowY)                              item拖动结束时在容器内最终位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
- *  itemMovePositionChange(oldX,oldY,newX,newY)          item位置变化时响应的事件,只有位置变化才触发
+ *  itemMovePositionChange(oldX,oldY,newX,newY)            item位置变化时响应的事件,只有位置变化才触发
  *  crossContainerExchange(oldItem,newItem)                交换成功后oldItem会从原Container中卸载,而新Item将会自动添加进新容器中，无需手动添加，返回null或者false将会阻止该次交换
  *  autoScroll(container,direction,offset)                 鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
  *                                                         返回null或者false取消该次滚动，direction是方向, offset是滚动距离,负值为反方向滚动
