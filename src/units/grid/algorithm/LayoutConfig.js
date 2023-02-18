@@ -3,7 +3,7 @@ import {layoutConfig} from "@/units/grid/default/defaultLayoutConfig.js";
 
 export default class LayoutConfig {
     container = null
-    useLayoutConfig = {}
+    customLayout = {}
     option = {}
     _defaultLayoutConfig = layoutConfig
 
@@ -113,7 +113,7 @@ export default class LayoutConfig {
      * 之后返回该屏幕尺寸下的col size margin style  等等等配置信息，还有很多字段不写出来，
      * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
     genLayoutConfig(containerWidth = null, containerHeight = null,) {
-        let useLayoutConfig = {}
+        let customLayout = {}
         let layoutItem = {}
         // console.log(containerWidth,this.container.element.clientWidth);
         containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
@@ -130,11 +130,10 @@ export default class LayoutConfig {
             if (layoutItem.px < containerWidth) continue
             break
         }
-        this.container.layout = layoutItem
         // console.log(containerWidth,layoutItem.px);
-        if (containerWidth === 0 && !useLayoutConfig.col) throw new Error("请在layout中传入col的值或者为Container设置一个初始宽度")
+        if (containerWidth === 0 && !customLayout.col) throw new Error("请在layout中传入col的值或者为Container设置一个初始宽度")
         //----------------------------------------------------//
-        useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem)) // 在global值的基础上附加修改克隆符合当前layout的属性
+        customLayout = Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem)) // 在global值的基础上附加修改克隆符合当前layout的属性
         let {
             col = null,   //  缺省值必须为null才能触发自动计算col
             row = null,
@@ -146,11 +145,11 @@ export default class LayoutConfig {
             sizeHeight,
             marginX,
             marginY,
-        } = useLayoutConfig
+        } = customLayout
         // console.log(containerWidth,layoutItem.px,layoutItem.margin,layoutItem.size,layoutItem.col);
 
         // const checkMarginOrSize = (name = '') => {
-        //     const curArr = useLayoutConfig[name]
+        //     const curArr = customLayout[name]
         //     if (Array.isArray(curArr)) {
         //         if (!['number', 'string'].includes(typeof curArr[0])
         //             || !['number', 'string'].includes(typeof curArr[1])) {
@@ -160,65 +159,68 @@ export default class LayoutConfig {
         // }
         // checkMarginOrSize('margin')
         // checkMarginOrSize('size')
-        // console.log(useLayoutConfig);
+        // console.log(customLayout);
 
         if (marginX) margin[0] = marginX
         if (marginY) margin[1] = marginY
         if (sizeWidth) size[0] = sizeWidth
         if (sizeHeight) size[1] = sizeHeight
+        const oldMargin = Array.from(margin)
+        const oldSize = Array.from(size)
+        // console.log(oldMargin,oldSize);
         // if (!col && !(margin[0] || size[0])) throw new Error('col 或者 margin[0] 或者 size[0]必须要设定一个,您也可以设定col 或者 marginX 或者 sizeWidth两个中的一个便能进行布局')
-        // if (!useLayoutConfig.responsive && !row && !(margin[1] || size[1])) throw new Error('row 或者 margin[1] 或者 size[1]必须要设定一个,您也可以设定row 或者 marginY 或者 sizeHeight两个中的一个便能进行布局')
+        // if (!customLayout.responsive && !row && !(margin[1] || size[1])) throw new Error('row 或者 margin[1] 或者 size[1]必须要设定一个,您也可以设定row 或者 marginY 或者 sizeHeight两个中的一个便能进行布局')
 
+
+        // console.log(col, containerWidth, size[0], margin[0], ratioCol);
+        const smartInfo = this.computeSmartRowAndCol(this.container.engine.items)
+        // console.log(smartInfo);
+        // console.log(customLayout);
+        // console.log(col);
+        // console.log(smartInfo.smartCol);
+
+        if (!col && !margin[0] && !size[0]) col = smartInfo.smartCol
+        if (!row || customLayout['responsive']) row = smartInfo.smartRow
+        // console.log(col);
+
+        if (!customLayout['responsive'] && !col && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1
         const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
         margin[0] = sizeColInfo.margin
         size[0] = sizeColInfo.size
 
+        if (!customLayout['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
         const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
         margin[1] = sizeRowInfo.margin
         size[1] = sizeRowInfo.size
 
-        useLayoutConfig = Object.assign(useLayoutConfig, {
-            margin,
-            size,
-        })   // 被修改的几个值再次合并回去
 
-        let checkLayoutValue = (useLayoutConfig) => {   // 里面就是缺啥补啥
-            let {margin, size, minCol, maxCol, col} = useLayoutConfig
-            if (margin[0] !== null) {
-                margin[0] = margin[0] ? parseFloat(margin[0].toFixed(1)) : 0
-                if (margin[1] === null) margin[1] = margin[0]
-            }
-            if (size[0] !== null) {
-                size[0] = size[0] ? parseFloat(size[0].toFixed(1)) : 0
-                if (size[1] === null) size[1] = size[0]
-            }
-            if (margin[1] !== null) {
-                margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : 0
-                if (margin[0] === null) margin[0] = margin[1]
-            }
-            if (size[1] !== null) {
-                size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : 0
-                if (size[0] === null) size[0] = size[1]
-            }
+        if (oldMargin[0] !== null || oldMargin[1] !== null) customLayout.margin = margin
+        if (oldSize[0] !== null || oldSize[1] !== null) customLayout.size = size
 
-            // console.log(size, margin);
-            return useLayoutConfig
-        }
+        // console.log(oldMargin,oldSize);
+        // console.log(margin,size);
 
-        const currentLayout = {}
         const global = this.option.global || {}
-        for (const key in useLayoutConfig) {
+        for (const key in customLayout) {
             if (global !== undefined || layoutItem[key] !== undefined) {
-                currentLayout[key] = useLayoutConfig[key]   // 筛选出用户传进来的初始配置
+                customLayout[key] = customLayout[key]   // 筛选出用户传进来的初始配置
             }
         }
-        this.useLayoutConfig = Object.assign(this.useLayoutConfig, checkLayoutValue(useLayoutConfig))
-        this.container.useLayout = useLayoutConfig  //  将新的配置给Container中的nowLayoutConfig表示当前使用的配置
+
+        this.container.layout = layoutItem
+        this.container.useLayout = this.customLayout = this.checkLayoutValue(customLayout)
+        const useLayout = this.checkLayoutValue({
+            ...this.customLayout,
+            margin,
+            size
+        })
+
+        // console.log(useLayout.margin, useLayout.size);
         return {
             layout: layoutItem,   // 当前使用的layouts中某个布局配置
             global: this.option.global,  //  当前container的全局配置
-            useLayoutConfig: useLayoutConfig,  // currentLayout情况下包含margin，size等等布局必须字段
-            currentLayout: currentLayout,   //  当前global和layoutItem 合并后使用的布局配置
+            customLayout: customLayout,   //  当前global和layoutItem 合并后使用的布局配置
+            useLayout: useLayout,  // 在customLayout情况下必然包含margin，size布局字段
         }
     }
 
@@ -235,7 +237,7 @@ export default class LayoutConfig {
         const layoutManager = this.container.engine.layoutManager
         let maxCol = container.col
         let maxRow = container.row
-        let useLayoutConfig = Object.assign(cloneDeep(this.option.global), cloneDeep(container.layout || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
+        let customLayout = Object.assign(cloneDeep(this.option.global), cloneDeep(container.layout || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
         let {
             col = null,   //  缺省值必须为null才能触发自动计算col
             row = null,
@@ -247,22 +249,11 @@ export default class LayoutConfig {
             sizeHeight,
             marginX,
             marginY,
-        } = useLayoutConfig
+        } = customLayout
         let containerW = maxCol
         let containerH = maxRow
         const items = container.engine.items
-        const computeSmartRowAndCol = (items) => {
-            let smartCol = 1
-            let smartRow = 1
-            if (items.length > 0) {
-                items.forEach((item) => {
-                    if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1
-                    if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
-                })
-            }
-            // console.log(smartCol,smartRow);
-            return {smartCol, smartRow}
-        }
+
         const computeLimitLength = (maxCol, maxRow) => {
             //-----------------------------Col确定---------------------------------//
             if (container["minCol"] && container["maxCol"] && (container["minCol"] > container["maxCol"])) {
@@ -285,7 +276,7 @@ export default class LayoutConfig {
         const AutoSetting = () => {
             // 自动设置col和row
             //  响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
-            layoutManager.autoRow(!row || useLayoutConfig["responsive"])
+            layoutManager.autoRow(!row || customLayout["responsive"])
             if (marginX) margin[0] = marginX
             if (marginY) margin[1] = marginY
             if (sizeWidth) size[0] = sizeWidth
@@ -295,21 +286,23 @@ export default class LayoutConfig {
             // console.log(smartInfo);
             // console.log(maxCol,maxRow)
 
-            const smartInfo = computeSmartRowAndCol(items)
-            if (!col && !margin[0] && !size[0]) {
+            const smartInfo = this.computeSmartRowAndCol(items)
+            if (!col && !margin[0] && !size[0]) {   // 若三种都没有指定，将从items中自动计算出合适的最大容器大小(通常这里用于指定static位置的成员自动计算)
                 maxCol = smartInfo.smartCol   // 如果都没有指定则根据当前配置自适应
             } else {
                 const containerWidth = this.container.element?.clientWidth
-                if (!useLayoutConfig['responsive'] && !col && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1
+                // console.log(col);
+                // console.log(222222222222222222)
+                if (!customLayout['responsive'] && !col && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1
                 const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
                 maxCol = sizeColInfo.direction
             }
-            if (!row || useLayoutConfig['responsive']) {  // 没有给出row则自适应，自动计算
+            if (!row || customLayout['responsive']) {  // 没有给出row则自适应，自动计算
                 //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
                 maxRow = smartInfo.smartRow
             } else {
                 const containerHeight = this.container.element?.clientHeight
-                if (!useLayoutConfig['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
+                if (!customLayout['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
                 const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
                 maxRow = sizeRowInfo.direction
             }
@@ -319,11 +312,12 @@ export default class LayoutConfig {
             //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
             containerW = limitInfo.limitCol
             containerH = limitInfo.limitRow
+            // console.log(containerW,containerH);
         }
         AutoSetting()
         // console.log(maxCol, maxRow)
         // autoGrowRow
-        if (isSetConfig) {
+        if (isSetConfig && maxCol && maxRow) {
             container.col = maxCol
             container.row = maxRow
             container.containerW = containerW
@@ -354,6 +348,45 @@ export default class LayoutConfig {
             containerW,
             containerH
         }
+    }
+
+    computeSmartRowAndCol = (items) => {
+        let smartCol = null
+        let smartRow = null
+        if (items.length > 0) {
+            items.forEach((item) => {
+                if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1
+                if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
+            })
+        }
+        // console.log(smartCol,smartRow);
+        return {smartCol, smartRow}
+    }
+    checkLayoutValue = (customLayout) => {   // 里面就是缺啥补啥
+        let {margin, size} = customLayout
+        if (margin) {
+            if (margin[0] !== null) {
+                margin[0] = margin[0] ? parseFloat(margin[0].toFixed(1)) : 0
+                if (margin[1] === null) margin[1] = margin[0]
+            }
+
+            if (margin[1] !== null) {
+                margin[1] = margin[1] ? parseFloat(margin[1].toFixed(1)) : 0
+                if (margin[0] === null) margin[0] = margin[1]
+            }
+        }
+        if (size) {
+            if (size[0] !== null) {
+                size[0] = size[0] ? parseFloat(size[0].toFixed(1)) : 0
+                if (size[1] === null) size[1] = size[0]
+            }
+            if (size[1] !== null) {
+                size[1] = size[1] ? parseFloat(size[1].toFixed(1)) : 0
+                if (size[0] === null) size[0] = size[1]
+            }
+        }
+        // console.log(size, margin);
+        return customLayout
     }
 }
 

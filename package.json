@@ -35,6 +35,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
+    "@biggerstar/layout": "0.0.28-Beta"
   },
   "eslintIgnore": [
     "dist"

@@ -14,9 +14,9 @@ import ResizeObserver from '@/units/grid/modules/resize-observer-polyfill/Resize
 const tempStore = TempStore.store
 //---------------------------------------------------------------------------------------------//
 
-/** 栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
- *  Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
- *  该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
+/** #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
+ *   Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
+ *   该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
  *  {
  *    col: 8,
  *    size:[80,80],
@@ -31,6 +31,18 @@ const tempStore = TempStore.store
  *    1.暂不支持iframe嵌套
  *    2.使用原生js开发的时候如果首屏加载网页中元素会一闪而过或者布局错误然后才生成网格布局,出现这种情况可以对Container挂载的那个元素点进行display:'none',
  *      框架处理会自动显示出来，出现这个的原因是因为html加载渲染比js对dom的渲染快
+ *  # size,margin, [col || row](后面简称CR) 在传入后的响应结果,
+ *    所有参数是通过LayoutConfig算法类以当前容器最大可视区域进行计算，
+ *   CR   size   margin   所见即所得
+ *   CR  !size   margin   自动通过容器剩余空间设定size尺寸
+ *   CR   size  !margin   自动通过容器剩余空间margin尺寸
+ *   CR  !size  !margin   通过传入的radio自动设定size和margin尺寸
+ *  !CR   size   margin   自动设定CR的栅格数
+ *  !CR  !size   margin   自动通过容器剩余空间设定size尺寸
+ *  !CR   size  !margin   自动通过容器剩余空间设定margin尺寸
+ *  !CR  !size  !margin   会自动通过传入data列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
+ *                        如果data顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
+ *
  * */
 export default class Container extends DomFunctionImpl {
     //----------实例化传进的的参数(次级配置信息)-----------//
@@ -228,6 +240,7 @@ export default class Container extends DomFunctionImpl {
 
     /** 导出当前使用的data列表 */
     exportData(otherFieldList = []) {
+        // console.log(this.engine.items.length)
         return this.engine.items.map((item) => item.exportConfig(otherFieldList))
     }
 
@@ -239,6 +252,7 @@ export default class Container extends DomFunctionImpl {
     /** 导出用户初始化传进来的的useLayout配置信息 ,若未传入size或margin，导出后将添加上当前的值 */
     exportLayouts() {
         let layouts = this.layouts
+        this.layout.data = this.exportData()  // 必要
         if (layouts && layouts.length === 1) {
             layouts = layouts[0]
         }
@@ -329,18 +343,17 @@ export default class Container extends DomFunctionImpl {
             const containerWidth = this.element.clientWidth
             const containerHeight = this.element.clientHeight
             if (containerWidth <= 0 || containerHeight <= 0) return
-            let useLayout = this.engine.layoutConfig.genLayoutConfig(containerWidth, containerHeight)
-            let {useLayoutConfig, currentLayout, layout} = useLayout
-            // let fullUseLayoutConfig = new LayoutInstantiationField(useLayoutConfig)
+            let useLayoutConfig = this.engine.layoutConfig.genLayoutConfig(containerWidth, containerHeight)
+            let {useLayout, customLayout} = useLayoutConfig
             const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
             if (res === null || res === false) return
-            if (typeof res === 'object') useLayoutConfig = res
+            if (typeof res === 'object') useLayout = res
 
-            // console.log(useLayoutConfig);
-            // console.log(this.px, useLayoutConfig.px);
-            if (this.px && useLayoutConfig.px) {
-                if (this.px !== useLayoutConfig.px) {
-                    // console.log(this.px, useLayoutConfig.px);
+            // console.log(useLayout);
+            // console.log(this.px, useLayout.px);
+            if (this.px && useLayout.px) {
+                if (this.px !== useLayout.px) {
+                    // console.log(this.px, useLayout.px);
                     if (this.platform !== 'vue') {
                         // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
                         // this.engine.unmount(false)
@@ -348,9 +361,9 @@ export default class Container extends DomFunctionImpl {
                         // this.engine._syncLayoutConfig(fullUseLayoutConfig)
                         // this.render()
                     }
-                    this.eventManager._callback_('useLayoutChange', currentLayout, containerWidth, this.container)
+                    this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this.container)
                     const vueUseLayoutChange = this._VueEvents.vueUseLayoutChange
-                    if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
+                    if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
                 }
             }
             this.engine.updateLayout(true)

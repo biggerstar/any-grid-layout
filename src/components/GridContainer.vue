@@ -52,13 +52,14 @@ onMounted(() => {
     // 必须nextTick在嵌套下且多px的layouts下获取正确的最新width
     // console.log('gridContainer', gridContainer.value.clientWidth, gridContainer.value);
     useLayoutConfig = container.engine.layoutConfig.genLayoutConfig(gridContainer.value.clientWidth, gridContainer.value.clientHeight)
+    // console.log(useLayoutConfig);
     gridContainerArea.value._isGridContainerArea = true   // 为gridContainerArea添加标识
     //-------如果指定render则以手动渲染为主，若不指定则使用符合当前布局的配置为主-------//
-    const customsLayout = cloneDeep(useLayoutConfig.currentLayout)
+    const customsLayout = cloneDeep(useLayoutConfig.customLayout)
     if (props.render === null) {
       Object.assign(props.useLayout, customsLayout)
     } else if (typeof props.render === 'function') {
-      props.render(customsLayout, useLayoutConfig.useLayoutConfig, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
+      props.render(customsLayout, useLayoutConfig.useLayout, props.config.layouts) // 参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
     }
     container.mount()
   })
@@ -114,15 +115,15 @@ onMounted(() => {
     props.useLayout.data = []
     nextTick(() => {
       useLayoutConfig = useLayout
-      const customsLayout = cloneDeep(useLayout.currentLayout)   // 隔离用户操作和layout对应的地址引用，用户修改都由watch同步
+      const customsLayout = cloneDeep(useLayout.customLayout)   // 隔离用户操作和layout对应的地址引用，用户修改都由watch同步
       for (let k in props.useLayout) {   // (重置数据,下面重定义布局)让vue配置使用当前的layout,原来有现在不在customsLayout中的键去除
         delete props.useLayout[k]
       }
       if (props.layoutChange === null) {
-        Object.assign(props.useLayout, useLayout.currentLayout)
+        Object.assign(props.useLayout, useLayout.customLayout)
       } else if (typeof props.layoutChange === 'function') {
         isLayoutChange = false
-        props.layoutChange(customsLayout, useLayout.useLayoutConfig, container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
+        props.layoutChange(customsLayout, useLayout.useLayout, container.layouts) //  手动配置当前vue要使用的layout，参数分别是布局档案 用户传入layouts某个符合方案，完整容器构成信息，用户传入的layouts
       }
       // console.log(gridContainer.value.clientWidth, customsLayout.px, customsLayout.data);
     })

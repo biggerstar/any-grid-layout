@@ -98,6 +98,9 @@ const events = {
     // if (["itemLimitError"].includes(err.name)) return
     console.log(warn);
   },
+  updated(){
+    //  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发
+  },
   containerMounted(container) {
     // Container成功挂载事件
     // console.log(container)
@@ -235,15 +238,14 @@ const layouts = [
   // },
   {
     px: 820,
-    col: 6,
+    // col: 6,
     // row:4,
     // margin: [50, 30],
-    size: [160, 80],
-    // sizeWidth: 120,
-
+    // size: [100, 80],
+    // sizeWidth: 60,
     // autoReorder: true,
-    responsive: false,
-    data: layoutData11ConcatName,
+    responsive: true,
+    data: layoutData2,
   },
   {
     px: 560,

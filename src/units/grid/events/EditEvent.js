@@ -88,13 +88,13 @@ export default class EditEvent {
                     if (maxBlankMatrixLimit.maxW >= w) {    // 横向调整
                         updateStyle.width = nowElSize.width + 'px'
                         fromItem.pos.w = w
-                    } else {
+                    } else {  // 鼠标在Item外
                         w = fromItem.pos.w      //必要，将当前实际宽给newResize
                     }
                     if (maxBlankMatrixLimit.maxH >= h) {  // 纵向调整
                         updateStyle.height = nowElSize.height + 'px'
                         fromItem.pos.h = h
-                    } else {
+                    } else {   // 鼠标在Item外
                         h = fromItem.pos.h   //必要，将当前实际高给newResize
                     }
                     if (Object.keys(updateStyle).length > 0) {
@@ -117,6 +117,7 @@ export default class EditEvent {
                         fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)
                     }
                     fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
+
                     tempStore?.fromContainer.updateLayout([fromItem])
                     fromItem.updateStyle(fromItem._genLimitSizeStyle())
                     fromItem.container.updateContainerStyleSize()
@@ -370,12 +371,12 @@ export default class EditEvent {
                             if (!newItem.container.responsive) {
                                 newItem.container.engine.updateLayout([newItem])
                             } else {
-                                newItem.container.engine.updateLayout()
+                                newItem.container.engine.updateLayout(true)
                             }
                             if (dragItem !== newItem && !dragItem.container.responsive) {
                                 dragItem.container.engine.updateLayout([dragItem])
                             } else {
-                                dragItem.container.engine.updateLayout()
+                                dragItem.container.engine.updateLayout(true)
                             }
                         }
                         newItem.mount()
@@ -656,14 +657,15 @@ export default class EditEvent {
                     const isExchange = dragItem.container.eventManager._callback_('itemExchange', fromItem, toItem)
                     if (isExchange === false || isExchange === null) return
                     // console.log(dragItem,toItem);
-                    container.engine.sortResponsiveItem()
                     if (container.responseMode === 'default') {
                         if (xOrY) {  // X轴
+                            container.engine.sortResponsiveItem()    // 必须且只能用于move排除不可用于exchange排序，不然item会坍塌
                             container.engine.move(dragItem, toItem.i)
                         } else { // Y轴
                             container.engine.exchange(dragItem, toItem)
                         }
                     } else if (container.responseMode === 'stream') {
+                        container.engine.sortResponsiveItem()   //  如上解释
                         container.engine.move(dragItem, toItem.i)
                     } else if (container.responseMode === 'exchange') {
                         container.engine.exchange(dragItem, toItem)
@@ -1080,7 +1082,7 @@ export default class EditEvent {
                 }
 
                 //-------------------------更新映射最新的位置到Items---------------------------//
-                if (container || fromItem && fromItem.container.responsive) container.engine.sortResponsiveItem()
+                if (container || fromItem && fromItem.container.responsive) (container || fromItem.container).engine.sortResponsiveItem()
 
 
                 //--------------------------点击关闭按钮-----------------------------//

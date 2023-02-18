@@ -2,6 +2,8 @@ import ErrorTypeIndex from "@/units/grid/events/errorType/ErrorTypeIndex.js";
 
 /** 允许的事件名称及其作用
  *  error(err)                                             所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
+ *  warn(err)                                              所有非阻断式警告都能在这里接受处理,如果未设定该函数取接受异常将直接将警告抛出到控制台
+ *  updated(any)                                              触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发
  *  containerMounted(container)                            Container成功挂载事件
  *  containerUnmounted(container)                          Container成功卸载事件
  *  itemMounted(item)                                      item成功挂载事件

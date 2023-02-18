@@ -296,7 +296,11 @@ export default class LayoutManager {
             }
             let findSuccess = true
             let rowFindDone = false
-            if (!this.col) throw new Error('未找到经过引擎处理过后的col，可能是少传参数或者代码执行顺序有误，倘若这样，不用问，这就是bug')
+
+            if (!this.col) {
+                break
+                // throw new Error('未找到经过引擎处理过后的col，可能是少传参数或者代码执行顺序有误，倘若这样，不用问，这就是bug')
+            }
             for (let j = 0; j < h; j++) { // 假设高度足够，计算整个组件占用区域是否被占用，不够addRow函数自动添加
                 // if (xPointEnd === 0 && j === 0) xPointEnd = rowPointData.length
                 rowPointData = this._layoutMatrix[yPointStart + j]

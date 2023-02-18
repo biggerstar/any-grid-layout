@@ -29,11 +29,14 @@ export default class ItemPos {
     // }
     beforePos = null   //  跨容器时候保存上一个容器的位置
     autoOnce = null  // 静态布局下在下一次指定是否自动寻找容器中的空位
-
+    posHash = ''  // 每个pos的唯一hash，可能重复
     constructor(pos) {
         // console.log(pos.tempW);
         this._define()
         if (typeof pos === 'object') this.update(pos)
+        for (let i = 0; i < 4; i++) {
+            this.posHash = this.posHash + String.fromCharCode(Math.floor(Math.random() * 26) + "a".charCodeAt(0))
+        }
     }
 
     _define() {

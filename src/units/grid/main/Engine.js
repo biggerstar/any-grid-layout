@@ -2,7 +2,6 @@ import Item from "@/units/grid/main/item/Item.js";
 import {merge} from "@/units/grid/other/tool.js";
 import LayoutManager from "@/units/grid/algorithm/LayoutManager.js";
 import LayoutConfig from "@/units/grid/algorithm/LayoutConfig.js";
-import ItemPos from "@/units/grid/main/item/ItemPos.js";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -17,12 +16,13 @@ export default class Engine {
     layoutManager = null
     container = null
     layoutConfig = null
-    useLayoutConfig = null
+    useLayout = null
     initialized = false
     __temp__ = {
         responsiveFunc: null,
         firstLoaded: false,
-        staticIndexCount: 0
+        staticIndexCount: 0,
+        previousHash: '',   // 当前items通过每个pos计算得到hash特征
     }
 
     constructor(option) {  //  posList用户初始未封装成ItemPos的数据列表
@@ -40,26 +40,40 @@ export default class Engine {
 
     /** 同步Container和layoutManager的配置信息 */
     _sync() {  // 语法糖
-        let useLayoutConfig = this.layoutConfig.genLayoutConfig()
         this.layoutConfig.autoSetColAndRows(this.container)
-        this.useLayoutConfig = useLayoutConfig
-        this._syncLayoutConfig(useLayoutConfig.useLayoutConfig)
+        let useLayout = this.layoutConfig.genLayoutConfig()
+        this.useLayout = useLayout
+        this._syncLayoutConfig(useLayout.useLayout)
     }
 
-    /** 通过传入当前的useLayoutConfig直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
-    _syncLayoutConfig(useLayoutConfig = null) {
-        if (!useLayoutConfig) return
-        if (Object.keys(useLayoutConfig).length === 0) {
+    /** 计算当前Items的特征，后面如果[ Item列表长度,宽高，位置 ]变化会触发updated变化,这里不用hash加密方法是为了省点缩小下包内存
+     *  反正吧，以后心情好就加上呗 */
+    _checkUpdated() {
+        let hashContent = ''
+        this.items.forEach((item) => {
+            const pos = item.pos
+            hashContent = hashContent + pos.posHash + (pos.w || pos.tempW) + (pos.h || pos.tempH) + pos.x + pos.y + ';'
+        })
+        if (this.__temp__.previousHash !== hashContent) {
+            this.container.eventManager._callback_('updated', this.container)
+            this.__temp__.previousHash = hashContent
+        }
+    }
+
+    /** 通过传入当前的useLayout直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
+    _syncLayoutConfig(useLayout = null) {
+        if (!useLayout) return
+        if (Object.keys(useLayout).length === 0) {
             if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
         }
-        merge(this.container, useLayoutConfig, false, ['events'])      //  更新同步当前Container中的属性值
-        // console.log(useLayoutConfig);
+        merge(this.container, useLayout, false, ['events'])      //  更新同步当前Container中的属性值
+        // console.log(useLayout);
         // console.log(this.container.eventManager)
         this.items.forEach(item => {
             //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
             merge(item, {
-                margin: useLayoutConfig.margin,
-                size: useLayoutConfig.size,
+                margin: useLayout.margin,
+                size: useLayout.size,
             })
         })
     }
@@ -185,9 +199,9 @@ export default class Engine {
     }
 
     // /** 更新当前配置，只有调用这里更新能同步所有的模块配置 */
-    // updateConfig(useLayoutConfig) {
+    // updateConfig(useLayout) {
     //     // this.container.layout
-    //     // console.log(useLayoutConfig);
+    //     // console.log(useLayout);
     // }
 
     // initItems() {
@@ -223,23 +237,25 @@ export default class Engine {
     }
 
     /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
-    sortStatic() {
+    sortStatic(isUpdate = false) {
         const staticItems = []
         const items = []
-        // console.log(this.items.filter(item => !item._mounted));
         this.items.forEach((item) => {
-            if (!item instanceof Item || !item._mounted || item.element.parentNode === null) return
-            if (item.static === true) staticItems.push(item)
+            if (!item instanceof Item) return
+            if (item.static === true) {
+                staticItems.push(item)
+                console.log(item);
+            }
             else items.push(item)
         })
-        // items.sort((itemA, itemB) => itemA.i - itemB.i)
         this.renumber()
+        // console.log(items);
+        if (isUpdate) this.items = items
         return staticItems.concat(items)
     }
 
     /** 将item成员全部挂载到Container  */
     mountAll() {
-        // this.sortStatic()
         this.items.forEach((item) => item.mount())
         if (this.container.responsive) this.container.row = this.layoutManager.row  //静态布局的row是固定的，响应式不固定
     }
@@ -284,6 +300,8 @@ export default class Engine {
     /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
     push(item) {
         // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
+        // this.items.push(item)
+        // return true
         const autoReorder = () => {
             let success = false
             // 用于响应式下自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
@@ -561,15 +579,14 @@ export default class Engine {
             }
             return false
         })
-
         let updateItemList = []
         if (items === null) updateItemList = []
         else if (Array.isArray(items)) updateItemList = items
         else if (items !== true && updateItemList.length === 0) return
         if (items === true) items = this.items
         this.reset()
-        this._sync()
         this.renumber()
+        this._sync()
         updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
         if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)
         // console.log(items.length, updateItemList);
@@ -603,6 +620,10 @@ export default class Engine {
         //     console.log(this.layoutManager._layoutMatrix[i]);
         // }
         // console.log('-----------------------------------------');
+
+
+        //---------------------------------------------------------------------//
+        this._checkUpdated()
 
         //---------------------------更新数据和存储-------------------------------//
         this.layoutConfig.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整

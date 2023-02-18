@@ -1,5 +1,5 @@
 import Sync from "@/units/grid/other/Sync.js";
-import {merge} from "@/units/grid/other/tool.js";
+import {merge, throttle} from "@/units/grid/other/tool.js";
 import ItemPos from "@/units/grid/main/item/ItemPos.js";
 import {defaultStyle} from "@/units/grid/default/style/defaultStyle.js";
 import EditEvent from '@/units/grid/events/EditEvent.js'
@@ -71,6 +71,7 @@ export default class Item extends DomFunctionImpl {
         dragging: false,
         clientWidth: 0,
         clientHeight: 0,
+        isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
         resized: {
             w: 1,
             h: 1
@@ -164,6 +165,8 @@ export default class Item extends DomFunctionImpl {
 
     }
 
+
+
     /** 导出当前Item的配置，忽略和默认配置一样的字段
      * @param otherFieldList {Array} 要导出的除了默认以外其他存在的字段
      * @param banFieldList {Array} 要禁止导出的字段
@@ -220,6 +223,7 @@ export default class Item extends DomFunctionImpl {
             this.element._gridItem_ = this
             this.element._isGridItem_ = true
             this._mounted = true
+            // this.observeUpdate(this.element)
             this.container.eventManager._callback_('itemMounted', this)
             // if (this.static) this.element.innerHTML = this.element.innerHTML + `--
             //     ${this.pos.name}</br>
@@ -296,17 +300,21 @@ export default class Item extends DomFunctionImpl {
             console.log('参数应该是对象形式{time:Number, field:String}')
             return
         }
-        Sync.run(() => {
-            const style = {}
-            if (transition.time > 0) {
-                style.transitionProperty = transition.field
-                style.transitionDuration = transition.time + 'ms'
-                style.transitionTimingFunction = 'ease-out'
-            } else if (transition.time === 0) {
-                style.transition = 'none'
-            }
-            this.updateStyle(style)
+        Sync.run({
+            func:() => {
+                const style = {}
+                if (transition.time > 0) {
+                    style.transitionProperty = transition.field
+                    style.transitionDuration = transition.time + 'ms'
+                    style.transitionTimingFunction = 'ease-out'
+                } else if (transition.time === 0) {
+                    style.transition = 'none'
+                }
+                this.updateStyle(style)
+            },
+            rule: ()=> this.__temp__.isDelayLoadAnimation
         })
+        this.__temp__.isDelayLoadAnimation  = true
     }
 
     /**  */
