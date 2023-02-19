@@ -228,7 +228,7 @@ export default class EditEvent {
              * 如果A到 B 此时鼠标不抬起继续从B返回A 则fromContainer为 B，toContainer为A，此时dragItem还是属于A,通过dragItem的归属能确定跨容器时候是否鼠标被抬起
              * */
             leaveToEnter: function (fromContainer, toContainer) {
-                if (!tempStore.isDragging || !fromContainer || !toContainer) return
+                if (!fromContainer || !toContainer) return
                 let fromItem = tempStore.fromItem
                 let moveItem = tempStore.moveItem
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem

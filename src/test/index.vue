@@ -95,11 +95,11 @@ const events = {
     console.log(err);
   },
   warn(warn) {
-    // if (["itemLimitError"].includes(err.name)) return
-    console.log(warn);
+    // console.log(warn);
   },
-  updated(){
+  updated() {
     //  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发
+    // console.log(globalConfig);
   },
   containerMounted(container) {
     // Container成功挂载事件
@@ -108,6 +108,23 @@ const events = {
   containerUnmounted(container) {
     // Container成功卸载事件
     // console.log(container);
+  },
+  itemMounted(item) {
+    // Item成功挂载事件
+    // console.log(item);
+    // console.log(container.getItemList())
+
+  },
+  itemUnmounted(item) {
+    // Item成功卸载事件
+    // console.log(item);
+    // console.log(container.getItemList())
+    // console.log(loadName,111111111111111111)
+    // item.container.engine.updateLayout(true)
+  },
+  addItemSuccess(item) {
+    //Item添加成功事件
+    // console.log(item);
   },
   itemClosing(item) {
     //item关闭前事件,返回null或者false阻止关闭
@@ -118,37 +135,26 @@ const events = {
     // console.log(item);
     // updateConfigToDB()
   },
-  itemMounted(item) {
-    // Item成功挂载事件
-    // console.log(item);
-    // console.log(container.getItemList())
-  },
-  itemUnmounted(item) {
-    // Item成功卸载事件
-    // console.log(item);
-    // console.log(container.getItemList())
-  },
-  addItemSuccess(item) {
-
-    //Item添加成功事件
-    // console.log(item);
-  },
-  itemResizing(item, w, h) {
+  itemResizing(w, h, item) {
     //item每次大小被改变时
     // console.log(w,h,item);
+    // console.log(item.container);
+    // item.container.cover()
   },
-  itemResized(item, w, h) {
+  itemResized(w, h, item) {
     //item鼠标抬起后在容器中的最终大小
     // console.log(w,h,item);
+    // updateConfigToDB()
   },
-  itemMoving(item, nowX, nowY) {
+  itemMoving(nowX, nowY, item) {
     // console.log(nowX,nowY);
     //item拖动时在容器内所属位置的nowX和nowY,36ms响应一次，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
     // console.log(nowX,nowY);
   },
-  itemMoved(item, nowX, nowY) {
+  itemMoved(nowX, nowY, item) {
     //item拖动结束时在容器内最终位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
     // console.log(item,nowX,nowY);
+    // updateConfigToDB()
   },
   itemMovePositionChange(oldX, oldY, newX, newY) {
     //item位置变化时响应的事件,只有位置变化才触发
@@ -158,6 +164,7 @@ const events = {
     //交换成功后oldItem会从原Container中卸载,而新Item将会自动添加进新容器中，无需手动添加，返回null或者false将会阻止该次交换
     // console.log(oldItem,newItem);
     // return false
+
   },
   autoScroll(container, direction, offset) {
     // 鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
@@ -173,7 +180,7 @@ const events = {
     // console.log(fromItem,toItem);
     // return false
   },
-  containerSizeChange(container, oldSize, newSize) {
+  containerSizeChange(oldSize, newSize, container) {
     // 内层容器(grid-container)col或者row大小改变触发的事件,oldSize和newSize包含以下信息{ containerW,containerH,row,col,width,height }
     // console.log(container,oldSize,newSize);
   },
@@ -189,16 +196,14 @@ const events = {
   enterContainerArea(container, item) {
     // 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null
     // console.log(container, item);
-    // console.log(container.row);
-    // const container1 = containerAPI.getContainer()
-    // container1.row =  container1.row - 1
   },
   leaveContainerArea(container, item) {
     // 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null
     // console.log(container, item);
-    // console.log(container.row);
-    const container1 = containerAPI.getContainer()
-    container1.row =  container1.row + 1
+    // console.log(useLayout.row)
+    // useLayout.row = container.row + 1
+    // console.log(useLayout.row );
+    // useLayout.col = container.col + 1
 
   },
   colChange(col, preCol, container) {

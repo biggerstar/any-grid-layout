@@ -178,9 +178,38 @@ watch(props.useLayout, () => {    //  针对非地址引用(地址引用也可)�
       if (key === 'itemLimit') console.error(key, '键应该是一个object值,包含可选键minW,minH,maxH,maxW作用于所有Item大小限制')
       else console.error(key, '键应该是一个object值')
     }
+    // if (key === 'row') console.log('row')
     useLayoutConfig.layout[key] = toRaw(val)
   }
   container.updateLayout(true)
+
+  // -------将几个会在container算法中被改变的不定值(也就是vue开发者赋值失败)同步回到vueUseLayout--------
+  const cUseLayout = container.useLayout
+  const vueUseLayout = container.vue.useLayout
+  for (let useLayoutKey in container.useLayout) {
+    const cVal = cUseLayout[useLayoutKey]
+    const vueVal = vueUseLayout[useLayoutKey]
+    let isErr = false
+    if (cVal !== vueVal) {
+      // if (!Object.keys(container.layout).includes(useLayoutKey)
+      //     || !Object.keys(container.global).includes(useLayoutKey)) continue
+      if (['col', 'row'].includes(useLayoutKey) && cVal) {
+        vueUseLayout[useLayoutKey] = cVal
+        isErr = true
+      }
+      if (['size', 'margin'].includes(useLayoutKey) && Array.isArray(cVal)) {
+        if (cVal[0] !== vueVal[0]) {
+          vueVal[0] = cVal[0]
+          isErr = true
+        }
+        if (cVal[1] !== vueVal[1]) {
+          vueVal[1] = cVal[1]
+          isErr = true
+        }
+      }
+    }
+    if (isErr) container.eventManager._error_('vueUseLayoutModificationFailed', useLayoutKey + ' 修改失败', props.useLayout)
+  }
 }, {deep: true})
 
 

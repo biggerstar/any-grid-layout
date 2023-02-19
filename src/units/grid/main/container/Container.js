@@ -7,7 +7,7 @@ import {defaultStyle} from "@/units/grid/default/style/defaultStyle.js";
 import ItemPos from '@/units/grid/main/item/ItemPos.js'
 import EventCallBack from "@/units/grid/events/EventCallBack.js";
 import LayoutInstantiationField from "@/units/grid/main/container/LayoutInstantiationField.js";
-import {throttle} from "@/units/grid/other/tool.js";
+import {cloneDeep, throttle} from "@/units/grid/other/tool.js";
 import ResizeObserver from '@/units/grid/modules/resize-observer-polyfill/ResizeObserver.es';
 
 //---------------------------------------------------------------------------------------------//
@@ -304,6 +304,18 @@ export default class Container extends DomFunctionImpl {
         return data.map(pos => this.engine.createItem(pos))
     }
 
+    /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器 */
+    cover() {
+        let customLayout = this.engine.layoutConfig.genCustomLayout()
+        // delete customLayout.col
+        // delete customLayout.row
+        this.engine.layoutConfig.autoSetColAndRows(this, true, {
+            ...customLayout,
+            cover: true
+        })
+        // console.log(customLayout)
+        this.updateLayout(true)
+    }
 
     /** 将item成员从Container中全部移除
      * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
