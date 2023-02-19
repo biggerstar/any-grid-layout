@@ -304,17 +304,24 @@ export default class Container extends DomFunctionImpl {
         return data.map(pos => this.engine.createItem(pos))
     }
 
-    /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器 */
-    cover() {
+    /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
+     *  @param {string} direction  要满覆盖的方向， all || col || row
+     * */
+    cover(direction = 'all') {
+        let coverCol = false
+        let coverRow = false
         let customLayout = this.engine.layoutConfig.genCustomLayout()
-        // delete customLayout.col
-        // delete customLayout.row
+        if (direction === 'all') {
+            coverCol = true
+            coverRow = true
+        }
+        if (direction === 'col') coverCol = true
+        if (direction === 'row') coverRow = true
         this.engine.layoutConfig.autoSetColAndRows(this, true, {
             ...customLayout,
-            cover: true
+            coverCol: coverCol,
+            coverRow: coverRow
         })
-        // console.log(customLayout)
-        this.updateLayout(true)
     }
 
     /** 将item成员从Container中全部移除

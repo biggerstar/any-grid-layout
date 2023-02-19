@@ -251,7 +251,8 @@ export default class LayoutConfig {
             sizeHeight,
             marginX,
             marginY,
-            cover = false,
+            coverCol = false,
+            coverRow = false,
         } = customLayout
         const items = container.engine.items
         const computeLimitLength = (maxCol, maxRow) => {
@@ -287,7 +288,8 @@ export default class LayoutConfig {
             // console.log(maxCol,maxRow)
 
             const smartInfo = this.computeSmartRowAndCol(items)
-            if (cover || (!col && !margin[0] && !size[0])) {   // 若三种都没有指定，将从items中自动计算出合适的最大容器大小(通常这里用于指定static位置的成员自动计算)
+            // const overCol
+            if (coverCol || (!col && !margin[0] && !size[0]) || (col || 1) < smartInfo.smartCol) {   // 若三种都没有指定，将从items中自动计算出合适的最大容器大小(通常这里用于指定static位置的成员自动计算)
                 maxCol = smartInfo.smartCol   // 如果都没有指定则根据当前配置自适应
             } else {
                 const containerWidth = this.container.element?.clientWidth
@@ -295,8 +297,9 @@ export default class LayoutConfig {
                 const sizeColInfo = this.autoComputeSizeInfo((col || maxCol), containerWidth, size[0], margin[0], ratioCol)
                 maxCol = sizeColInfo.direction
             }
-            // console.log(row,1111);
-            if (cover || !row || customLayout['responsive']) {  // 没有给出row则自适应，自动计算
+
+            if (coverRow || !row || (customLayout['responsive'] && !container.row/*初次加载时*/)
+                || (row || 1) < smartInfo.smartRow) {  // 没有给出row则自适应，自动计算
                 //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
                 maxRow = smartInfo.smartRow
             } else {
@@ -315,8 +318,8 @@ export default class LayoutConfig {
         if (isSetConfig && maxCol && maxRow) {
             const limitInfo = computeLimitLength(maxCol, maxRow)
             //  响应模式下无需限制row实际行数，该row或maxRow行数限制只是限制Container高度或宽度
-            containerW = limitInfo.limitCol
-            containerH = limitInfo.limitRow
+            maxCol = containerW = limitInfo.limitCol
+            maxRow = containerH = limitInfo.limitRow
             container['containerW'] = containerW
             container['containerH'] = containerH
             // console.log(containerW,containerH);

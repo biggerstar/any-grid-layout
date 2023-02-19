@@ -116,6 +116,7 @@ export default class EditEvent {
                     if (typeof fromItem._VueEvents.vueItemResizing === 'function') {
                         fromItem._VueEvents.vueItemResizing(fromItem, newResize.w, newResize.h)
                     }
+                    if (container.autoGrowRow && tempStore.isCoverRow) container.cover('row')
                     fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
 
                     tempStore?.fromContainer.updateLayout([fromItem])
@@ -291,6 +292,17 @@ export default class EditEvent {
                 container.__ownTemp__.firstEnterUnLock = false
                 container.__ownTemp__.nestingEnterBlankUnLock = false
                 if (tempStore.isLeftMousedown) {
+                    //自动增长row
+                    const growContainer = dragItem.container
+                    if (growContainer.autoGrowRow && growContainer === container) {
+                        if (growContainer.platform === 'vue') {
+                            const useLayout = growContainer.vue.useLayout
+                            if (growContainer.__ownTemp__.preRow === growContainer.row) {
+                                useLayout.row = growContainer.row + 1
+                            }
+                        } else growContainer.row = growContainer.row + 1
+                        tempStore.isCoverRow = true
+                    }
                     container.eventManager._callback_('leaveContainerArea', container, dragItem)
                     // container._VueEvents.vueLeaveContainerArea(container, dragItem)
                 }
@@ -515,6 +527,8 @@ export default class EditEvent {
                 if (nowMoveWidth < 1) nowMoveWidth = 1
                 if (nowMoveHeight < 1) nowMoveHeight = 1
                 // console.log(offsetLeftPx,offsetTopPx);
+                const growContainer = dragItem.container
+                if (growContainer.autoGrowRow && tempStore.isCoverRow) growContainer.cover('row')
                 dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
                 const responsiveLayoutAlgorithm = () => {
                     if (dragItem === toItem) return   // 减少执行，和静态移动的话不同，对静态不进行限制，使得静态能在大Item下对微距的[移动move]调整更精确反应
@@ -1186,6 +1200,7 @@ export default class EditEvent {
                 tempStore.isDragging = false
                 tempStore.isResizing = false
                 tempStore.isLeftMousedown = false
+                tempStore.isCoverRow = false
                 tempStore.dragOrResize = null
                 tempStore.mousedownEvent = null
                 tempStore.mousedownItemOffsetLeft = null
@@ -1280,7 +1295,7 @@ export default class EditEvent {
         document.addEventListener('touchstart', EPF.container.touchstartOrMousedown, {passive: false})
 
         document.addEventListener('dragstart', EEF.prevent.false)
-        document.addEventListener('selectstart', EEF.prevent.defaultAndFalse,false)
+        document.addEventListener('selectstart', EEF.prevent.defaultAndFalse, false)
 
         //-------------------------------原来的必须挂dom上的事件-----------------------------//
         document.addEventListener('mousemove', EPF.container.touchmoveOrMousemove)
