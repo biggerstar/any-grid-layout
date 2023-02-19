@@ -38,7 +38,6 @@ const container = new Container({
   global: props.config.global
 })
 
-
 let useLayoutConfig = {}
 let isLayoutChange = false   // 用于layoutChange的时候锁定data的引用地址和数据不被改变
 

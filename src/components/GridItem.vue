@@ -168,12 +168,11 @@ onMounted(() => {
     el: gridItem.value,
     ...propsRaw,
   })
-
+  // console.log(selfItem);
   if (!selfItem) {   // 溢出状态，没位置删除vue控制的节点并触发vue的onUnmounted钩子
     gridItem.value.parentNode.removeChild(gridItem.value)
     return
   }
-
   selfItem.mount()
 
   // if (!selfItem.close ){

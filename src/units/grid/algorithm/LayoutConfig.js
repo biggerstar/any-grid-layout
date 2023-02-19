@@ -235,6 +235,7 @@ export default class LayoutConfig {
      * */
     autoSetColAndRows(container, isSetConfig = true) {
         const layoutManager = this.container.engine.layoutManager
+        if (!container) container = this.container
         let maxCol = container.col
         let maxRow = container.row
         let customLayout = Object.assign(cloneDeep(this.option.global), cloneDeep(container.layout || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
@@ -293,7 +294,7 @@ export default class LayoutConfig {
                 const containerWidth = this.container.element?.clientWidth
                 // console.log(col);
                 // console.log(222222222222222222)
-                if (!customLayout['responsive'] && !col && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1
+                if (!customLayout['responsive'] && this.container.col && this.container.col !== 1) col = this.container.col // 静态直接使用指定的col值,不等于1是define getter默认值就是1,所以默认情况下自动获取,但是不排除传入就是1的情况
                 const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
                 maxCol = sizeColInfo.direction
             }
@@ -302,7 +303,7 @@ export default class LayoutConfig {
                 maxRow = smartInfo.smartRow
             } else {
                 const containerHeight = this.container.element?.clientHeight
-                if (!customLayout['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
+                if (!customLayout['responsive'] && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1,所以默认情况下自动获取,但是不排除传入就是1的情况
                 const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
                 maxRow = sizeRowInfo.direction
             }
@@ -320,6 +321,8 @@ export default class LayoutConfig {
         if (isSetConfig && maxCol && maxRow) {
             container.col = maxCol
             container.row = maxRow
+            if (col) container.layout.col = maxCol   // 上面必须保证col最终的正确性，这里只关心结果
+            if (row) container.layout.row = maxRow   // 上面必须保证row最终的正确性，这里只关心结果
             container.containerW = containerW
             container.containerH = containerH
             layoutManager.setColNum(maxCol)
@@ -351,8 +354,8 @@ export default class LayoutConfig {
     }
 
     computeSmartRowAndCol = (items) => {
-        let smartCol = null
-        let smartRow = null
+        let smartCol = 1   // 自动计算col最低为1
+        let smartRow = 1   // 自动计算row最低为1
         if (items.length > 0) {
             items.forEach((item) => {
                 if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1

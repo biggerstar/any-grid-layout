@@ -12,7 +12,11 @@ export const defaultStyle = {
         width: '100%',
         position: 'relative',
         display: 'block',
-        margin:'0 auto'
+        margin:'0 auto',
+        mosUserSelect:'none',
+        webkitUserSelect:'none',
+        msUserSelect:'none',
+        userSelect:'none',   // 禁止用户选择文本或元素
     },
     gridItem:{   // Item初始化使用的默认样式
         height: '100%',
@@ -20,9 +24,12 @@ export const defaultStyle = {
         display:'block',
         overflow: 'hidden',
         position: 'absolute',
-        userSelect:'none',   // 禁止用户选择文本或元素
         touchCallout:'none',  // 苹果禁用touch提示
         // touchAction: 'none',  // 阻止touch事件
+        mosUserSelect:'none',
+        webkitUserSelect:'none',
+        msUserSelect:'none',
+        userSelect:'none',   // 禁止用户选择文本或元素
     },
     gridResizableHandle:{
         height: '20px',

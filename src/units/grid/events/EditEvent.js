@@ -210,6 +210,10 @@ export default class EditEvent {
         prevent: {
             default: (ev) => ev.preventDefault(),
             false: (ev) => false,
+            defaultAndFalse: (ev) => {
+                ev.preventDefault()
+                return false
+            },
             contextmenu: (ev) => ev.preventDefault()
         },
         windowResize: {
@@ -313,7 +317,6 @@ export default class EditEvent {
                     || !dragItem.container.exchange
                     || !dragItem.exchange
                 ) return
-
                 try {
                     dragItem.pos.el = null   // 要将原本pos中的对应文档清除掉换克隆后的
                     let dragItemElement = fromItem.element
@@ -347,10 +350,13 @@ export default class EditEvent {
                         }
                     }
                     const vueExchange = () => {
-                        // dragItem._mounted = false
                         container._VueEvents.vueCrossContainerExchange(newItem, tempStore, (newItem) => {
-                            dragItem.unmount()  // 这里不卸载  交给vue管理
+                            dragItem.unmount()
                             dragItem.remove()
+                            if (tempStore.deviceEventMode === 'touch' && tempStore.cloneElement) {
+                                // 在触屏模式下， 原本的fromItem克隆源必须保留在文档流中，所以省事临时放置在该克隆元素中，当鼠标抬起后会被自动移除
+                                tempStore.cloneElement.appendChild(document.adoptNode(dragItem.element))
+                            }
                             doItemPositionMethod(newItem)
                             if (container) {
                                 if (dragItem !== newItem && !dragItem.container.responsive) {
@@ -389,10 +395,8 @@ export default class EditEvent {
                     }
                     container.__ownTemp__.firstEnterUnLock = false
                     container.__ownTemp__.nestingEnterBlankUnLock = false
-
                     if (container.platform === 'vue') vueExchange()
                     else nativeExchange()
-
                 } catch (e) {
                     console.error('跨容器Item移动出错', e);
                 }
@@ -510,7 +514,6 @@ export default class EditEvent {
 
                 if (nowMoveWidth < 1) nowMoveWidth = 1
                 if (nowMoveHeight < 1) nowMoveHeight = 1
-
                 // console.log(offsetLeftPx,offsetTopPx);
                 dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
                 const responsiveLayoutAlgorithm = () => {
@@ -533,6 +536,7 @@ export default class EditEvent {
                         tempStore.mouseSpeed.timestamp = now;
                         return {distance, speed}
                     }
+
                     //------对移动速度和距离做出限制,某个周期内移动速度太慢或距离太短忽略本次移动(only mouse event)------//
                     if (!container.__ownTemp__.firstEnterUnLock) {
                         const {distance, speed} = mouseSpeed()
@@ -711,7 +715,12 @@ export default class EditEvent {
                 Sync.run(() => {
                     //  判断使用的是静态布局还是响应式布局并执行响应的算法
                     const oldPos = Object.assign({}, dragItem.pos)
-                    if (container.responsive) responsiveLayoutAlgorithm()
+                    let doAlgorithmContainer = container
+                    if (overContainer && overContainer.__ownTemp__.firstEnterUnLock) {
+                        doAlgorithmContainer = overContainer
+                    }
+                    // console.log(doAlgorithmContainer.responsive);
+                    if (doAlgorithmContainer.responsive) responsiveLayoutAlgorithm()
                     else staticLayoutAlgorithm()
                     if (oldPos.x !== dragItem.pos.x || oldPos.y !== dragItem.pos.y) {
                         const vuePosChange = dragItem._VueEvents.vueItemMovePositionChange
@@ -769,7 +778,6 @@ export default class EditEvent {
                 if (mousedownEvent === null || fromItem === null) return
                 let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
                 const container = parseContainer(ev)
-                // console.log(dragItem);
                 dragItem.__temp__.dragging = true
                 if (tempStore.cloneElement === null) {
                     tempStore.cloneElement = dragItem.element.cloneNode(true)
@@ -943,7 +951,6 @@ export default class EditEvent {
                 //----------------------------------------------------------------//
             },
             mousemove: throttle((ev) => {
-                // const container = parseContainer(ev)
                 const containerArea = parseContainerAreaElement(ev)
                 const container = parseContainerFromPrototypeChain(containerArea)
                 const overItem = parseItem(ev)
@@ -1200,13 +1207,14 @@ export default class EditEvent {
                 if (tempStore.deviceEventMode === 'touch') {
                     tempStore.allowTouchMoveItem = false
                     const container = parseContainer(ev)
-                    document.addEventListener('contextmenu', EEF.prevent.contextmenu)  // 禁止长按弹出菜单
-                    const pressTime = container ? container.pressTime : 360  // 长按多久响应拖动事件，默认360ms
+                    document.addEventListener('contextmenu', EEF.prevent.defaultAndFalse)  // 禁止长按弹出菜单
+                    const pressTime = container ? container.pressTime : 300  // 长按多久响应拖动事件，默认360ms
                     tempStore.timeOutEvent = setTimeout(() => {
+                        if (ev.preventDefault) ev.preventDefault()
                         tempStore.allowTouchMoveItem = true
-                        EPF.container.mousemove(ev)   // 触屏模式下只为了触发生成克隆元素
+                        EPF.container.mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
                         let timer = setTimeout(() => {
-                            document.removeEventListener('contextmenu', EEF.prevent.contextmenu)
+                            document.removeEventListener('contextmenu', EEF.prevent.defaultAndFalse)
                             clearTimeout(timer)
                             timer = null
                         }, 600)
@@ -1217,8 +1225,8 @@ export default class EditEvent {
             },
             touchmoveOrMousemove: (ev) => {
                 ev = ev || window.event
+                if (ev.stopPropagation) ev.stopPropagation()
                 if (ev.touches) {
-                    // console.log(ev.cancelable);
                     tempStore.deviceEventMode = 'touch'
                     if (tempStore.allowTouchMoveItem) {
                         if (ev.preventDefault) ev.preventDefault()
@@ -1228,10 +1236,7 @@ export default class EditEvent {
                     }
                     ev = singleTouchToCommonEvent(ev)
                 } else tempStore.deviceEventMode = 'mouse'
-                if (ev.stopPropagation) ev.stopPropagation()
                 // console.log(ev);
-                // parseContainer(ev)
-
                 EEF.itemDrag.mousemoveFromItemChange(ev)
                 EPF.container.mousemove(ev)
             },
@@ -1274,8 +1279,8 @@ export default class EditEvent {
         document.addEventListener('mousedown', EPF.container.touchstartOrMousedown)
         document.addEventListener('touchstart', EPF.container.touchstartOrMousedown, {passive: false})
 
-        // document.addEventListener('dragstart', EEF.prevent.false)
-        // document.addEventListener('selectstart', EEF.prevent.false)
+        document.addEventListener('dragstart', EEF.prevent.false)
+        document.addEventListener('selectstart', EEF.prevent.defaultAndFalse,false)
 
         //-------------------------------原来的必须挂dom上的事件-----------------------------//
         document.addEventListener('mousemove', EPF.container.touchmoveOrMousemove)
@@ -1293,8 +1298,8 @@ export default class EditEvent {
         document.removeEventListener('mousedown', EPF.container.touchstartOrMousedown)
         document.removeEventListener('touchstart', EPF.container.touchstartOrMousedown)
 
-        // document.removeEventListener('dragstart', EEF.prevent.false)
-        // document.removeEventListener('selectstart', EEF.prevent.false)
+        document.removeEventListener('dragstart', EEF.prevent.false)
+        document.removeEventListener('selectstart', EEF.prevent.defaultAndFalse)
 
         //-----------------------------------------------------------------------------//
         document.removeEventListener('mousemove', EPF.container.touchmoveOrMousemove)

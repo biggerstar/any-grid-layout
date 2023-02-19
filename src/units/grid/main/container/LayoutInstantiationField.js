@@ -3,6 +3,7 @@ import {merge} from "@/units/grid/other/tool.js";
 /**  Container实例化的时候可以在Layout配置中使用的字段 */
 export default class LayoutInstantiationField {
     //----------------实例化传进的的参数---------------------//
+    name = ''   // 该容器的名称
     className = 'grid-container'  // Container在文档中默认的类名,可以由外部传入重新自定义
     responsive = false     //  responsive:  默认为static静态布局,值等于true为响应式布局
     responseMode = 'default'  // default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
