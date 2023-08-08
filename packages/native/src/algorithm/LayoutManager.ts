@@ -5,11 +5,11 @@
 
 export class LayoutManager {
   //-----------调试用-----------//
-  isDebugger = false    //  在运行的最后位置加上 debugger ，能直接打印出item的添加路径过程
-  DebuggerTemp = {}
-  count = 0
+  isDebugger: boolean = false    //  在运行的最后位置加上 debugger ，能直接打印出item的添加路径过程
+  DebuggerTemp: Record<any, any> = {}
+  count: number = 0
   //-----------私有参数----------//
-  _mode = 'grid' // grid || block
+  _mode: 'grid' | 'block' = 'grid' // grid || block
   _layoutMatrix = []   // 布局矩阵
   //-----------不痛不痒参数----------//
   layoutPositions = []   //  栅格ITEM成员的详细信息数组,暂时没啥用,就存着玩玩
@@ -315,7 +315,7 @@ export class LayoutManager {
         //     rowBlankInfo =
         // }
 
-        if (rowBlankInfo.success === false) {
+        if (!rowBlankInfo.success) {
           // console.log('失败了');  // 该行没空间了，跳出到while层换下一行检测
           findSuccess = false
           if (!rowFindDone) {
@@ -329,14 +329,14 @@ export class LayoutManager {
             break
           }
 
-        } else if (rowBlankInfo.success === true) {
+        } else if (rowBlankInfo.success) {
           // console.log(yPointStart,'成功',rowBlankInfo)
           findSuccess = true
           if (j === 0) {
             // console.log('----------------------------');
             // console.log('第一次');  //  第一层找到空白行xIndex了,后面检测的h根据xStart，和 xEnd = xStart + w 来形成该item计划所处矩阵
-            xPointStart = rowBlankInfo.xStart
-            xPointEnd = rowBlankInfo.xEnd
+            xPointStart = rowBlankInfo['xStart']
+            xPointEnd = rowBlankInfo['xEnd']
           }
         }
 

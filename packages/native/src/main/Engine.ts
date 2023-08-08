@@ -643,12 +643,12 @@ export class Engine {
     }
     const container = this.container
     if (!container.__ownTemp__.beforeContainerSizeInfo) {
-      container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
+      container.__ownTemp__.beforeContainerSizeInfo = <any>genBeforeSize(container)
     } else {
       const beforeSize = container.__ownTemp__.beforeContainerSizeInfo
-      if (beforeSize.containerW !== container.containerW || beforeSize.containerH !== container.containerH) {
+      if (beforeSize['containerW'] !== container.containerW || beforeSize['containerH'] !== container.containerH) {
         const nowSize = genBeforeSize(container)
-        container.__ownTemp__.beforeContainerSizeInfo = genBeforeSize(container)
+        container.__ownTemp__.beforeContainerSizeInfo = <any>genBeforeSize(container)
         this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
       }
     }

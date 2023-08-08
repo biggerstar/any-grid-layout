@@ -27,7 +27,7 @@ export class ItemPos {
   //     isNext: false,
   //     beforeIndex: null
   // }
-  beforePos: ItemPos = null   //  跨容器时候保存上一个容器的位置
+  beforePos: ItemPos   //  跨容器时候保存上一个容器的位置
   autoOnce: boolean | null = null  // 静态布局下在下一次指定是否自动寻找容器中的空位
   posHash: any = ''  // 每个pos的唯一hash，可能重复
   constructor(pos) {

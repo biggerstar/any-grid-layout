@@ -1,8 +1,8 @@
 import {getKebabCase, throttle} from "@/utils/tool";
 
 export class DomFunctionImpl {
-  element = null
-  observer = null
+  element: HTMLElement
+  observer: MutationObserver
 
   constructor() {
   }
@@ -40,7 +40,7 @@ export class DomFunctionImpl {
   /** 添加一个元素的属性
    * @param {String} attrName 一个包含元素属性名和对应值的对象
    * */
-  getAttr(attrName) {
+  getAttr(attrName): Attr | null {
     return this?.element?.attributes?.getNamedItem(attrName) || null
   }
 
@@ -94,6 +94,7 @@ export class DomFunctionImpl {
       this.observer = new MutationObserver(throttle(func, throttleTime))
     }
     const attributeFilter = ['style', 'class'].concat(attrNames)
+    //@ts-ignore
     this.observer.observe(this.element, {attributeFilter, attribute: true, attributeOldValue: true})
   }
 

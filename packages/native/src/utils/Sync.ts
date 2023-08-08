@@ -59,7 +59,7 @@ export class Sync {
       doSync()
       return true
     }
-    let timer = setInterval(() => {
+    let timer: any = setInterval(() => {
       // 最大次数
       if (typeof obj["max"] === 'number' && obj["max"] < maxCount) {
         clearInterval(timer)

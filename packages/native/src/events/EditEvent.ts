@@ -25,7 +25,7 @@ export class EditEvent {
         const mousedownEvent = tempStore.mousedownEvent
         const isLeftMousedown = tempStore.isLeftMousedown
         const fromItem: Item = tempStore.fromItem
-        if (fromItem === null || mousedownEvent === null || !isLeftMousedown) return
+        if (!fromItem || mousedownEvent === null || !isLeftMousedown) return
         const container = fromItem.container
         if (tempStore.cloneElement === null) {
           tempStore.cloneElement = fromItem.element.cloneNode(true)
@@ -119,7 +119,7 @@ export class EditEvent {
           if (typeof fromItem._VueEvents['vueItemResizing'] === 'function') {
             fromItem._VueEvents['vueItemResizing'](fromItem, newResize.w, newResize.h)
           }
-          if (container.autoGrowRow && tempStore.isCoverRow) container.cover('row')
+          if (container['autoGrowRow'] && tempStore.isCoverRow) container.cover('row')
           fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
 
           tempStore?.fromContainer.updateLayout([fromItem])
@@ -299,7 +299,7 @@ export class EditEvent {
           const growContainer = dragItem.container
           if (growContainer.autoGrowRow && growContainer === container) {
             if (growContainer.platform === 'vue') {
-              const useLayout = growContainer.vue.useLayout
+              const useLayout = growContainer['vue'].useLayout
               if (growContainer.__ownTemp__.preRow === growContainer.row) {
                 useLayout.row = growContainer.row + 1
               }
@@ -654,7 +654,7 @@ export class EditEvent {
           }
           if (continuousOverCount >= contLimit) {
             container.__ownTemp__.exchangeLock = true
-            let timer = setTimeout(() => {
+            let timer: any = setTimeout(() => {
               container.__ownTemp__.exchangeLock = false
               clearTimeout(timer)
               timer = null
@@ -662,7 +662,7 @@ export class EditEvent {
           } else if (beforeOverItems.length < contLimit && toItem.draggable) {   // 前contLimit(默认是上面的3个)个连续反应时间为toItem.transition.time
             if (toItem.transition && toItem.transition.time) {
               container.__ownTemp__.exchangeLock = true
-              let timer = setTimeout(() => {
+              let timer: any = setTimeout(() => {
                 container.__ownTemp__.exchangeLock = false
                 clearTimeout(timer)
                 timer = null
@@ -1173,7 +1173,7 @@ export class EditEvent {
             let timeCont = 500
             const container = tempStore.fromContainer
             if (container.slidePage && (offsetTop >= 20 || offsetLeft >= 20)) {
-              let timer = setInterval(() => {
+              let timer: any = setInterval(() => {
                 timeCont -= 20
                 container.element.scrollTop += parseInt((((offsetTop / 100 * timeCont) / 30) || 0).toString())
                 container.element.scrollLeft += parseInt((((offsetLeft / 100 * timeCont) / 30) || 0).toString())
@@ -1231,7 +1231,7 @@ export class EditEvent {
             if (ev.preventDefault) ev.preventDefault()
             tempStore.allowTouchMoveItem = true
             EPF.container.mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
-            let timer = setTimeout(() => {
+            let timer: any = setTimeout(() => {
               document.removeEventListener('contextmenu', EEF.prevent.defaultAndFalse)
               clearTimeout(timer)
               timer = null

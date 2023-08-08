@@ -58,7 +58,7 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
   public events = []
   public global = {}
   //----------------内部需要的参数---------------------//
-  public element = null       //  container主体元素节点
+  public element: HTMLElement     //  container主体元素节点
   public contentElement = null   // 放置Item的元素节点，被element直接包裹
   public classList = []
   public attr = []
@@ -203,15 +203,15 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
     const _mountedFun = () => {
       //---------------------------------------------------------//
       if (this.el instanceof Element) this.element = this.el
-      if (this.element === null) {
+      if (!this.element) {
         if (!this.isNesting) this.element = document.querySelector(<string>this.el)
-        if (this.element === null) {
+        if (!this.element) {
           const errMsg = '在DOM中未找到指定ID对应的:' + this.el + '元素'
           throw new Error(errMsg)
         }
       }
-      this.element._gridContainer_ = this
-      this.element._isGridContainer_ = true
+      this.element['_gridContainer_'] = this
+      this.element['_isGridContainer_'] = true
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._collectNestingMountPoint()
       if (this.platform === 'vue') {
@@ -574,7 +574,7 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
       let posData = Object.assign({}, node.dataset)
       // console.log(posData);
       const item = this.add({el: node, ...posData})
-      if (item) item.name = item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
+      if (item) item.name = <string>item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
       items.push(items)
     })
     return items

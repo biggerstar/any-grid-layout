@@ -19,7 +19,7 @@ export class LayoutConfigManager {
 
   /** 用于提取用户传入的布局配置文件到 container.layout */
   initLayoutInfo() {
-    const options = this.options
+    const options: Record<any, any> = this.options
     let layoutInfo = []
     if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
     else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
@@ -117,7 +117,7 @@ export class LayoutConfigManager {
    * 之后返回该屏幕尺寸下的col size margin style  等等等配置信息，还有很多字段不写出来，
    * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
   genLayoutConfig(containerWidth = null, containerHeight = null, customLayout = null) {
-    let layoutItem = {}
+    let layoutItem: any = {}
     // console.log(containerWidth,this.container.element.clientWidth);
     containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
     containerHeight = containerHeight ? containerHeight : this.container.element?.clientHeight
@@ -203,7 +203,7 @@ export class LayoutConfigManager {
     // console.log(oldMargin,oldSize);
     // console.log(margin,size);
 
-    const global = this.options.global || {}
+    const global = this.options['global'] || {}
     for (const key in customLayout) {
       if (global !== undefined || layoutItem[key] !== undefined) {
         customLayout[key] = customLayout[key]   // 筛选出用户传进来的初始配置
@@ -221,7 +221,7 @@ export class LayoutConfigManager {
     // console.log(useLayout.margin, useLayout.size);
     return {
       layout: layoutItem,   // 当前使用的layouts中某个布局配置
-      global: this.options.global,  //  当前container的全局配置
+      global: this.options['global'],  //  当前container的全局配置
       customLayout: customLayout,   //  当前global和layoutItem 合并后使用的布局配置
       useLayout: useLayout,  // 在customLayout情况下必然包含margin，size布局字段
     }
@@ -371,7 +371,7 @@ export class LayoutConfigManager {
   genCustomLayout(container = null, layoutItem = null) {
     if (!container) container = this.container
     if (!layoutItem) layoutItem = container.layout
-    return Object.assign(cloneDeep(this.options.global), cloneDeep(layoutItem || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
+    return Object.assign(cloneDeep(this.options['global']), cloneDeep(layoutItem || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
   }
 
   computeSmartRowAndCol = (items) => {
