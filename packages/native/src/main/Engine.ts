@@ -573,7 +573,7 @@ export class Engine {
    *                                  不传值(默认null): 静态模式不进行更新，响应式模式进行全部更新
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
-  updateLayout(items = null, ignoreList = []) {
+  updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
     //---------------------------更新响应式布局-------------------------------//
     const staticItems = this.items.filter((item) => {
       if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {
@@ -584,13 +584,14 @@ export class Engine {
     let updateItemList = []
     if (items === null) updateItemList = []
     else if (Array.isArray(items)) updateItemList = items
-    else if (items !== true && updateItemList.length === 0) return
+    else if (!items && updateItemList.length === 0) return
     if (items === true) items = this.items
+    if (!Array.isArray(items)) return
     this.reset()
     this.renumber()
     this._sync()
-    updateItemList = updateItemList.filter(item => items.includes(item) && !item.static)
-    if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)
+    updateItemList = updateItemList.filter(item => (items as []).includes(item) && !item.static)
+    if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)  // 没找到更新元素，则默认更新全部
     // console.log(items.length, updateItemList);
     const updateItemLayout = (item) => {
       const realPos = this._isCanAddItemToContainer_(item, !!item.autoOnce, true)

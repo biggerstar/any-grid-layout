@@ -8,7 +8,7 @@ import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Container} from "@/main/container/Container";
-import {ItemLayoutOptions, ItemTransition} from "@/types";
+import {ItemLayoutOptions, ItemTransition, MarginOrSizeDesc} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -101,8 +101,8 @@ export class Item extends DomFunctionImpl {
 
   //-------------------------------------------------------------------------------------------------------------------------
   //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
-  margin: [any, any] = [null, null]   //   间距 [左右, 上下]
-  size: [any, any] = [null, null]   //   宽高 [宽度, 高度]
+  margin: MarginOrSizeDesc = [null, null]   //   间距 [左右, 上下]
+  size: MarginOrSizeDesc = [null, null]   //   宽高 [宽度, 高度]
 
   //----------------内部需要的参数---------------------//
   i: any = null   //  每次重新布局给的自动正整数编号,对应的是Item的len

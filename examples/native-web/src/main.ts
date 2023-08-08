@@ -6,13 +6,14 @@ const container = new Container({
   el: '#container',
   // el: document.getElementById('container'),
   layouts: {
-    responsive:true,
+    responsive: false,
     // responseMode:'default',
     from: '来自layout',
-    items: fillItemLayoutList(layoutData11,{
-      draggable:true,
-      resize:true
+    items: fillItemLayoutList(layoutData11, {
+      draggable: true,
+      resize: true
     }),
+    // autoGrowRow:true,
     // col: 3,
     // row: 5,
     ratioCol: 0.2,

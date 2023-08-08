@@ -9,7 +9,7 @@ import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {Engine} from "@/main/Engine";
 import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
-import {ContainerOptions} from "@/types";
+import {ContainerOptions, MarginOrSizeDesc} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -77,8 +77,8 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
   public className: string;
   public responsive: any;
   public container: Container;
-  public margin: [any, any];
-  public size: [any, any];
+  public margin: MarginOrSizeDesc
+  public size: MarginOrSizeDesc
 
   //----------------保持状态所用参数---------------------//
   private _VueEvents = {}

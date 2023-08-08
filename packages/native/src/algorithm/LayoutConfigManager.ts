@@ -231,7 +231,8 @@ export class LayoutConfigManager {
   /**[这里会计算col，row，不计算margin，size] 通过Container的行和列限制信息自动计算当前容器可使用的最大col和row,传入前col和row是Container中必须指定的值,
    * 这里Container挂载(mount)的时候会执行两次，一次是预同步容器大小信息，一次是执行最终挂载后容器信息，算是没架构好，
    * 后面有机会再优化吧
-   * @param {Container} container 容器实例
+   * @param {Container} container 容器实例，该函数将直接修改Container中的 containerW，containerH， col ，row 等等，
+   *                                      另外也同步修改当前使用的container.layout(当前使用的layout)中的 col，row
    * @param {Boolean} isSetConfig 是否设置最终col和row的运算结果
    * @param {Object,Null} customLayout 临时使用用于计算的layout
    * @return {Object} 一个包含最大col和row，containerW，ContainerH的集合
@@ -374,6 +375,8 @@ export class LayoutConfigManager {
     return Object.assign(cloneDeep(this.options['global']), cloneDeep(layoutItem || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
   }
 
+
+  /** 智能计算当前 items 中最大col边界值和最大row边界值 */
   computeSmartRowAndCol = (items) => {
     let smartCol = 1   // 自动计算col最低为1
     let smartRow = 1   // 自动计算row最低为1
@@ -386,6 +389,8 @@ export class LayoutConfigManager {
     // console.log(smartCol,smartRow);
     return {smartCol, smartRow}
   }
+
+
   checkLayoutValue = (customLayout) => {   // 里面就是缺啥补啥
     let {margin, size} = customLayout
     if (margin) {

@@ -145,3 +145,4 @@ export type ItemTransition = {
   field: 'top,left,width,height'
 } | number | boolean
 
+export type MarginOrSizeDesc = [string | null, string | null]

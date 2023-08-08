@@ -65,7 +65,6 @@ export class EditEvent {
             h
           }
         }
-
         const limitCloneEl = () => {
           //------------------------克隆元素长宽限制---------------------------//
           if (width > fromItem.maxWidth()) width = fromItem.maxWidth()
@@ -111,10 +110,10 @@ export class EditEvent {
         }
 
         newResize = resizeSpaceLimit(newResize)
-
         if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
         if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
           if (!newResize) return
+          console.log(newResize)
           fromItem.__temp__.resized = newResize
           if (typeof fromItem._VueEvents['vueItemResizing'] === 'function') {
             fromItem._VueEvents['vueItemResizing'](fromItem, newResize.w, newResize.h)
@@ -122,7 +121,7 @@ export class EditEvent {
           if (container['autoGrowRow'] && tempStore.isCoverRow) container.cover('row')
           fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
 
-          tempStore?.fromContainer.updateLayout([fromItem])
+          tempStore?.fromContainer.updateLayout(fromItem.container.responsive ? true : [fromItem])
           fromItem.updateStyle(fromItem._genLimitSizeStyle())
           fromItem.container.updateContainerStyleSize()
         }
@@ -944,7 +943,7 @@ export class EditEvent {
                 })
               }
             }
-            if (isAllowDrag === false) return
+            if (!isAllowDrag) return
           }
           tempStore.dragOrResize = 'drag'
           if (tempStore.fromItem.__temp__.dragging) return
@@ -1216,7 +1215,7 @@ export class EditEvent {
       },
       touchstartOrMousedown: (ev) => {
         // touch 和 drag效果是一样的
-        ev = ev || window.event
+        ev = ev || window['event']
         if (ev.touches) {
           if (ev.stopPropagation) ev.stopPropagation()
           tempStore.deviceEventMode = 'touch'
@@ -1259,7 +1258,7 @@ export class EditEvent {
         EPF.container.mousemove(ev)
       },
       touchendOrMouseup: (ev) => {
-        ev = ev || window.event
+        ev = ev || window['event']
         if (ev.touches) {
           clearTimeout(tempStore.timeOutEvent)
           tempStore.allowTouchMoveItem = false

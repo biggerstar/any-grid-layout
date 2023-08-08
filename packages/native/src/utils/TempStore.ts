@@ -1,4 +1,4 @@
-/**  用于Container之间数据临时缓存和共享,不计划挂载到window对象
+/**  用于Container之间数据临时共享缓存,不计划挂载到window对象
  *   使用该Store的对象：Container，EditEvent
  * */
 export class TempStore {
