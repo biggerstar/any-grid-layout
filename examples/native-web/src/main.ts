@@ -1,4 +1,4 @@
-import {Container} from '@biggerstar/layout'
+import {Container, fillItemLayoutList} from '@biggerstar/layout'
 import {layoutData, layoutData11} from "@/stores/layout.js";
 
 
@@ -6,9 +6,13 @@ const container = new Container({
   el: '#container',
   // el: document.getElementById('container'),
   layouts: {
+    responsive:true,
+    // responseMode:'default',
     from: '来自layout',
-    // items: layoutData11,
-    items: layoutData11,
+    items: fillItemLayoutList(layoutData11,{
+      draggable:true,
+      resize:true
+    }),
     // col: 3,
     // row: 5,
     ratioCol: 0.2,

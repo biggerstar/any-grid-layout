@@ -8,7 +8,7 @@ import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Container} from "@/main/container/Container";
-import {ItemLayoutOptions} from "@/types";
+import {ItemLayoutOptions, ItemTransition} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -64,10 +64,10 @@ export class Item extends DomFunctionImpl {
    *              field: 'top,left,width,height'
    *           }
    *  */
-  transition: {
-    time: number,
+  transition: ItemTransition = {
+    time: 180,
     field: 'top,left,width,height'
-  } | number | boolean
+  }
 
   /** item自身是否可以拖动
    * @default false
@@ -112,7 +112,7 @@ export class Item extends DomFunctionImpl {
   classList = []
   attr = []
   autoOnce = null
-  edit = null   // 该Item是否正在被编辑(只读)
+  edit: boolean  // 该Item是否正在被编辑(只读)
   nested = false
   parentElement = null
   _VueEvents = {}   // 用于 vue 携带的内置事件
@@ -149,24 +149,20 @@ export class Item extends DomFunctionImpl {
       this.el = itemOption.el
       this.element = itemOption.el
     }
-    // console.log(this.element, this.el)
-    this._define()
     merge(this, itemOption)
-    this.pos = new ItemPos(itemOption.pos)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
+    this.pos = new ItemPos(itemOption.pos)
     this._itemSizeLimitCheck()
   }
 
   /** 让draggable，resize，close，edit 等支持getter 和 setter 直接复制控制 item 的对应行为状态 */
   _define() {
     const self = this
-    let draggable = false
-    let resize = false
-    let close = false
-    let edit = false
-    let transition = {
-      time: 180,
-      field: 'top,left,width,height'
-    }
+    let draggable = this.draggable
+    let resize = this.resize
+    let close = this.close
+    let edit = draggable || resize || close
+    // console.log( draggable, resize, close)
+    let transition = this.transition
     Object.defineProperties(<object>this, {
       draggable: {
         configurable: false,
@@ -218,11 +214,11 @@ export class Item extends DomFunctionImpl {
         configurable: false,
         get: () => transition,
         set(v) {
-          if (v === false) transition.time = 0
-          if (typeof v === 'number') transition.time = v
+          if (v === false) transition['time'] = 0
+          if (typeof v === 'number') transition['time'] = v
           if (typeof v === 'object') {
-            if (v.time && v.time !== transition.time) transition.time = v.time
-            if (v.field && v.field !== transition.field) transition.field = v.field
+            if (v.time && v.time !== transition['time']) transition['time'] = v.time
+            if (v.field && v.field !== transition['field']) transition['field'] = v.field
           }
           self.animation(transition)
         }
@@ -272,6 +268,7 @@ export class Item extends DomFunctionImpl {
   /** 渲染, 直接渲染添加到 Container 中 */
   mount() {
     const _mountedFun = () => {
+      this._define()
       if (this._mounted) return
       if (this.container.platform === 'native') {
         if (!this.element) this.element = document.createElement(this.tagName)
@@ -282,6 +279,12 @@ export class Item extends DomFunctionImpl {
       this.classList = Array.from(this.element.classList)
       this.updateStyle(defaultStyle.gridItem)
       this.updateItemLayout()
+      //--------------开启编辑和动画------------------
+      this._handleResize(this.resize)
+      this._closeBtn(this.close)
+      this._edit(this.edit)
+      this.animation(this.transition)
+      //--------------------------------------------
       this.__temp__.w = this.pos.w
       this.__temp__.h = this.pos.h
       this.element['_gridItem_'] = this
@@ -329,18 +332,15 @@ export class Item extends DomFunctionImpl {
 
   /** 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
    *  @param {Boolean}  isEdit    是否开启编辑模式
-   *  @backup {Object}  editOption  原参数(editOption)  包含 draggable(Boolean)  resize(Boolean) 表示开启或关闭哪个功能,
-   *                              调用该函数不传参或者传入布尔值 true表示draggable和 resize 全部开启
-   *                              传入 布尔值 false 表示全部关闭
    * */
   _edit(isEdit = false) {
-    if (this.edit === true) {
+    if (this.edit) {
       if (!this.__temp__.editNumUsing) {
         EditEvent.startEvent(null, this)
         this.__temp__.editNumUsing = true
         tempStore.editItemNum++   // 未占用editNum 进行占用
       }
-    } else if (this.edit === false) {
+    } else if (!this.edit) {
       if (this.__temp__.editNumUsing) {
         EditEvent.removeEvent(null, this)
         tempStore.editItemNum--   // 占用了editNum 进行释放

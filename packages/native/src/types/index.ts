@@ -139,3 +139,9 @@ export type CustomEventOptions = {
   /** row列数改变 */
   rowChange(row,preRow,container): void,
 }
+
+export type ItemTransition = {
+  time: number,
+  field: 'top,left,width,height'
+} | number | boolean
+

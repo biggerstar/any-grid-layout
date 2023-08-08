@@ -1,3 +1,5 @@
+import {CustomItemLayoutOptions, ItemLayoutOptions} from "@/types";
+
 export function throttle(func, wait = 350) {  // 节流函数：返回的是函数，记得再执行
   let self, args;
   let old = 0;
@@ -32,11 +34,11 @@ export function getKebabCase(str) {
   })
 }
 
-/** 从一个新的对象合并到另一个原有对象中且只合并原有存在对象中的值,参数位置和Object.assign一样
+/** 从一个新的对象合并到另一个原有对象中且 [ 只合并原有存在对象中的值 ],参数位置和Object.assign一样
  * 和 Object.assign不同的是该方法不会复制两者不同属性到to对象中, 会直接影响到原对象
  * @param {Object} to 接受者
  * @param {Object} from 提供者
- * @param {Boolean} clone 是否浅克隆(浅拷贝)
+ * @param {Boolean} clone 是否浅克隆(浅拷贝), true: 直接合并到目标对象   false: 浅克隆
  * @param {Array} exclude  排除合并的字段
  * */
 export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
@@ -187,4 +189,24 @@ export const singleTouchToCommonEvent = (touchEvent) => {
     touchEvent.touchTarget = document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
   }
   return touchEvent
+}
+
+/** 为传入的items填充默认数据, 会改变原有对象的值
+ * 比如
+ * @example
+ *    const items = [{
+ *      pos:{w:h}
+ *    }]
+ *    // 调用函数
+ *    fillInItemLayoutList(items,{ close:true })
+ *    //  items结果: [{  pos:{w:h},close:true }]
+ * */
+export function fillItemLayoutList(items: CustomItemLayoutOptions = [], fillFields: ItemLayoutOptions = {}): ItemLayoutOptions[] {
+  if (!Array.isArray(items)) items = [items]
+  return items.map((item) => {
+    for (const k in fillFields) {
+      if (!item.hasOwnProperty(k)) item[k] = fillFields[k]
+    }
+    return item
+  })
 }
