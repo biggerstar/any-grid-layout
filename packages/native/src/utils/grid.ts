@@ -1,4 +1,6 @@
-/** 生成 网格布局grid-templates-areas 属性的模板矩阵值  */
+/**
+ * @deprecated
+ * 生成 网格布局grid-templates-areas 属性的模板矩阵值  */
 export const genGridAreasLayout = (count, colum) => {
   let areasString = ''
   let prefix = 'a'

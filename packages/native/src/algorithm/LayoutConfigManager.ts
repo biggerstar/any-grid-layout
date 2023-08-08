@@ -6,11 +6,11 @@ import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationFiel
 export class LayoutConfigManager {
   public container: Container & LayoutInstantiationField
   public customLayout = {}
-  public option = {}
+  public options = {}
   private _defaultLayoutConfig = defaultLayoutConfig
 
-  constructor(option) {
-    this.option = option
+  constructor(options) {
+    this.options = options
   }
 
   setContainer(container) {
@@ -19,11 +19,11 @@ export class LayoutConfigManager {
 
   /** 用于提取用户传入的布局配置文件到 container.layout */
   initLayoutInfo() {
-    const option = this.option
+    const options = this.options
     let layoutInfo = []
-    if (Array.isArray(option.layouts)) layoutInfo = option.layouts         // 传入的layouts字段Array形式
-    else if (typeof option.layouts === "object") layoutInfo.push(option.layouts)     // 传入的layouts字段Object形式
-    else if (option.layouts === true) layoutInfo = this._defaultLayoutConfig  // (不计划开放外用,只用于开发测试)传入的layouts字段直接设置成true形式,使用默认的内置布局方案
+    if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
+    else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
+    else if (options.layouts === true) layoutInfo = this._defaultLayoutConfig  // (不计划开放外用,只用于开发测试)传入的layouts字段直接设置成true形式,使用默认的内置布局方案
     else throw new Error("请传入layout配置信息")
     if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
       layoutInfo.sort((a, b) => {
@@ -203,7 +203,7 @@ export class LayoutConfigManager {
     // console.log(oldMargin,oldSize);
     // console.log(margin,size);
 
-    const global = this.option.global || {}
+    const global = this.options.global || {}
     for (const key in customLayout) {
       if (global !== undefined || layoutItem[key] !== undefined) {
         customLayout[key] = customLayout[key]   // 筛选出用户传进来的初始配置
@@ -221,7 +221,7 @@ export class LayoutConfigManager {
     // console.log(useLayout.margin, useLayout.size);
     return {
       layout: layoutItem,   // 当前使用的layouts中某个布局配置
-      global: this.option.global,  //  当前container的全局配置
+      global: this.options.global,  //  当前container的全局配置
       customLayout: customLayout,   //  当前global和layoutItem 合并后使用的布局配置
       useLayout: useLayout,  // 在customLayout情况下必然包含margin，size布局字段
     }
@@ -371,7 +371,7 @@ export class LayoutConfigManager {
   genCustomLayout(container = null, layoutItem = null) {
     if (!container) container = this.container
     if (!layoutItem) layoutItem = container.layout
-    return Object.assign(cloneDeep(this.option.global), cloneDeep(layoutItem || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
+    return Object.assign(cloneDeep(this.options.global), cloneDeep(layoutItem || {})) // 在global值的基础上附加修改克隆符合当前layout的属性
   }
 
   computeSmartRowAndCol = (items) => {

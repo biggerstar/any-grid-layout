@@ -1,5 +1,5 @@
 /** 布局算法,非响应式 true表示栅格中该位置已经被占用，false表示未占用
- *  @param {Object} option  同学，你用一个对象放东西就行了，自己看类成员！！
+ *  @param {Object} options
  *  pos 是ItemPos类成员
  * */
 
@@ -174,7 +174,7 @@ export class LayoutManager {
     let findItemLayout
     // console.log(posOption);
     // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-    if (!!auto) {
+    if (auto) {
       findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
 
       if (findItemLayout === undefined) return null
@@ -193,7 +193,7 @@ export class LayoutManager {
     }
     // console.log(findItemLayout);
     // console.log(this.isOverFlowMatrix(posOption));
-    if (auto === false && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
+    if (!auto && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
     else return findItemLayout
     // if (this.maxRow && this.maxRow < (findItemLayout.y + findItemLayout.h - 1)) {
     //     console.error(posOption, '超出maxRow设定范围,若直接使用裸算请在外围检测保持传入的posOption对应的h+y不超过maxRow')
