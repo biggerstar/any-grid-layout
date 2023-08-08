@@ -1,0 +1,36 @@
+{
+  "name": "@biggerstar/layout",
+  "version": "0.0.31-Beta",
+  "type": "module",
+  "scripts": {
+    "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
+  },
+  "main": "./dist/any-grid-layout",
+  "module": "./dist/any-grid-layout",
+  "exports": {
+    ".": {
+      "default": "./dist/any-grid-layout",
+      "import": "./dist/any-grid-layout",
+      "require": "./dist/any-grid-layout.umd.cjs",
+      "types": "./types/any-grid-layout.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/biggerstar/any-grid-layout"
+  },
+  "author": "biggerstar",
+  "license": "GPL-3.0-or-later",
+  "description": "",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "eslintIgnore": [
+    "dist"
+  ]
+}

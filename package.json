@@ -3,29 +3,26 @@
   "version": "0.0.31-Beta",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "rimraf dist && vite build",
-    "preview": "vite preview",
-    "release": "npm run -s build && npm publish && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
-  },
-  "main": "./dist/any-grid-layout",
-  "module": "./dist/any-grid-layout",
-  "exports": {
-    ".": {
-      "default": "./dist/any-grid-layout",
-      "import": "./dist/any-grid-layout",
-      "require": "./dist/any-grid-layout.umd.cjs"
-    }
+    "dev": "vite-run dev",
+    "build": "rimraf dist && vite-run build",
+    "preview": "vite-run preview",
+    "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags ",
+    "clean": "npm run clean:dist && npm run clean:module",
+    "clean:module": "pnpm recursive exec -- rimraf node_modules && rimraf node_modules",
+    "clean:dist": "pnpm recursive exec -- rimraf dist && rimraf dist"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^3.1.0",
-    "rimraf": "^3.0.2",
-    "vite": "^3.1.0",
-    "vue": "^3.2.45"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/biggerstar/any-grid-layout"
+    "@types/node": "^20.4.8",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "pinia": "^2.1.6",
+    "rimraf": "^5.0.1",
+    "rollup-plugin-bundle-analyzer": "^1.6.6",
+    "typescript": "^5.1.6",
+    "vite": "^4.4.9",
+    "vite-plugin-copy-dts": "^0.0.5",
+    "vite-plugin-dts": "^3.5.1",
+    "vite-run": "^1.0.0",
+    "vue": "^3.3.4"
   },
   "author": "biggerstar",
   "license": "GPL-3.0-or-later",
@@ -34,10 +31,10 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "dependencies": {
-    "@biggerstar/layout": "0.0.28-Beta"
-  },
   "eslintIgnore": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "resize-observer-polyfill": "^1.5.1"
+  }
 }
