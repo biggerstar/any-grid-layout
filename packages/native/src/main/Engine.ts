@@ -4,6 +4,7 @@ import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
+import {ContainerOptions} from "@/types";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -14,7 +15,7 @@ import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationFiel
  *  ##################################################################### */
 export class Engine {
   items = []
-  option = {}
+  options: ContainerOptions
   layoutManager: LayoutManager
   container: Container & LayoutInstantiationField
   layoutConfigManager: LayoutConfigManager
@@ -27,14 +28,14 @@ export class Engine {
     previousHash: '',   // 当前items通过每个pos计算得到hash特征
   }
 
-  constructor(option: any) {  //  posList用户初始未封装成ItemPos的数据列表
-    this.option = option    // 拿到和Container同一份用户传入的配置信息
+  constructor(options: any = {}) {  //  posList用户初始未封装成ItemPos的数据列表
+    this.options = options    // 拿到和Container同一份用户传入的配置信息
   }
 
   init() {
     if (this.initialized) return
     this.layoutManager = new LayoutManager()
-    this.layoutConfigManager = new LayoutConfigManager(this.option)
+    this.layoutConfigManager = new LayoutConfigManager(this.options)
     this.layoutConfigManager.setContainer(this.container)
     this.layoutConfigManager.initLayoutInfo()
     this.initialized = true
@@ -66,7 +67,7 @@ export class Engine {
   _syncLayoutConfig(useLayout = null) {
     if (!useLayout) return
     if (Object.keys(useLayout).length === 0) {
-      if (!this.option.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
+      if (!this.options.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
     }
     merge(this.container, useLayout, false, ['events'])      //  更新同步当前Container中的属性值
     // console.log(useLayout);
@@ -257,7 +258,7 @@ export class Engine {
 
   /** 将item成员全部挂载到Container  */
   mountAll() {
-    this.items.forEach((item:Item) => item.mount())
+    this.items.forEach((item: Item) => item.mount())
     if (this.container.responsive) this.container.row = this.layoutManager.row  //静态布局的row是固定的，响应式不固定
   }
 
