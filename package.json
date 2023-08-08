@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite-run dev",
-    "build": "rimraf dist && vite-run build",
+    "build": "rimraf dist && vite-run build && vite-run types",
     "preview": "vite-run preview",
     "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags ",
     "clean": "npm run clean:dist && npm run clean:module",

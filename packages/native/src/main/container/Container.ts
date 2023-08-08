@@ -19,15 +19,15 @@ const tempStore = TempStore.store
 /** #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  *   Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
  *   该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
- *  {
+ *   ```javascript{
  *    col: 8,
  *    size:[80,80],
  *    layout:[{
  *          px:1024,
  *          size:[100,100]
  *        },
- *    .............
  *    ]}
+ *    ```
  *    此时该col生效数值是8，来自全局设置属性，size的生效值是[100,100],来自layout中指定的局部属性
  *    注：
  *    1.暂不支持iframe嵌套
@@ -35,14 +35,14 @@ const tempStore = TempStore.store
  *      框架处理会自动显示出来，出现这个的原因是因为html加载渲染比js对dom的渲染快
  *  # size,margin, [col || row](后面简称CR) 在传入后的响应结果,
  *    所有参数是通过LayoutConfig算法类以当前容器最大可视区域进行计算，
- *   CR   size   margin   所见即所得
- *   CR  !size   margin   自动通过容器剩余空间设定size尺寸
- *   CR   size  !margin   自动通过容器剩余空间margin尺寸
- *   CR  !size  !margin   通过传入的radio自动设定size和margin尺寸
- *  !CR   size   margin   自动设定CR的栅格数
- *  !CR  !size   margin   自动通过容器剩余空间设定size尺寸
- *  !CR   size  !margin   自动通过容器剩余空间设定margin尺寸
- *  !CR  !size  !margin   会自动通过传入 items 列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
+ * -  CR   size   margin   所见即所得
+ * -  CR  !size   margin   自动通过容器剩余空间设定size尺寸
+ * -  CR   size  !margin   自动通过容器剩余空间margin尺寸
+ * -  CR  !size  !margin   通过传入的radio自动设定size和margin尺寸
+ * - !CR   size   margin   自动设定CR的栅格数
+ * - !CR  !size   margin   自动通过容器剩余空间设定size尺寸
+ * - !CR   size  !margin   自动通过容器剩余空间设定margin尺寸
+ * - !CR  !size  !margin   会自动通过传入 items 列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
@@ -72,7 +72,6 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
   public containerH = null
   public containerW = null
   public eventManager = null    // events通过封装构建的类实例
-  //----------------------------------------------------// 转ts新增提示
   public row: number;
   public col: number;
   public className: string;

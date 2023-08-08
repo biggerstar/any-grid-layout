@@ -7,10 +7,11 @@ const container = new Container({
   // el: document.getElementById('container'),
   layouts: {
     from: '来自layout',
+    // items: layoutData11,
     items: layoutData11,
     // col: 3,
     // row: 5,
-    ratio: 0.2,
+    ratioCol: 0.2,
     margin: [10, 10],
     size: [120, 80],
     // size: [120, 90],

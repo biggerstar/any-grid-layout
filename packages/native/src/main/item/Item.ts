@@ -8,6 +8,7 @@ import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Container} from "@/main/container/Container";
+import {ItemLayoutOptions} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -20,23 +21,85 @@ const tempStore = TempStore.store
  * */
 export class Item extends DomFunctionImpl {
   //------------实例化Item外部传进的的参数,不建议在Container中传进来--------------//
-  el = ''   // 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
-  name = '' //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
-  type = null //  该Item的类型，可用于区分组件
-  follow: boolean = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-  dragOut: boolean = true    // 是否可以将Item拖动到容器外
-  resizeOut: boolean = false     // 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
-  className: string = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
-  dragIgnoreEls = []   // 【不】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
-  dragAllowEls = []    // 【只】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
-  //----------被defineProperties代理的字段-------------//
-  transition = null  // time:动画过渡时长 ms, field: 要过渡的css字段 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
-  draggable = null  //  自身是否可以拖动
-  resize = null     //  自身是否可以调整大小
-  close = null
-  static: boolean = false  // 优先级比autoOnce高，但是只有pos中指定x和y才生效
-  exchange: boolean = true   // 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
+  /** 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足 */
+  el: string | HTMLElement = ''
 
+  /** 开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item */
+  name: string = ''
+
+  /** 【vue专用】 该Item的类型，可用于区分组件 */
+  type = null
+
+  /**  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
+   *   @default false
+   * */
+  follow: boolean = true
+
+  /** 是否可以将Item拖动到容器外
+   *  @default true
+   * */
+  dragOut: boolean = true
+
+  /** 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
+   * @default false
+   * */
+  resizeOut: boolean = false
+
+  /** Item在文档中默认的类名,可以由外部传入重新自定义
+   * @default grid-item
+   * */
+  className: string = 'grid-item'
+
+  /** 【不允许】 点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element) */
+  dragIgnoreEls = []
+
+  /** 【只允许】 点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element) */
+  dragAllowEls = []
+  //----------被_define函数通过 defineProperties代理的字段-------------//
+
+  /** time:动画过渡时长 ms, field: 要过渡的css字段
+   *  可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
+   *  @default {
+   *              time: 180,
+   *              field: 'top,left,width,height'
+   *           }
+   *  */
+  transition: {
+    time: number,
+    field: 'top,left,width,height'
+  } | number | boolean
+
+  /** item自身是否可以拖动
+   * @default false
+   * */
+  draggable: boolean = false
+
+  /** 自身是否可以调整大小
+   * @default false
+   * */
+  resize: boolean = false
+
+  /** 是否有关闭按钮，建议开发者自己实现按钮或者更改按钮样式
+   * @default false
+   * */
+  close: boolean = false
+
+  /** 该item是否是静态布局，如果为true，则该item将会固定在外部指定的某行某列中
+   *  优先级比autoOnce高，但是只有pos中指定x和y才生效
+   * @default false
+   * */
+  static: boolean = false
+
+  /**  该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
+   * @default false
+   * */
+  exchange: boolean = false
+
+  /** pos位置对象
+   * */
+  pos: ItemPos
+
+  //-------------------------------------------------------------------------------------------------------------------------
   //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
   margin: [any, any] = [null, null]   //   间距 [左右, 上下]
   size: [any, any] = [null, null]   //   宽高 [宽度, 高度]
@@ -48,7 +111,6 @@ export class Item extends DomFunctionImpl {
   tagName: string = 'div'
   classList = []
   attr = []
-  pos: ItemPos = {} as ItemPos
   autoOnce = null
   edit = null   // 该Item是否正在被编辑(只读)
   nested = false
@@ -81,7 +143,7 @@ export class Item extends DomFunctionImpl {
     }
   }
 
-  constructor(itemOption) {
+  constructor(itemOption: ItemLayoutOptions) {
     super()
     if (itemOption.el instanceof Element) {
       this.el = itemOption.el
@@ -193,13 +255,13 @@ export class Item extends DomFunctionImpl {
     if (typeof item.type === 'string') exposeConfig.type = item.type
     //transition 特殊导出
     let transition: Record<any, any> = {}
-    if (item.transition.field !== 'top,left,width,height') {
-      transition.field = item.transition.field
-      if (item.transition.time !== 180) transition.time = item.transition.time
+    if (item.transition['field'] !== 'top,left,width,height') {
+      transition.field = item.transition['field']
+      if (item.transition['time'] !== 180) transition.time = item.transition['time']
       exposeConfig.transition = transition
     } else {
-      if (item.transition.time !== 180) {
-        exposeConfig.transition = item.transition.time
+      if (item.transition['time'] !== 180) {
+        exposeConfig.transition = item.transition['time']
       }
     }
     // exposeConfig.el = this.element

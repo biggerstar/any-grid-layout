@@ -1,14 +1,14 @@
-import {merge} from "@/utils/tool";
-import {CustomItemLayoutOptions} from "@/types";
+### Container 实例化
+
+
+- layouts
+```javascript
 
 /**  Container实例化的时候可以在Layout配置中使用的字段 */
-export class LayoutInstantiationField {
-  [key: string]: any
-
   /** 使用的框架或原生js，会对其针对性优化和支持
    * TODO react(计划)
    * */
-  platform: 'native' | 'vue' = 'native'
+  platform: 'native' | 'vue'  = 'native'
 
   //----------------实例化传进的的参数---------------------//
   /** 该容器的名称 */
@@ -30,7 +30,7 @@ export class LayoutInstantiationField {
   responseMode: 'default' | 'exchange' | 'stream' = 'default'
 
   /** 当前布局使用的数据*/
-  items: CustomItemLayoutOptions
+  items: Array<Partial<LayoutDataItem>> = []
 
   /** 列数 */
   col: number
@@ -168,8 +168,5 @@ export class LayoutInstantiationField {
    * */
   nestedOutExchange: boolean = false
 
-  //------------------------------------------------------//
-  constructor(config = {}) {
-    merge(this, config)
-  }
-}
+
+```
