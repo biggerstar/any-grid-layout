@@ -1,17 +1,19 @@
-import Sync from "@/utils/Sync";
-import Item from "@/main/item/Item";
-import DomFunctionImpl from "@/utils/DomFunctionImpl";
-import Engine from "@/main/Engine";
-import TempStore from "@/utils/TempStore";
 import {defaultStyle} from "@/default/style/defaultStyle";
-import ItemPos from '@/main/item/ItemPos'
-import EventCallBack from "@/events/EventCallBack";
-import LayoutInstantiationField from "@/main/container/LayoutInstantiationField";
 import {throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
+import {TempStore} from "@/utils/TempStore";
+import {ItemPos} from "@/main/item/ItemPos";
+import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+import {Sync} from "@/utils/Sync";
+import {Item} from "@/main/item/Item";
+import {EventCallBack} from "@/events/EventCallBack";
+import {Engine} from "@/main/Engine";
+import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
+import {ContainerOptions} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
+
 //---------------------------------------------------------------------------------------------//
 
 /** #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -40,41 +42,50 @@ const tempStore = TempStore.store
  *  !CR   size   margin   自动设定CR的栅格数
  *  !CR  !size   margin   自动通过容器剩余空间设定size尺寸
  *  !CR   size  !margin   自动通过容器剩余空间设定margin尺寸
- *  !CR  !size  !margin   会自动通过传入data列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
- *                        如果data顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
+ *  !CR  !size  !margin   会自动通过传入 items 列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
+ *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
-export default class Container extends DomFunctionImpl {
+export class Container extends DomFunctionImpl implements Partial<LayoutInstantiationField> {
   //----------实例化传进的的参数(次级配置信息)-----------//
   // 相关字段在ContainerInitConfig类中,实例化的时候会进行合并到此类.次级的意思是实例化对象的配置信息深度为二以下的其他字段
   //---------实例化传进的的特殊参数(一级配置信息)---------//
   // 一级配置信息的意思是实例化对象的配置信息第一层的字段
-  el = ''
-  parent = null  // 嵌套情况下上级Container
-  platform = 'native'   //  native(默认原生js) || vue || react(计划)
-  layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
-  events = []
-  global = {}
+  public el: HTMLElement | string = ''
+  public parent = null  // 嵌套情况下上级Container
+  public platform: 'native' | 'vue' = 'native'   //  native(默认原生js) || vue || react(计划)
+  public layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
+  public events = []
+  public global = {}
   //----------------内部需要的参数---------------------//
-  element = null       //  container主体元素节点
-  contentElement = null   // 放置Item的元素节点，被element直接包裹
-  classList = []
-  attr = []
-  engine: Engine
-  px = null
-  layout = {}     //  当前所使用的用户传入的对应布局方案
-  useLayout = {}   //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  childContainer = [] // 所有该Container的直接子嵌套容器
-  isNesting = false    // 该Container自身是否[被]嵌套
-  parentItem = null
-  containerH = null
-  containerW = null
-  eventManager = null    // events通过封装构建的类实例
+  public element = null       //  container主体元素节点
+  public contentElement = null   // 放置Item的元素节点，被element直接包裹
+  public classList = []
+  public attr = []
+  public engine: Engine
+  public px = null
+  public layout: Record<any, any> = {}     //  当前所使用的用户传入的对应布局方案
+  public useLayout: Record<any, any> = {}   //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public childContainer = [] // 所有该Container的直接子嵌套容器
+  public isNesting = false    // 该Container自身是否[被]嵌套
+  public parentItem = null
+  public containerH = null
+  public containerW = null
+  public eventManager = null    // events通过封装构建的类实例
+  //----------------------------------------------------// 转ts新增提示
+  public row: number;
+  public col: number;
+  public className: string;
+  public responsive: any;
+  public container: Container;
+  public margin: [any, any];
+  public size: [any, any];
+
   //----------------保持状态所用参数---------------------//
-  _VueEvents = {}
-  _mounted = false
-  __store__ = tempStore
-  __ownTemp__ = {
+  private _VueEvents = {}
+  private _mounted = false
+  private __store__ = tempStore
+  private __ownTemp__ = {
     //-----内部可写外部只读变量------//
     preCol: 0,   // 容器大小改变之前的col
     preRow: 0,   // 容器大小改变之前的row
@@ -96,27 +107,27 @@ export default class Container extends DomFunctionImpl {
     //----------可写变量-----------//
   }
 
-  constructor(option) {
+  constructor(options: ContainerOptions) {
     super()
-    if (option.el === null) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
+    if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
     // 部分一级实例化参数处理
-    this.el = option.el
-    if (typeof option.platform === 'string') this.platform = option.platform
-    Object.assign(<object>this, new LayoutInstantiationField())
+    this.el = options.el
+    if (options.platform) this.platform = options.platform
+    Object.assign(<object>this, new LayoutInstantiationField())  // 继承
     this._define()
-    this.eventManager = new EventCallBack(option.events)
-    this.engine = new Engine(option)
-    if (option.global) this.global = option.global
-    if (option.parent) {
-      this.parent = option.parent
+    this.eventManager = new EventCallBack(<any>options.events)
+    this.engine = new Engine(options)
+    if (options.global) this.global = options.global
+    if (options.parent) {
+      this.parent = options.parent
       this.parent.childContainer.push(this)
       this.isNesting = true
     }
     this.engine.setContainer(this)
-    if (option.itemLimit) this['itemLimit'] = new ItemPos(option.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
+    if (options.itemLimit) this['itemLimit'] = new ItemPos(options.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
   }
 
-  _define() {
+  private _define() {
     let col = null
     let row = null
     Object.defineProperties(<object>this, {
@@ -140,7 +151,7 @@ export default class Container extends DomFunctionImpl {
   }
 
   /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
-  setColNum(col) {
+  public setColNum(col) {
     if (col > 30 || col < 0) {
       throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，' +
         '请直接将值给到本类中的成员col，而不是通过该函数进行设置')
@@ -151,29 +162,29 @@ export default class Container extends DomFunctionImpl {
   }
 
   /** 设置行数量,行数非必须设置 */
-  setRowNum(row) {
+  public setRowNum(row) {
     this.row = row
     return this
   }
 
   /** 获取所有的Item，返回一个列表(数组) */
-  getItemList() {
+  public getItemList() {
     return this.engine.getItemList()
   }
 
   /** 在页面上添加一行的空间*/
-  addRowSpace(num = 1) {
+  public addRowSpace(num = 1) {
     this.row += num
   }
 
   /** 在页面上删除一行的空间，已弃用*/
-  removeRowSpace(num = 1) {
+  public removeRowSpace(num = 1) {
     this.row = this.row - num
     if (this.row < 0) throw new Error('行数不应该小于0，请设置一个大于0的值')
     this.updateLayout(true)
   }
 
-  genGridContainerBox = () => {
+  public genGridContainerBox = () => {
     this.contentElement = document.createElement('div')
     this.contentElement.classList.add('grid-container-area')
     this.contentElement._isGridContainerArea = true
@@ -184,16 +195,17 @@ export default class Container extends DomFunctionImpl {
 
   /**
    * el 参数可以传入一个具名ID  或者一个原生的 Element 对象
-   * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 data 数据渲染出来，
-   * 如果实例化不传入 data 可以在后面自行创建item之后手动渲染
+   * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 items 数据渲染出来，
+   * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
-  mount(mCallback) {
+  // mount(mCallback) {
+  public mount() {
     if (this._mounted) return
     const _mountedFun = () => {
       //---------------------------------------------------------//
       if (this.el instanceof Element) this.element = this.el
       if (this.element === null) {
-        if (!this.isNesting) this.element = document.querySelector(this.el)
+        if (!this.isNesting) this.element = document.querySelector(<string>this.el)
         if (this.element === null) {
           const errMsg = '在DOM中未找到指定ID对应的:' + this.el + '元素'
           throw new Error(errMsg)
@@ -219,68 +231,73 @@ export default class Container extends DomFunctionImpl {
         }
         if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
       }
-
       this._observer_()
-      let nestingTimer = setTimeout(() => {
+      let nestingTimer: any = setTimeout(() => {
         this._isNestingContainer_()
         clearTimeout(nestingTimer)
         nestingTimer = null
       })
-      this.__ownTemp__.firstInitColNum = this.col
+      if (this.platform === 'native') {
+        const items = this.layout.items || []
+        items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
+        this.engine.mountAll()
+      }
+      this.updateContainerStyleSize()
+      this.__ownTemp__.firstInitColNum = this.col as any
       this.__store__.screenWidth = window.screen.width
       this.__store__.screenHeight = window.screen.height
       this._mounted = true
       this.eventManager._callback_('containerMounted', this)
-      if (typeof mCallback === 'function') mCallback.bind(this)(this)
+      // if (typeof mCallback === 'function') mCallback.bind(this)(this)
     }
     if (this.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)
   }
 
 
-  /** 导出当前使用的data列表 */
-  exportData(otherFieldList = []) {
+  /** 导出当前使用的 items 列表 */
+  public exportItems(otherFieldList = []) {
     // console.log(this.engine.items.length)
     return this.engine.items.map((item) => item.exportConfig(otherFieldList))
   }
 
   /** 导出用户初始化传进来的global配置信息 */
-  exportGlobal() {
+  public exportGlobal() {
     return this.global
   }
 
   /** 导出用户初始化传进来的的useLayout配置信息 ,若未传入size或margin，导出后将添加上当前的值 */
-  exportLayouts() {
+  public exportLayouts() {
     let layouts = this.layouts
-    this.layout.data = this.exportData()  // 必要
+    this.layout.items = this.exportItems()  // 必要
     if (layouts && layouts.length === 1) {
       layouts = layouts[0]
     }
     return layouts
   }
 
-  exportConfig() {
+  public exportConfig() {
     return {
       global: this.exportGlobal(),
       layouts: this.exportLayouts(),
     }
   }
 
-  /** 渲染某一组Data */
-  render(renderCallback) {
+  /** 渲染某一组 items */
+  public render(renderCallback: Function) {
     Sync.run(() => {
       if (this.element && this.element.clientWidth <= 0) {
         return
       }
       if (typeof renderCallback === 'function') {
         // console.log(this.useLayout);
-        renderCallback(this.useLayout.data || [], this.useLayout, this.element)
+        renderCallback(this.useLayout.items || [], this.useLayout, this.element)
       }
       this.updateLayout(true)
     })
   }
 
-  _nestingMount(ntList = null) {
+  public _nestingMount(ntList = null) {
     // 将收集的挂载点分配给各个Item,ntList是预挂载点列表
     ntList = ntList ? ntList : tempStore.nestingMountPointList
     for (let i = 0; i < this.engine.items.length; i++) {
@@ -300,8 +317,8 @@ export default class Container extends DomFunctionImpl {
   }
 
   /** 将包含Item初始化信息的对象列表转成Item集合 */
-  toItemList(data) {
-    return data.map(pos => this.engine.createItem(pos))
+  toItemList(items) {
+    return items.map(pos => this.engine.createItem(pos))
   }
 
   /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
@@ -311,14 +328,14 @@ export default class Container extends DomFunctionImpl {
     //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
     let coverCol = false
     let coverRow = false
-    let customLayout = this.engine.layoutConfig.genCustomLayout()
+    let customLayout = this.engine.layoutConfigManager.genCustomLayout()
     if (direction === 'all') {
       coverCol = true
       coverRow = true
     }
     if (direction === 'col') coverCol = true
     if (direction === 'row') coverRow = true
-    this.engine.layoutConfig.autoSetColAndRows(this, true, {
+    this.engine.layoutConfigManager.autoSetColAndRows(this, true, {
       ...customLayout,
       coverCol: coverCol,
       coverRow: coverRow
@@ -352,7 +369,7 @@ export default class Container extends DomFunctionImpl {
   }
 
   _disconnect_() {
-    this.__ownTemp__.observer.disconnect()
+    this.__ownTemp__.observer['disconnect']()
   }
 
 
@@ -363,7 +380,7 @@ export default class Container extends DomFunctionImpl {
       const containerWidth = this.element.clientWidth
       const containerHeight = this.element.clientHeight
       if (containerWidth <= 0 || containerHeight <= 0) return
-      let useLayoutConfig = this.engine.layoutConfig.genLayoutConfig(containerWidth, containerHeight)
+      let useLayoutConfig = this.engine.layoutConfigManager.genLayoutConfig(containerWidth, containerHeight)
       let {useLayout, customLayout} = useLayoutConfig
       const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
       if (res === null || res === false) return
@@ -382,7 +399,7 @@ export default class Container extends DomFunctionImpl {
             // this.render()
           }
           this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this.container)
-          const vueUseLayoutChange = this._VueEvents.vueUseLayoutChange
+          const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
           if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
         }
       }
@@ -394,7 +411,7 @@ export default class Container extends DomFunctionImpl {
         if (ownTemp.deferUpdatingLayoutTimer) {
           clearTimeout(ownTemp.deferUpdatingLayoutTimer)
         }
-        ownTemp.deferUpdatingLayoutTimer = setTimeout(() => {
+        ownTemp.deferUpdatingLayoutTimer = <any>setTimeout(() => {
           fn.apply(this, arguments)
           ownTemp.deferUpdatingLayoutTimer = null
         }, delay)
@@ -425,7 +442,7 @@ export default class Container extends DomFunctionImpl {
     }
     // window.addEventListener('resize', throttle(windowResize))
     this.__ownTemp__.observer = new ResizeObserver(throttle(observerResize, 50))
-    this.__ownTemp__.observer.observe(this.element)
+    this.__ownTemp__.observer['observe'](this.element)
   }
 
 
@@ -447,7 +464,7 @@ export default class Container extends DomFunctionImpl {
    *      ......
    *      }
    * */
-  add(item) {
+  add(item): null | Item {
     // console.log(item.autoOnce);
     item.container = this
     item.parentElement = this.contentElement
@@ -460,13 +477,16 @@ export default class Container extends DomFunctionImpl {
    * @param { String,Element } nameOrClassOrElement  宽度 高度 是栅格的倍数
    * @return {Array} 所有符合条件的Item
    * */
-  find(nameOrClassOrElement) {
+  find(nameOrClassOrElement: string | HTMLElement): Item[] {
     return this.engine.findItem(nameOrClassOrElement)
   }
 
 
   /** 生成该栅格容器布局样式  */
-  genContainerStyle = () => {
+  genContainerStyle(): {
+    width: string,
+    height: string,
+  } {
     const nowWidth = this.nowWidth() + 'px'
     const nowHeight = this.nowHeight() + 'px'
     return {
@@ -487,7 +507,7 @@ export default class Container extends DomFunctionImpl {
   }
 
   /** 获取现在的Container宽度，只涉及浏览器渲染后的视图宽度，未和布局算法挂钩  */
-  nowWidth = () => {
+  nowWidth(): number {
     let marginWidth = 0
     let nowCol = this.containerW
     if ((nowCol) > 1) marginWidth = (nowCol - 1) * this.margin[0]
@@ -495,28 +515,28 @@ export default class Container extends DomFunctionImpl {
   }
 
   /** 获取现在的Container高度,只涉及浏览器渲染后的视图高度，未和布局算法挂钩  */
-  nowHeight = () => {
+  nowHeight(): number {
     let marginHeight = 0
     let nowRow = this.containerH
     if ((nowRow) > 1) marginHeight = (nowRow - 1) * this.margin[1]
     return ((nowRow) * this.size[1]) + marginHeight || 0
   }
 
-  updateContainerStyleSize() {
+  /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
+  updateContainerStyleSize(): void {
     this.updateStyle(this.genContainerStyle(), this.contentElement)
   }
 
   /** 根据挂载在实例上的containerW和containerH的值自动根据大小对Container进行更新 */
-  _collectNestingMountPoint() {
+  _collectNestingMountPoint(): void {
     for (let i = 0; i < this.element.children.length; i++) {
       if (tempStore.nestingMountPointList.includes(this.element.children[i])) continue
       tempStore.nestingMountPointList.push(document.adoptNode(this.element.children[i]))
     }
-
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */
-  _isNestingContainer_(element = null) {
+  _isNestingContainer_(element = null): void {
     element = element ? element : this.element
     if (!element) return
     while (true) {
@@ -545,9 +565,11 @@ export default class Container extends DomFunctionImpl {
     }
   }
 
-  /** 将用户HTML原始文档中的Container根元素的直接儿子元素收集起来并转成Item收集在this.item中，
+  /**
+   * @deprecated
+   * 将用户HTML原始文档中的Container根元素的直接儿子元素收集起来并转成Item收集在this.item中，
    * 并将其渲染到DOM中  (弃用，不使用网页收集)  */
-  _childCollect() {
+  _childCollect(): Item[] {
     const items = []
     Array.from(this.contentElement.children).forEach((node, index) => {
       let posData = Object.assign({}, node.dataset)
@@ -559,28 +581,27 @@ export default class Container extends DomFunctionImpl {
     return items
   }
 
-
-  test() {
-    this.margin = [10, 10]
-    this.mount()
-    for (let i = 0; i < 20; i++) {
-      let item = this.add({
-        w: Math.ceil(Math.random() * 2),
-        h: Math.ceil(Math.random() * 2)
-      })
-      item.mount()
-    }
-  }
-
-  testUnmount() {
-    this.engine.getItemList().forEach((item, index) => {
-      item.mount()
-      let timer = setTimeout(() => {
-        item.unmount()
-        clearTimeout(timer)
-        timer = null
-      }, index * 1000)
-    })
-  }
+  // test() {
+  //   this.margin = [10, 10]
+  //   this.mount()
+  //   for (let i = 0; i < 20; i++) {
+  //     let item = this.add({
+  //       w: Math.ceil(Math.random() * 2),
+  //       h: Math.ceil(Math.random() * 2)
+  //     })
+  //     item.mount()
+  //   }
+  // }
+  //
+  // testUnmount() {
+  //   this.engine.getItemList().forEach((item, index) => {
+  //     item.mount()
+  //     let timer: any = setTimeout(() => {
+  //       item.unmount()
+  //       clearTimeout(timer)
+  //       timer = null
+  //     }, index * 1000)
+  //   })
+  // }
 }
 

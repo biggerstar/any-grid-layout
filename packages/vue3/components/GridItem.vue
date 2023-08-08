@@ -1,23 +1,23 @@
 <template>
   <div class="grid-item" ref="gridItem" style="display: block;position: absolute;overflow: hidden">
     <AsyncComponent v-if="isAutoComp" :attrs="attrs"></AsyncComponent>
-    <slot v-else ></slot>
+    <slot v-else></slot>
   </div>
 </template>
 
 <script setup>
 
-import {parseContainerFromPrototypeChain} from "@/units/grid/other/tool.js";
+import {parseContainerFromPrototypeChain} from "@biggerstar/layout";
 import {
-  ref,
-  onMounted,
-  inject,
-  useAttrs,
-  toRaw,
-  watch,
-  onUnmounted,
-  getCurrentInstance,
   defineAsyncComponent,
+  getCurrentInstance,
+  inject,
+  onMounted,
+  onUnmounted,
+  ref,
+  toRaw,
+  useAttrs,
+  watch,
 } from "vue";
 
 const ins = getCurrentInstance()
@@ -126,7 +126,7 @@ let attrs = {}
 let isAutoComp = ref(false)
 const components = inject('_grid_item_components_')
 
-const autoComponent = ()=>{
+const autoComponent = () => {
   //  如果有定义props.type，则自动找到对应要加载的组件
   const compFunc = components[props.type]
   if (!compFunc) {
@@ -137,7 +137,7 @@ const autoComponent = ()=>{
   AsyncComponent = defineAsyncComponent(compFunc)
 
 }
-if (props.type && Object.keys(components).length > 0){
+if (props.type && Object.keys(components).length > 0) {
   attrs = {
     ...useAttrs(),
     ...toRaw(props)
@@ -151,7 +151,7 @@ const reSetContainerSize = () => {
   if (!container) return
   const oldCol = container.col
   const oldRow = container.row
-  const nowContainerSize = container.engine.layoutConfig.autoSetColAndRows(container)
+  const nowContainerSize = container.engine.layoutConfigManager.autoSetColAndRows(container)
   if (oldCol !== nowContainerSize.col || oldRow !== nowContainerSize.row) {
     container.updateContainerStyleSize()
   }
@@ -175,7 +175,7 @@ onMounted(() => {
   }
   selfItem.mount()
 
-  // if (!selfItem.close ){
+  // if (!selfItem.close){
   //   console.log('gridItem',gridItem.value.clientWidth, gridItem.value);
   // }
 
@@ -229,7 +229,7 @@ onUnmounted(() => {
 </script>
 <script>
 export default {
-  name:'GridItem',
+  name: 'GridItem',
   inheritAttrs: false    // 禁止属性透传
 }
 </script>

@@ -1,6 +1,6 @@
 import {merge} from "@/utils/tool";
 
-export default class ItemPos {
+export class ItemPos {
   el: Element | null = null
   i: string = ''
   w: number = 1

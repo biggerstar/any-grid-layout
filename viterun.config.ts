@@ -6,7 +6,6 @@ import {
   ViteRunHandleFunctionOptions,
   viteRunLogPlugin
 } from "vite-run";
-import createCopyDts from "vite-plugin-copy-dts";
 import dts from "vite-plugin-dts";
 
 export default defineViteRunConfig({
@@ -18,14 +17,15 @@ export default defineViteRunConfig({
   targets: {
     'native': {
       dev: [
-        ['build_lib', 'watch_lib', 'umd_lib']
+        ['build_lib', 'watch_lib', 'es_lib', 'sourcemap'],
+        ['build_lib', 'es_lib', 'types']
       ],
       build: [
         ['build_lib', 'es_lib', 'minify'],
         ['build_lib', 'umd_lib', 'minify']
       ],
       types: [
-        ['build_lib','types']
+        ['build_lib', 'es_lib', 'types']
       ],
     },
     // 'vue3': {
@@ -37,17 +37,9 @@ export default defineViteRunConfig({
     //   dev: ['watch']
     // },
     'native-web': {
-      build: [
-        ['es', 'production'],
-        ['umd', 'minify']
-      ],
-      dev: ['10000']
+      dev: ['10000'],
     },
     // 'vue3-web': {
-    //   build: [
-    //     'es',
-    //     ['umd', 'minify']
-    //   ],
     //   dev: ['11000']
     // },
   },
@@ -68,11 +60,18 @@ export default defineViteRunConfig({
     minify: {
       minify: true
     },
+    sourcemap: {
+      rollupOptions: {
+        output: {
+          sourcemap: true
+        }
+      }
+    },
     build_lib: (options) => {
       return {
         lib: {
           entry: resolve(options.packagePath, 'src', `index.ts`),
-          formats: ['umd'],
+          formats: ['umd', 'es'],
           name: options.name,
           fileName: (format) => `index.${format}.js`,
         },
@@ -132,21 +131,19 @@ export default defineViteRunConfig({
     types: (options: ViteRunHandleFunctionOptions) => {
       return [
         dts({
-          root: options.packagePath,
-          rollupTypes: true,
+          copyDtsFiles: true,
           declarationOnly: true,
-          // logLevel: 'silent',
         }),
-        createCopyDts({
-          root: options.packagePath,
-          files: [
-            {
-              from: ['types/*.d.ts'],
-              to: `dist/${options.name}.d.ts`,
-              excludes: ['types/index.d.ts']
-            }
-          ]
-        }),
+        // createCopyDts({
+        //   root: options.packagePath,
+        //   files: [
+        //     {
+        //       from: ['types/*.d.ts'],
+        //       to: `dist/${options.name}.d.ts`,
+        //       excludes: ['types/index.d.ts']
+        //     }
+        //   ]
+        // }),
       ]
     }
   }

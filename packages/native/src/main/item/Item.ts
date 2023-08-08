@@ -1,12 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
-import Sync from "@/utils/Sync";
 import {merge} from "@/utils/tool";
-import ItemPos from "@/main/item/ItemPos";
 import {defaultStyle} from "@/default/style/defaultStyle";
-import EditEvent from '@/events/EditEvent'
-import DomFunctionImpl from "@/utils/DomFunctionImpl";
-import TempStore from "@/utils/TempStore";
+import {TempStore} from "@/utils/TempStore";
+import {ItemPos} from "@/main/item/ItemPos";
+import {Sync} from "@/utils/Sync";
+import {EditEvent} from "@/events/EditEvent";
+import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+import {Container} from "@/main/container/Container";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -17,15 +18,15 @@ const tempStore = TempStore.store
  * @param {Element} el 传入的原生Element
  * @param {Object} pos 一个包含Item位置信息的对象
  * */
-export default class Item extends DomFunctionImpl {
+export class Item extends DomFunctionImpl {
   //------------实例化Item外部传进的的参数,不建议在Container中传进来--------------//
   el = ''   // 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
   name = '' //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
   type = null //  该Item的类型，可用于区分组件
-  follow = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-  dragOut = true    // 是否可以将Item拖动到容器外
-  resizeOut = false     // 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
-  className = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
+  follow: boolean = true      //  是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
+  dragOut: boolean = true    // 是否可以将Item拖动到容器外
+  resizeOut: boolean = false     // 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
+  className: string = 'grid-item' // Item在文档中默认的类名,可以由外部传入重新自定义
   dragIgnoreEls = []   // 【不】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
   dragAllowEls = []    // 【只】允许点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
   //----------被defineProperties代理的字段-------------//
@@ -33,18 +34,18 @@ export default class Item extends DomFunctionImpl {
   draggable = null  //  自身是否可以拖动
   resize = null     //  自身是否可以调整大小
   close = null
-  static = false  // 优先级比autoOnce高，但是只有pos中指定x和y才生效
-  exchange = true   // 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
+  static: boolean = false  // 优先级比autoOnce高，但是只有pos中指定x和y才生效
+  exchange: boolean = true   // 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
 
   //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
-  margin = [null, null]   //   间距 [左右, 上下]
-  size = [null, null]   //   宽高 [宽度, 高度]
+  margin: [any, any] = [null, null]   //   间距 [左右, 上下]
+  size: [any, any] = [null, null]   //   宽高 [宽度, 高度]
 
   //----------------内部需要的参数---------------------//
-  i = null   //  每次重新布局给的自动正整数编号,对应的是Item的len
-  element = null
-  container = null   // 挂载在哪个container上
-  tagName = 'div'
+  i: any = null   //  每次重新布局给的自动正整数编号,对应的是Item的len
+  element: HTMLElement
+  container: Container   // 挂载在哪个container上
+  tagName: string = 'div'
   classList = []
   attr = []
   pos: ItemPos = {} as ItemPos
@@ -86,12 +87,14 @@ export default class Item extends DomFunctionImpl {
       this.el = itemOption.el
       this.element = itemOption.el
     }
+    // console.log(this.element, this.el)
     this._define()
     merge(this, itemOption)
     this.pos = new ItemPos(itemOption.pos)   //  只是初始化用，初始化后后面都是由ItemPosList管理,目前ItemPosList只是用于存储，也无大用
     this._itemSizeLimitCheck()
   }
 
+  /** 让draggable，resize，close，edit 等支持getter 和 setter 直接复制控制 item 的对应行为状态 */
   _define() {
     const self = this
     let draggable = false
@@ -163,8 +166,6 @@ export default class Item extends DomFunctionImpl {
         }
       },
     })
-
-
   }
 
 
@@ -188,7 +189,7 @@ export default class Item extends DomFunctionImpl {
     Array.from(['follow', 'dragOut', 'resizeOut', 'exchange']).forEach((field => {
       if (item[field] !== true) exposeConfig[field] = item[field]
     }))
-    if (typeof item.name === 'string') exposeConfig.name = item.name
+    if (item.name) exposeConfig.name = item.name
     if (typeof item.type === 'string') exposeConfig.type = item.type
     //transition 特殊导出
     let transition: Record<any, any> = {}
@@ -206,33 +207,26 @@ export default class Item extends DomFunctionImpl {
     return exposeConfig
   }
 
-  /** 渲染, 直接渲染添加到 Container 中*/
+  /** 渲染, 直接渲染添加到 Container 中 */
   mount() {
     const _mountedFun = () => {
       if (this._mounted) return
-      if (this.container.platform !== 'vue') {
-        if (this.element === null) this.element = document.createElement(this.tagName)
+      if (this.container.platform === 'native') {
+        if (!this.element) this.element = document.createElement(this.tagName)
         this.container.contentElement.appendChild(this.element)
       }
       this.attr = Array.from(this.element.attributes)
       this.element.classList.add(this.className)
       this.classList = Array.from(this.element.classList)
       this.updateStyle(defaultStyle.gridItem)
-      this.updateStyle(this._genItemStyle())
+      this.updateItemLayout()
       this.__temp__.w = this.pos.w
       this.__temp__.h = this.pos.h
-      this.element._gridItem_ = this
-      this.element._isGridItem_ = true
+      this.element['_gridItem_'] = this
+      this.element['_isGridItem_'] = true
       this._mounted = true
-      // this.observeUpdate(this.element)
       this.container.eventManager._callback_('itemMounted', this)
-      // if (this.static) this.element.innerHTML = this.element.innerHTML + `--
-      //     ${this.pos.name}</br>
-      //     ${this.pos.w},${this.pos.h}</br>
-      //     ${this.pos.x},${this.pos.y} `
-      // else this.element.innerHTML = this.element.innerHTML + '---' + this.i
     }
-
     if (this.container.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)
   }
@@ -414,7 +408,7 @@ export default class Item extends DomFunctionImpl {
         this.element.appendChild(resizeTabEl)
         resizeTabEl.classList.add(className)
         this._resizeTabEl = resizeTabEl
-      } else if (this.element && isResize === false) {
+      } else if (this.element && !isResize) {
         for (let i = 0; i < this.element.children.length; i++) {
           const node = this.element.children[i]
           if (node.className.includes(className)) {

@@ -1,7 +1,9 @@
-import Item from "@/main/item/Item";
 import {merge} from "@/utils/tool";
-import LayoutManager from "@/algorithm/LayoutManager";
-import LayoutConfig from "@/algorithm/LayoutConfig";
+import {Item} from "@/main/item/Item";
+import {LayoutManager} from "@/algorithm/LayoutManager";
+import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
+import {Container} from "@/main/container/Container";
+import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -10,12 +12,12 @@ import LayoutConfig from "@/algorithm/LayoutConfig";
  *   特殊情况: Container中的事件操作没去写通信接口，里面多次直接操作对应事件监听的所指Item
  *   目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过指针进行操作，后面再改善吧
  *  ##################################################################### */
-export default class Engine {
+export class Engine {
   items = []
   option = {}
-  layoutManager = null
-  container = null
-  layoutConfig = null
+  layoutManager: LayoutManager
+  container: Container & LayoutInstantiationField
+  layoutConfigManager: LayoutConfigManager
   useLayout = null
   initialized = false
   __temp__ = {
@@ -32,16 +34,16 @@ export default class Engine {
   init() {
     if (this.initialized) return
     this.layoutManager = new LayoutManager()
-    this.layoutConfig = new LayoutConfig(this.option)
-    this.layoutConfig.setContainer(this.container)
-    this.layoutConfig.initLayoutInfo()
+    this.layoutConfigManager = new LayoutConfigManager(this.option)
+    this.layoutConfigManager.setContainer(this.container)
+    this.layoutConfigManager.initLayoutInfo()
     this.initialized = true
   }
 
-  /** 同步Container和layoutManager的配置信息 */
+  /** 同步 Container 和 layoutManager 的配置信息 */
   _sync() {  // 语法糖
-    this.layoutConfig.autoSetColAndRows(this.container)
-    let useLayout = this.layoutConfig.genLayoutConfig()
+    this.layoutConfigManager.autoSetColAndRows(this.container)
+    let useLayout = this.layoutConfigManager.genLayoutConfig()
     this.useLayout = useLayout
     this._syncLayoutConfig(useLayout.useLayout)
   }
@@ -242,7 +244,7 @@ export default class Engine {
     const items = []
     this.items.forEach((item) => {
       if (!(item instanceof Item)) return
-      if (item.static === true) {
+      if (item.static) {
         staticItems.push(item)
         console.log(item);
       } else items.push(item)
@@ -255,12 +257,12 @@ export default class Engine {
 
   /** 将item成员全部挂载到Container  */
   mountAll() {
-    this.items.forEach((item) => item.mount())
+    this.items.forEach((item:Item) => item.mount())
     if (this.container.responsive) this.container.row = this.layoutManager.row  //静态布局的row是固定的，响应式不固定
   }
 
   /** 将item成员从Container中全部移除,items数据还在  */
-  unmount(isForce) {
+  unmount(isForce = false) {
     this.items.forEach((item) => item.unmount(isForce))
     this.reset()
   }
@@ -339,7 +341,7 @@ export default class Engine {
     if (item.autoOnce === false) {
       // 如果是指定了x和y，必然能添加进去
       this.items.push(item)
-      this.layoutConfig.autoSetColAndRows(this.container)
+      this.layoutConfigManager.autoSetColAndRows(this.container)
       this._isCanAddItemToContainer_(item, item.autoOnce, true)
       return true
     } else {
@@ -625,8 +627,8 @@ export default class Engine {
     this._checkUpdated()
 
     //---------------------------更新数据和存储-------------------------------//
-    this.layoutConfig.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-    this.container.layout.data = this.container.exportData()   // 将最新data同步到当前使用的layout中
+    this.layoutConfigManager.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
+    this.container.layout.data = this.container.exportItems()   // 将最新data同步到当前使用的layout中
     this.container.updateContainerStyleSize()
     const genBeforeSize = (container) => {
       return {

@@ -5,14 +5,15 @@
   "scripts": {
     "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
   },
-  "main": "./dist/any-grid-layout",
-  "module": "./dist/any-grid-layout",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "default": "./dist/any-grid-layout",
-      "import": "./dist/any-grid-layout",
-      "require": "./dist/any-grid-layout.umd.cjs",
-      "types": "./types/any-grid-layout.d.ts"
+      "default": "./dist/index.es.js",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js",
+      "types": "./types/index.d.ts"
     }
   },
   "files": [

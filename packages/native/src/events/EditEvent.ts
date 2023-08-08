@@ -8,15 +8,15 @@ import {
   singleTouchToCommonEvent,
   throttle
 } from "@/utils/tool";
-import TempStore from "@/utils/TempStore";
-import Sync from "@/utils/Sync";
-import Item from "@/main/item/Item";
-import ItemPos from "@/main/item/ItemPos";
+import {Item} from "@/main/item/Item";
+import {ItemPos} from "@/main/item/ItemPos";
+import {Sync} from "@/utils/Sync";
+import {TempStore} from "@/utils/TempStore";
 
 const tempStore = TempStore.store
 
 
-export default class EditEvent {
+export class EditEvent {
 
   /** 用于事件委托触发的函数集  */
   static _eventEntrustFunctor = {

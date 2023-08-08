@@ -64,8 +64,8 @@
 import {onMounted, ref, reactive, computed, nextTick, watch, toRefs, isReactive, toRaw, getCurrentInstance} from 'vue'
 import {layoutData, layoutData11, layoutData22 as layoutData22} from '@/stores/layout.js'
 import Test from "@/components/Test.vue";
-import GridContainer from "@/components/GridContainer.vue";
-import GridItem from "@/components/GridItem.vue";
+import GridContainer from "@/components/GridContainer";
+import GridItem from "@/components/GridItem";
 
 
 const layoutDataConcatName = layoutData.map((pos, index) => {

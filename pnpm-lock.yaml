@@ -46,10 +46,21 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
 
+  examples/native-web:
+    dependencies:
+      '@biggerstar/layout':
+        specifier: workspace:0.0.31-Beta
+        version: link:../../packages/native
+
+  examples/vue3-web: {}
+
   packages/native: {}
 
   packages/vue3:
     dependencies:
+      '@biggerstar/layout':
+        specifier: workspace:0.0.31-Beta
+        version: link:../native
       pinia:
         specifier: ^2.1.6
         version: 2.1.6(typescript@5.1.6)(vue@3.3.4)

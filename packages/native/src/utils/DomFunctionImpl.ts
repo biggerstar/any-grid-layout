@@ -1,6 +1,6 @@
 import {getKebabCase, throttle} from "@/utils/tool";
 
-export default class DomFunctionImpl {
+export class DomFunctionImpl {
   element = null
   observer = null
 
