@@ -16,12 +16,12 @@ export class EventCallBack {
   }
 
   /** 不会抛出错误中止执行，使用系统控制台的error方法，可附带对象参数 */
-  _error_(errName: string, msg = '', fromData: any, ...args: any[]) {
+  _error_(errName: string, msg = '', fromData?: any, ...args: any[]) {
     if ((typeof this['error']) === 'function') {
       this.error.call(this.error, {
         type: 'error',
         name: errName,
-        msg: 'getErrAttr=>[name|type|msg|from]  ' + msg,
+        msg: 'getErrAttr=>[name|type|msg|from] ' + msg,
         from: fromData || ''   //  来自哪个数据或者实例
       }, ...args)
     } else console.error(errName, msg + '(你可以用error事件函数来接受处理该错误使其不在控制台显示)', fromData)

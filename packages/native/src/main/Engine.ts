@@ -290,7 +290,7 @@ export class Engine {
         eventManager._callback_('addItemSuccess', item)
       } else {
         eventManager._error_('ContainerOverflowError',
-          "getErrAttr=>[name|message] 容器溢出，只有静态模式下会出现此错误,您可以使用error事件函数接收该错误，" +
+          "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
           "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
           , item, item)
       }
@@ -299,7 +299,14 @@ export class Engine {
     return null
   }
 
-  /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
+  /**
+   * 添加Item到容器中
+   * 返回false会抛出错误.
+   * 抛出条件:
+   * 1. 容器溢出
+   * 2. 指定了x,y 的Item位置重叠
+   * 自动寻位: 如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序)
+   * */
   push(item: Item) {
     // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
     // this.items.push(item)
@@ -343,12 +350,10 @@ export class Engine {
       // 如果是指定了x和y，必然能添加进去
       this.items.push(item)
       this.layoutConfigManager.autoSetColAndRows(this.container)
-      // const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
-      // if (!realLayoutPos) {
-      //   console.log(item);
-      //   return false
-      // } else
-        this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
+      this._isCanAddItemToContainer_(item, item.autoOnce, true)
+      const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
+      if (!realLayoutPos) return false  // 此时指定了x,y,Item位置重叠
+      else this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
       return true
     } else {
       // console.log(item.pos);

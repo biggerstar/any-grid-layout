@@ -2,16 +2,8 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
 import {ItemPos} from "@/main/item/ItemPos";
 import {Container} from "@/main/container/Container";
-import {CustomContainerOptions} from "../../dist/types";
 
-/**  通用错误类型
- *   ContainerOverflowError                                   //container溢出
- *   itemLimitError                                           //  item限制异常
- *   ContainerNotMounted                                      //container未挂载
- *   ItemAlreadyRemove                                        //item已经被移除
- *   # vue专属
- *   vueUseLayoutModificationFailed     arg:[useLayout]       //字段修改失败，row,col.size.margin
- * */
+
 export type HandleErrorType = {
   type: 'error' | 'warn',
   name: string,
@@ -29,16 +21,17 @@ export type ItemLayoutOptions = Partial<Pick<Item, CustomItemField> & { pos: Par
 
 export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
 
+export type CustomContainerOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
 
-export type CustomContainerOptions = ContainerGeneralImpl | Array<ContainerGeneralImpl>
+export type CustomPartialContainerOptions = Partial<ContainerGeneralImpl> | Partial<ContainerGeneralImpl>[]
 
 
 export type ContainerOptions = {
   [key: string]: any
   el: string | HTMLElement,
-  layouts?: Partial<CustomContainerOptions> | Array<Partial<CustomContainerOptions>>,
+  layouts?: CustomPartialContainerOptions,
   events?: Partial<CustomEventOptions>,
-  global?: Partial<CustomContainerOptions>,
+  global?: Partial<ContainerGeneralImpl>,
 }
 
 

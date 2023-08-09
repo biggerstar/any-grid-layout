@@ -127,10 +127,9 @@ export class EditEvent {
           fromItem.container.updateContainerStyleSize()
         }
       }, 15),
-      mouseup: (ev) => {
+      mouseup: (_: Event) => {
         const fromItem = tempStore.fromItem
         if (fromItem === null) return
-        const container = fromItem.container
         //----------------------------------------//
         fromItem.__temp__.clientWidth = fromItem.nowWidth()
         fromItem.__temp__.clientHeight = fromItem.nowHeight()
@@ -213,7 +212,7 @@ export class EditEvent {
     },
     prevent: {
       default: (ev) => ev.preventDefault(),
-      false: (ev) => false,
+      false: () => false,
       defaultAndFalse: (ev) => {
         ev.preventDefault()
         return false
@@ -589,7 +588,7 @@ export class EditEvent {
           const outerContentArea = () => {
             // 在响应式流Items覆盖区域外的检测，为了使得鼠标拖拽超出Items覆盖区域后dragItem还能跟随鼠标位置在流区域进行移动或交换
             // 说人话就是实现dragItem在鼠标超出边界还能跟随鼠标位置移动到边界
-            const rangeLimitItems = container.engine.findResponsiveItemFromPosition(nextPos.x, nextPos.y, nextPos.w, nextPos.h)
+            const rangeLimitItems = container.engine.findResponsiveItemFromPosition(nextPos.x, nextPos.y)
             // console.log(rangeLimitItems);
             if (!rangeLimitItems) return
             toItem = rangeLimitItems
@@ -644,7 +643,7 @@ export class EditEvent {
           // if (proportionX > 0.1 && proportionY > 0.1 && proportionX < 0.9 && proportionY < 0.9) return
 
           //-------------------修复移动高频toItem和dragItem高速互换闪烁限制----------------------//
-          if (container.__ownTemp__.exchangeLock === true) return
+          if (container.__ownTemp__.exchangeLock) return
           const contLimit = 3   //  设定限制连续不间断经过某个Item几次后执行休息
           const beforeOverItems = container.__ownTemp__.beforeOverItems
           let continuousOverCount = 0  // 连续经过toItem计数,超过三次休息，解决移动时候Item连续快速交换的闪烁问题
@@ -925,7 +924,7 @@ export class EditEvent {
                   if (ev.path.includes(node)) isAllowDrag = false
                 })
               }
-              if (isAllowDrag === false) return
+              if (!isAllowDrag) return
             }
           }
           if ((fromItem.dragAllowEls || []).length > 0) {    // 拖拽触发元素的白名单
@@ -1001,7 +1000,7 @@ export class EditEvent {
           const mousedownDragCursor = () => {
             // 鼠标按下状态的样式
             // console.log(container);
-            const dragItem = tempStore.moveItem || tempStore.fromItem
+            // const dragItem = tempStore.moveItem || tempStore.fromItem
             if (!container) {
               if (EEF.cursor.cursor !== 'no-drop') EEF.cursor.notDrop()  // 容器外
             } else if (container) {
@@ -1242,7 +1241,7 @@ export class EditEvent {
         EPF.container.mousedown(ev)
       },
       touchmoveOrMousemove: (ev) => {
-        ev = ev || window.event
+        ev = ev || window['event']
         if (ev.stopPropagation) ev.stopPropagation()
         if (ev.touches) {
           tempStore.deviceEventMode = 'touch'
@@ -1272,21 +1271,21 @@ export class EditEvent {
     },
   }
 
-  static startEventFromItem(item) {
+  static startEventFromItem(_: Item) {
     // item.element.addEventListener('mouseenter', EPF.item.mouseenter)
   }
 
-  static removeEventFromItem(item) {
+  static removeEventFromItem(_: Item) {
     // item.element.removeEventListener('mouseenter', EPF.item.mouseenter)
   }
 
 
   /** 事件委托  */
-  static startEventFromContainer(container) {
+  static startEventFromContainer() {
 
   }
 
-  static removeEventFromContainer(container) {
+  static removeEventFromContainer() {
   }
 
   static startGlobalEvent() {

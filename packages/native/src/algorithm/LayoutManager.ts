@@ -115,13 +115,13 @@ export class LayoutManager {
   }
 
   /** 传入一个ItemPos，根据新的w和h判断是否  */
-  isOverlap(pos) {
+  isOverlap() {
 
   }
 
 
   /** 计算当前最大值row情况下补充满整个矩阵空处需要再增加几行 */
-  computedNeedRow(items) {
+  computedNeedRow() {
     // const boundary = this.computedColAndRows(items)
     // console.log(boundary.row,this._layoutMatrix.length);
     // return boundary.row - this._layoutMatrix.length > 0 ? boundary.row - this._layoutMatrix.length : 0
@@ -178,7 +178,7 @@ export class LayoutManager {
     if (auto) {
       findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
       if (findItemLayout === undefined) return null
-      if (posOption.i !== undefined) findItemLayout.iName = this.toINameHash(posOption.i)
+      if (posOption.i) findItemLayout.iName = this.toINameHash(posOption.i)
       findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数
     } else {
       // for (let i = 0; i < this._layoutMatrix.length; i++) {

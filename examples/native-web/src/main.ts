@@ -128,7 +128,7 @@ const container1 = new Container({
   el: '#container1',
   // el: document.getElementById('container'),
   layouts2: true,
-  layouts1: [
+  layouts: [
     {
       px: 1300,
       // col:9,
@@ -158,12 +158,12 @@ const container1 = new Container({
       items: layoutData11,
       // minCol: 3,
     },
-    //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
   ],
-  layouts: {
+  //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
+  layouts1: {
     from: '来自layout1',
     // ratioCol: 0.1,
-    responsive:true,
+    responsive: true,
     col: 10,
     row: 5,
     margin: [20, 10],
@@ -175,6 +175,7 @@ const container1 = new Container({
       draggable: true,
       resize: true,
       close: true,
+      static: true
     }),  // TODO  bug  col first load with 1
     // responsive:true,
     // minCol: 2,
@@ -190,7 +191,8 @@ const container1 = new Container({
   },
   events: {
     error(err) {
-      // console.log(err);
+      console.log(err);
+      // err.from.remove()
     },
     itemMove(item, nowX, nowY) {
       // console.log(nowX,nowY);

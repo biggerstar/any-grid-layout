@@ -1,5 +1,4 @@
 import {cloneDeep} from "@/utils/tool";
-import {defaultLayoutConfig} from "@/default/defaultLayoutConfig";
 import {Container} from "@/main/container/Container";
 import {Item} from "@/main/item/Item";
 
@@ -7,7 +6,6 @@ export class LayoutConfigManager {
   public container: Container
   public customLayout = {}
   public options = {}
-  private _defaultLayoutConfig = defaultLayoutConfig
 
   constructor(options) {
     this.options = options
@@ -17,13 +15,14 @@ export class LayoutConfigManager {
     this.container = container
   }
 
-  /** 用于提取用户传入的[所有]布局配置文件到 container.layouts */
+  /**
+   * 用于提取用户传入的[所有]布局配置文件到 container.layouts
+   * */
   initLayoutInfo() {
     const options: Record<any, any> = this.options
     let layoutInfo = []
     if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
     else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
-    else if (options.layouts === true) layoutInfo = this._defaultLayoutConfig  // (不计划开放外用,只用于开发测试)传入的layouts字段直接设置成true形式,使用默认的内置布局方案
     else throw new Error("请传入layout配置信息")
     if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
       layoutInfo.sort((a, b) => {
@@ -37,12 +36,13 @@ export class LayoutConfigManager {
     // console.log(layoutInfo);
   }
 
-  /** auto compute margin，size，col
-   *  @param direction {Number}  col || row
-   *  @param containerBoxLen {Number}  element width or height
-   *  @param size {Number}  set custom size value
-   *  @param margin {Number} set custom margin value
-   *  @param ratio {Number} set custom ratio value, default value from container built-in param
+  /**
+   * auto compute margin，size，col
+   * @param direction {Number}  col || row
+   * @param containerBoxLen {Number}  element width or height
+   * @param size {Number}  set custom size value
+   * @param margin {Number} set custom margin value
+   * @param ratio {Number} set custom ratio value, default value from container built-in param
    * */
   autoComputeSizeInfo(direction, containerBoxLen, size, margin, ratio) {
     if (direction) {   //  col指定通常是执行静态布局，主算 size 和 margin
@@ -114,7 +114,8 @@ export class LayoutConfigManager {
   /**
    * 生成合并最终配置，包含用户传入配置 和 global配置 和 合并后的最终useLayout配置,
    * 在layouts布局配置中找到符合该屏幕的px对应的布局方案,
-   * layout对应的字段和Container的属性完全一致，两者最终会同步   */
+   * layout对应的字段和Container的属性完全一致，两者最终会同步
+   * */
   genLayoutConfig(containerWidth = null, containerHeight = null, customLayout = null) {
     let layoutItem: any = {}
     // console.log(containerWidth,this.container.element.clientWidth);

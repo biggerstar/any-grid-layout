@@ -1,7 +1,6 @@
-### Container 实例化
+### Container 实例化选项
 
-
-- layouts
+---
 ```javascript
 
 /**  Container实例化的时候可以在Layout配置中使用的字段 */

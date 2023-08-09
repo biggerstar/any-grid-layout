@@ -1,8 +1,8 @@
-import {ItemTransition} from "@/types";
-import {ItemPos} from "@/main/item/ItemPos";
-import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+### Item 实例化选项
 
-export class ItemGeneralImpl extends DomFunctionImpl {
+---
+
+```javascript
   /**
    * 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
    *  */
@@ -110,4 +110,5 @@ export class ItemGeneralImpl extends DomFunctionImpl {
    *  pos位置对象
    * */
   pos: ItemPos
-}
+
+```

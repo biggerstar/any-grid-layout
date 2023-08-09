@@ -8,7 +8,7 @@ import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {Engine} from "@/main/Engine";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerOptions, CustomContainerOptions, CustomEventOptions} from "@/types";
+import {ContainerOptions, CustomEventOptions} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -52,18 +52,15 @@ export class Container extends ContainerGeneralImpl {
   // 一级配置信息的意思是实例化对象的配置信息第一层的字段
   public el: HTMLElement | string = ''
   public parent: Container    // 嵌套情况下上级Container
-  public layouts: CustomContainerOptions  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
   public events: CustomEventOptions
-  public global: CustomContainerOptions
+  public global: ContainerGeneralImpl
   //----------------内部需要的参数---------------------//
   public element: HTMLElement     //  container主体元素节点
   public contentElement: HTMLElement     // 放置Item的元素节点，被element直接包裹
   public classList: string[] = []
-  public attr: [] = []
+  public attr: any = []
   public engine: Engine
-  public px: string | number
-  public layout: CustomContainerOptions     //  当前所使用的用户传入的对应布局方案
-  public useLayout: CustomContainerOptions    //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public useLayout: ContainerGeneralImpl    //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public isNesting: boolean = false    // 该Container自身是否[被]嵌套
   public parentItem: HTMLElement
@@ -105,7 +102,7 @@ export class Container extends ContainerGeneralImpl {
     this._define()
     this.eventManager = new EventCallBack(<any>options.events)
     this.engine = new Engine(options)
-    if (options.global) this.global = options.global
+    if (options.global) this.global = <ContainerGeneralImpl>options.global
     if (options.parent) {
       this.parent = options.parent
       this.parent.childContainer.push(this)
@@ -175,7 +172,7 @@ export class Container extends ContainerGeneralImpl {
   public genGridContainerBox = () => {
     this.contentElement = document.createElement('div')
     this.contentElement.classList.add('grid-container-area')
-    this.contentElement._isGridContainerArea = true
+    this.contentElement['_isGridContainerArea'] = true
     this.element.appendChild(this.contentElement)
     this.updateStyle(defaultStyle.gridContainer, this.contentElement)
     this.contentElement.classList.add(this.className)
@@ -226,7 +223,7 @@ export class Container extends ContainerGeneralImpl {
         nestingTimer = null
       })
       if (this.platform === 'native') {
-        const items = this.layout.items || []
+        const items = <any[]>this.layout.items || []
         items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
         this.engine.mountAll()
       }
@@ -258,10 +255,8 @@ export class Container extends ContainerGeneralImpl {
   public exportLayouts() {
     let layouts = this.layouts
     this.layout.items = this.exportItems()  // 必要
-    if (layouts && layouts.length === 1) {
-      layouts = layouts[0]
-    }
-    return layouts
+    if (layouts && layouts.length === 1) return layouts[0]
+    else return layouts
   }
 
   public exportConfig() {
@@ -362,7 +357,6 @@ export class Container extends ContainerGeneralImpl {
 
 
   _observer_() {
-    const store = this.__store__
     const layoutChangeFun = () => {
       if (!this._mounted) return
       const containerWidth = this.element.clientWidth
@@ -373,7 +367,6 @@ export class Container extends ContainerGeneralImpl {
       const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
       if (res === null || res === false) return
       if (typeof res === 'object') useLayout = res
-
       // console.log(useLayout);
       // console.log(this.px, useLayout.px);
       if (this.px && useLayout.px) {
@@ -405,30 +398,12 @@ export class Container extends ContainerGeneralImpl {
         }, delay)
       }
     }
-
-    const windowResize = () => {
-      if (store.isWindowResize) {
-        layoutChangeFun()
-        // debounce(() => {
-        //     console.log(111111111111111111)
-        //     layoutChangeFun()
-        //     const containers = [...document.querySelectorAll('.grid-container')]
-        //     containers.forEach((node)=>{
-        //         const container = node._gridContainer_
-        //         if (!container) return
-        //         container.updateLayout(true)
-        //     })
-        // }, 500)()
-      }
-    }
     const observerResize = () => {
       layoutChangeFun()
       debounce(() => {
         layoutChangeFun()
       }, 100)()
-      // if (!store.isWindowResize) layoutChangeFun()
     }
-    // window.addEventListener('resize', throttle(windowResize))
     this.__ownTemp__.observer = new ResizeObserver(throttle(observerResize, 50))
     this.__ownTemp__.observer['observe'](this.element)
   }
@@ -559,7 +534,7 @@ export class Container extends ContainerGeneralImpl {
    * 并将其渲染到DOM中  (弃用，不使用网页收集)  */
   _childCollect(): Item[] {
     const items = []
-    Array.from(this.contentElement.children).forEach((node, index) => {
+    Array.from(this.contentElement.children).forEach((node: HTMLElement) => {
       let posData = Object.assign({}, node.dataset)
       // console.log(posData);
       const item = this.add({el: node, ...posData})

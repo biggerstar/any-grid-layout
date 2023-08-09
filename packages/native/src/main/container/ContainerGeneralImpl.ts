@@ -1,5 +1,5 @@
 import {merge} from "@/utils/tool";
-import {CustomItemLayoutOptions, ItemLimitType} from "@/types";
+import {CustomPartialContainerOptions, ItemLimitType} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 
 /**  Container实例化的时候可以在Layout配置中使用的字段 */
@@ -12,6 +12,7 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
   platform: 'native' | 'vue' = 'native'
 
   //----------------实例化传进的的参数---------------------//
+  px: number
   /** 该容器的名称 */
   name: string = ''
 
@@ -29,9 +30,18 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
    * @default 'default'
    * */
   responseMode: 'default' | 'exchange' | 'stream' = 'default'
+  /**
+   * 当前正在使用的布局
+   * */
+  layout: ContainerGeneralImpl
+
+  /**
+   * 其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
+   * */
+  layouts: ContainerGeneralImpl[]
 
   /** 当前布局使用的数据*/
-  items: CustomItemLayoutOptions
+  items: CustomPartialContainerOptions
 
   /** 列数 */
   col: number
