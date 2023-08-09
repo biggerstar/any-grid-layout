@@ -181,6 +181,11 @@ const container1 = new Container({
     exchange: true,
     animation: true,
     follow: true,
+    itemLimit: {
+      // minW:2,
+      // maxH:1,
+      // maxW:1,
+    }
   },
   events: {
     error(err) {
@@ -194,11 +199,6 @@ const container1 = new Container({
       // console.log(nowX,nowY);
     },
   },
-  itemLimit: {
-    // minW:2,
-    // maxH:1,
-    // maxW:1,
-  }
 })
 
 const container2 = new Container({

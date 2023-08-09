@@ -34,10 +34,24 @@ export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
 export type ContainerOptions = {
   [key: string]: any
   el: string | HTMLElement,
-  layouts?: Partial<ContainerGeneralImpl> | Array<Partial<ContainerGeneralImpl>>,
+  layouts?: Partial<CustomContainerOptions> | Array<Partial<CustomContainerOptions>>,
   events?: Partial<CustomEventOptions>,
-  global?: Partial<ContainerGeneralImpl>,
-  itemLimit?: Record<any, any>
+  global?: Partial<CustomContainerOptions>,
+}
+
+
+export type ItemTransition = {
+  time: number,
+  field: 'top,left,width,height'
+} | number | boolean
+
+export type MarginOrSizeDesc = [string | null, string | null]
+
+export type ItemLimitType = {
+  maxW?: number,
+  maxH?: number,
+  minW?: number,
+  minH?: number
 }
 
 
@@ -138,18 +152,4 @@ export type CustomEventOptions = {
 
   /** row列数改变 */
   rowChange(row, preRow, container): void,
-}
-
-export type ItemTransition = {
-  time: number,
-  field: 'top,left,width,height'
-} | number | boolean
-
-export type MarginOrSizeDesc = [string | null, string | null]
-
-export type ItemLimitType = {
-  maxW?: number,
-  maxH?: number,
-  minW?: number,
-  minH?: number
 }
