@@ -2,6 +2,7 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
 import {ItemPos} from "@/main/item/ItemPos";
 import {Container} from "@/main/container/Container";
+import {CustomContainerOptions} from "../../dist/types";
 
 /**  通用错误类型
  *   ContainerOverflowError                                   //container溢出
@@ -19,8 +20,6 @@ export type HandleErrorType = {
   from: any
 }
 
-export type CustomContainerOptions = ContainerGeneralImpl
-
 
 export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
   | 'resizeOut' | 'className' | 'dragIgnoreEls' | 'dragAllowEls' | 'transition'
@@ -29,6 +28,9 @@ export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
 export type ItemLayoutOptions = Partial<Pick<Item, CustomItemField> & { pos: Partial<ItemPos> }>
 
 export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
+
+
+export type CustomContainerOptions = ContainerGeneralImpl | Array<ContainerGeneralImpl>
 
 
 export type ContainerOptions = {

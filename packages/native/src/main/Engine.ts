@@ -338,12 +338,17 @@ export class Engine {
       return success
     }
     //-----------------------添加新Item的逻辑---------------------------//
-    let realLayoutPos: ItemPos
+    let realLayoutPos: ItemPos | null
     if (item.autoOnce === false) {
       // 如果是指定了x和y，必然能添加进去
       this.items.push(item)
       this.layoutConfigManager.autoSetColAndRows(this.container)
-      this._isCanAddItemToContainer_(item, item.autoOnce, true)
+      // const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
+      // if (!realLayoutPos) {
+      //   console.log(item);
+      //   return false
+      // } else
+        this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
       return true
     } else {
       // console.log(item.pos);
@@ -542,8 +547,8 @@ export class Engine {
    *  @param responsive {Boolean}  是否响应式还是静态布局
    *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
    * */
-  _isCanAddItemToContainer_(item, responsive = false, addSeat = false) {
-    let realLayoutPos: ItemPos
+  _isCanAddItemToContainer_(item: Item, responsive: boolean = false, addSeat: boolean = false) {
+    let realLayoutPos: ItemPos | null
     let nextStaticPos: ItemPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
     nextStaticPos.i = item.i
     const cloneNextStaticPos = Object.assign({}, nextStaticPos)

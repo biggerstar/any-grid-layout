@@ -8,7 +8,7 @@ import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {Engine} from "@/main/Engine";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerOptions} from "@/types";
+import {ContainerOptions, CustomContainerOptions, CustomEventOptions} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -51,25 +51,25 @@ export class Container extends ContainerGeneralImpl {
   //---------实例化传进的的特殊参数(一级配置信息)---------//
   // 一级配置信息的意思是实例化对象的配置信息第一层的字段
   public el: HTMLElement | string = ''
-  public parent = null  // 嵌套情况下上级Container
-  public layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
-  public events = []
-  public global = {}
+  public parent: Container    // 嵌套情况下上级Container
+  public layouts: CustomContainerOptions  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
+  public events: CustomEventOptions
+  public global: CustomContainerOptions
   //----------------内部需要的参数---------------------//
   public element: HTMLElement     //  container主体元素节点
-  public contentElement = null   // 放置Item的元素节点，被element直接包裹
-  public classList = []
-  public attr = []
+  public contentElement: HTMLElement     // 放置Item的元素节点，被element直接包裹
+  public classList: string[] = []
+  public attr: [] = []
   public engine: Engine
-  public px = null
-  public layout: Record<any, any> = {}     //  当前所使用的用户传入的对应布局方案
-  public useLayout: Record<any, any> = {}   //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  public childContainer = [] // 所有该Container的直接子嵌套容器
-  public isNesting = false    // 该Container自身是否[被]嵌套
-  public parentItem = null
-  public containerH = null
-  public containerW = null
-  public eventManager = null    // events通过封装构建的类实例
+  public px: string | number
+  public layout: CustomContainerOptions     //  当前所使用的用户传入的对应布局方案
+  public useLayout: CustomContainerOptions    //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
+  public isNesting: boolean = false    // 该Container自身是否[被]嵌套
+  public parentItem: HTMLElement
+  public containerH: number
+  public containerW: number
+  public eventManager: EventCallBack      // events通过封装构建的类实例
   //----------------保持状态所用参数---------------------//
   private _VueEvents = {}
   private _mounted = false

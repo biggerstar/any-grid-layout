@@ -2,6 +2,7 @@
  *  @param {Object} options
  *  pos 是ItemPos类成员
  * */
+import {ItemPos} from "@/main/item/ItemPos";
 
 export class LayoutManager {
   //-----------调试用-----------//
@@ -169,7 +170,7 @@ export class LayoutManager {
    *  @param auto {Boolean} 是否自动排列
    *  @return findItemLayout 布局对象
    *  */
-  findItem = (posOption, auto = false) => {
+  findItem = (posOption: ItemPos, auto: boolean = false): ItemPos | null => {
     if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
     let findItemLayout
     // console.log(posOption);
