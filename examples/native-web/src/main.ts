@@ -163,8 +163,8 @@ const container1 = new Container({
   layouts: {
     from: '来自layout1',
     // ratioCol: 0.1,
-    // responsive:true,
-    col: 6,
+    responsive:true,
+    col: 10,
     row: 5,
     margin: [20, 10],
     size: [100, 60],

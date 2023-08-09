@@ -497,11 +497,15 @@ export class Item extends ItemGeneralImpl {
 
   _genLimitSizeStyle = () => {
     if (this.styleLock()) return {}
+    const minWidth = this.minWidth()
+    const minHeight = this.minHeight()
+    const maxWidth = this.maxWidth()
+    const maxHeight = this.maxHeight()
     return {
-      minWidth: this.minWidth() + 'px',
-      minHeight: this.minHeight() + 'px',
-      maxWidth: this.maxWidth() + 'px',
-      maxHeight: this.maxHeight() + 'px',
+      maxWidth: maxWidth + 'px',
+      maxHeight: maxHeight + 'px',
+      minWidth: Math.min(minWidth, maxWidth) + 'px',
+      minHeight: Math.min(minHeight, maxHeight) + 'px',
     }
 
   }

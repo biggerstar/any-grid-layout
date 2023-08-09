@@ -54,12 +54,12 @@ export class EditEvent {
             if ((w + pos.x) > container.col) w = container.col - pos.x + 1     //item调整大小时在容器右边边界超出时进行限制
           }
           if (w < pos.minW) w = pos.minW
-          if (w > pos.maxW && pos.maxW !== Infinity) w = pos.maxW
+          if (w >= pos.maxW && pos.maxW !== Infinity) w = pos.maxW
           if (fromItem.resizeOut) {
             if ((h + pos.y) > container.row) h = container.row - pos.y + 1
           }
           if (h < pos.minH) h = pos.minH
-          if (h > pos.maxH && pos.maxH !== Infinity) h = pos.maxH
+          if (h >= pos.maxH && pos.maxH !== Infinity) h = pos.maxH
           return {
             w,
             h
@@ -67,10 +67,12 @@ export class EditEvent {
         }
         const limitCloneEl = () => {
           //------------------------克隆元素长宽限制---------------------------//
-          if (width > fromItem.maxWidth()) width = fromItem.maxWidth()
-          if (height > fromItem.maxHeight()) height = fromItem.maxHeight()
+          // max 限制优先级必须大于 min，防止min的值比max大突破最大尺寸
+          // 如果 min的值大于max ，min的尺寸将强制降级到和max尺寸一致，此时 max 和 min相等，该方向的尺寸则会直接固定，无法调整大小
           if (width < fromItem.minWidth()) width = fromItem.minWidth()
           if (height < fromItem.minHeight()) height = fromItem.minHeight()
+          if (width > fromItem.maxWidth()) width = fromItem.maxWidth()
+          if (height > fromItem.maxHeight()) height = fromItem.maxHeight()
           return {
             width,
             height
