@@ -193,6 +193,9 @@ export const singleTouchToCommonEvent = (touchEvent) => {
 
 /** 为传入的items填充默认数据, 会改变原有对象的值
  * 比如
+ * @param items  最小可用成员构造对象数组，比如 {pos: {w: 1,h: 1 }}
+ * @param fillFields  要为items所有成员添加填充的字段
+ * @param force 是否强制使用fillFields覆盖原本items成员数组，内部使用Object.assign函数实现fillFields覆盖item对象键值
  * @example
  *    const items = [{
  *      pos:{w:h}
@@ -201,12 +204,17 @@ export const singleTouchToCommonEvent = (touchEvent) => {
  *    fillInItemLayoutList(items,{ close:true })
  *    //  items结果: [{  pos:{w:h},close:true }]
  * */
-export function fillItemLayoutList(items: CustomItemLayoutOptions = [], fillFields: ItemLayoutOptions = {}): ItemLayoutOptions[] {
+export function fillItemLayoutList(items: CustomItemLayoutOptions = [], fillFields: ItemLayoutOptions = {}, force: boolean = false): ItemLayoutOptions[] {
   if (!Array.isArray(items)) items = [items]
   return items.map((item) => {
-    for (const k in fillFields) {
-      if (!item.hasOwnProperty(k)) item[k] = fillFields[k]
+    if (force) {
+      item = Object.assign(item, fillFields)
+    } else {
+      for (const k in fillFields) {
+        if (!item.hasOwnProperty(k)) item[k] = fillFields[k]
+      }
     }
+
     return item
   })
 }

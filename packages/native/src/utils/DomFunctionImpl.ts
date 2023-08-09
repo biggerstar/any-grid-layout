@@ -4,13 +4,10 @@ export class DomFunctionImpl {
   element: HTMLElement
   observer: MutationObserver
 
-  constructor() {
-  }
-
   /** 直接将符合style对象形式的表达对象传入，会对Item`自身`的样式进行覆盖更新
    *  isCssText 是否通过 cssText 防止回流重绘
    * */
-  updateStyle(style, element = null, isCssText = true) {
+  public updateStyle(style, element = null, isCssText = true) {
     if (Object.keys(style).length === 0) return
     element = element ? element : this.element
     let cssText = ''
@@ -21,33 +18,33 @@ export class DomFunctionImpl {
     if (isCssText) element.style.cssText = element.style.cssText + ';' + cssText
   }
 
-  hasClass(className) {
+  public hasClass(className) {
     return this.element.classList.contains(className)
   }
 
-  addClass(...arg) {
+  public addClass(...arg) {
     this.element.classList.add(...arg)
   }
 
-  removeClass(...arg) {
+  public removeClass(...arg) {
     this.element.classList.remove(...arg)
   }
 
-  replaceClass(oldCls, newCls) {
+  public replaceClass(oldCls, newCls) {
     this.element.classList.replace(oldCls, newCls)
   }
 
   /** 添加一个元素的属性
    * @param {String} attrName 一个包含元素属性名和对应值的对象
    * */
-  getAttr(attrName): Attr | null {
+  public getAttr(attrName): Attr | null {
     return this?.element?.attributes?.getNamedItem(attrName) || null
   }
 
   /** 添加一个元素的属性  这里也能用element.setAttribute 进行设置
    * @param {Object} attrs 一个包含元素属性名和对应值的对象
    * */
-  addAttr(attrs) {
+  public addAttr(attrs) {
     try {
       Object.keys(attrs).forEach((attrName) => {
         const attrNode = document.createAttribute(attrName);
@@ -61,7 +58,7 @@ export class DomFunctionImpl {
   /**
    * @param {string} dataSetName  该参数为 '' 空时默认返回所有 DataSet
    */
-  getDataSet(dataSetName = '') {
+  public getDataSet(dataSetName = '') {
     if (dataSetName.replace(' ', '') === '') return Object.assign({}, this.element.dataset)
     return this.element.dataset[dataSetName]
   }
@@ -69,7 +66,7 @@ export class DomFunctionImpl {
   /** 移除元素的属性
    * @param {Array,String} attrs 一个属性名集合的数组
    * */
-  removeAttr(attrs) {
+  public removeAttr(attrs) {
     try {
       if (typeof attrs === 'string') this.element.attributes.removeNamedItem(attrs)
       else if (Array.isArray(attrs)) {
@@ -88,8 +85,8 @@ export class DomFunctionImpl {
    *  @param {Number} throttleTime 节流时间，default = 200ms
    *  @param {Array} attrNames 要监测的属性名称 默认内置 [style , class] 且不可被覆盖
    * */
-  observe(func, throttleTime = 200, attrNames = []) {
-    if (this.observer === null) {
+  public observe(func, throttleTime = 200, attrNames = []) {
+    if (!this.observer) {
       let MutationObserver = window['MutationObserver'] || window['WebKitMutationObserver'] || window['MozMutationObserver']
       this.observer = new MutationObserver(throttle(func, throttleTime))
     }
@@ -99,14 +96,14 @@ export class DomFunctionImpl {
   }
 
   /** 结束上次的观测,可以再次通过调用observe 进行再度观测 */
-  unObserve() {
+  public unObserve() {
     this.observer.disconnect()
   }
 
   /** 非原生DomEvent方法，只有监听方法,调用后可以通过 unObserve 取消监听
    * @param {Function} callback 是tagResize后回调,回调的返回值是tag新的 宽 高
    * */
-  onResize(callback) {
+  public onResize(callback) {
     // if (this.i > 0) return
     this.observe((mutationList) => {
       mutationList.forEach((mutation) => {
@@ -129,7 +126,7 @@ export class DomFunctionImpl {
    * @param {Element} dom  可选，为该Element绑定上这次事件
    * @param {Number} throttleTime  可选，节流时间，默认 350ms
    * */
-  onEvent(eventName, callback, dom = null, throttleTime = 350) {
+  public onEvent(eventName, callback, dom = null, throttleTime = 350) {
     const element = dom || this.element
     if (!eventName.includes('on')) eventName = 'on' + eventName
     if (!element[eventName]) element[eventName] = throttle(callback, throttleTime)
@@ -139,7 +136,7 @@ export class DomFunctionImpl {
    * 需要注意的是调用删除事件需要原始函数的时候需要使用返回的函数 throttleFun , 因为原始函数已经被包装，两者地址不一样
    * 通过直接添加事件集，和上面 onEvent 不同是可以添加多个， 参数见 onEvent 函数
    * */
-  addEvent(eventName, callback, dom = null, args = {}) {
+  public addEvent(eventName, callback, dom = null, args = {}) {
     let throttleTime = 350, capture = false
     if (args['throttleTime']) throttleTime = args['throttleTime']
     if (args['capture']) capture = args['capture']
@@ -151,13 +148,13 @@ export class DomFunctionImpl {
   }
 
   /**  移除事件 */
-  removeEvent(eventName, callbackFun, dom = null) {
+  public removeEvent(eventName, callbackFun, dom = null) {
     const element = dom || this.element
     element.removeEventListener(eventName, callbackFun)
 
   }
 
-  throttle(callback, throttleTime) {
+  public throttle(callback, throttleTime) {
     return throttle(callback, throttleTime)
   }
 }

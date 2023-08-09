@@ -1,4 +1,4 @@
-import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
+import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
 import {ItemPos} from "@/main/item/ItemPos";
 import {Container} from "@/main/container/Container";
@@ -19,7 +19,7 @@ export type HandleErrorType = {
   from: any
 }
 
-export type CustomContainerOptions = LayoutInstantiationField
+export type CustomContainerOptions = ContainerGeneralImpl
 
 
 export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
@@ -34,9 +34,9 @@ export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
 export type ContainerOptions = {
   [key: string]: any
   el: string | HTMLElement,
-  layouts?: Partial<LayoutInstantiationField> | Array<Partial<LayoutInstantiationField>>,
+  layouts?: Partial<ContainerGeneralImpl> | Array<Partial<ContainerGeneralImpl>>,
   events?: Partial<CustomEventOptions>,
-  global?: Partial<LayoutInstantiationField>,
+  global?: Partial<ContainerGeneralImpl>,
   itemLimit?: Record<any, any>
 }
 
@@ -146,3 +146,10 @@ export type ItemTransition = {
 } | number | boolean
 
 export type MarginOrSizeDesc = [string | null, string | null]
+
+export type ItemLimitType = {
+  maxW?: number,
+  maxH?: number,
+  minW?: number,
+  minH?: number
+}

@@ -1,8 +1,9 @@
 import {merge} from "@/utils/tool";
-import {CustomItemLayoutOptions} from "@/types";
+import {CustomItemLayoutOptions, ItemLimitType} from "@/types";
+import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 
 /**  Container实例化的时候可以在Layout配置中使用的字段 */
-export class LayoutInstantiationField {
+export class ContainerGeneralImpl extends DomFunctionImpl {
   [key: string]: any
 
   /** 使用的框架或原生js，会对其针对性优化和支持
@@ -118,7 +119,7 @@ export class LayoutInstantiationField {
   /**
    * 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
    * */
-  itemLimit: Record<any, any> = {}
+  itemLimit: ItemLimitType = {}
 
   /**
    * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
@@ -170,6 +171,7 @@ export class LayoutInstantiationField {
 
   //------------------------------------------------------//
   constructor(config = {}) {
+    super()
     merge(this, config)
   }
 }

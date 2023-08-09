@@ -3,13 +3,12 @@ import {throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {TempStore} from "@/utils/TempStore";
 import {ItemPos} from "@/main/item/ItemPos";
-import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {Engine} from "@/main/Engine";
-import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
-import {ContainerOptions, MarginOrSizeDesc} from "@/types";
+import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
+import {ContainerOptions} from "@/types";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -46,14 +45,13 @@ const tempStore = TempStore.store
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
-export class Container extends DomFunctionImpl implements Partial<LayoutInstantiationField> {
+export class Container extends ContainerGeneralImpl  {
   //----------实例化传进的的参数(次级配置信息)-----------//
   // 相关字段在ContainerInitConfig类中,实例化的时候会进行合并到此类.次级的意思是实例化对象的配置信息深度为二以下的其他字段
   //---------实例化传进的的特殊参数(一级配置信息)---------//
   // 一级配置信息的意思是实例化对象的配置信息第一层的字段
   public el: HTMLElement | string = ''
   public parent = null  // 嵌套情况下上级Container
-  public platform: 'native' | 'vue' = 'native'   //  native(默认原生js) || vue || react(计划)
   public layouts = []  //  其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
   public events = []
   public global = {}
@@ -72,14 +70,6 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
   public containerH = null
   public containerW = null
   public eventManager = null    // events通过封装构建的类实例
-  public row: number;
-  public col: number;
-  public className: string;
-  public responsive: any;
-  public container: Container;
-  public margin: MarginOrSizeDesc
-  public size: MarginOrSizeDesc
-
   //----------------保持状态所用参数---------------------//
   private _VueEvents = {}
   private _mounted = false
@@ -112,7 +102,6 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
     // 部分一级实例化参数处理
     this.el = options.el
     if (options.platform) this.platform = options.platform
-    Object.assign(<object>this, new LayoutInstantiationField())  // 继承
     this._define()
     this.eventManager = new EventCallBack(<any>options.events)
     this.engine = new Engine(options)
@@ -198,8 +187,8 @@ export class Container extends DomFunctionImpl implements Partial<LayoutInstanti
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   // mount(mCallback) {
-  public mount() {
-    if (this._mounted) return
+  public mount(): void {
+    if (this._mounted) return console.warn('[mount Function] 容器重复挂载被阻止', this)
     const _mountedFun = () => {
       //---------------------------------------------------------//
       if (this.el instanceof Element) this.element = this.el

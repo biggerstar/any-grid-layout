@@ -3,8 +3,7 @@ import {Item} from "@/main/item/Item";
 import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
-import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
-import {ContainerOptions} from "@/types";
+import {ContainerOptions, ItemLimitType} from "@/types";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -17,7 +16,7 @@ export class Engine {
   items = []
   options: ContainerOptions
   layoutManager: LayoutManager
-  container: Container & LayoutInstantiationField
+  container: Container
   layoutConfigManager: LayoutConfigManager
   useLayout = null
   initialized = false
@@ -90,10 +89,10 @@ export class Engine {
    *  @param h {Number} y坐标方向延伸宫格数量
    *  @param items {Object} 在该Item列表中查找，默认使用this.Items
    * */
-  findCoverItemFromPosition(x, y, w, h, items = null) {
+  findCoverItemFromPosition(x: number, y: number, w: number, h: number, items: Item[] | null = null): Item[] {
     // console.log(x,y,w,h);
     items = items || this.items
-    const resItem = []
+    const resItemList = []
     for (let i = 0; i < items.length; i++) {
       let item = items[i]
       const xBoundaryStart = x       // 左边界
@@ -114,15 +113,15 @@ export class Engine {
         || (xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
           && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)
       ) {
-        resItem.push(item)
+        resItemList.push(item)
       }
     }
-    return resItem
+    return resItemList
   }
 
   /** 响应式模式下找到在布局流在Container空白部分或者在Container外所对应容器里面可以放置的x，y位置，
    * 并对应返回该位置的Item作为外部使用的toItem   */
-  findResponsiveItemFromPosition(x, y, w, h) {
+  findResponsiveItemFromPosition(x: number, y: number): Item {
     let pointItem = null
     let lastY = 1
     if (this.items.length > 0) {
@@ -150,7 +149,7 @@ export class Engine {
    * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
    * @return {{maxW: number, maxH: number,minW: number, minH: number}}  maxW最大伸展宽度，maxH最大伸展高度,minW最小伸展宽度，maxH最小伸展高度
    * */
-  findStaticBlankMaxMatrixFromItem(itemPoint) {
+  findStaticBlankMaxMatrixFromItem(itemPoint: Item): ItemLimitType {
     const x = itemPoint.pos.x
     const y = itemPoint.pos.y
     const w = itemPoint.pos.w
@@ -215,32 +214,31 @@ export class Engine {
   //     })
   // }
 
-  setColNum(col) {
+  setColNum(col: number): void {
     this.layoutManager.setColNum(col)
   }
 
-  setContainer(container) {
+  setContainer(container: Container): void {
     this.container = container
   }
 
-  len() {
+  len(): number {
     return this.items.length
   }
 
-  getItemList() {
+  getItemList(): Item[] {
     return this.items
   }
 
   /** 根据当前的 i 获取对应的Item  */
-  index(indexVal) {
+  index(indexVal: number): void | Item {
     for (let i = 0; i < this.items.length; i++) {
       if (this.items[i].i === indexVal) return this.items[i]
     }
-    return null
   }
 
   /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
-  sortStatic(isUpdate = false) {
+  sortStatic(isUpdate: boolean = false) {
     const staticItems = []
     const items = []
     this.items.forEach((item) => {
@@ -275,7 +273,7 @@ export class Engine {
   }
 
   /** 添加一个Item 只添加不挂载 */
-  addItem(item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
+  addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const itemLimit = this.container.itemLimit    // Container所有Item的限制信息
     const eventManager = this.container.eventManager
     if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`, item, item)
@@ -300,7 +298,7 @@ export class Engine {
   }
 
   /** 对要添加进items的对象进行检测，超出矩阵范围会被抛弃，如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序) */
-  push(item) {
+  push(item: Item) {
     // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
     // this.items.push(item)
     // return true
@@ -346,6 +344,7 @@ export class Engine {
       this._isCanAddItemToContainer_(item, item.autoOnce, true)
       return true
     } else {
+      console.log(item.pos)
       realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
       if (!realLayoutPos) return false
       if (this.container.autoReorder && this.container.responsive) {
@@ -538,7 +537,7 @@ export class Engine {
   /**  是否可以添加Item到当前的Container,请注意addSeat为true时该操作将会影响布局管理器中的_layoutMatrix,每次检查成功将会占用该检查成功所指定的空间
    *  @param item {Item}
    *  @param responsive {Boolean}  是否响应式还是静态布局
-   *  @param addSeat {Boolean}  检测的时候是否为矩阵中添加占位同时修改Item中的pos
+   *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
    * */
   _isCanAddItemToContainer_(item, responsive = false, addSeat = false) {
     let realLayoutPos
@@ -549,7 +548,6 @@ export class Engine {
     if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
     // console.log(nextStaticPos);
     realLayoutPos = this.layoutManager.findItem(cloneNextStaticPos, responsive)
-
     if (realLayoutPos !== null) {
       if (addSeat) {
         this.layoutManager.addItem(realLayoutPos)
@@ -594,7 +592,7 @@ export class Engine {
     if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)  // 没找到更新元素，则默认更新全部
     // console.log(items.length, updateItemList);
     const updateItemLayout = (item) => {
-      const realPos = this._isCanAddItemToContainer_(item, !!item.autoOnce, true)
+      this._isCanAddItemToContainer_(item, !!item.autoOnce, true)
       this.checkOverflow(item)
       // console.log(item.static,realPos);
       item.updateItemLayout()
@@ -624,13 +622,12 @@ export class Engine {
     // }
     // console.log('-----------------------------------------');
 
-
     //---------------------------------------------------------------------//
     this._checkUpdated()
 
     //---------------------------更新数据和存储-------------------------------//
     this.layoutConfigManager.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-    this.container.layout.data = this.container.exportItems()   // 将最新data同步到当前使用的layout中
+    this.container.layout.items = this.container.exportItems()   // 将最新data同步到当前使用的layout中
     this.container.updateContainerStyleSize()
     const genBeforeSize = (container) => {
       return {

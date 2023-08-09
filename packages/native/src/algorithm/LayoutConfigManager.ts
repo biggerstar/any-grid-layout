@@ -1,10 +1,9 @@
 import {cloneDeep} from "@/utils/tool";
 import {defaultLayoutConfig} from "@/default/defaultLayoutConfig";
 import {Container} from "@/main/container/Container";
-import {LayoutInstantiationField} from "@/main/container/LayoutInstantiationField";
 
 export class LayoutConfigManager {
-  public container: Container & LayoutInstantiationField
+  public container: Container
   public customLayout = {}
   public options = {}
   private _defaultLayoutConfig = defaultLayoutConfig

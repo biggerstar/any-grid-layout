@@ -113,7 +113,6 @@ export class EditEvent {
         if (!fromItem.__temp__.resized) fromItem.__temp__.resized = {w: 1, h: 1}
         if (fromItem.__temp__.resized.w !== resized.w || fromItem.__temp__.resized.h !== resized.h) { // 只有改变Item的大小才进行style重绘
           if (!newResize) return
-          console.log(newResize)
           fromItem.__temp__.resized = newResize
           if (typeof fromItem._VueEvents['vueItemResizing'] === 'function') {
             fromItem._VueEvents['vueItemResizing'](fromItem, newResize.w, newResize.h)

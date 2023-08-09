@@ -11,7 +11,8 @@ const container = new Container({
     from: '来自layout',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
-      resize: true
+      resize: true,
+      close:true,
     }),
     // autoGrowRow:true,
     // col: 3,
@@ -22,7 +23,7 @@ const container = new Container({
     // size: [120, 90],
     minCol: 5,
     // maxCol: 8,
-    // minRow: 5,
+    minRow: 5,
     // maxRow: 8,
     itemLimit: {
       // minW:1,
@@ -147,9 +148,6 @@ const container1 = new Container({
       px: 800,
       margin: [10, 10],
       size: [60, 80],
-      edit: {    // true或者对象
-        draggable: true,
-      },
       items: layoutData,
       // minCol: 5,
     },
@@ -157,10 +155,6 @@ const container1 = new Container({
       px: 360,
       margin: [0, 0],
       size: [36, 80],
-      edit: {    // true或者对象
-        resize: false,
-        close: true
-      },
       items: layoutData11,
       // minCol: 3,
     },
@@ -172,16 +166,19 @@ const container1 = new Container({
     col: 6,
     row: 5,
     margin: [20, 10],
-    // size: [100, 60],
+    size: [100, 60],
     // minRow: 10,
     // maxRow:6,
     // items: layoutData11,
-    items: layoutData,
+    items:  fillItemLayoutList(layoutData, {
+      draggable: true,
+      resize: true,
+      close:true,
+    }),  // TODO  bug  col first load with 1
     // responsive:true,
     minCol: 2,
     // maxCol:6,
     exchange: true,
-    edit: true,
     animation: true,
     follow: true,
   },
@@ -258,7 +255,11 @@ const container3 = new Container({
 })
 
 
-container.mount()
+container1.mount()
+
+console.log(container1)
+
+
 // container.render((data, useLayout, containerElement) => {
 //   // console.log(data,useLayout);
 //   // container.mountItems(items)
