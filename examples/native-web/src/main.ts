@@ -12,7 +12,7 @@ const container = new Container({
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,
-      close:true,
+      close: true,
     }),
     // autoGrowRow:true,
     // col: 3,
@@ -163,6 +163,7 @@ const container1 = new Container({
   layouts: {
     from: '来自layout1',
     // ratioCol: 0.1,
+    // responsive:true,
     col: 6,
     row: 5,
     margin: [20, 10],
@@ -170,13 +171,13 @@ const container1 = new Container({
     // minRow: 10,
     // maxRow:6,
     // items: layoutData11,
-    items:  fillItemLayoutList(layoutData, {
+    items: fillItemLayoutList(layoutData, {
       draggable: true,
       resize: true,
-      close:true,
+      close: true,
     }),  // TODO  bug  col first load with 1
     // responsive:true,
-    minCol: 2,
+    // minCol: 2,
     // maxCol:6,
     exchange: true,
     animation: true,

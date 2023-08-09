@@ -45,7 +45,7 @@ const tempStore = TempStore.store
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
-export class Container extends ContainerGeneralImpl  {
+export class Container extends ContainerGeneralImpl {
   //----------实例化传进的的参数(次级配置信息)-----------//
   // 相关字段在ContainerInitConfig类中,实例化的时候会进行合并到此类.次级的意思是实例化对象的配置信息深度为二以下的其他字段
   //---------实例化传进的的特殊参数(一级配置信息)---------//
@@ -112,7 +112,7 @@ export class Container extends ContainerGeneralImpl  {
       this.isNesting = true
     }
     this.engine.setContainer(this)
-    if (options.itemLimit) this['itemLimit'] = new ItemPos(options.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
+    this.itemLimit = new ItemPos(this.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
   }
 
   private _define() {
@@ -145,7 +145,7 @@ export class Container extends ContainerGeneralImpl  {
         '请直接将值给到本类中的成员col，而不是通过该函数进行设置')
     }
     this.col = col
-    this.engine.setColNum(col)
+    this.engine.layoutManager.setColNum(col)
     return this
   }
 

@@ -176,7 +176,6 @@ export class LayoutManager {
     // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
     if (auto) {
       findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
-
       if (findItemLayout === undefined) return null
       if (posOption.i !== undefined) findItemLayout.iName = this.toINameHash(posOption.i)
       findItemLayout.row = this._layoutMatrix.length  // 这个row是最新该Item添加进去占用后矩阵的行数

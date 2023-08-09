@@ -1,6 +1,7 @@
 import {cloneDeep} from "@/utils/tool";
 import {defaultLayoutConfig} from "@/default/defaultLayoutConfig";
 import {Container} from "@/main/container/Container";
+import {Item} from "@/main/item/Item";
 
 export class LayoutConfigManager {
   public container: Container
@@ -16,7 +17,7 @@ export class LayoutConfigManager {
     this.container = container
   }
 
-  /** 用于提取用户传入的布局配置文件到 container.layout */
+  /** 用于提取用户传入的[所有]布局配置文件到 container.layouts */
   initLayoutInfo() {
     const options: Record<any, any> = this.options
     let layoutInfo = []
@@ -111,10 +112,9 @@ export class LayoutConfigManager {
 
 
   /**
-   * 生成合并最终配置，包含用户传入配置 和 global配置 和 合并后的最终useLayout配置
-   * [这里只会计算size，margin] 传入屏幕的宽度，会在预定的layout布局配置中找到符合该屏幕的px对应的layoutConfig,
-   * 之后返回该屏幕尺寸下的col size margin style  等等等配置信息，还有很多字段不写出来，
-   * 这些对应的字段和Container中的对外属性完全一致，两者最终会同步   */
+   * 生成合并最终配置，包含用户传入配置 和 global配置 和 合并后的最终useLayout配置,
+   * 在layouts布局配置中找到符合该屏幕的px对应的布局方案,
+   * layout对应的字段和Container的属性完全一致，两者最终会同步   */
   genLayoutConfig(containerWidth = null, containerHeight = null, customLayout = null) {
     let layoutItem: any = {}
     // console.log(containerWidth,this.container.element.clientWidth);
@@ -317,6 +317,7 @@ export class LayoutConfigManager {
     }
     AutoSetting()
     // autoGrowRow
+
     let containerW = maxCol
     let containerH = maxRow
     if (isSetConfig && maxCol && maxRow) {
@@ -339,7 +340,6 @@ export class LayoutConfigManager {
 
       // console.log(maxCol, maxRow)
       // console.log(maxRow, col, row);
-
       layoutManager.setColNum(maxCol)
       layoutManager.setRowNum(maxRow)
       layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
@@ -376,9 +376,9 @@ export class LayoutConfigManager {
 
 
   /** 智能计算当前 items 中最大col边界值和最大row边界值 */
-  computeSmartRowAndCol = (items) => {
-    let smartCol = 1   // 自动计算col最低为1
-    let smartRow = 1   // 自动计算row最低为1
+  computeSmartRowAndCol = (items: Item[]) => {
+    let smartCol = this.container.col || 1
+    let smartRow = this.container.row || 1
     if (items.length > 0) {
       items.forEach((item) => {
         if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1

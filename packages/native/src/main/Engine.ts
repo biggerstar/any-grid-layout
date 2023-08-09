@@ -4,6 +4,7 @@ import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerOptions, ItemLimitType} from "@/types";
+import {ItemPos} from "@/main/item/ItemPos";
 
 /** #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
@@ -21,6 +22,7 @@ export class Engine {
   useLayout = null
   initialized = false
   __temp__ = {
+    firstSync: true,
     responsiveFunc: null,
     firstLoaded: false,
     staticIndexCount: 0,
@@ -42,8 +44,12 @@ export class Engine {
 
   /** 同步 Container 和 layoutManager 的配置信息 */
   _sync() {  // 语法糖
-    this.layoutConfigManager.autoSetColAndRows(this.container)
-    let useLayout = this.layoutConfigManager.genLayoutConfig()
+    if (this.__temp__.firstSync) {
+      this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案
+      this.__temp__.firstSync = false
+    }
+    this.layoutConfigManager.autoSetColAndRows(this.container)  // 1. 根据之前的Items信息进行自动设置容器大小
+    let useLayout = this.layoutConfigManager.genLayoutConfig()  // 2. 已经知道容器col,row,生成实际的布局方案
     this.useLayout = useLayout
     this._syncLayoutConfig(useLayout.useLayout)
   }
@@ -62,7 +68,7 @@ export class Engine {
     }
   }
 
-  /** 通过传入当前的useLayout直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块之间的布局方案信息同步 */
+  /** 通过传入当前的useLayout直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块(container,item)之间的布局方案信息同步 */
   _syncLayoutConfig(useLayout = null) {
     if (!useLayout) return
     if (Object.keys(useLayout).length === 0) {
@@ -214,10 +220,6 @@ export class Engine {
   //     })
   // }
 
-  setColNum(col: number): void {
-    this.layoutManager.setColNum(col)
-  }
-
   setContainer(container: Container): void {
     this.container = container
   }
@@ -336,7 +338,7 @@ export class Engine {
       return success
     }
     //-----------------------添加新Item的逻辑---------------------------//
-    let realLayoutPos = null
+    let realLayoutPos: ItemPos
     if (item.autoOnce === false) {
       // 如果是指定了x和y，必然能添加进去
       this.items.push(item)
@@ -344,8 +346,9 @@ export class Engine {
       this._isCanAddItemToContainer_(item, item.autoOnce, true)
       return true
     } else {
-      console.log(item.pos)
+      // console.log(item.pos);
       realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
+      // console.log(realLayoutPos?.col)
       if (!realLayoutPos) return false
       if (this.container.autoReorder && this.container.responsive) {
         return autoReorder()  // 只有响应式下生效
@@ -540,15 +543,15 @@ export class Engine {
    *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
    * */
   _isCanAddItemToContainer_(item, responsive = false, addSeat = false) {
-    let realLayoutPos
-    let nextStaticPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
+    let realLayoutPos: ItemPos
+    let nextStaticPos: ItemPos = item.pos.nextStaticPos !== null ? item.pos.nextStaticPos : item.pos
     nextStaticPos.i = item.i
     const cloneNextStaticPos = Object.assign({}, nextStaticPos)
     if (item.pos.tempW) cloneNextStaticPos.w = item.pos.tempW
     if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
-    // console.log(nextStaticPos);
+    // console.log(nextStaticPos.col);
     realLayoutPos = this.layoutManager.findItem(cloneNextStaticPos, responsive)
-    if (realLayoutPos !== null) {
+    if (realLayoutPos) {
       if (addSeat) {
         this.layoutManager.addItem(realLayoutPos)
         realLayoutPos.w = nextStaticPos.w

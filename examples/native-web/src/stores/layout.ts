@@ -55,7 +55,7 @@ export const layoutData: CustomItemLayoutOptions = [
   // {pos: {w: 1, h: 2, x: 7, y: 10}, static: true},
   // {pos: {w: 14, h: 3, x: 3, y: 3},static:true},
   // {pos: {w: 14, h: 3, x: 3, y: 3},static:true},
-  {pos: {w: 1, h: 1}},
+  // {pos: {w: 1, h: 1,x:1,y:1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
