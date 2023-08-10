@@ -126,36 +126,55 @@ const container = new Container({
 
 const container1 = new Container({
   el: '#container1',
-  // el: document.getElementById('container'),
-  layouts2: true,
+  global: {
+    ratioCol: 0.1,
+    // ratioRow: 0.1,
+    // responsive:true
+  },
   layouts: [
     {
       px: 1300,
-      // col:9,
-      margin: [30, 30],
+      col:9,
+      // margin: [30, 30],
       size: [120, 80],
       // minCol: 9,
-      items: layoutData,
+      items: fillItemLayoutList(layoutData, {
+        draggable: true,
+        resize: true,
+        close: true,
+      }),
     },
+    // {
+    //   px: 1100,
+    //   margin: [20, 20],
+    //   size: [90, 80],
+    //   // minCol: 7,
+    //   items: fillItemLayoutList(layoutData11, {
+    //     draggable: true,
+    //     resize: true,
+    //     close: true,
+    //   }),
+    // },
     {
-      px: 1100,
-      margin: [20, 20],
-      size: [90, 80],
-      // minCol: 7,
-      items: layoutData11,
-    },
-    {
-      px: 800,
+      px: 900,
       margin: [10, 10],
       size: [60, 80],
-      items: layoutData,
+      items: fillItemLayoutList(layoutData11, {
+        draggable: true,
+        resize: true,
+        close: true,
+      }),
       // minCol: 5,
     },
     {
       px: 360,
-      margin: [0, 0],
+      // margin: [0, 0],
       size: [36, 80],
-      items: layoutData11,
+      items: fillItemLayoutList(layoutData11, {
+        draggable: true,
+        resize: true,
+        close: true,
+      }),
       // minCol: 3,
     },
   ],
@@ -180,9 +199,6 @@ const container1 = new Container({
     // responsive:true,
     // minCol: 2,
     // maxCol:6,
-    exchange: true,
-    animation: true,
-    follow: true,
     itemLimit: {
       // minW:2,
       // maxH:1,
@@ -270,7 +286,6 @@ console.log(container1)
 //   data.forEach((item) => {
 //     container.add(item)
 //   })
-//   container.mount()
 // })
 
 // container.update()

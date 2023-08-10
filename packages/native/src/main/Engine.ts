@@ -45,7 +45,7 @@ export class Engine {
   /** 同步 Container 和 layoutManager 的配置信息 */
   _sync() {  // 语法糖
     if (this.__temp__.firstSync) {
-      this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案
+      this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案作为基本配置
       this.__temp__.firstSync = false
     }
     this.layoutConfigManager.autoSetColAndRows(this.container)  // 1. 根据之前的Items信息进行自动设置容器大小
@@ -78,7 +78,8 @@ export class Engine {
     // console.log(useLayout);
     // console.log(this.container.eventManager)
     this.items.forEach(item => {
-      //  container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
+      // TODO 可以重构，自动计算margin ,size算法计算后将结果挂到margin，size中，之后 item类中通过getter，直接获取container中margin,size
+      // 当前方案: container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
       merge(item, {
         margin: useLayout.margin,
         size: useLayout.size,
@@ -406,6 +407,7 @@ export class Engine {
     this.layoutManager.reset()
   }
 
+  /** 清除所有Items */
   clear() {
     this.items = []
   }
@@ -457,7 +459,7 @@ export class Engine {
     }
   }
 
-  /** 在挂载后为自身Container中的this.items重新编号 */
+  /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
   renumber(items = null) {
     items = items ? items : this.items
     items.forEach((item, index) => {

@@ -1,15 +1,19 @@
 ### Container 实例化选项
 
 ---
-```javascript
 
-/**  Container实例化的时候可以在Layout配置中使用的字段 */
+```javascript
   /** 使用的框架或原生js，会对其针对性优化和支持
    * TODO react(计划)
    * */
-  platform: 'native' | 'vue'  = 'native'
+  platform: 'native' | 'vue' = 'native'
 
   //----------------实例化传进的的参数---------------------//
+  /**
+   * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
+   * */
+  px: number
+
   /** 该容器的名称 */
   name: string = ''
 
@@ -27,9 +31,18 @@
    * @default 'default'
    * */
   responseMode: 'default' | 'exchange' | 'stream' = 'default'
+  /**
+   * 当前正在使用的布局
+   * */
+  layout: ContainerGeneralImpl
+
+  /**
+   * 其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
+   * */
+  layouts: ContainerGeneralImpl[]
 
   /** 当前布局使用的数据*/
-  items: Array<Partial<LayoutDataItem>> = []
+  items: CustomPartialContainerOptions
 
   /** 列数 */
   col: number
@@ -84,20 +97,25 @@
 
   /**
    * 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
+   *
    * @default  true
    * */
   autoReorder: boolean = true
 
   /**
    * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
-   * 或者没有col只有margin情况下， margin和size自动分配margin/size的比例 1:1 ratio值为1
+   * 或者没有col只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioCol值为1
+   * 注意: 必须为container所挂载的元素指定宽高后才能生效
+   *
    * @default  0.1
    * */
   ratioCol: number = 0.1
 
-  /** TODO  实现
-   * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
-   * 或者没有col只有margin情况下， margin和size自动分配margin/size的比例 1:1 ratio值为1
+  /**
+   * (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定),
+   * 或者没有row只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioRow值为1
+   * 注意: 必须为container所挂载的元素指定宽高后才能生效
+   *
    * @default  0.1
    * */
   ratioRow: number = 0.1
@@ -117,7 +135,7 @@
   /**
    * 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
    * */
-  itemLimit: Record<any, any> = {}
+  itemLimit: ItemLimitType = {}
 
   /**
    * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器

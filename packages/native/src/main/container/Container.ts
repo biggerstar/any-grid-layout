@@ -56,7 +56,7 @@ export class Container extends ContainerGeneralImpl {
   public global: ContainerGeneralImpl
   //----------------内部需要的参数---------------------//
   public element: HTMLElement     //  container主体元素节点
-  public contentElement: HTMLElement     // 放置Item的元素节点，被element直接包裹
+  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
   public classList: string[] = []
   public attr: any = []
   public engine: Engine
@@ -266,16 +266,16 @@ export class Container extends ContainerGeneralImpl {
     }
   }
 
-  /** 渲染某一组 items */
+  /** 手动添加item渲染 */
   public render(renderCallback: Function) {
     Sync.run(() => {
       if (this.element && this.element.clientWidth <= 0) {
         return
       }
       if (typeof renderCallback === 'function') {
-        // console.log(this.useLayout);
         renderCallback(this.useLayout.items || [], this.useLayout, this.element)
       }
+      if (!this._mounted) this.mount()  // 第一次没挂载则挂载，后续添加后自动更新布局
       this.updateLayout(true)
     })
   }
@@ -369,22 +369,23 @@ export class Container extends ContainerGeneralImpl {
       if (typeof res === 'object') useLayout = res
       // console.log(useLayout);
       // console.log(this.px, useLayout.px);
-      if (this.px && useLayout.px) {
-        if (this.px !== useLayout.px) {
-          // console.log(this.px, useLayout.px);
-          if (this.platform !== 'vue') {
-            // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
-            // this.engine.unmount(false)
-            // this.engine.clear()
-            // this.engine._syncLayoutConfig(fullUseLayoutConfig)
-            // this.render()
-          }
-          this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this.container)
-          const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
-          if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
+      if (!this.px || !useLayout.px) return;
+      if (this.px !== useLayout.px) {
+        if (this.platform === 'native') {
+          // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
+          this.engine.unmount(false)
+          this.engine.clear();
+          (useLayout.items as Item[]).forEach((item) => this.add(item))
+          this.engine._syncLayoutConfig(useLayout);
+          this.engine.mountAll()
         }
+        this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this.container)
+        const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
+        if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
       }
       this.engine.updateLayout(true)
+      this.updateContainerStyleSize()
+
     }
     const debounce = (fn, delay = 350) => {
       let ownTemp = this.__ownTemp__

@@ -1,4 +1,3 @@
-import {merge} from "@/utils/tool";
 import {CustomPartialContainerOptions, ItemLimitType} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 
@@ -12,6 +11,9 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
   platform: 'native' | 'vue' = 'native'
 
   //----------------实例化传进的的参数---------------------//
+  /**
+   * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
+   * */
   px: number
   /** 该容器的名称 */
   name: string = ''
@@ -96,20 +98,27 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
 
   /**
    * 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
+   *
    * @default  true
    * */
   autoReorder: boolean = true
 
   /**
    * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
-   * 或者没有col只有margin情况下， margin和size自动分配margin/size的比例 1:1 ratio值为1
+   * 或者没有col只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioCol值为1
+   *
+   * 注意: 必须为container所挂载的元素指定宽高,且col方向没有指定size和margin才能生效
+   *
    * @default  0.1
    * */
   ratioCol: number = 0.1
 
-  /** TODO  实现
-   * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
-   * 或者没有col只有margin情况下， margin和size自动分配margin/size的比例 1:1 ratio值为1
+  /**
+   * (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定),
+   * 或者没有row只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioRow值为1
+   *
+   * 注意: 必须为container所挂载的元素指定宽高，,且row方向没有指定size和margin才能生效
+   *
    * @default  0.1
    * */
   ratioRow: number = 0.1
@@ -179,9 +188,4 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
    * */
   nestedOutExchange: boolean = false
 
-  //------------------------------------------------------//
-  constructor(config = {}) {
-    super()
-    merge(this, config)
-  }
 }

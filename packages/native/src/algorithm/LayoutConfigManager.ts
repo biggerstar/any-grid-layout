@@ -1,6 +1,7 @@
 import {cloneDeep} from "@/utils/tool";
 import {Container} from "@/main/container/Container";
 import {Item} from "@/main/item/Item";
+import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 
 export class LayoutConfigManager {
   public container: Container
@@ -25,9 +26,12 @@ export class LayoutConfigManager {
     else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
     else throw new Error("请传入layout配置信息")
     if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
+      let isBreak = false
       layoutInfo.sort((a, b) => {
-        if (typeof a.px !== "number" && typeof b.px !== "number") {
-          throw new Error("使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案")
+        if (isBreak) return 0
+        if (typeof a.px !== "number" || typeof b.px !== "number") {
+          console.warn("未指定layout的px值,传入的layout为", b)
+          isBreak = true
         }
         return a.px - b.px
       })
@@ -116,7 +120,8 @@ export class LayoutConfigManager {
    * 在layouts布局配置中找到符合该屏幕的px对应的布局方案,
    * layout对应的字段和Container的属性完全一致，两者最终会同步
    * */
-  genLayoutConfig(containerWidth = null, containerHeight = null, customLayout = null) {
+  genLayoutConfig(containerWidth = null, containerHeight = null, customLayout = null)
+    : Record<'layout' | 'global' | 'customLayout' | 'useLayout', ContainerGeneralImpl> {
     let layoutItem: any = {}
     // console.log(containerWidth,this.container.element.clientWidth);
     containerWidth = containerWidth ? containerWidth : this.container.element?.clientWidth
@@ -192,6 +197,7 @@ export class LayoutConfigManager {
     size[0] = sizeColInfo.size
 
     if (!customLayout['responsive'] && !row && this.container.row && this.container.row !== 1) row = this.container.row // 静态直接使用指定的row值,不等于1是define getter默认值就是1
+    // console.log(row, containerHeight, size[1], margin[1], ratioRow)
     const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
     margin[1] = sizeRowInfo.margin
     size[1] = sizeRowInfo.size

@@ -1,6 +1,6 @@
 import {CustomItemLayoutOptions, ItemLayoutOptions} from "@/types";
 
-export function throttle(func, wait = 350) {  // 节流函数：返回的是函数，记得再执行
+export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self, args;
   let old = 0;
   return function () {
@@ -191,7 +191,7 @@ export const singleTouchToCommonEvent = (touchEvent) => {
   return touchEvent
 }
 
-/** 为传入的items填充默认数据, 会改变原有对象的值
+/** 为传入的items填充默认数据, 会返回一个深度克隆后的对象
  * 比如
  * @param items  最小可用成员构造对象数组，比如 {pos: {w: 1,h: 1 }}
  * @param fillFields  要为items所有成员添加填充的字段
@@ -215,6 +215,6 @@ export function fillItemLayoutList(items: CustomItemLayoutOptions = [], fillFiel
       }
     }
 
-    return item
+    return JSON.parse(JSON.stringify(item))
   })
 }
