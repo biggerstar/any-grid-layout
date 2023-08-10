@@ -3,7 +3,6 @@ import {Item} from "@/main/item/Item";
 import {ItemPos} from "@/main/item/ItemPos";
 import {Container} from "@/main/container/Container";
 
-
 export type HandleErrorType = {
   type: 'error' | 'warn',
   name: string,
@@ -17,20 +16,56 @@ export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
   | 'resizeOut' | 'className' | 'dragIgnoreEls' | 'dragAllowEls' | 'transition'
   | 'draggable' | 'resize' | 'close' | 'static' | 'exchange'
 
-export type ItemLayoutOptions = Partial<Pick<Item, CustomItemField> & { pos: Partial<ItemPos> }>
+export type ItemLayoutOptions =
+  Partial<Pick<Item, CustomItemField>>
+  & { pos?: Partial<ItemPos> }
+  & { [key: string]: any }
 
 export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
 
-export type CustomContainerOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
+/** Container 实例化配置选项 */
+export type CustomPartialLayoutOptions = Partial<ContainerGeneralImpl> | Partial<ContainerGeneralImpl>[]
 
-export type CustomPartialContainerOptions = Partial<ContainerGeneralImpl> | Partial<ContainerGeneralImpl>[]
-
-
-export type ContainerOptions = {
+/** Container 实例化配置选项 */
+export type ContainerInstantiationOptions = {
   [key: string]: any
+  /**
+   * 该容器的名称,只是给个命名，不影响执行的行为
+   * */
+  name?: string
+
+  /**
+   * Container在文档中默认的类名,可以由外部传入重新自定义
+   *
+   * @default 'grid-container'
+   * */
+  className?: string
+
+  /**
+   * 指定使用的是原生或者其他常见框架，内部做了一定优化
+   *
+   * @default 'native' | 'vue'
+   * */
+  platform?: 'native' | 'vue'
+
+  /**
+   * 指定容器Id名或者一个Element网页节点，该节点将作为当前布局数据的根容器
+   * */
   el: string | HTMLElement,
-  layouts?: CustomPartialContainerOptions,
+
+  /**
+   * 当前的事件钩子
+   * */
   events?: Partial<CustomEventOptions>,
+
+  /**
+   * 当前的布局配置，可以是一个配置对象或者配置对象数组
+   * */
+  layouts?: CustomPartialLayoutOptions,
+
+  /**
+   * 当前的全局布局配置，该配置最终会和layouts中不同px下的配置合并作为最终使用的配置
+   * */
   global?: Partial<ContainerGeneralImpl>,
 }
 

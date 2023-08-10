@@ -1,35 +1,36 @@
 import {merge} from "@/utils/tool";
+import {Item} from "@/main/item/Item";
 
 export class ItemPos {
-  el: Element | null = null
-  i: string = ''
-  w: number = 1
-  h: number = 1
-  x: number | null = null
-  y: number | null = null
-  initialX: number | null = null   //  第一次传入的X值
-  initialY: number | null = null   //  第一次传入的Y值
-  col: number | null = null        //  默认
-  row: number | null = null        //  默认
-  minW: number = 1          // 栅格倍数
-  maxW: number = Infinity   // 栅格倍数
-  minH: number = 1          // 栅格倍数
-  maxH: number = Infinity   // 栅格倍数
-  iName: string = ''
-  nextStaticPos: ItemPos | null = null
-  tempW: number | null = null   // 临时宽度，用于溢出栅格适配
-  tempH: number | null = null   // 临时高度，用于溢出栅格适配
-  // nextStaticPosDemo = {     // 静态布局下用于算法检测是否空位的缓存 // 静态布局模式下指定是否可拖动【只支持静态布局】
-  //     w: 1,
-  //     h: 1,
-  //     x: 1,
-  //     y: 1,
-  //     isNext: false,
-  //     beforeIndex: null
-  // }
-  beforePos: ItemPos   //  跨容器时候保存上一个容器的位置
-  autoOnce: boolean | null = null  // 静态布局下在下一次指定是否自动寻找容器中的空位
-  posHash: any = ''  // 每个pos的唯一hash，可能重复
+  public get col(): number {
+    return this.belongItem.container.getConfig("col")
+  }
+
+  public get row(): number {
+    return this.belongItem.container.getConfig("row")
+  }
+
+  public belongItem: Item
+  public el: Element
+  public i: number
+  public w: number = 1
+  public h: number = 1
+  public x: number
+  public y: number
+  public initialX: number    //  第一次传入的X值
+  public initialY: number    //  第一次传入的Y值
+  public iName: string = ''
+  public nextStaticPos: ItemPos | null
+  public tempW: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
+  public tempH: number    // 临时高度，用于溢出栅格后适配临时作为item的高
+
+  public minW: number = 1          // 栅格倍数
+  public maxW: number = Infinity   // 栅格倍数
+  public minH: number = 1          // 栅格倍数
+  public maxH: number = Infinity   // 栅格倍数
+  public beforePos: ItemPos   //  跨容器时候保存上一个容器的位置
+  public autoOnce: boolean  // 静态布局下在下一次指定是否自动寻找容器中的空位
+  public posHash: string = ''  // 每个pos的唯一hash，可能重复
   constructor(pos) {
     // console.log(pos.tempW);
     this._define()
@@ -142,6 +143,4 @@ export class ItemPos {
     // console.log(pos);
     return pos
   }
-
-
 }

@@ -2,8 +2,10 @@
  *  下面是内置类名，驼峰需转横杠，通过css横杆命名修改能定义覆盖这里的默认值
  *
  * */
+type DefaultStyleNames = 'gridContainerArea' | 'gridContainer' | 'gridItem' | 'gridResizableHandle' | 'gridItemCloseBtn'
+type DefaultStyle = Record<DefaultStyleNames, Partial<CSSStyleDeclaration> & { [ket: string]: any }>
 
-export const defaultStyle = {
+export const defaultStyle: DefaultStyle = {
   gridContainerArea: {
     display: 'block',
   },
@@ -14,7 +16,7 @@ export const defaultStyle = {
     display: 'block',
     margin: '0 auto',
     mosUserSelect: 'none',
-    webkitUserSelect: 'none',
+    ['webkitUserSelect']: 'none',
     msUserSelect: 'none',
     userSelect: 'none',   // 禁止用户选择文本或元素
   },
@@ -27,9 +29,9 @@ export const defaultStyle = {
     touchCallout: 'none',  // 苹果禁用touch提示
     // touchAction: 'none',  // 阻止touch事件
     mosUserSelect: 'none',
-    webkitUserSelect: 'none',
     msUserSelect: 'none',
     userSelect: 'none',   // 禁止用户选择文本或元素
+    ['webkitUserSelect']: 'none',
   },
   gridResizableHandle: {
     height: '20px',
@@ -54,6 +56,4 @@ export const defaultStyle = {
     lineHeight: '20px',
     borderRadius: '50%'
   }
-
-
 }

@@ -38,7 +38,7 @@ export function getKebabCase(str) {
  * 和 Object.assign不同的是该方法不会复制两者不同属性到to对象中, 会直接影响到原对象
  * @param {Object} to 接受者
  * @param {Object} from 提供者
- * @param {Boolean} clone 是否浅克隆(浅拷贝), true: 直接合并到目标对象   false: 浅克隆
+ * @param {Boolean} clone 是否浅克隆(浅拷贝), true: 浅克隆  false: 直接合并到目标对象
  * @param {Array} exclude  排除合并的字段
  * */
 export const merge = (to = {}, from = {}, clone = false, exclude = []) => {

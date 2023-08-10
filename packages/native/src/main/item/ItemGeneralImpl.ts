@@ -2,6 +2,10 @@ import {ItemTransition} from "@/types";
 import {ItemPos} from "@/main/item/ItemPos";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 
+
+/**
+ * 包含默认配置信息，用户配置找不到则会找该类的默认配置
+ * */
 export class ItemGeneralImpl extends DomFunctionImpl {
   /**
    * 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足

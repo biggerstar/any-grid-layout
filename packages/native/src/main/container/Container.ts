@@ -1,14 +1,14 @@
 import {defaultStyle} from "@/default/style/defaultStyle";
-import {throttle} from "@/utils/tool";
+import {merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {TempStore} from "@/utils/TempStore";
-import {ItemPos} from "@/main/item/ItemPos";
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {Engine} from "@/main/Engine";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerOptions, CustomEventOptions} from "@/types";
+import {ContainerInstantiationOptions, CustomEventOptions} from "@/types";
+import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -45,33 +45,40 @@ const tempStore = TempStore.store
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
-export class Container extends ContainerGeneralImpl {
-  //----------实例化传进的的参数(次级配置信息)-----------//
-  // 相关字段在ContainerInitConfig类中,实例化的时候会进行合并到此类.次级的意思是实例化对象的配置信息深度为二以下的其他字段
-  //---------实例化传进的的特殊参数(一级配置信息)---------//
-  // 一级配置信息的意思是实例化对象的配置信息第一层的字段
+export class Container extends DomFunctionImpl {
+  //---------实例化传进的的参数 --------//
+  public name: string = ''
+  public className: string = 'grid-container'
+  public platform: 'native' | 'vue' = 'native'
   public el: HTMLElement | string = ''
-  public parent: Container    // 嵌套情况下上级Container
-  public events: CustomEventOptions
-  public global: ContainerGeneralImpl
+  public events: CustomEventOptions = {} as any
+  public global: ContainerGeneralImpl = {} as any
+  public layouts: ContainerGeneralImpl[] = [] as any
   //----------------内部需要的参数---------------------//
-  public element: HTMLElement     //  container主体元素节点
+  public layout: ContainerGeneralImpl = {} as any
+  public useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public parent: Container   // 嵌套情况下上级Container
+  public element: HTMLElement   //  container主体元素节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
   public classList: string[] = []
   public attr: any = []
   public engine: Engine
-  public useLayout: ContainerGeneralImpl    //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public isNesting: boolean = false    // 该Container自身是否[被]嵌套
-  public parentItem: HTMLElement
+  public parentItem: Item
   public containerH: number
   public containerW: number
   public eventManager: EventCallBack      // events通过封装构建的类实例
+
+  //----------------vue 支持---------------------//
+  // TODO 后面在vue的layout模块使用declare module进行声明合并
+  public vue: any
+  public _VueEvents: object
   //----------------保持状态所用参数---------------------//
-  private _VueEvents = {}
-  private _mounted = false
+  private _mounted: boolean
+  private readonly _default: ContainerGeneralImpl
   private __store__ = tempStore
-  private __ownTemp__ = {
+  public __ownTemp__ = {
     //-----内部可写外部只读变量------//
     preCol: 0,   // 容器大小改变之前的col
     preRow: 0,   // 容器大小改变之前的row
@@ -93,23 +100,21 @@ export class Container extends ContainerGeneralImpl {
     //----------可写变量-----------//
   }
 
-  constructor(options: ContainerOptions) {
+  constructor(options: ContainerInstantiationOptions) {
     super()
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
-    // 部分一级实例化参数处理
-    this.el = options.el
-    if (options.platform) this.platform = options.platform
+    merge(this, options)
     this._define()
     this.eventManager = new EventCallBack(<any>options.events)
     this.engine = new Engine(options)
-    if (options.global) this.global = <ContainerGeneralImpl>options.global
+    this.engine.setContainer(this)
+    this._default = new ContainerGeneralImpl()
     if (options.parent) {
       this.parent = options.parent
       this.parent.childContainer.push(this)
       this.isNesting = true
     }
-    this.engine.setContainer(this)
-    this.itemLimit = new ItemPos(this.itemLimit)  // 这里的ItemPos不是真的pos，只是懒，用写好的来校验而已
+    //-------------------------------------------------
   }
 
   private _define() {
@@ -117,38 +122,57 @@ export class Container extends ContainerGeneralImpl {
     let row = null
     Object.defineProperties(<object>this, {
       col: {
-        get: () => col,
+        get: () => {
+          console.log(111111111111111111)
+          return col
+        },
         set: (v) => {
-          if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
+          console.warn('set col', v)
+          if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return // TODO throw error
           col = v
-          // console.log(col,v,111111111111111111)
         }
       },
       row: {
-        get: () => row,
+        get: () => {
+          console.log(222222222222222222)
+          // debugger
+          return row
+        },
         set: (v) => {
+          console.warn('set row', v)
           if (row === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
           row = v
-          // console.log(row,v,222222222222222222)
         }
       },
     })
   }
 
+  /** 传入配置名获取当前正在使用的配置值 */
+  public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): ContainerGeneralImpl[Name] {
+    if (name === 'col' || name === 'row') return this.useLayout[name] || this._default[name] || 1
+    // console.log(name, this.useLayout[name], this._default[name])
+    return this.useLayout[name] || this._default[name]
+  }
+
+  /** 将值设置到当前使用的配置信息中 */
+  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): void {
+    return this.useLayout[name] = data
+  }
+
   /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
   public setColNum(col) {
     if (col > 30 || col < 0) {
-      throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，' +
-        '请直接将值给到本类中的成员col，而不是通过该函数进行设置')
+      throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，'
+        + '\n\t请直接将值给到本类中的成员col，而不是通过该函数进行设置')
     }
-    this.col = col
+    this.setConfig("col", col)
     this.engine.layoutManager.setColNum(col)
     return this
   }
 
   /** 设置行数量,行数非必须设置 */
   public setRowNum(row) {
-    this.row = row
+    this.setConfig("row", row)
     return this
   }
 
@@ -159,23 +183,15 @@ export class Container extends ContainerGeneralImpl {
 
   /** 在页面上添加一行的空间*/
   public addRowSpace(num = 1) {
-    this.row += num
+    this.setConfig("row", this.getConfig("row") + num)
   }
 
   /** 在页面上删除一行的空间，已弃用*/
   public removeRowSpace(num = 1) {
-    this.row = this.row - num
-    if (this.row < 0) throw new Error('行数不应该小于0，请设置一个大于0的值')
+    const row = this.getConfig("row")
+    this.setConfig("row", row - num)
+    if (row < 0) throw new Error('行数不应该小于0，请设置一个大于0的值')
     this.updateLayout(true)
-  }
-
-  public genGridContainerBox = () => {
-    this.contentElement = document.createElement('div')
-    this.contentElement.classList.add('grid-container-area')
-    this.contentElement['_isGridContainerArea'] = true
-    this.element.appendChild(this.contentElement)
-    this.updateStyle(defaultStyle.gridContainer, this.contentElement)
-    this.contentElement.classList.add(this.className)
   }
 
   /**
@@ -196,6 +212,7 @@ export class Container extends ContainerGeneralImpl {
           throw new Error(errMsg)
         }
       }
+      // TODO declare global
       this.element['_gridContainer_'] = this
       this.element['_isGridContainer_'] = true
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
@@ -211,10 +228,12 @@ export class Container extends ContainerGeneralImpl {
       this.classList = Array.from(this.element.classList)
       if (this.element && this.element.clientWidth > 0) {
         this.engine._sync()
-        if (!this.responsive && !this.row) {
-          throw new Error('使用静态布局row,和sizeWidth必须都指定值,sizeWidth等价于size[0],若没定义col则会自动生成')
+        if (!this.getConfig("responsive") && !this.getConfig("row")) {
+          throw new Error('您正在使用静态布局: 字段row 和 字段sizeWidth 必须都指定值,sizeWidth等价于size[0]\n\t若没定义col则会自动生成')
         }
-        if (!this.element.clientWidth) throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
+        if (!this.element.clientWidth) {
+          throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
+        }
       }
       this._observer_()
       let nestingTimer: any = setTimeout(() => {
@@ -228,7 +247,7 @@ export class Container extends ContainerGeneralImpl {
         this.engine.mountAll()
       }
       this.updateContainerStyleSize()
-      this.__ownTemp__.firstInitColNum = this.col as any
+      this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
       this.__store__.screenHeight = window.screen.height
       this._mounted = true
@@ -237,6 +256,16 @@ export class Container extends ContainerGeneralImpl {
     }
     if (this.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)
+  }
+
+  /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
+  public genGridContainerBox = () => {
+    this.contentElement = document.createElement('div')
+    this.contentElement.classList.add('grid-container-area')
+    this.contentElement['_isGridContainerArea'] = true
+    this.element.appendChild(this.contentElement)
+    this.updateStyle(defaultStyle.gridContainer, this.contentElement)
+    this.contentElement.classList.add(this.className)
   }
 
 
@@ -307,7 +336,7 @@ export class Container extends ContainerGeneralImpl {
   /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
    *  @param {string} direction  要满覆盖的方向， all || col || row
    * */
-  cover(direction = 'all') {
+  cover(direction: 'all' | 'col' | 'row' = 'all') {
     //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
     let coverCol = false
     let coverRow = false
@@ -362,15 +391,14 @@ export class Container extends ContainerGeneralImpl {
       const containerWidth = this.element.clientWidth
       const containerHeight = this.element.clientHeight
       if (containerWidth <= 0 || containerHeight <= 0) return
-      let useLayoutConfig = this.engine.layoutConfigManager.genLayoutConfig(containerWidth, containerHeight)
+      let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.engine.layoutConfigManager.genLayoutConfig(containerWidth, containerHeight)
       let {useLayout, customLayout} = useLayoutConfig
-      const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this.container)
+      const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this)
       if (res === null || res === false) return
       if (typeof res === 'object') useLayout = res
-      // console.log(useLayout);
       // console.log(this.px, useLayout.px);
-      if (!this.px || !useLayout.px) return;
-      if (this.px !== useLayout.px) {
+      if (!this.getConfig("px") || !useLayout.px) return;
+      if (this.getConfig("px") !== useLayout.px) {
         if (this.platform === 'native') {
           // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
           this.engine.unmount(false)
@@ -379,7 +407,7 @@ export class Container extends ContainerGeneralImpl {
           this.engine._syncLayoutConfig(useLayout);
           this.engine.mountAll()
         }
-        this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this.container)
+        this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this)
         const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
         if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
       }
@@ -470,20 +498,20 @@ export class Container extends ContainerGeneralImpl {
     // }
   }
 
-  /** 获取现在的Container宽度，只涉及浏览器渲染后的视图宽度，未和布局算法挂钩  */
+  /** 计算当前Items所占用的Container宽度  */
   nowWidth(): number {
     let marginWidth = 0
-    let nowCol = this.containerW
-    if ((nowCol) > 1) marginWidth = (nowCol - 1) * this.margin[0]
-    return ((nowCol) * this.size[0]) + marginWidth || 0
+    let nowCol = this.getConfig("col")
+    if (nowCol > 1) marginWidth = (nowCol - 1) * this.getConfig("margin")[0]
+    return (nowCol * this.getConfig("size")[0]) + marginWidth || 0
   }
 
-  /** 获取现在的Container高度,只涉及浏览器渲染后的视图高度，未和布局算法挂钩  */
+  /** 计算当前Items所占用的Container高度   */
   nowHeight(): number {
     let marginHeight = 0
-    let nowRow = this.containerH
-    if ((nowRow) > 1) marginHeight = (nowRow - 1) * this.margin[1]
-    return ((nowRow) * this.size[1]) + marginHeight || 0
+    let nowRow = this.getConfig("row")
+    if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
+    return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
@@ -544,28 +572,4 @@ export class Container extends ContainerGeneralImpl {
     })
     return items
   }
-
-  // test() {
-  //   this.margin = [10, 10]
-  //   this.mount()
-  //   for (let i = 0; i < 20; i++) {
-  //     let item = this.add({
-  //       w: Math.ceil(Math.random() * 2),
-  //       h: Math.ceil(Math.random() * 2)
-  //     })
-  //     item.mount()
-  //   }
-  // }
-  //
-  // testUnmount() {
-  //   this.engine.getItemList().forEach((item, index) => {
-  //     item.mount()
-  //     let timer: any = setTimeout(() => {
-  //       item.unmount()
-  //       clearTimeout(timer)
-  //       timer = null
-  //     }, index * 1000)
-  //   })
-  // }
 }
-

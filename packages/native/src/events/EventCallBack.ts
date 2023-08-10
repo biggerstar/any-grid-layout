@@ -28,7 +28,7 @@ export class EventCallBack {
   }
 
   /** 不会抛出错误中止执行，使用系统控制台的warn方法，可附带对象参数 */
-  _warn_(warnName: string, msg = '', fromData = '', ...args: any[]) {
+  _warn_(warnName: string, msg = '', fromData?: any, ...args: any[]) {
     if ((typeof this['warn']) === 'function') {
       this.warn.call(this.warn, {
         type: 'warn',

@@ -128,22 +128,23 @@ const container1 = new Container({
   el: '#container1',
   global: {
     ratioCol: 0.1,
+    responsive: true
     // ratioRow: 0.1,
     // responsive:true
   },
   layouts: [
-    {
-      px: 1300,
-      col:9,
-      // margin: [30, 30],
-      size: [120, 80],
-      // minCol: 9,
-      items: fillItemLayoutList(layoutData, {
-        draggable: true,
-        resize: true,
-        close: true,
-      }),
-    },
+    // {
+    //   px: 1300,
+    //   col:9,
+    //   // margin: [30, 30],
+    //   size: [120, 80],
+    //   // minCol: 9,
+    //   items: fillItemLayoutList(layoutData, {
+    //     draggable: true,
+    //     resize: true,
+    //     close: true,
+    //   }),
+    // },
     // {
     //   px: 1100,
     //   margin: [20, 20],
@@ -157,9 +158,10 @@ const container1 = new Container({
     // },
     {
       px: 900,
+      col: 9,
       margin: [10, 10],
       size: [60, 80],
-      items: fillItemLayoutList(layoutData11, {
+      items: fillItemLayoutList(layoutData, {
         draggable: true,
         resize: true,
         close: true,
@@ -274,9 +276,8 @@ const container3 = new Container({
 })
 
 
-container1.mount()
-
 console.log(container1)
+container1.mount()
 
 
 // container.render((data, useLayout, containerElement) => {

@@ -1,27 +1,17 @@
-import {CustomPartialContainerOptions, ItemLimitType} from "@/types";
-import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+import {CustomPartialLayoutOptions, ItemLimitType} from "@/types";
 
-/**  Container实例化的时候可以在Layout配置中使用的字段 */
-export class ContainerGeneralImpl extends DomFunctionImpl {
+/**
+ * Container实例化的时候可以在Layout配置中使用的字段
+ * 包含默认配置信息，用户配置找不到则会找该类的默认配置
+ * */
+export class ContainerGeneralImpl {
   [key: string]: any
-
-  /** 使用的框架或原生js，会对其针对性优化和支持
-   * TODO react(计划)
-   * */
-  platform: 'native' | 'vue' = 'native'
 
   //----------------实例化传进的的参数---------------------//
   /**
    * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
    * */
   px: number
-  /** 该容器的名称 */
-  name: string = ''
-
-  /** Container在文档中默认的类名,可以由外部传入重新自定义
-   * @default 'grid-container'
-   * */
-  className: string = 'grid-container'
 
   /** responsive:  默认为static静态布局,值等于true为响应式布局
    * @default false
@@ -32,18 +22,9 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
    * @default 'default'
    * */
   responseMode: 'default' | 'exchange' | 'stream' = 'default'
-  /**
-   * 当前正在使用的布局
-   * */
-  layout: ContainerGeneralImpl
-
-  /**
-   * 其中的px字段表示 XXX 像素以下执行指定布局方案,在updateLayout函数中会被高频更新
-   * */
-  layouts: ContainerGeneralImpl[]
 
   /** 当前布局使用的数据*/
-  items: CustomPartialContainerOptions
+  items: CustomPartialLayoutOptions
 
   /** 列数 */
   col: number
@@ -183,7 +164,8 @@ export class ContainerGeneralImpl extends DomFunctionImpl {
   slidePage: boolean = true
 
   /**
-   * 如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许,参数给被嵌套容器
+   * 如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许
+   *
    *  @default false
    * */
   nestedOutExchange: boolean = false

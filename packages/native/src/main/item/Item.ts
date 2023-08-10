@@ -21,26 +21,28 @@ const tempStore = TempStore.store
  * */
 export class Item extends ItemGeneralImpl {
   //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
-  margin: MarginOrSizeDesc = [null, null]   //   间距 [左右, 上下]
-  size: MarginOrSizeDesc = [null, null]   //   宽高 [宽度, 高度]
+  public margin: MarginOrSizeDesc = [null, null]   //   间距 [左右, 上下]
+  public size: MarginOrSizeDesc = [null, null]   //   宽高 [宽度, 高度]
 
   //----------------内部需要的参数---------------------//
-  i: any = null   //  每次重新布局给的自动正整数编号,对应的是Item的len
-  element: HTMLElement
-  container: Container   // 挂载在哪个container上
-  tagName: string = 'div'
-  classList = []
-  attr = []
-  autoOnce = null
-  edit: boolean  // 该Item是否正在被编辑(只读)
-  nested = false
-  parentElement = null
-  _VueEvents = {}   // 用于 vue 携带的内置事件
+  public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
+  public element: HTMLElement
+  public container: Container   // 挂载在哪个container上
+  public tagName: string = 'div'
+  public classList: string[] = []
+  public attr: string[] = []
+  public autoOnce: boolean
+  public edit: boolean  // 该Item是否正在被编辑(只读)
+  public nested: boolean = false
+  public parentElement: HTMLElement
+
+  //----------------vue专用---------------------//
+  public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
-  _mounted = false
-  _resizeTabEl = null
-  _closeEl = null
-  __temp__: Record<any, any> = {
+  private _mounted: boolean = false
+  private _resizeTabEl: HTMLElement | null = null
+  private _closeEl: HTMLElement | null = null
+  public __temp__: Record<any, any> = {
     // -------------不可写变量--------------//
 
     //------------都是可写变量--------------//
@@ -71,11 +73,12 @@ export class Item extends ItemGeneralImpl {
     }
     merge(this, itemOption)
     this.pos = new ItemPos(itemOption.pos)
+    this.pos.belongItem = this
     this._itemSizeLimitCheck()
   }
 
   /** 让draggable，resize，close，edit 等支持getter 和 setter 直接复制控制 item 的对应行为状态 */
-  _define() {
+  private _define() {
     const self = this
     let draggable = this.draggable
     let resize = this.resize
@@ -151,7 +154,7 @@ export class Item extends ItemGeneralImpl {
    * @param otherFieldList {Array} 要导出的除了默认以外其他存在的字段
    * @param banFieldList {Array} 要禁止导出的字段
    * */
-  exportConfig = (otherFieldList = [], banFieldList = []) => {
+  public exportConfig = (otherFieldList = [], banFieldList = []) => {
     const item = this
     const exposeConfig: Record<any, any> = {}
     let exposePos: Record<any, any>
@@ -186,7 +189,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** 渲染, 直接渲染添加到 Container 中 */
-  mount() {
+  public mount() {
     const _mountedFun = () => {
       this._define()
       if (this._mounted) return
@@ -194,7 +197,7 @@ export class Item extends ItemGeneralImpl {
         if (!this.element) this.element = document.createElement(this.tagName)
         this.container.contentElement.appendChild(this.element)
       }
-      this.attr = Array.from(this.element.attributes)
+      this.attr = <any>Array.from(this.element.attributes)
       this.element.classList.add(this.className)
       this.classList = Array.from(this.element.classList)
       this.updateStyle(defaultStyle.gridItem)
@@ -220,7 +223,7 @@ export class Item extends ItemGeneralImpl {
   /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
-  unmount(isForce = false) {
+  public unmount(isForce = false) {
     Sync.run(() => {
       if (this._mounted) {
         if (this.__temp__.editNumUsing) {
@@ -243,7 +246,7 @@ export class Item extends ItemGeneralImpl {
   /** 将自己从Items列表中移除
    * @param {Boolean}  force  是否强力删除Dom节点，true为删除引用，false为不删除引用只删除Item占位
    * */
-  remove(force = false) {
+  public remove(force = false) {
     this.container.engine.remove(this)
     if (force) {
       this.unmount()
@@ -253,7 +256,7 @@ export class Item extends ItemGeneralImpl {
   /** 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
    *  @param {Boolean}  isEdit    是否开启编辑模式
    * */
-  _edit(isEdit = false) {
+  private _edit(isEdit = false) {
     if (this.edit) {
       if (!this.__temp__.editNumUsing) {
         EditEvent.startEvent(null, this)
@@ -272,7 +275,7 @@ export class Item extends ItemGeneralImpl {
   /** 对该Item开启位置变化过渡动画
    *  @param {Object} transition  Item移动或者大小癌变要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
    * */
-  animation(transition) {
+  public animation(transition) {
     if (typeof transition !== "object") {
       console.log('参数应该是对象形式{time:Number, field:String}')
       return
@@ -295,31 +298,31 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**  */
-  followStatus(isFollow = true) {
+  public followStatus(isFollow = true) {
     this.follow = isFollow
   }
 
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
-  updateItemLayout() {
+  public updateItemLayout() {
     this.updateStyle(this._genItemStyle())
   }
 
   /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框 */
-  offsetLeft() {
+  public offsetLeft() {
     let marginWidth = 0
     if ((this.pos.x) > 1) marginWidth = (this.pos.x - 1) * this.margin[0]
     return ((this.pos.x - 1) * this.size[0]) + marginWidth
   }
 
   /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框 */
-  offsetTop() {
+  public offsetTop() {
     let marginHeight = 0
     if ((this.pos.y) > 1) marginHeight = (this.pos.y - 1) * this.margin[1]
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
   }
 
   /**  @return  获取该Item 当前的宽度 */
-  nowWidth = (w = null) => {
+  public nowWidth = (w = null) => {
     let marginWidth = 0
     const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
     if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
@@ -329,7 +332,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**  @return  获取该Item 当前的高度 */
-  nowHeight = (h = null) => {
+  public nowHeight = (h = null) => {
     let marginHeight = 0
     const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
     if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
@@ -338,7 +341,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**  @return   根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小 */
-  minWidth() {
+  public minWidth() {
     let marginWidth = 0
     if (this.pos.minW === Infinity) return Infinity
     if (this.pos.minW > 1) marginWidth = (this.pos.minW - 1) * this.margin[0]
@@ -346,7 +349,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**   @return  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小 */
-  minHeight = () => {
+  public minHeight = () => {
     let marginHeight = 0
     if (this.pos.minH === Infinity) return Infinity
     if (this.pos.minH > 1) marginHeight = (this.pos.minH - 1) * this.margin[1]
@@ -354,7 +357,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** @return  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小 */
-  maxWidth() {
+  public maxWidth() {
     let marginWidth = 0
     if (this.pos.maxW === Infinity) return Infinity
     marginWidth = (this.pos.maxW - 1) * this.margin[0]
@@ -362,7 +365,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** @return  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小 */
-  maxHeight = () => {
+  public maxHeight = () => {
     let marginHeight = 0
     if (this.pos.maxH === Infinity) return Infinity
     marginHeight = (this.pos.maxH - 1) * this.margin[1]
@@ -370,7 +373,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** 是否锁定CSS 样式的渲染 不传参数返回当前的状态 ，传布尔参数将状态设置成相应的布尔值    */
-  styleLock(isStyle = null) {
+  public styleLock(isStyle = null) {
     if (isStyle === null) return this.__temp__.styleLock
     if (isStyle === true) return this.__temp__.styleLock = true
     if (isStyle === false) return this.__temp__.styleLock = false
@@ -378,7 +381,7 @@ export class Item extends ItemGeneralImpl {
 
   /**  手动生成resize元素，可以将resize字段设置成false，然后在被Item包裹的子元素中将某个要指定为resize按钮的标签
    * 的class设置成grid-item-resizable-handle也能将该元素当成作为resize的触发按钮 */
-  _handleResize(isResize = false) {
+  private _handleResize(isResize = false) {
     const handleResizeFunc = () => {
       const className = 'grid-item-resizable-handle'
       if (isResize && this._resizeTabEl === null) {
@@ -407,7 +410,7 @@ export class Item extends ItemGeneralImpl {
   /**  手动生成close关闭按钮，可以将close字段设置成false，然后在被Item包裹
    * 的子元素中将某个要指定为close按钮的标签的class设置成grid-item-close-btn也能将该元素当成作为close的触发按钮 */
 
-  _closeBtn(isDisplayBtn = false) {
+  private _closeBtn(isDisplayBtn = false) {
     const closeBtnFunc = () => {
       const className = 'grid-item-close-btn'
       if (isDisplayBtn && this._closeEl === null) {
@@ -433,7 +436,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩，已弃用 */
-  _mask_(isMask = false) {
+  public _mask_(isMask = false) {
     if (isMask) {
       const maskEl = document.createElement('div')
       this.updateStyle({
@@ -458,7 +461,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** 做Item的大小信息限制 */
-  _itemSizeLimitCheck() {
+  private _itemSizeLimitCheck() {
     const pos = this.pos
     let realW = pos.w
     let realH = pos.h
@@ -477,7 +480,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /** 生成该ITEM的栅格放置位置样式  */
-  _genItemStyle = () => {
+  private _genItemStyle = () => {
     // console.log(this.offsetLeft(),this.offsetTop());
     if (this.styleLock()) return {}
     //   三种布局方案，都实现了grid布局 //
@@ -495,7 +498,7 @@ export class Item extends ItemGeneralImpl {
     }
   }
 
-  _genLimitSizeStyle = () => {
+  public _genLimitSizeStyle = () => {
     if (this.styleLock()) return {}
     const minWidth = this.minWidth()
     const minHeight = this.minHeight()
