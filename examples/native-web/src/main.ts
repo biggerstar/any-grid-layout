@@ -159,6 +159,7 @@ const container1 = new Container({
     {
       px: 900,
       // col: 9,
+      // row:8,
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData, {
@@ -209,7 +210,7 @@ const container1 = new Container({
   },
   events: {
     error(err) {
-      // console.log(err);
+      console.log(err);
       // err.from.remove()
     },
     itemMove(item, nowX, nowY) {

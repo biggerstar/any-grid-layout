@@ -228,7 +228,6 @@ export class Container extends DomFunctionImpl {
    * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 items 数据渲染出来，
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
-  // mount(mCallback) {
   public mount(): void {
     if (this._mounted) return console.warn('[mount Function] 容器重复挂载被阻止', this)
     const _mountedFun = () => {
@@ -270,7 +269,6 @@ export class Container extends DomFunctionImpl {
       if (this.platform === 'native') {
         const items = <any[]>this.layout.items || []
         items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
-        this.engine.mountAll()
       }
       this.updateContainerStyleSize()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
@@ -330,7 +328,7 @@ export class Container extends DomFunctionImpl {
       if (typeof renderCallback === 'function') {
         renderCallback(this.layout.items || [], this.layout, this.element)
       }
-      if (!this._mounted) this.mount()  // 第一次没挂载则挂载，后续添加后自动更新布局
+      if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
       this.updateLayout(true)
     })
   }
@@ -415,7 +413,6 @@ export class Container extends DomFunctionImpl {
    * 监听浏览器窗口resize
    * */
   public _observer_() {
-    return
     const layoutChangeFun = () => {
       if (!this._mounted) return
       let useLayout = this.useLayout  // TODO 排查bug

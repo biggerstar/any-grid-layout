@@ -214,13 +214,13 @@ export class Engine {
     return staticItems.concat(items)
   }
 
-  /** 将item成员全部挂载到Container  */
-  public mountAll() {
-    this.items.forEach((item: Item) => item.mount())
-    if (this.container.getConfig("responsive")) {
-      this.container.setConfig("row", this.layoutManager.row) //静态布局的row是固定的，响应式不固定
-    }
-  }
+  // /** 将item成员全部挂载到Container  */
+  // public mountAll() {
+  //   this.items.forEach((item: Item) => item.mount())
+  //   if (this.container.getConfig("responsive")) {
+  //     this.container.setConfig("row", this.layoutManager.row) //静态布局的row是固定的，响应式不固定
+  //   }
+  // }
 
   /** 将item成员从Container中全部移除,items数据还在  */
   public unmount(isForce = false) {
@@ -244,10 +244,13 @@ export class Engine {
     else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
     else {
       item.autoOnce = !(item.pos.x && item.pos.y)
-      const success = this.push(item)
+      const success = this._tryPush(item)
       if (success) {
         // console.log(this.layoutManager._layoutMatrix);
+        this.container.setConfig("col", this.layoutManager.col)
+        this.container.setConfig("row", this.layoutManager.row)
         eventManager._callback_('addItemSuccess', item)
+        item.mount()
       } else {
         eventManager._error_('ContainerOverflowError',
           "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
@@ -267,7 +270,7 @@ export class Engine {
    * 2. 指定了x,y 的Item位置重叠
    * 自动寻位: 如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序)
    * */
-  public push(item: Item) {
+  private _tryPush(item: Item) {
     // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
     // this.items.push(item)
     // return true
@@ -305,6 +308,7 @@ export class Engine {
       return success
     }
     //-----------------------添加新Item的逻辑---------------------------//
+    // TODO 将_isCanAddItemToContainer_添加逻辑移动到addItem函数，_tryPush值作为判断能否添加的工具函数
     let realLayoutPos: ItemPos | null
     if (!item.autoOnce) {
       // 如果是指定了x和y，必然能添加进去
@@ -362,6 +366,7 @@ export class Engine {
     }
   }
 
+  /** 清除重置布局矩阵 */
   public reset() {
     this.layoutManager.reset()
   }
@@ -376,6 +381,7 @@ export class Engine {
     return this.items.includes(item)
   }
 
+  /** 移除指定items实例 */
   public remove(removeItem) {
     for (let i = 0; i < this.items.length; i++) {
       if (removeItem === this.items[i]) {
@@ -385,6 +391,7 @@ export class Engine {
     }
   }
 
+  /** 将某个Item插入到items列表指定索引位置 */
   public insert(item: Item, index: number) {
     this.items.splice(index, 0, item)
   }
