@@ -20,6 +20,8 @@ const tempStore = TempStore.store
  * @param {Object} pos 一个包含Item位置信息的对象
  * */
 export class Item extends ItemGeneralImpl {
+  [key: string]: any
+
   //----------------内部需要的参数---------------------//
   public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
   public element: HTMLElement
@@ -36,8 +38,8 @@ export class Item extends ItemGeneralImpl {
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
   private _mounted: boolean = false
-  private _resizeTabEl: HTMLElement | null = null
-  private _closeEl: HTMLElement | null = null
+  private _resizeTabEl: null | HTMLElement = null
+  private _closeEl: null | HTMLElement = null
   public __temp__: Record<any, any> = {
     // -------------不可写变量--------------//
 

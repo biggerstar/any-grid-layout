@@ -55,16 +55,16 @@ export class Container extends DomFunctionImpl {
   public global: ContainerGeneralImpl = {} as any
   public layouts: ContainerGeneralImpl[] = [] as any
   //----------------内部需要的参数---------------------//
-  public layout: ContainerGeneralImpl = {} as any
-  public useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  public parent: Container   // 嵌套情况下上级Container
-  public element: HTMLElement   //  container主体元素节点
-  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
+  public readonly layout: ContainerGeneralImpl = {} as any
+  public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public classList: string[] = []
   public attr: any = []
   public engine: Engine
-  public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public isNesting: boolean = false    // 该Container自身是否[被]嵌套
+  public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
+  public element: HTMLElement   //  container主体元素节点
+  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
+  public parent: Container   // 嵌套情况下上级Container
   public parentItem: Item
   public containerH: number
   public containerW: number
@@ -119,6 +119,7 @@ export class Container extends DomFunctionImpl {
 
   private _define() {
     const self = this
+    const useLayout = {}
     Object.defineProperties(<object>this, {
       layout: {
         get() {
@@ -143,9 +144,10 @@ export class Container extends DomFunctionImpl {
       },
       useLayout: {
         get() {
-          // self.layout
-          // return layoutItem
-          return self.layout
+          return useLayout
+        },
+        set(_: any) {
+          debugger
         }
       }
       // col: {
@@ -182,29 +184,30 @@ export class Container extends DomFunctionImpl {
 
   /** 将值设置到当前使用的配置信息中 */
   public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): void {
+    // if (name === 'row' && data === 503) debugger
     return this.useLayout[name] = data
   }
 
-  /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
-  public setColNum(col) {
-    if (col > 30 || col < 0) {
-      throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，'
-        + '\n\t请直接将值给到本类中的成员col，而不是通过该函数进行设置')
-    }
-    this.setConfig("col", col)
-    this.engine.layoutManager.setColNum(col)
-    return this
-  }
-
-  /** 设置行数量,行数非必须设置 */
-  public setRowNum(row) {
-    this.setConfig("row", row)
-    return this
-  }
+  // /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
+  // public setColNum(col) {
+  //   if (col > 30 || col < 0) {
+  //     throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，'
+  //       + '\n\t请直接将值给到本类中的成员col，而不是通过该函数进行设置')
+  //   }
+  //   this.setConfig("col", col)
+  //   this.engine.layoutManager.setColNum(col)
+  //   return this
+  // }
+  //
+  // /** 设置行数量,行数非必须设置 */
+  // public setRowNum(row) {
+  //   this.setConfig("row", row)
+  //   return this
+  // }
 
   /** 获取所有的Item，返回一个列表(数组) */
   public getItemList() {
-    return this.engine.getItemList()
+    return this.engine.items
   }
 
   /** 在页面上添加一行的空间*/
@@ -233,22 +236,19 @@ export class Container extends DomFunctionImpl {
       if (this.el instanceof Element) this.element = this.el
       if (!this.element) {
         if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
-        if (!this.element) {
-          const errMsg = '在DOM中未找到指定ID对应的:' + this.el + '元素'
-          throw new Error(errMsg)
-        }
+        if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
       }
-      // TODO declare global
-      this.element['_gridContainer_'] = this
+      this.element['_gridContainer_'] = this       // TODO declare global
       this.element['_isGridContainer_'] = true
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._collectNestingMountPoint()
       if (this.platform === 'vue') {
         this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
       } else {
-        this.genGridContainerBox()
+        this._genGridContainerBox()
         this.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
       }
+      this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._define()
       this.attr = Array.from(this.element.attributes)
       this.classList = Array.from(this.element.classList)
@@ -285,7 +285,7 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
-  public genGridContainerBox = () => {
+  public _genGridContainerBox = () => {
     this.contentElement = document.createElement('div')
     this.contentElement.classList.add('grid-container-area')
     this.contentElement['_isGridContainerArea'] = true
@@ -328,7 +328,7 @@ export class Container extends DomFunctionImpl {
         return
       }
       if (typeof renderCallback === 'function') {
-        renderCallback(this.useLayout.items || [], this.useLayout, this.element)
+        renderCallback(this.layout.items || [], this.layout, this.element)
       }
       if (!this._mounted) this.mount()  // 第一次没挂载则挂载，后续添加后自动更新布局
       this.updateLayout(true)
@@ -355,14 +355,14 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 将包含Item初始化信息的对象列表转成Item集合 */
-  toItemList(items) {
+  public toItemList(items) {
     return items.map(pos => this.engine.createItem(pos))
   }
 
   /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
    *  @param {string} direction  要满覆盖的方向， all || col || row
    * */
-  cover(direction: 'all' | 'col' | 'row' = 'all') {
+  public cover(direction: 'all' | 'col' | 'row' = 'all') {
     return console.error('执行了cover，但是未实现')
     //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
     // let coverCol = false
@@ -384,7 +384,7 @@ export class Container extends DomFunctionImpl {
   /** 将item成员从Container中全部移除
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
-  unmount(isForce = false) {
+  public unmount(isForce = false) {
     this.engine.unmount(isForce)
     this._mounted = false
     this._disconnect_()
@@ -392,27 +392,30 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 将item成员从Container中全部移除，之后重新渲染  */
-  remount() {
+  public remount() {
     this.engine.remount()
   }
 
-  remove(removeItem) {
+  public remove(removeItem) {
     this.engine.items.forEach((item) => {
       if (removeItem === item) item.remove()
     })
   }
 
   /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
-  updateLayout(items = null, ignoreList = []) {
+  public updateLayout(items = null, ignoreList = []) {
     this.engine.updateLayout(items, ignoreList)
   }
 
-  _disconnect_() {
+  public _disconnect_() {
     this.__ownTemp__.observer['disconnect']()
   }
 
-
-  _observer_() {
+  /**
+   * 监听浏览器窗口resize
+   * */
+  public _observer_() {
+    return
     const layoutChangeFun = () => {
       if (!this._mounted) return
       let useLayout = this.useLayout  // TODO 排查bug
@@ -465,7 +468,7 @@ export class Container extends DomFunctionImpl {
    * @param {Item} item 想要检查的Item信息
    * @param {Boolean} responsive 是否响应式检查，如果是响应式自动返回可以添加的位置，如果是静态则确定该Item指定的位置是否被占用
    *  */
-  isBlank(item, responsive) {
+  public isBlank(item, responsive) {
     return this.engine._isCanAddItemToContainer_(item, responsive)
   }
 
@@ -479,7 +482,7 @@ export class Container extends DomFunctionImpl {
    *      ......
    *      }
    * */
-  add(item): null | Item {
+  public add(item): null | Item {
     // console.log(item.autoOnce);
     item.container = this
     item.parentElement = this.contentElement
@@ -492,13 +495,13 @@ export class Container extends DomFunctionImpl {
    * @param { String,Element } nameOrClassOrElement  宽度 高度 是栅格的倍数
    * @return {Array} 所有符合条件的Item
    * */
-  find(nameOrClassOrElement: string | HTMLElement): Item[] {
+  public find(nameOrClassOrElement: string | HTMLElement): Item[] {
     return this.engine.findItem(nameOrClassOrElement)
   }
 
 
   /** 生成该栅格容器布局样式  */
-  genContainerStyle(): {
+  public genContainerStyle(): {
     width: string,
     height: string,
   } {
@@ -522,7 +525,7 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 计算当前Items所占用的Container宽度  */
-  nowWidth(): number {
+  public nowWidth(): number {
     let marginWidth = 0
     let nowCol = this.getConfig("col")
     if (nowCol > 1) marginWidth = (nowCol - 1) * this.getConfig("margin")[0]
@@ -530,7 +533,7 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 计算当前Items所占用的Container高度   */
-  nowHeight(): number {
+  public nowHeight(): number {
     let marginHeight = 0
     let nowRow = this.getConfig("row")
     if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
@@ -538,12 +541,12 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  updateContainerStyleSize(): void {
+  public updateContainerStyleSize(): void {
     this.updateStyle(this.genContainerStyle(), this.contentElement)
   }
 
   /** 根据挂载在实例上的containerW和containerH的值自动根据大小对Container进行更新 */
-  _collectNestingMountPoint(): void {
+  public _collectNestingMountPoint(): void {
     for (let i = 0; i < this.element.children.length; i++) {
       if (tempStore.nestingMountPointList.includes(this.element.children[i])) continue
       tempStore.nestingMountPointList.push(document.adoptNode(this.element.children[i]))
@@ -551,7 +554,7 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */
-  _isNestingContainer_(element = null): void {
+  public _isNestingContainer_(element = null): void {
     element = element ? element : this.element
     if (!element) return
     while (true) {
@@ -580,19 +583,20 @@ export class Container extends DomFunctionImpl {
     }
   }
 
-  /**
-   * @deprecated
-   * 将用户HTML原始文档中的Container根元素的直接儿子元素收集起来并转成Item收集在this.item中，
-   * 并将其渲染到DOM中  (弃用，不使用网页收集)  */
-  _childCollect(): Item[] {
-    const items = []
-    Array.from(this.contentElement.children).forEach((node: HTMLElement) => {
-      let posData = Object.assign({}, node.dataset)
-      // console.log(posData);
-      const item = this.add({el: node, ...posData})
-      if (item) item.name = <string>item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
-      items.push(items)
-    })
-    return items
-  }
+  // /**
+  //  * @deprecated
+  //  * 后面有使用场景再实现
+  //  * 将用户HTML原始文档中的Container根元素的直接儿子元素收集起来并转成Item收集在this.item中，
+  //  * 并将其渲染到DOM中  (弃用，不使用网页收集)  */
+  // _childCollect(): Item[] {
+  //   const items = []
+  //   Array.from(this.contentElement.children).forEach((node: HTMLElement) => {
+  //     let posData = Object.assign({}, node.dataset)
+  //     // console.log(posData);
+  //     const item = this.add({el: node, ...posData})
+  //     if (item) item.name = <string>item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
+  //     items.push(items)
+  //   })
+  //   return items
+  // }
 }

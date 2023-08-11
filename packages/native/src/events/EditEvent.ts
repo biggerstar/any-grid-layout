@@ -235,7 +235,7 @@ export class EditEvent {
         if (!fromContainer || !toContainer) return
         let fromItem: Item = tempStore.fromItem
         let moveItem: Item = tempStore.moveItem
-        let dragItem: Item = tempStore.moveItem !== null ? moveItem : fromItem
+        let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
         // console.log(fromContainer,toContainer,dragItem);
         //------------下方代码固定顺序-------------//
         // fromItem._mask_(false)    //  相邻清除遮罩防止遮挡嵌套容器内的Item操作
@@ -265,7 +265,7 @@ export class EditEvent {
         }
         const moveItem: Item = tempStore.moveItem
         const fromItem: Item = tempStore.fromItem
-        const dragItem: Item = tempStore.moveItem !== null ? moveItem : fromItem
+        const dragItem: Item = tempStore.moveItem ? moveItem : fromItem
         if (tempStore.isLeftMousedown) {  //   事件响应必须在前
           if (dragItem && dragItem.container !== container) {
             // 跨容器进入不同域,异步操作是为了获取到新容器vue创建的新Item
@@ -291,7 +291,7 @@ export class EditEvent {
       mouseleave: function (ev, container = null) {
         let fromItem: Item = tempStore.fromItem
         let moveItem: Item = tempStore.moveItem
-        let dragItem: Item = tempStore.moveItem !== null ? moveItem : fromItem
+        let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
         container.__ownTemp__.firstEnterUnLock = false
         container.__ownTemp__.nestingEnterBlankUnLock = false
         if (tempStore.isLeftMousedown) {
@@ -300,11 +300,13 @@ export class EditEvent {
           if (growContainer.getConfig('autoGrowRow') && growContainer === container) {
             const curRow = growContainer.getConfig('row')
             if (growContainer.platform === 'vue') {
-              const useLayout = growContainer.vue.useLayout
+              const useLayout = growContainer.vue.layout
               if (growContainer.__ownTemp__.preRow === curRow) {
                 useLayout.row = curRow + 1
               }
-            } else growContainer.setConfig("row", curRow + 1)
+            } else if (growContainer.platform === 'native') {
+              growContainer.setConfig("row", curRow + 1)
+            }
             tempStore.isCoverRow = true
           }
           container.eventManager._callback_('leaveContainerArea', container, dragItem)
@@ -325,7 +327,7 @@ export class EditEvent {
         const fromItem: Item = tempStore.fromItem
         const moveItem: Item = tempStore.moveItem
         if (!tempStore.isDragging || !fromItem || !container || !tempStore.isLeftMousedown) return
-        const dragItem: Item = tempStore.moveItem !== null ? moveItem : fromItem
+        const dragItem: Item = tempStore.moveItem ? moveItem : fromItem
         // console.log(container);
         // console.log(fromItem,fromItem.container.exchange,dragItem.container.exchange,dragItem.exchange);
         // TODO  exchange getConfig
@@ -430,7 +432,7 @@ export class EditEvent {
         const moveItem = tempStore.moveItem
         const mousedownEvent: MouseEvent = tempStore.mousedownEvent
         if (!fromItem || !mousedownEvent || !tempStore.isLeftMousedown) return
-        let dragItem: Item = tempStore.moveItem !== null ? moveItem : fromItem
+        let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
         let container: Container = dragItem.container
         let overContainer: Container
 
@@ -771,7 +773,7 @@ export class EditEvent {
         // let moveBoundaryX = document.body.clientWidth / (container.size[0] + container.margin[0])
         // let moveBoundaryY = document.body.clientHeight / (container.size[1] + container.margin[1])
         // 要反应灵敏一点  修改 sensitivity值
-        // let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
+        // let dragItem = tempStore.moveItem  ? moveItem : fromItem
         // console.log(left,top);
         // console.log(ev);
 
@@ -799,7 +801,7 @@ export class EditEvent {
         const fromItem: Item = tempStore.fromItem
         const moveItem: Item = tempStore.moveItem
         if (!mousedownEvent || !fromItem) return
-        let dragItem = tempStore.moveItem !== null ? moveItem : fromItem
+        let dragItem = tempStore.moveItem ? moveItem : fromItem
         const container: Container = parseContainer(ev)
         dragItem.__temp__.dragging = true
 

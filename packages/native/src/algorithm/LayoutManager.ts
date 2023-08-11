@@ -17,16 +17,13 @@ export class LayoutManager {
   //-----------很有用的用户参数----------//
   // minRow = null
   col = null // 列数，必须，实现自适应布局需在外层二次封装动态col的值
+  row = null  //  行数,非必须
   minRow = null
   maxRow = null
-  row = null  //  行数,非必须
   isAutoRow = false
   iNameHash = ''   // 具名矩阵随机hash,如果没有这个跨容器时同iName会在isStaticBlank检测存在空位，导致Item重叠
 
   constructor() {
-    // if (typeof option.col !== 'number') new Error('col是必要参数且为正整数')
-    // this.minRow = option.minRow ? option.minRow : 1
-    // this.row = option.row ? option.row : this.minRow
     for (let i = 0; i < 4; i++) {
       this.iNameHash = this.iNameHash + String.fromCharCode(Math.floor(Math.random() * 26) + "a".charCodeAt(0))
     }
@@ -37,19 +34,21 @@ export class LayoutManager {
     return this.layoutPositions.length
   }
 
-  setColNum(col) {
+  setColNum(col: number) {
     this.col = col
   }
 
-  setRowNum(row) {
+  setRowNum(row: number) {
     this.row = row
   }
 
-  toINameHash(i) {
+  /** 简易生成一个item专属hash */
+  toINameHash(i: number) {
     return this.iNameHash + i
   }
 
-  autoRow(isAutoRow = true) {
+  /** 添加item的时候如果函数不够是否row自动增长 */
+  autoRow(isAutoRow: boolean = true) {
     this.isAutoRow = isAutoRow
   }
 
@@ -58,7 +57,6 @@ export class LayoutManager {
    * */
   addRow = (num = null) => {
     if (!num) return
-    // console.log(this.col);
     for (let i = 0; i < num; i++) {
       this._layoutMatrix.push(new Array(this.col).fill(false))
     }
@@ -68,7 +66,7 @@ export class LayoutManager {
   }
 
   /**
-   * @param {Number} num  添加的行数
+   * @param {Number} num  添加的列数
    * */
   addCol = (num = null) => {
     if (!num) return
@@ -145,13 +143,12 @@ export class LayoutManager {
 
 
   addItem(itemLayout) {
+    // console.log(itemLayout);
     this._updateSeatLayout(itemLayout)
-    // this.layoutPositions.push(itemLayout)
-
     ///////////////////////////////////////////////////////////
     //  调试算法入队过程
     // this.isDebugger = true
-    if (this.isDebugger) {
+    if (this.isDebugger) { // TODO  支持日志级别和使用debug npm库
       const colorLayoutMatrix = this._layoutMatrix.map(row => {
         return row.map(flag => flag ? '●' : '○')
       })
@@ -252,21 +249,26 @@ export class LayoutManager {
   }
 
 
-  /** 判断该行是否包含 w宽度的空白位置供组件放置  */
+  /**
+   * 以w宽度为准，找到该行可供item放置的空白位置
+   * 如果没有空白位置，则返回失败对象
+   *
+   * @param rowData 某行的当前矩阵中占位的数据
+   * @param w 打算占位的宽度
+   * @param xPointStart 执行x起点
+   * @param xPointEnd 执行y起点
+   *
+   * */
   _findRowBlank(rowData = [], w, xPointStart, xPointEnd) {
     let rowBlankCount = 0
     if (w <= 0) new Error('宽度不能为0或负数，请使用正整数')
     for (let i = xPointStart; i <= xPointEnd; i++) { //  因为块矩阵start和end指向同个索引所以取值要加一偏移计算
-      // if ((rowData.length - i + rowBlankCount) < w) break   //  后面位置已经不够组件在该行放置，此时需转下一行计算
       if (rowData[i] !== false) rowBlankCount = 0  // 如果该行该位置被占用清空预放置行的空格计数
       else if ((rowData[i] === false)) rowBlankCount++
-      // if (i === 1 && this.DebuggerTemp.index === 16 && this.DebuggerTemp.yPointStart === 4) debugger
-
       if (rowBlankCount === w) {  //  如果该行能放置符合w的新组件
         return {
           success: true,
           xStart: i + 1 - w,   // 加1是起始索引假设1-6, w为2 ，所占空间只有index0,index1
-          // xStart: i + 1 - w ,
           xEnd: i,
           xWidth: w
         }
@@ -275,32 +277,27 @@ export class LayoutManager {
     return {success: false}
   }
 
-  /** 找到新数组合适位置空间的 itemPos
+  /**
+   * 为item找到当前矩阵中适合放置的位置
    * @param { Number } w 宽度
    * @param { Number } h 高度
    * @return { Object } anonymous 一个新成员可插入的 itemPos 对象，该函数是单纯查询可插入位置，不会影响布局矩阵也不会对其记录
    * */
-  _findBlankPosition(w, h) {  //params { w,h }
+  _findBlankPosition(w: number, h: number) {
     let xPointStart = 0
     let xPointEnd = this.col - 1
     let yPointStart = 0
     let rowPointData = []
-
     let counter = 0
     while (counter++ < 500) {  // counter 加一次索引行数加1,500表示最大500行,正常这够用了吧？
       if (this._layoutMatrix.length < (h + yPointStart)) {
-        // console.log(this.row,this.isAutoRow);
         if (this.isAutoRow) {
-          this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行,不可删，响应式模式用到静态布局没用到
+          this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行,响应式模式用到静态布局没用到
         }
       }
       let findSuccess = true
       let rowFindDone = false
 
-      if (!this.col) {
-        break
-        // throw new Error('未找到经过引擎处理过后的col，可能是少传参数或者代码执行顺序有误，倘若这样，不用问，这就是bug')
-      }
       for (let j = 0; j < h; j++) { // 假设高度足够，计算整个组件占用区域是否被占用，不够addRow函数自动添加
         // if (xPointEnd === 0 && j === 0) xPointEnd = rowPointData.length
         rowPointData = this._layoutMatrix[yPointStart + j]
@@ -309,11 +306,6 @@ export class LayoutManager {
         // console.log(rowBlankInfo);
         // console.log('w:', w, 'x:', xPointStart, 'y:', yPointStart);
         // console.log('rowBlankInfo', rowBlankInfo);
-        // if (j === 0){
-        //     rowBlankInfo = this._findRowBlank(rowPointData, w, 0,rowPointData.length)
-        // }else {
-        //     rowBlankInfo =
-        // }
 
         if (!rowBlankInfo.success) {
           // console.log('失败了');  // 该行没空间了，跳出到while层换下一行检测

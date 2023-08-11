@@ -130,7 +130,7 @@ const container1 = new Container({
     ratioCol: 0.1,
     // responsive: true
     // ratioRow: 0.1,
-    // responsive:true
+    responsive:true
   },
   layouts: [
     // {

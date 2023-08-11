@@ -1,4 +1,4 @@
-import {CustomPartialLayoutOptions, ItemLimitType, MarginOrSizeDesc} from "@/types";
+import {CustomItems, ItemLimitType, MarginOrSizeDesc} from "@/types";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -7,7 +7,7 @@ import {CustomPartialLayoutOptions, ItemLimitType, MarginOrSizeDesc} from "@/typ
 export class ContainerGeneralImpl {
   [key: string]: any
 
-  //----------------实例化传进的的参数---------------------//
+  //----------------Container实例化传进的的参数---------------------//
   /**
    * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
    * */
@@ -24,7 +24,7 @@ export class ContainerGeneralImpl {
   responseMode: 'default' | 'exchange' | 'stream' = 'default'
 
   /** 当前布局使用的数据*/
-  items: CustomPartialLayoutOptions
+  items: CustomItems = []
 
   /** 列数 */
   col: number = 1
@@ -143,13 +143,13 @@ export class ContainerGeneralImpl {
    * 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
    * @default 36  单位(ms)
    * */
-  scrollSpeedX: number | null = null
+  scrollSpeedX: number | null = 36
 
   /**
    * 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
    * @default 36  单位(ms)
    * */
-  scrollSpeedY: number | null = null
+  scrollSpeedY: number | null = 36
 
   /**
    * 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔

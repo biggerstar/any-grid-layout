@@ -15,14 +15,14 @@ import {ItemPos} from "@/main/item/ItemPos";
  * 目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过引用进行操作，后面再改善吧
  * ##################################################################### */
 export class Engine {
-  items = []
-  options: ContainerInstantiationOptions
-  layoutManager: LayoutManager
-  container: Container
-  layoutConfigManager: LayoutConfigManager
-  initialized = false
-  __temp__ = {
-    firstSync: true,
+  public items = []
+  public layoutManager: LayoutManager
+  public layoutConfigManager: LayoutConfigManager
+  private container: Container
+  private readonly options: ContainerInstantiationOptions
+  private initialized = false
+  private __temp__ = {
+    // firstSync: true,
     responsiveFunc: null,
     firstLoaded: false,
     staticIndexCount: 0,
@@ -33,7 +33,11 @@ export class Engine {
     this.options = options    // 拿到和Container同一份用户传入的配置信息
   }
 
-  init() {
+  public setContainer(container: Container): void {
+    this.container = container
+  }
+
+  public init() {
     if (this.initialized) return
     this.layoutManager = new LayoutManager()
     this.layoutConfigManager = new LayoutConfigManager(this.options)
@@ -43,19 +47,15 @@ export class Engine {
   }
 
   /** 同步 Container 和 layoutManager 的配置信息 */
-  _sync() {
-    // if (this.__temp__.firstSync) {
-    //   this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案作为基本配置
-    //   this.__temp__.firstSync = false
-    // }
-    this.layoutConfigManager.autoSetColAndRows()  // 1. 根据之前的Items信息进行自动设置容器大小
-    this.layoutConfigManager.autoSetSizeAndMargin()  // 2. 已经知道容器col,row,生成实际的布局方案
+  public _sync() {
+    this.layoutConfigManager.autoSetColAndRows()
+    this.layoutConfigManager.autoSetSizeAndMargin()
   }
 
   /**
    * 计算当前Items的特征，如果[ Item列表长度,宽高，位置 ] 变化会触发updated变化
    *  */
-  _checkUpdated() {
+  private _checkUpdated() {
     let hashContent = ''
     this.items.forEach((item) => {
       const pos = item.pos
@@ -76,7 +76,7 @@ export class Engine {
    *  @param h {Number} y坐标方向延伸宫格数量
    *  @param items {Object} 在该Item列表中查找，默认使用this.Items
    * */
-  findCoverItemFromPosition(x: number, y: number, w: number, h: number, items: Item[] | null = null): Item[] {
+  public findCoverItemFromPosition(x: number, y: number, w: number, h: number, items: Item[] | null = null): Item[] {
     // console.log(x,y,w,h);
     items = items || this.items
     const resItemList = []
@@ -109,7 +109,7 @@ export class Engine {
   /**
    * 根据 x,y 的位置找item
    * */
-  findResponsiveItemFromPosition(fromX: number, fromY: number): Item | null {
+  public findResponsiveItemFromPosition(fromX: number, fromY: number): Item | null {
     let pointItem = null
     let lastY = 1
     if (this.items.length > 0) {
@@ -142,11 +142,8 @@ export class Engine {
    * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
    * @return {{maxW: number, maxH: number,minW: number, minH: number}}  maxW最大伸展宽度，maxH最大伸展高度,minW最小伸展宽度，maxH最小伸展高度
    * */
-  findStaticBlankMaxMatrixFromItem(itemPoint: Item): ItemLimitType {
-    const x = itemPoint.pos.x
-    const y = itemPoint.pos.y
-    const w = itemPoint.pos.w
-    const h = itemPoint.pos.h
+  public findStaticBlankMaxMatrixFromItem(itemPoint: Item): ItemLimitType {
+    const {x, y, w, h} = itemPoint.pos
     let maxW = this.container.getConfig("col") - x + 1   // X轴最大活动宽度
     let maxH = this.container.getConfig("row") - y + 1   // Y轴最大活动宽度
     let minW = maxW  // X轴最小活动宽度
@@ -193,27 +190,15 @@ export class Engine {
     }
   }
 
-  setContainer(container: Container): void {
-    this.container = container
-  }
-
-  len(): number {
-    return this.items.length
-  }
-
-  getItemList(): Item[] {
-    return this.items
-  }
-
   /** 根据当前的 i 获取对应的Item  */
-  index(indexVal: number): void | Item {
+  public index(indexVal: number): void | Item {
     for (let i = 0; i < this.items.length; i++) {
       if (this.items[i].i === indexVal) return this.items[i]
     }
   }
 
   /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
-  sortStatic(isUpdate: boolean = false) {
+  public sortStatic(isUpdate: boolean = false) {
     const staticItems = []
     const items = []
     this.items.forEach((item) => {
@@ -230,25 +215,27 @@ export class Engine {
   }
 
   /** 将item成员全部挂载到Container  */
-  mountAll() {
+  public mountAll() {
     this.items.forEach((item: Item) => item.mount())
-    if (this.container.getConfig("responsive")) this.container.setConfig("row", this.layoutManager.row) //静态布局的row是固定的，响应式不固定
+    if (this.container.getConfig("responsive")) {
+      this.container.setConfig("row", this.layoutManager.row) //静态布局的row是固定的，响应式不固定
+    }
   }
 
   /** 将item成员从Container中全部移除,items数据还在  */
-  unmount(isForce = false) {
+  public unmount(isForce = false) {
     this.items.forEach((item) => item.unmount(isForce))
     this.reset()
   }
 
   /** 将item成员从Container中全部移除，之后重新渲染  */
-  remount() {
+  public remount() {
     this.unmount()
     this.container.mount()
   }
 
   /** 添加一个Item 只添加不挂载 */
-  addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
+  public addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const itemLimit = this.container.getConfig("itemLimit")    // Container所有Item的限制信息
     const eventManager = this.container.eventManager
     if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`, item, item)
@@ -280,7 +267,7 @@ export class Engine {
    * 2. 指定了x,y 的Item位置重叠
    * 自动寻位: 如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序)
    * */
-  push(item: Item) {
+  public push(item: Item) {
     // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
     // this.items.push(item)
     // return true
@@ -349,7 +336,7 @@ export class Engine {
    *  只是在Item调用engine.move时可能因为右边过宽的Item被挤压到下一行，后面的小Item会被补位到上一行，
    *  这种情况其实大Item的index顺序是在小Item前面的，但是通过move函数交换可能会出错
    * */
-  sortResponsiveItem() {
+  public sortResponsiveItem() {
     const items = []
     for (let y = 1; y <= this.container.getConfig("row"); y++) {
       for (let x = 1; x <= this.container.getConfig("col"); x++) {
@@ -369,27 +356,27 @@ export class Engine {
   }
 
   /** 移除某个存在的item */
-  removeItem(item) {
+  public removeItem(item) {
     for (let i = 0; i < this.items.length; i++) {
       if (this.items[i] === item) this.items.splice(i, 1);
     }
   }
 
-  reset() {
+  public reset() {
     this.layoutManager.reset()
   }
 
   /** 清除所有Items */
-  clear() {
+  public clear() {
     this.items = []
   }
 
   /** 是否包含Item */
-  includes(item) {
+  public includes(item) {
     return this.items.includes(item)
   }
 
-  remove(removeItem) {
+  public remove(removeItem) {
     for (let i = 0; i < this.items.length; i++) {
       if (removeItem === this.items[i]) {
         this.items.splice(i, 1)
@@ -398,7 +385,7 @@ export class Engine {
     }
   }
 
-  insert(item: Item, index: number) {
+  public insert(item: Item, index: number) {
     this.items.splice(index, 0, item)
   }
 
@@ -407,7 +394,7 @@ export class Engine {
    * @param {Number} toIndex  移动到哪个索引
    * @dataParam {Number} fromIndex  来自哪个索引
    * */
-  move(item: Item, toIndex: number) {
+  public move(item: Item, toIndex: number) {
     if (toIndex < 0) toIndex = 0
     let fromIndex = null
     for (let i = 0; i < this.items.length; i++) {
@@ -424,7 +411,7 @@ export class Engine {
 
 
   /** 交换自身Container中两个Item在this.items的位置 */
-  exchange(itemA: Item, itemB: Item) {
+  public exchange(itemA: Item, itemB: Item) {
     if (this.items.includes(itemA) && this.items.includes(itemB)) {
       this.items[itemA.i] = itemB
       this.items[itemB.i] = itemA
@@ -432,7 +419,7 @@ export class Engine {
   }
 
   /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
-  renumber(items?: Item[]) {
+  public renumber(items?: Item[]) {
     items = items ? items : this.items
     items.forEach((item, index) => {
       item.i = index
@@ -441,7 +428,7 @@ export class Engine {
   }
 
   /** 使用itemOption对象创建一个Item, 如果有传入的el会直接将该el对应的Element对象转化成Item */
-  createItem(itemOption) {
+  public createItem(itemOption) {
     //-------后面增加item需用的实例化传参需在这里为item添加该参数------//
     //   也能直接使用merge函数合并，这里分开没为什么
     itemOption.container = this.container
@@ -451,13 +438,13 @@ export class Engine {
     itemOption.draggable = Boolean(itemOption.draggable)
     itemOption.close = Boolean(itemOption.close)
     //-----------------------------------------------------------//
-    itemOption.i = this.len()  // 为item自动编号，动态值，决定因素是原始html元素加上后面添加的item
+    itemOption.i = this.items.length  // 为item自动编号，动态值，决定因素是原始html元素加上后面添加的item
     return new Item(itemOption)
   }
 
   /**  参数详情见类 Container.find 函数
    * */
-  findItem(nameOrClassOrElement) {
+  public findItem(nameOrClassOrElement) {
     return this.items.filter((item) => {
       return item.name === nameOrClassOrElement
         || item.classList.includes(nameOrClassOrElement)
@@ -469,7 +456,7 @@ export class Engine {
    *  @param item {Item} item
    *  @param modify {Boolean} 是否对该溢出容器的Item大小进行修改成适配容器大小的尺寸
    * */
-  checkOverflow(item: Item, modify: boolean = true) {
+  public checkOverflow(item: Item, modify: boolean = true) {
     const pos = item.pos
     const {w, h, x, y, tempW, tempH} = pos
     let itemOverflow = false  /* item是否溢出 */
@@ -520,7 +507,7 @@ export class Engine {
    *  @param responsive {Boolean}  是否响应式还是静态布局
    *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
    * */
-  _isCanAddItemToContainer_(item: Item, responsive: boolean = false, addSeat: boolean = false) {
+  public _isCanAddItemToContainer_(item: Item, responsive: boolean = false, addSeat: boolean = false) {
     let realLayoutPos: ItemPos | null
     let nextStaticPos: ItemPos = item.pos.nextStaticPos ? item.pos.nextStaticPos : item.pos
     nextStaticPos.i = item.i
@@ -552,7 +539,7 @@ export class Engine {
    *                                  不传值(默认null): 静态模式不进行更新，响应式模式进行全部更新
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
-  updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
+  public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
     //---------------------------更新响应式布局-------------------------------//
     const staticItems = this.items.filter((item) => {
       if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {
@@ -631,7 +618,6 @@ export class Engine {
         this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
       }
     }
-
 
     // const isDebugger = false
     // if (isDebugger) {

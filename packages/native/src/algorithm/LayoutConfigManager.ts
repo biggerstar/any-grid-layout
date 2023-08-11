@@ -1,22 +1,29 @@
 import {Container} from "@/main/container/Container";
 import {Item} from "@/main/item/Item";
+import {ItemPos} from "@/main/item/ItemPos";
+import {CustomItems} from "@/types";
 
 export class LayoutConfigManager {
   public container: Container
+
+  public get items(): CustomItems {
+    return this.container.layout.items || []
+  }
+
   public options = {}
 
   constructor(options) {
     this.options = options
   }
 
-  setContainer(container) {
+  public setContainer(container) {
     this.container = container
   }
 
   /**
    * 用于提取用户传入的[所有]布局配置文件到 container.layouts
    * */
-  initLayoutInfo() {
+  public initLayoutInfo() {
     const options: Record<any, any> = this.options
     let layoutInfo = []
     if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
@@ -38,14 +45,14 @@ export class LayoutConfigManager {
   }
 
   /**
-   * auto compute margin，size，col
-   * @param direction {Number}  col || row
+   * auto computed margin，size，col
+   * @param direction {Number}  col | row 的值
    * @param containerBoxLen {Number}  element width or height
    * @param size {Number}  set custom size value
    * @param margin {Number} set custom margin value
    * @param ratio {Number} set custom ratio value, default value from container built-in param
    * */
-  autoComputeSizeInfo(direction, containerBoxLen, size, margin, ratio) {
+  private autoComputeSizeInfo(direction, containerBoxLen, size, margin, ratio) {
     if (direction) {   //  col指定通常是执行静态布局，主算 size 和 margin
       if (size === null && margin === null) {   // 自动分配size和margin
         if (parseInt(direction.toString()) === 1) {
@@ -77,7 +84,7 @@ export class LayoutConfigManager {
           '的情况下,size[*(0 or 1)]或size*(Width or Height)的Item主体宽度已经小于0,' +
           '您可以调小margin或者设定Container最小宽度或者高度(css:min-XXX),且保证margin*(col||row)大于最小宽度')
       } else if (size !== null && margin !== null) {
-      } // margin和size都固定,啥事都不做，用户给的太多了,都不用计算了
+      } // margin和size都固定,啥事都不做，用户给的已知数太多,都不用计算了
     } else if (direction === null) {   // col不指定执行动态布局， 主算 col数量，次算margin,size中的一个,缺啥算啥
       // if (margin !== null && size === null) {  }  // col = null size = null 没有这种情况！！
       if (margin === null && size !== null) {   // size固定，自动分配margin和计算col
@@ -115,14 +122,12 @@ export class LayoutConfigManager {
   /**
    * 自动设置size和margin
    * */
-  autoSetSizeAndMargin(): void {
-    const containerWidth = this.container.element?.clientWidth
-    const containerHeight = this.container.element?.clientHeight
+  public autoSetSizeAndMargin(): void {
+    const {clientWidth: containerWidth, clientHeight: containerHeight} = this.container.element || {}
 
     if (containerWidth === 0) throw new Error("请为Container设置一个宽高")
     //----------------------------------------------------//
-    const customLayout = this.container.useLayout
-
+    const curLayout = this.container.layout
     let {
       col = null,   //  缺省值必须为null才能触发自动计算col
       row = null,
@@ -132,20 +137,19 @@ export class LayoutConfigManager {
       margin = [null, null],
       sizeWidth,
       sizeHeight,
-      marginY,
+      // marginY,
       responsive = false
-    } = customLayout
-
-    if (marginY) margin[1] = marginY
+    } = curLayout
+    console.log(curLayout)
+    // if (marginY) margin[1] = marginY
     if (sizeWidth) size[0] = sizeWidth
     if (sizeHeight) size[1] = sizeHeight
-    const oldMargin = Array.from(margin)
-    const oldSize = Array.from(size)
+    // const oldMargin = Array.from(margin)
+    // const oldSize = Array.from(size)
 
     // console.log(col, containerWidth, size[0], margin[0], ratioCol);
-    const smartInfo = this.computeSmartRowAndCol(this.container.engine.items)
-    console.log(smartInfo);
-    // console.log(customLayout);
+    const smartInfo = this.computeSmartRowAndCol()
+    // console.log(curLayout);
     // console.log(col);
     // console.log(smartInfo.smartCol);
     if (!col && !margin[0] && !size[0]) col = smartInfo.smartCol
@@ -153,10 +157,11 @@ export class LayoutConfigManager {
 
     const nowCol = this.container.getConfig("col")
     if (!responsive && !col && nowCol && nowCol !== 1) col = nowCol // 静态直接使用指定的col值,不等于1是define getter默认值就是1
+    // console.log(col, containerWidth, size[0], margin[0], ratioCol)
     const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
     margin[0] = sizeColInfo.margin
     size[0] = sizeColInfo.size
-
+    // console.log(sizeColInfo)
     const nowRow = this.container.getConfig("row")
     if (!responsive && !row && nowRow && nowRow !== 1) row = nowRow // 静态直接使用指定的row值,不等于1是define getter默认值就是1
     // console.log(row, containerHeight, size[1], margin[1], ratioRow)
@@ -165,8 +170,8 @@ export class LayoutConfigManager {
     size[1] = sizeRowInfo.size
 
 
-    if (oldMargin[0] !== null || oldMargin[1] !== null) customLayout.margin = margin
-    if (oldSize[0] !== null || oldSize[1] !== null) customLayout.size = size
+    // if (oldMargin[0] !== null || oldMargin[1] !== null) curLayout.margin = margin
+    // if (oldSize[0] !== null || oldSize[1] !== null) curLayout.size = size
 
     // console.log(col,row,margin,size);
 
@@ -185,12 +190,12 @@ export class LayoutConfigManager {
    * @return {Object} 一个包含最大col和row，containerW，ContainerH的集合
    * TODO 优化初始化执行两次问题，方案是收集所有Item后再调用该函数进行同步
    * */
-  autoSetColAndRows(isSetConfig: boolean = true): void {
+  public autoSetColAndRows(isSetConfig: boolean = true): void {
     const layoutManager = this.container.engine.layoutManager
     const container: Container = this.container
     let maxCol = container.getConfig("col")
     let maxRow = container.getConfig("row")
-    const customLayout = container.useLayout
+    const curLayout = container.layout
 
     let {
       col = null,   //  缺省值必须为null才能触发自动计算col
@@ -206,7 +211,7 @@ export class LayoutConfigManager {
       coverCol = false,
       coverRow = false,
       responsive = false
-    } = customLayout
+    } = curLayout
     const items = container.engine.items
     const computeLimitLength = (maxCol: number, maxRow: number) => {
       const curMaxCol = container.getConfig('maxCol')
@@ -239,17 +244,16 @@ export class LayoutConfigManager {
       if (marginY) margin[1] = marginY
       if (sizeWidth) size[0] = sizeWidth
       if (sizeHeight) size[1] = sizeHeight
-
       // row和col实际宽高不被限制，直接按现有Item计算得出，下面会进行Container的宽高限制
-      // console.log(smartInfo);
-
       const smartInfo = this.computeSmartRowAndCol(items)
+      // console.log(maxCol, maxRow)
+
       if (coverCol || (!col && !margin[0] && !size[0]) || (col || Infinity) < smartInfo.smartCol) {
         // 若三种都没有指定，将从items中自动计算出合适的最大容器大小(通常这里用于指定static位置的成员自动计算)
         maxCol = smartInfo.smartCol   // 如果都没有指定则根据当前配置自适应
       } else {
         const containerWidth = this.container.element?.clientWidth
-        const sizeColInfo = this.autoComputeSizeInfo((col || maxCol), containerWidth, size[0], margin[0], ratioCol)
+        const sizeColInfo = this.autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
         maxCol = sizeColInfo.direction
       }
 
@@ -259,14 +263,15 @@ export class LayoutConfigManager {
         maxRow = smartInfo.smartRow
       } else {
         const containerHeight = this.container.element?.clientHeight
-        const sizeRowInfo = this.autoComputeSizeInfo((row || maxRow), containerHeight, size[1], margin[1], ratioRow)
+        const sizeRowInfo = this.autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
         maxRow = sizeRowInfo.direction
       }
       // console.log(maxRow);
     }
+    // console.log(maxCol, maxRow)
     AutoSetting()
 
-    console.log(maxCol, maxRow)
+    // console.log(maxCol, maxRow)
 
     let containerW = maxCol
     let containerH = maxRow
@@ -281,7 +286,7 @@ export class LayoutConfigManager {
       container.setConfig('col', maxCol)
       container.setConfig('row', maxRow)
 
-      // console.log(maxCol,maxRow, col, row);
+      console.log(maxCol, maxRow, col, row);
 
       layoutManager.setColNum(maxCol)
       layoutManager.setRowNum(maxRow)
@@ -307,14 +312,23 @@ export class LayoutConfigManager {
 
 
   /** 智能计算当前 items 中最大col边界值和最大row边界值 */
-  computeSmartRowAndCol = (items: Item[] = []) => {
+  public computeSmartRowAndCol = (items: Item[] = []) => {
+    items = items.length ? items : <Item[]>this.items
     let smartCol = this.container.getConfig("col") || 1
     let smartRow = this.container.getConfig("row") || 1
-    items.forEach((item) => {
-      if ((item.pos.x + item.pos.w - 1) > smartCol) smartCol = item.pos.x + item.pos.w - 1
-      if ((item.pos.y + item.pos.h - 1) > smartRow) smartRow = item.pos.y + item.pos.h - 1
+    const allItemsNoXY /* 是否所有的item都没有指定xy */ = !items.find((item) => item.pos.x && item.pos.y)
+    // console.log(allItemsNoXY)
+    if (!allItemsNoXY) {  // 如果items中有明确指定的xy
+
+    } else { // 如果items没有指定xy则使用当前宽计算col
+
+    }
+    items.forEach(({pos}: Item) => {
+      const {x, y, w, h} = pos as ItemPos
+      // console.log({x, y, w, h})
+      if ((x + w - 1) > smartCol) smartCol = x + w - 1
+      if ((y + h - 1) > smartRow) smartRow = y + h - 1
     })
-    // console.log(smartCol,smartRow);
     return {smartCol, smartRow}
   }
 }

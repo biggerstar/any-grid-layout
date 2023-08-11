@@ -21,7 +21,7 @@ export type ItemLayoutOption =
   & { pos?: Partial<ItemPos> }
   & { [key: string]: any }
 
-export type CustomItemLayoutOptions = ItemLayoutOption | ItemLayoutOption[]
+export type CustomItems = ItemLayoutOption[]
 
 /** Container 实例化配置选项 */
 export type CustomPartialLayoutOptions = Partial<ContainerGeneralImpl> | Partial<ContainerGeneralImpl>[]
@@ -75,7 +75,7 @@ export type ItemTransition = {
   field: 'top,left,width,height'
 } | number | boolean
 
-export type MarginOrSizeDesc = [string | null, string | null]
+export type MarginOrSizeDesc = [number | null, number | null]
 
 export type ItemLimitType = {
   maxW?: number,
