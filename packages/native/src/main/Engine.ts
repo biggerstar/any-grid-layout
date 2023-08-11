@@ -6,20 +6,20 @@ import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, ItemLimitType} from "@/types";
 import {ItemPos} from "@/main/item/ItemPos";
 
-/** #####################################################################
+/**
+ * #####################################################################
  * 用于连接Container 和 Item 和 LayoutManager 之间的通信
- *   更改布局的操作也都在这里，外部只能通过调用相关函数通信
- *   所有的最新参数都会同步到这里
- *   特殊情况: Container中的事件操作没去写通信接口，里面多次直接操作对应事件监听的所指Item
- *   目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过指针进行操作，后面再改善吧
- *  ##################################################################### */
+ * 更改布局的操作也都在这里，外部只能通过调用相关函数通信
+ * 所有的最新参数都会同步到这里
+ * 特殊情况: Container中的事件操作没去写通信接口，里面多次直接操作对应事件监听的所指Item
+ * 目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过引用进行操作，后面再改善吧
+ * ##################################################################### */
 export class Engine {
   items = []
   options: ContainerInstantiationOptions
   layoutManager: LayoutManager
   container: Container
   layoutConfigManager: LayoutConfigManager
-  useLayout = null
   initialized = false
   __temp__ = {
     firstSync: true,
@@ -43,19 +43,18 @@ export class Engine {
   }
 
   /** 同步 Container 和 layoutManager 的配置信息 */
-  _sync() {  // 语法糖
-    if (this.__temp__.firstSync) {
-      this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案作为基本配置
-      this.__temp__.firstSync = false
-    }
-    this.layoutConfigManager.autoSetColAndRows(this.container)  // 1. 根据之前的Items信息进行自动设置容器大小
-    let useLayout = this.layoutConfigManager.genLayoutConfig()  // 2. 已经知道容器col,row,生成实际的布局方案
-    this.useLayout = useLayout
-    this._syncLayoutConfig(useLayout.useLayout)
+  _sync() {
+    // if (this.__temp__.firstSync) {
+    //   this.layoutConfigManager.genLayoutConfig()  // 0.刚开始运行时选出一个适合当前屏幕大小的`初步`预布局方案作为基本配置
+    //   this.__temp__.firstSync = false
+    // }
+    this.layoutConfigManager.autoSetColAndRows()  // 1. 根据之前的Items信息进行自动设置容器大小
+    this.layoutConfigManager.autoSetSizeAndMargin()  // 2. 已经知道容器col,row,生成实际的布局方案
   }
 
-  /** 计算当前Items的特征，后面如果[ Item列表长度,宽高，位置 ]变化会触发updated变化,这里不用hash加密方法是为了省点缩小下包内存
-   *  反正吧，以后心情好就加上呗 */
+  /**
+   * 计算当前Items的特征，如果[ Item列表长度,宽高，位置 ] 变化会触发updated变化
+   *  */
   _checkUpdated() {
     let hashContent = ''
     this.items.forEach((item) => {
@@ -66,22 +65,6 @@ export class Engine {
       this.container.eventManager._callback_('updated', this.container)
       this.__temp__.previousHash = hashContent
     }
-  }
-
-  /** 通过传入当前的useLayout直接应用当前布局方案，必须包含col, size, margin, 通过引擎找到适合当前的配置信息并进行各个模块(container,item)之间的布局方案信息同步 */
-  _syncLayoutConfig(useLayout = null) {
-    if (!useLayout) return
-    if (Object.keys(useLayout).length === 0) {
-      if (!this.options.col) throw new Error("未找到layout相关决定布局配置信息，您可能是未传入col字段")
-    }
-    this.items.forEach(item => {
-      // TODO 可以重构，自动计算margin ,size算法计算后将结果挂到margin，size中，之后 item类中通过getter，直接获取container中margin,size
-      // 当前方案: container只给Item需要的两个参数，其余像draggable，resize，transition这些实例化Item自身用的，Item自己管理，无需同步
-      merge(item, {
-        margin: useLayout.margin,
-        size: useLayout.size,
-      })
-    })
   }
 
 
@@ -123,9 +106,10 @@ export class Engine {
     return resItemList
   }
 
-  /** 响应式模式下找到在布局流在Container空白部分或者在Container外所对应容器里面可以放置的x，y位置，
-   * 并对应返回该位置的Item作为外部使用的toItem   */
-  findResponsiveItemFromPosition(x: number, y: number): Item {
+  /**
+   * 根据 x,y 的位置找item
+   * */
+  findResponsiveItemFromPosition(fromX: number, fromY: number): Item | null {
     let pointItem = null
     let lastY = 1
     if (this.items.length > 0) {
@@ -133,23 +117,28 @@ export class Engine {
       lastY = item.pos.y
     }
     for (let i = 0; i < this.items.length; i++) {
-      let item = this.items[i]
+      let item: Item = this.items[i]
       if (!item) continue
-      const xItemStart = item.pos.x
-      const yItemStart = item.pos.y
-      const xItemEnd = item.pos.x + item.pos.w - 1
-      const yItemEnd = item.pos.y + item.pos.h - 1
-      if (xItemStart !== x) continue
-      if (y > lastY) y = lastY
-      if (x => xItemStart && x <= xItemEnd && y >= yItemStart && y <= yItemEnd) {
-        if (x === xItemStart && y === yItemStart) pointItem = item
+      const {x, y, w, h} = item.pos
+      const xItemStart = x
+      const yItemStart = y
+      const xItemEnd = x + w - 1
+      const yItemEnd = y + h - 1
+
+      if (xItemStart !== fromX) continue
+      if (fromY > lastY) fromY = lastY
+      if (x => xItemStart && x <= xItemEnd && fromY >= yItemStart && fromY <= yItemEnd) {
+        if (fromX === xItemStart && fromY === yItemStart) pointItem = item
       }
     }
     return pointItem
   }
 
-  /** 在静态和响应式布局中通过指定的Item找到该Item在矩阵中最大的resize空间，函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
+  /**
+   * 在静态和响应式布局中通过指定的Item找到该Item在矩阵中最大的resize空间
+   * 函数返回maxW和maxH代表传进来的对应Item在矩阵中最大长,宽
    * 数据来源于this.items的实时计算
+   *
    * @param {Item} itemPoint 要计算矩阵中最大伸展空间的Item，该伸展空间是一个矩形
    * @return {{maxW: number, maxH: number,minW: number, minH: number}}  maxW最大伸展宽度，maxH最大伸展高度,minW最小伸展宽度，maxH最小伸展高度
    * */
@@ -330,10 +319,10 @@ export class Engine {
     }
     //-----------------------添加新Item的逻辑---------------------------//
     let realLayoutPos: ItemPos | null
-    if (item.autoOnce === false) {
+    if (!item.autoOnce) {
       // 如果是指定了x和y，必然能添加进去
       this.items.push(item)
-      this.layoutConfigManager.autoSetColAndRows(this.container)
+      this.layoutConfigManager.autoSetColAndRows()
       this._isCanAddItemToContainer_(item, item.autoOnce, true)
       const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
       if (!realLayoutPos) return false  // 此时指定了x,y,Item位置重叠
@@ -443,7 +432,7 @@ export class Engine {
   }
 
   /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
-  renumber(items: Item[]) {
+  renumber(items?: Item[]) {
     items = items ? items : this.items
     items.forEach((item, index) => {
       item.i = index
@@ -618,7 +607,7 @@ export class Engine {
     this._checkUpdated()
 
     //---------------------------更新数据和存储-------------------------------//
-    this.layoutConfigManager.autoSetColAndRows(this.container)  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
+    this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
     this.container.layout.items = this.container.exportItems()   // 将最新data同步到当前使用的layout中
     this.container.updateContainerStyleSize()
     const genBeforeSize = (container: Container) => {

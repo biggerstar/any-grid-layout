@@ -128,7 +128,7 @@ const container1 = new Container({
   el: '#container1',
   global: {
     ratioCol: 0.1,
-    responsive: true
+    // responsive: true
     // ratioRow: 0.1,
     // responsive:true
   },
@@ -158,7 +158,7 @@ const container1 = new Container({
     // },
     {
       px: 900,
-      col: 9,
+      // col: 9,
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData, {
@@ -209,7 +209,7 @@ const container1 = new Container({
   },
   events: {
     error(err) {
-      console.log(err);
+      // console.log(err);
       // err.from.remove()
     },
     itemMove(item, nowX, nowY) {

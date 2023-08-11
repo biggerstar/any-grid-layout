@@ -118,40 +118,66 @@ export class Container extends DomFunctionImpl {
   }
 
   private _define() {
-    let col = null
-    let row = null
+    const self = this
     Object.defineProperties(<object>this, {
-      col: {
-        get: () => {
-          console.log(111111111111111111)
-          return col
+      layout: {
+        get() {
+          let layoutItem
+          const layouts = self.layouts.sort((a, b) => a.px - b.px)
+          const containerWidth = self.element?.clientWidth
+
+          for (let i = 0; i < layouts.length; i++) {
+            layoutItem = layouts[i]
+            if (!Array.isArray(layoutItem.items)) layoutItem.items = []
+            if (layouts.length === 1) break
+            // 此时 layoutItem.px循环结束后 大于 containerWidth,表示该Container在该布局方案中符合px以下的设定,
+            // 接上行: 如果实际Container大小还大于layoutItem.px，此时是最后一个，将跳出直接使用最后也就是px最大对应的那个布局方案
+            if (layoutItem.px < containerWidth) continue
+            break
+          }
+          return layoutItem
         },
-        set: (v) => {
-          console.warn('set col', v)
-          if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return // TODO throw error
-          col = v
+        set(_: any) {
+          debugger
         }
       },
-      row: {
-        get: () => {
-          console.log(222222222222222222)
-          // debugger
-          return row
-        },
-        set: (v) => {
-          console.warn('set row', v)
-          if (row === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
-          row = v
+      useLayout: {
+        get() {
+          // self.layout
+          // return layoutItem
+          return self.layout
         }
-      },
+      }
+      // col: {
+      //   get: () => {
+      //     console.log(111111111111111111)
+      //     return col
+      //   },
+      //   set: (v) => {
+      //     console.warn('set col', v)
+      //     if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return // TODO throw error
+      //     col = v
+      //   }
+      // },
+      // row: {
+      //   get: () => {
+      //     console.log(222222222222222222)
+      //     // debugger
+      //     return row
+      //   },
+      //   set: (v) => {
+      //     console.warn('set row', v)
+      //     if (row === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
+      //     row = v
+      //   }
+      // },
     })
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): ContainerGeneralImpl[Name] {
-    if (name === 'col' || name === 'row') return this.useLayout[name] || this._default[name] || 1
     // console.log(name, this.useLayout[name], this._default[name])
-    return this.useLayout[name] || this._default[name]
+    return this.useLayout[name] || this.global[name] || this._default[name]
   }
 
   /** 将值设置到当前使用的配置信息中 */
@@ -206,7 +232,7 @@ export class Container extends DomFunctionImpl {
       //---------------------------------------------------------//
       if (this.el instanceof Element) this.element = this.el
       if (!this.element) {
-        if (!this.isNesting) this.element = document.querySelector(<string>this.el)
+        if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
         if (!this.element) {
           const errMsg = '在DOM中未找到指定ID对应的:' + this.el + '元素'
           throw new Error(errMsg)
@@ -218,7 +244,7 @@ export class Container extends DomFunctionImpl {
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._collectNestingMountPoint()
       if (this.platform === 'vue') {
-        this.contentElement = this.element.querySelector('.grid-container-area')
+        this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
       } else {
         this.genGridContainerBox()
         this.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
@@ -337,21 +363,22 @@ export class Container extends DomFunctionImpl {
    *  @param {string} direction  要满覆盖的方向， all || col || row
    * */
   cover(direction: 'all' | 'col' | 'row' = 'all') {
+    return console.error('执行了cover，但是未实现')
     //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
-    let coverCol = false
-    let coverRow = false
-    let customLayout = this.engine.layoutConfigManager.genCustomLayout()
-    if (direction === 'all') {
-      coverCol = true
-      coverRow = true
-    }
-    if (direction === 'col') coverCol = true
-    if (direction === 'row') coverRow = true
-    this.engine.layoutConfigManager.autoSetColAndRows(this, true, {
-      ...customLayout,
-      coverCol: coverCol,
-      coverRow: coverRow
-    })
+    // let coverCol = false
+    // let coverRow = false
+    // let customLayout = this.engine.layoutConfigManager.genCustomLayout()
+    // if (direction === 'all') {
+    //   coverCol = true
+    //   coverRow = true
+    // }
+    // if (direction === 'col') coverCol = true
+    // if (direction === 'row') coverRow = true
+    // this.engine.layoutConfigManager.autoSetColAndRows( true, {
+    //   ...customLayout,
+    //   coverCol: coverCol,
+    //   coverRow: coverRow
+    // })
   }
 
   /** 将item成员从Container中全部移除
@@ -388,12 +415,9 @@ export class Container extends DomFunctionImpl {
   _observer_() {
     const layoutChangeFun = () => {
       if (!this._mounted) return
-      const containerWidth = this.element.clientWidth
-      const containerHeight = this.element.clientHeight
-      if (containerWidth <= 0 || containerHeight <= 0) return
-      let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.engine.layoutConfigManager.genLayoutConfig(containerWidth, containerHeight)
-      let {useLayout, customLayout} = useLayoutConfig
-      const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, containerWidth, this)
+      let useLayout = this.useLayout  // TODO 排查bug
+      let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.useLayout
+      const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, this.element.clientWidth, this)
       if (res === null || res === false) return
       if (typeof res === 'object') useLayout = res
       // console.log(this.px, useLayout.px);
@@ -404,10 +428,9 @@ export class Container extends DomFunctionImpl {
           this.engine.unmount(false)
           this.engine.clear();
           (useLayout.items as Item[]).forEach((item) => this.add(item))
-          this.engine._syncLayoutConfig(useLayout);
           this.engine.mountAll()
         }
-        this.eventManager._callback_('useLayoutChange', customLayout, containerWidth, this)
+        this.eventManager._callback_('useLayoutChange', this.useLayout, this.element.clientWidth, this)
         const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
         if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
       }

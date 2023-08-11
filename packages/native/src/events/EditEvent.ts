@@ -425,7 +425,7 @@ export class EditEvent {
         ev.stopPropagation()
         if (!tempStore.isDragging) return
         let fromItem: Item = tempStore.fromItem
-        let toItem: Item = parseItem(ev)
+        let toItem: Item | null = parseItem(ev)
         if (toItem) tempStore.toItem = toItem
         const moveItem = tempStore.moveItem
         const mousedownEvent: MouseEvent = tempStore.mousedownEvent

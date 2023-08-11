@@ -1,4 +1,4 @@
-import {CustomPartialLayoutOptions, ItemLimitType} from "@/types";
+import {CustomPartialLayoutOptions, ItemLimitType, MarginOrSizeDesc} from "@/types";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -27,13 +27,13 @@ export class ContainerGeneralImpl {
   items: CustomPartialLayoutOptions
 
   /** 列数 */
-  col: number
+  col: number = 1
 
   /** 行数， 响应模式下row由引擎管理且row不可固定，用户指定的row永远不会生效 */
-  row: number
+  row: number = 1
 
   /** 禁止传入的数组内出现单个null */
-  margin: [any, any] = [null, null]
+  margin: MarginOrSizeDesc = [null, null]
 
   /** 距离左边，单位px，如果和margin[0]优先级大于 marginX */
   marginX: any = null
@@ -42,7 +42,7 @@ export class ContainerGeneralImpl {
   marginY: any = null
 
   /** 容器大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
-  size: [any, any] = [null, null]
+  size: MarginOrSizeDesc = [null, null]
 
   /** 容器宽度
    * 如果和size[0]优先级大于 sizeWidth,在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致

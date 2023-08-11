@@ -7,7 +7,7 @@ import {ItemPos} from "@/main/item/ItemPos";
 import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {Container} from "@/main/container/Container";
-import {ItemLayoutOptions, MarginOrSizeDesc} from "@/types";
+import {ItemLayoutOption, MarginOrSizeDesc} from "@/types";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 
 //---------------------------------------------------------------------------------------------//
@@ -20,10 +20,6 @@ const tempStore = TempStore.store
  * @param {Object} pos 一个包含Item位置信息的对象
  * */
 export class Item extends ItemGeneralImpl {
-  //----实例化Container外部传进的的参数,和Container一致，不可修改,不然在网格中会布局混乱----//
-  public margin: MarginOrSizeDesc = [null, null]   //   间距 [左右, 上下]
-  public size: MarginOrSizeDesc = [null, null]   //   宽高 [宽度, 高度]
-
   //----------------内部需要的参数---------------------//
   public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
   public element: HTMLElement
@@ -65,7 +61,23 @@ export class Item extends ItemGeneralImpl {
     }
   }
 
-  constructor(itemOption: ItemLayoutOptions) {
+  //-------------------------getter---------------------------
+  /**
+   * Item间距 [左右, 上下]
+   * */
+  public get margin(): MarginOrSizeDesc {  //
+    return this.container.getConfig('margin')
+  }
+
+  /**
+   * Item宽高 [宽度, 高度]
+   * */
+  public get size(): MarginOrSizeDesc {  //
+    return this.container.getConfig('size')
+  }
+
+  //----------------------------------------------------------
+  constructor(itemOption: ItemLayoutOption) {
     super()
     if (itemOption.el instanceof Element) {
       this.el = itemOption.el

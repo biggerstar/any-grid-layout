@@ -16,12 +16,12 @@ export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
   | 'resizeOut' | 'className' | 'dragIgnoreEls' | 'dragAllowEls' | 'transition'
   | 'draggable' | 'resize' | 'close' | 'static' | 'exchange'
 
-export type ItemLayoutOptions =
+export type ItemLayoutOption =
   Partial<Pick<Item, CustomItemField>>
   & { pos?: Partial<ItemPos> }
   & { [key: string]: any }
 
-export type CustomItemLayoutOptions = ItemLayoutOptions | ItemLayoutOptions[]
+export type CustomItemLayoutOptions = ItemLayoutOption | ItemLayoutOption[]
 
 /** Container 实例化配置选项 */
 export type CustomPartialLayoutOptions = Partial<ContainerGeneralImpl> | Partial<ContainerGeneralImpl>[]

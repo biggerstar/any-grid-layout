@@ -1,4 +1,4 @@
-import {CustomItemLayoutOptions, ItemLayoutOptions} from "@/types";
+import {ItemLayoutOption} from "@/types";
 
 export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self, args;
@@ -204,7 +204,8 @@ export const singleTouchToCommonEvent = (touchEvent) => {
  *    fillInItemLayoutList(items,{ close:true })
  *    //  items结果: [{  pos:{w:h},close:true }]
  * */
-export function fillItemLayoutList(items: CustomItemLayoutOptions = [], fillFields: ItemLayoutOptions = {}, force: boolean = false): ItemLayoutOptions[] {
+export function fillItemLayoutList(items: ItemLayoutOption = [], fillFields: ItemLayoutOption = {}, force: boolean = false): ItemLayoutOption[] {
+  // @ts-ignore
   if (!Array.isArray(items)) items = [items]
   return items.map((item) => {
     if (force) {
