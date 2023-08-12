@@ -95,7 +95,6 @@ export class Container extends DomFunctionImpl {
     exchangeLockY: false, // 锁定Item是否可以纵向向移动
     beforeContainerSizeInfo: null,
     observer: null,
-    deferUpdatingLayoutTimer: null,  // 是否正在等待最后一次延时更新布局
     nestingFirstMounted: false // 嵌套模式下第一次是否挂载，决定是否执行render函数
     //----------可写变量-----------//
   }
@@ -150,29 +149,6 @@ export class Container extends DomFunctionImpl {
           debugger
         }
       }
-      // col: {
-      //   get: () => {
-      //     console.log(111111111111111111)
-      //     return col
-      //   },
-      //   set: (v) => {
-      //     console.warn('set col', v)
-      //     if (col === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return // TODO throw error
-      //     col = v
-      //   }
-      // },
-      // row: {
-      //   get: () => {
-      //     console.log(222222222222222222)
-      //     // debugger
-      //     return row
-      //   },
-      //   set: (v) => {
-      //     console.warn('set row', v)
-      //     if (row === v || v <= 0 || typeof v !== 'number' || !isFinite(v)) return
-      //     row = v
-      //   }
-      // },
     })
   }
 
@@ -187,23 +163,6 @@ export class Container extends DomFunctionImpl {
     // if (name === 'row' && data === 503) debugger
     return this.useLayout[name] = data
   }
-
-  // /** 设置列数量,必须设置,可通过实例化参数传入而不一定使用该函数，该函数用于中途临时更换列数可用  */
-  // public setColNum(col) {
-  //   if (col > 30 || col < 0) {
-  //     throw new Error('列数量只能最低为1,最高为30,如果您非要设置更高值，'
-  //       + '\n\t请直接将值给到本类中的成员col，而不是通过该函数进行设置')
-  //   }
-  //   this.setConfig("col", col)
-  //   this.engine.layoutManager.setColNum(col)
-  //   return this
-  // }
-  //
-  // /** 设置行数量,行数非必须设置 */
-  // public setRowNum(row) {
-  //   this.setConfig("row", row)
-  //   return this
-  // }
 
   /** 获取所有的Item，返回一个列表(数组) */
   public getItemList() {
@@ -341,7 +300,6 @@ export class Container extends DomFunctionImpl {
       for (let j = 0; j < ntList.length; j++) {
         if (ntList[j].id === (item.nested || '').replace('#', '')) {
           let ntNode = ntList[j]
-          // console.log(11111111111111, container);
           // console.log(ntNode);
           ntNode = ntNode.cloneNode(true)
           // newNode.id = ntList[j].id
@@ -495,17 +453,6 @@ export class Container extends DomFunctionImpl {
       width: nowWidth,
       height: nowHeight,
     }
-    // containerStyle.overflowX = this.col > (this.maxCol || this.col) ? 'scroll' : 'hidden'
-    // containerStyle.overflowY = this.row > (this.maxRow || this.row) ? 'scroll' : 'hidden'
-
-    // return {
-    //     // gridTemplateColumns: `repeat(${this.col},${this.size[0]}px)`,
-    //     // gridTemplateRows: `repeat(${this.row},${this.size[1]}px)`,
-    //     // gridAutoRows: `${this.size[1]}px`,
-    //     // gap: `${this.margin[0]}px ${this.margin[1]}px`,
-    //     // display: 'block',
-    //
-    // }
   }
 
   /** 计算当前Items所占用的Container宽度  */
@@ -566,21 +513,4 @@ export class Container extends DomFunctionImpl {
       }
     }
   }
-
-  // /**
-  //  * @deprecated
-  //  * 后面有使用场景再实现
-  //  * 将用户HTML原始文档中的Container根元素的直接儿子元素收集起来并转成Item收集在this.item中，
-  //  * 并将其渲染到DOM中  (弃用，不使用网页收集)  */
-  // _childCollect(): Item[] {
-  //   const items = []
-  //   Array.from(this.contentElement.children).forEach((node: HTMLElement) => {
-  //     let posData = Object.assign({}, node.dataset)
-  //     // console.log(posData);
-  //     const item = this.add({el: node, ...posData})
-  //     if (item) item.name = <string>item.getAttr('name')  //  开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
-  //     items.push(items)
-  //   })
-  //   return items
-  // }
 }
