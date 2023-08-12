@@ -11,59 +11,59 @@ export class ContainerGeneralImpl {
   /**
    * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
    * */
-  px: number
+  px?: number
 
   /** responsive:  默认为static静态布局,值等于true为响应式布局
    * @default false
    * */
-  responsive: boolean = false
+  responsive?: boolean = false
 
   /** default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
    * @default 'default'
    * */
-  responseMode: 'default' | 'exchange' | 'stream' = 'default'
+  responseMode?: 'default' | 'exchange' | 'stream' = 'default'
 
   /** 当前布局使用的数据*/
-  items: CustomItems = []
+  items?: CustomItems = []
 
   /** 列数 */
-  col: number = 1
+  col?: number = 1
 
   /** 行数， 响应模式下row由引擎管理且row不可固定，用户指定的row永远不会生效 */
-  row: number = 1
+  row?: number = 1
 
   /** 禁止传入的数组内出现单个null */
-  margin: MarginOrSizeDesc = [null, null]
+  margin?: MarginOrSizeDesc = [null, null]
 
   /** 距离左边，单位px，如果和margin[0]优先级大于 marginX */
-  marginX: any = null
+  marginX?: any = null
 
   /** 距离右边，单位px，如果和margin[1]优先级大于 marginY*/
-  marginY: any = null
+  marginY?: any = null
 
   /** 容器大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
-  size: MarginOrSizeDesc = [null, null]
+  size?: MarginOrSizeDesc = [null, null]
 
   /** 容器宽度
    * 如果和size[0]优先级大于 sizeWidth,在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
    * */
-  sizeWidth: number | null = null
+  sizeWidth?: number | null = null
 
   /** 容器高度
    *  如果和size[1]优先级大于 sizeHeight，sizeHeight,row,marginY都未指定的情况下将和sizeWidth大小一致
    * */
-  sizeHeight: number | null = null
+  sizeHeight?: number | null = null
 
   /** 最小列数 */
-  minCol: number | null = null
+  minCol?: number | null = null
 
   /** 最大列数 */
-  maxCol: number | null = null
+  maxCol?: number | null = null
 
   /** 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步 */
-  minRow: number | null = null
+  minRow?: number | null = null
   /** 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步 */
-  maxRow: number | null = null
+  maxRow?: number | null = null
 
   /**
    * 响应式下resize和drag自动撑开Row，内部暂未进行实现
@@ -74,7 +74,7 @@ export class ContainerGeneralImpl {
    *
    * @default  false
    * */
-  autoGrowRow: boolean = false
+  autoGrowRow?: boolean = false
   // autoGrowCol = true     // 暂未支持
 
   /**
@@ -82,7 +82,7 @@ export class ContainerGeneralImpl {
    *
    * @default  true
    * */
-  autoReorder: boolean = true
+  autoReorder?: boolean = true
 
   /**
    * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
@@ -92,7 +92,7 @@ export class ContainerGeneralImpl {
    *
    * @default  0.1
    * */
-  ratioCol: number = 0.1
+  ratioCol?: number = 0.1
 
   /**
    * (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定),
@@ -102,72 +102,72 @@ export class ContainerGeneralImpl {
    *
    * @default  0.1
    * */
-  ratioRow: number = 0.1
+  ratioRow?: number = 0.1
 
   /**
    * 是否在有上层滚动盒子包裹住容器时, 在鼠标拖动item到容器边缘时进行自动滚动
    * @default true
    * */
-  followScroll: boolean = true
+  followScroll?: boolean = true
 
   /**
    * 拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
    * @default 0.45
    * */
-  sensitivity: number = 0.45
+  sensitivity?: number = 0.45
 
   /**
    * 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
    * */
-  itemLimit: ItemLimitType = {}
+  itemLimit?: ItemLimitType = {}
 
   /**
    * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
    * @default 0.45
    * */
-  exchange: boolean = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
+  exchange?: boolean = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
 
   /**
    * 触屏下长按多久响应拖拽事件,默认360ms
    * @default 360
    * */
-  pressTime: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
+  pressTime?: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
 
   /**
    * 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
    * @default 800
    * */
-  scrollWaitTime: number = 800
+  scrollWaitTime?: number = 800
 
   /**
    * 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
    * @default 36  单位(ms)
    * */
-  scrollSpeedX: number | null = 36
+  scrollSpeedX?: number | null = 36
 
   /**
    * 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
    * @default 36  单位(ms)
    * */
-  scrollSpeedY: number | null = 36
+  scrollSpeedY?: number | null = 36
 
   /**
    * 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔
    * @default 50
    * */
-  resizeReactionDelay: number = 50
+  resizeReactionDelay?: number = 50
 
   /**
    * 点击container的空白处是否能拖拽进行滑动容器
    * @default true
    * */
-  slidePage: boolean = true
+  slidePage?: boolean = true
 
   /**
    * 如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许
    *
    *  @default false
    * */
-  nestedOutExchange: boolean = false
+  nestedOutExchange?: boolean = false
 
 }

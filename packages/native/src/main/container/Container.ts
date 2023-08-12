@@ -5,10 +5,10 @@ import {TempStore} from "@/utils/TempStore";
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
-import {Engine} from "@/main/Engine";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+import {Engine} from "@/main";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -45,7 +45,7 @@ const tempStore = TempStore.store
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
-export class Container extends DomFunctionImpl {
+export class Container {
   //---------实例化传进的的参数 --------//
   public name: string = ''
   public className: string = 'grid-container'
@@ -69,6 +69,7 @@ export class Container extends DomFunctionImpl {
   public containerH: number
   public containerW: number
   public eventManager: EventCallBack      // events通过封装构建的类实例
+  private readonly domImpl: DomFunctionImpl
 
   //----------------vue 支持---------------------//
   // TODO 后面在vue的layout模块使用declare module进行声明合并
@@ -76,7 +77,7 @@ export class Container extends DomFunctionImpl {
   public _VueEvents: object
   //----------------保持状态所用参数---------------------//
   private _mounted: boolean
-  private readonly _default: ContainerGeneralImpl
+  public readonly _default: ContainerGeneralImpl
   private __store__ = tempStore
   public __ownTemp__ = {
     //-----内部可写外部只读变量------//
@@ -100,13 +101,13 @@ export class Container extends DomFunctionImpl {
   }
 
   constructor(options: ContainerInstantiationOptions) {
-    super()
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
     merge(this, options)
     this._define()
     this.eventManager = new EventCallBack(<any>options.events)
     this.engine = new Engine(options)
     this.engine.setContainer(this)
+    this.domImpl = new DomFunctionImpl(this)
     this._default = new ContainerGeneralImpl()
     if (options.parent) {
       this.parent = options.parent
@@ -153,7 +154,7 @@ export class Container extends DomFunctionImpl {
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
-  public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): ContainerGeneralImpl[Name] {
+  public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
     // console.log(name, this.useLayout[name], this._default[name])
     return this.useLayout[name] || this.layout[name] || this.global[name] || this._default[name]
   }
@@ -204,7 +205,7 @@ export class Container extends DomFunctionImpl {
         this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
       } else {
         this._genGridContainerBox()
-        this.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
+        this.domImpl.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
       }
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._define()
@@ -247,7 +248,7 @@ export class Container extends DomFunctionImpl {
     this.contentElement.classList.add('grid-container-area')
     this.contentElement['_isGridContainerArea'] = true
     this.element.appendChild(this.contentElement)
-    this.updateStyle(defaultStyle.gridContainer, this.contentElement)
+    this.domImpl.updateStyle(defaultStyle.gridContainer, this.contentElement)
     this.contentElement.classList.add(this.className)
   }
 
@@ -400,7 +401,7 @@ export class Container extends DomFunctionImpl {
       _debounce() // 防抖，保证最后一次执行执行最终布局
     }
     const _debounce = debounce(layoutChangeFun, 300)
-    const _throttle = throttle(observerResize, 200)
+    const _throttle = throttle(observerResize, 80)
     this.__ownTemp__.observer = new ResizeObserver(_throttle)
     this.__ownTemp__.observer['observe'](this.element)
   }
@@ -473,7 +474,7 @@ export class Container extends DomFunctionImpl {
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
   public updateContainerStyleSize(): void {
-    this.updateStyle(this.genContainerStyle(), this.contentElement)
+    this.domImpl.updateStyle(this.genContainerStyle(), this.contentElement)
   }
 
   /** 根据挂载在实例上的containerW和containerH的值自动根据大小对Container进行更新 */

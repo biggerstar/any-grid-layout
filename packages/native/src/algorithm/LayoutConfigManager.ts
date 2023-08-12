@@ -1,7 +1,7 @@
 import {Container} from "@/main/container/Container";
 import {Item} from "@/main/item/Item";
-import {ItemPos} from "@/main/item/ItemPos";
 import {CustomItems} from "@/types";
+import {ItemPos} from "@/main";
 
 export class LayoutConfigManager {
   public container: Container
@@ -271,8 +271,6 @@ export class LayoutConfigManager {
       container.setConfig('col', maxCol)
       container.setConfig('row', maxRow)
 
-      layoutManager.setColNum(maxCol)
-      layoutManager.setRowNum(maxRow)
       layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
       layoutManager.addCol(maxCol - layoutManager._layoutMatrix[0].length)
       const preCol = container.__ownTemp__.preCol

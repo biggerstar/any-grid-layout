@@ -1,8 +1,14 @@
 import {getKebabCase, throttle} from "@/utils/tool";
 
 export class DomFunctionImpl {
-  element: HTMLElement
-  observer: MutationObserver
+  public element: HTMLElement
+  public observer: MutationObserver
+
+  constructor(app) {
+    Object.defineProperty(<object>this, 'element', {
+      get: () => app.element
+    })
+  }
 
   /** 直接将符合style对象形式的表达对象传入，会对Item`自身`的样式进行覆盖更新
    *  isCssText 是否通过 cssText 防止回流重绘

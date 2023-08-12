@@ -1,38 +1,33 @@
 import {merge} from "@/utils/tool";
 import {Item} from "@/main/item/Item";
+import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 
-export class ItemPos {
-  public get col(): number {
-    return this.belongItem.container.getConfig("col")
-  }
+export class ItemPos extends ItemPosGeneralImpl {
+  [key: string]: any
 
-  public get row(): number {
-    return this.belongItem.container.getConfig("row")
-  }
+  // public get col(): number {
+  //   return this.belongItem.container.getConfig("col")
+  // }
+  //
+  // public get row(): number {
+  //   return this.belongItem.container.getConfig("row")
+  // }
 
-  public belongItem: Item
-  public el: Element
-  public i: number
-  public w: number = 1
-  public h: number = 1
-  public x: number
-  public y: number
-  public initialX: number    //  第一次传入的X值
-  public initialY: number    //  第一次传入的Y值
-  public iName: string = ''
-  public nextStaticPos: ItemPos | null
-  public tempW: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
-  public tempH: number    // 临时高度，用于溢出栅格后适配临时作为item的高
+  public belongItem?: Item
+  public el?: Element
+  public i?: number
+  public initialX?: number    //  第一次传入的X值
+  public initialY?: number    //  第一次传入的Y值
+  public iName?: string = ''
+  public nextStaticPos?: ItemPos | null
+  public tempW?: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
+  public tempH?: number    // 临时高度，用于溢出栅格后适配临时作为item的高
 
-  public minW: number = 1          // 栅格倍数
-  public maxW: number = Infinity   // 栅格倍数
-  public minH: number = 1          // 栅格倍数
-  public maxH: number = Infinity   // 栅格倍数
-  public beforePos: ItemPos   //  跨容器时候保存上一个容器的位置
-  public autoOnce: boolean  // 静态布局下在下一次指定是否自动寻找容器中的空位
-  public posHash: string = ''  // 每个pos的唯一hash，可能重复
+  public beforePos?: ItemPos   //  跨容器时候保存上一个容器的位置
+  public autoOnce?: boolean  // 静态布局下在下一次指定是否自动寻找容器中的空位
+  public posHash?: string = ''  // 每个pos的唯一hash，可能重复
   constructor(pos) {
-    // console.log(pos.tempW);
+    super()
     this._define()
     if (typeof pos === 'object') this.update(pos)
     for (let i = 0; i < 4; i++) {
@@ -109,7 +104,7 @@ export class ItemPos {
     return this
   }
 
-  export(otherFieldList = []) {
+  export(otherFieldList = []): any {
     const exportFields = {}
     Object.keys(this).forEach((posKey) => {
       if (['w', 'h', 'x', 'y'].includes(posKey)) {

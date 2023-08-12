@@ -9,10 +9,11 @@ import {
   throttle
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
-import {ItemPos} from "@/main/item/ItemPos";
 import {Sync} from "@/utils/Sync";
 import {TempStore} from "@/utils/TempStore";
 import {Container} from "@/main/container/Container";
+import {ItemPos} from "@/main";
+import {ItemTransitionObject} from "@/types";
 
 const tempStore = TempStore.store
 
@@ -32,8 +33,8 @@ export class EditEvent {
           tempStore.cloneElement = fromItem.element.cloneNode(true)
           tempStore.cloneElement.classList.add('grid-clone-el', 'grid-resizing-clone-el')
           if (tempStore.cloneElement) tempStore.fromContainer.contentElement.appendChild(tempStore.cloneElement)
-          fromItem.updateStyle({transition: 'none'}, tempStore.cloneElement)
-          fromItem.addClass('grid-resizing-source-el')
+          fromItem.domImpl.updateStyle({transition: 'none'}, tempStore.cloneElement)
+          fromItem.domImpl.addClass('grid-resizing-source-el')
         }
         // console.log(fromItem.pos);
         const containerElRect = fromItem.container.contentElement.getBoundingClientRect()
@@ -49,7 +50,7 @@ export class EditEvent {
         //-----------------限制信息计算函数定义---------------------//
         const limitGrid = ({w, h}) => {
           // w，h是新的resize克隆元素对应生成大小的w，和h
-          const pos: ItemPos = fromItem.pos
+          const pos = <ItemPos>fromItem.pos
           //----------------检测改变的大小是否符合用户限制 -------------//
           if (fromItem.resizeOut) {
             if ((w + pos.x) > container.getConfig("col")) w = container.getConfig("col") - pos.x + 1     //item调整大小时在容器右边边界超出时进行限制
@@ -103,7 +104,7 @@ export class EditEvent {
             h = fromItem.pos.h   //必要，将当前实际高给newResize
           }
           if (Object.keys(updateStyle).length > 0) {
-            fromItem.updateStyle(updateStyle, tempStore.cloneElement)
+            fromItem.domImpl.updateStyle(updateStyle, tempStore.cloneElement)
           }
           return {
             w,
@@ -120,22 +121,22 @@ export class EditEvent {
           if (typeof fromItem._VueEvents['vueItemResizing'] === 'function') {
             fromItem._VueEvents['vueItemResizing'](fromItem, newResize.w, newResize.h)
           }
-          if (container.getConfig('autoGrowRow') && tempStore.isCoverRow) container.cover('row')
+          if (container.getConfig('autoGrowRow') && tempStore.isCoverRow) container?.['cover']?.('row')
           fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
 
           tempStore?.fromContainer.updateLayout(fromItem.container.getConfig("responsive") ? true : [fromItem])
-          fromItem.updateStyle(fromItem._genLimitSizeStyle())
+          fromItem.domImpl.updateStyle(fromItem._genLimitSizeStyle())
           fromItem.container.updateContainerStyleSize()
         }
       }, 15),
       mouseup: (_: Event) => {
-        const fromItem = tempStore.fromItem
-        if (fromItem === null) return
+        const fromItem: Item = tempStore.fromItem
+        if (!fromItem) return
         //----------------------------------------//
         fromItem.__temp__.clientWidth = fromItem.nowWidth()
         fromItem.__temp__.clientHeight = fromItem.nowHeight()
         tempStore.isLeftMousedown = false
-        fromItem.updateStyle(fromItem._genItemStyle())
+        fromItem.domImpl.updateStyle(fromItem.genItemStyle())
       },
     },
     check: {
@@ -343,8 +344,6 @@ export class EditEvent {
           let dragItemElement = fromItem.element
           const newItem = new Item({
             pos: dragItem.pos,
-            size: container.getConfig('size'),
-            margin: container.getConfig('margin'),
             el: dragItemElement,  //  将原本pos中的对应文档清除掉换克隆后的
             name: dragItem.name,
             type: dragItem.type,
@@ -538,7 +537,7 @@ export class EditEvent {
         if (nowMoveHeight < 1) nowMoveHeight = 1
         // console.log(offsetLeftPx,offsetTopPx);
         const growContainer: Container = dragItem.container
-        if (growContainer.getConfig('autoGrowRow') && tempStore.isCoverRow) growContainer.cover('row')
+        if (growContainer.getConfig('autoGrowRow') && tempStore.isCoverRow) growContainer?.['cover']?.('row')
         dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
         const responsiveLayoutAlgorithm = () => {
           if (dragItem === toItem) return   // 减少执行，和静态移动的话不同，对静态不进行限制，使得静态能在大Item下对微距的[移动move]调整更精确反应
@@ -809,8 +808,8 @@ export class EditEvent {
           tempStore.cloneElement = dragItem.element.cloneNode(true)
           tempStore.cloneElement.classList.add('grid-clone-el', 'grid-dragging-clone-el')
           document.body.appendChild(tempStore.cloneElement)    // 直接添加到body中后面定位省心省力
-          dragItem.addClass('grid-dragging-source-el')
-          dragItem.updateStyle({
+          dragItem.domImpl.addClass('grid-dragging-source-el')
+          dragItem.domImpl.updateStyle({
             pointerEvents: 'none',
             transitionProperty: 'none',
             transitionDuration: 'none',
@@ -847,7 +846,7 @@ export class EditEvent {
           if (top > limitBottom) top = limitBottom
           // console.log(containerElOffset,left,top);
         }
-        dragItem.updateStyle({
+        dragItem.domImpl.updateStyle({
           left: left + 'px',
           top: top + 'px',
         }, tempStore.cloneElement)
@@ -1054,8 +1053,8 @@ export class EditEvent {
         // if (tempStore.isDragging) EEF.itemDrag.mouseup(ev)
 
         if (container && EEF.cursor.cursor !== 'in-container') EEF.cursor.inContainer()
-        const fromItem = tempStore.fromItem
-        const dragItem = tempStore.moveItem ? tempStore.moveItem : tempStore.fromItem
+        const fromItem: Item = tempStore.fromItem
+        const dragItem: Item = tempStore.moveItem ? tempStore.moveItem : tempStore.fromItem
 
         //----------移除Drag或者Resize创建的克隆备份-------------//
         if (tempStore.cloneElement !== null) {   //  清除对Item拖动或者调整大小产生的克隆对象
@@ -1066,22 +1065,23 @@ export class EditEvent {
           for (let i = 0; i < gridCloneEls.length; i++) {
             const gridCloneEl = gridCloneEls[i]
             if (dragItem.transition) {
+              const transition = <ItemTransitionObject>dragItem.transition
               const containerElOffset = dragItem.container.contentElement.getBoundingClientRect()
               if (tempStore.isDragging) {
                 let left = window.scrollX + containerElOffset.left + dragItem.offsetLeft()
                 let top = window.scrollY + containerElOffset.top + dragItem.offsetTop()
-                dragItem.updateStyle({
-                  transitionProperty: `${dragItem.transition.field}`,
-                  transitionDuration: `${dragItem.transition.time}ms`,
+                dragItem.domImpl.updateStyle({
+                  transitionProperty: `${transition.field}`,
+                  transitionDuration: `${transition.time}ms`,
                   width: `${dragItem.nowWidth()}px`,
                   height: `${dragItem.nowHeight()}px`,
                   left: `${left}px`,
                   top: `${top}px`
                 }, gridCloneEl)
               } else if (tempStore.isResizing) {
-                dragItem.updateStyle({
-                  transitionProperty: `${dragItem.transition.field}`,
-                  transitionDuration: `${dragItem.transition.time}ms`,
+                dragItem.domImpl.updateStyle({
+                  transitionProperty: `${transition.field}`,
+                  transitionDuration: `${transition.time}ms`,
                   width: `${dragItem.nowWidth()}px`,
                   height: `${dragItem.nowHeight()}px`,
                   left: `${dragItem.offsetLeft()}px`,
@@ -1091,7 +1091,7 @@ export class EditEvent {
             }
 
             function removeCloneEl() {
-              dragItem.removeClass('grid-dragging-source-el', 'grid-resizing-source-el')
+              dragItem.domImpl.removeClass('grid-dragging-source-el', 'grid-resizing-source-el')
               try {    // 拖拽
                 gridCloneEl.parentNode.removeChild(gridCloneEl)
               } catch (e) {
@@ -1103,7 +1103,7 @@ export class EditEvent {
             }
 
             if (dragItem.transition) {
-              timer = setTimeout(removeCloneEl, dragItem.transition.time)
+              timer = setTimeout(removeCloneEl, (dragItem.transition as ItemTransitionObject).time)
             } else removeCloneEl()
           }
         }
@@ -1154,8 +1154,8 @@ export class EditEvent {
           const resizeIncludeNestedContainer = fromItem.container
           const childContainers = resizeIncludeNestedContainer.childContainer
           childContainers.forEach((info) => {
-            if (info.nestingItem === fromItem) {
-              info.container.engine.updateLayout(true)   // 更新内部内嵌的Item
+            if (info['nestingItem'] === fromItem) {
+              info['container'].engine.updateLayout(true)   // 更新内部内嵌的Item
             }
           })
         }

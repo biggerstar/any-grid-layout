@@ -1,4 +1,4 @@
-import {ItemLayoutOption} from "@/types";
+import {CustomItem, CustomItems} from "@/types";
 
 
 /** 节流 */
@@ -207,9 +207,7 @@ export const singleTouchToCommonEvent = (touchEvent) => {
  *    fillInItemLayoutList(items,{ close:true })
  *    //  items结果: [{  pos:{w:h},close:true }]
  * */
-export function fillItemLayoutList(items: ItemLayoutOption = [], fillFields: ItemLayoutOption = {}, force: boolean = false): ItemLayoutOption[] {
-  // @ts-ignore
-  if (!Array.isArray(items)) items = [items]
+export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, force: boolean = false): CustomItems[] {
   return items.map((item) => {
     if (force) {
       item = Object.assign(item, fillFields)
@@ -218,7 +216,6 @@ export function fillItemLayoutList(items: ItemLayoutOption = [], fillFields: Ite
         if (!item.hasOwnProperty(k)) item[k] = fillFields[k]
       }
     }
-
     return JSON.parse(JSON.stringify(item))
   })
 }

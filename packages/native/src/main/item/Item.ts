@@ -3,12 +3,13 @@
 import {merge} from "@/utils/tool";
 import {defaultStyle} from "@/default/style/defaultStyle";
 import {TempStore} from "@/utils/TempStore";
-import {ItemPos} from "@/main/item/ItemPos";
 import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {Container} from "@/main/container/Container";
-import {ItemLayoutOption, MarginOrSizeDesc} from "@/types";
+import {CustomItem, MarginOrSizeDesc} from "@/types";
+import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
+import {ItemPos} from "@/main";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -19,9 +20,8 @@ const tempStore = TempStore.store
  * @param {Element} el 传入的原生Element
  * @param {Object} pos 一个包含Item位置信息的对象
  * */
-export class Item extends ItemGeneralImpl {
-  [key: string]: any
 
+export class Item extends ItemGeneralImpl {
   //----------------内部需要的参数---------------------//
   public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
   public element: HTMLElement
@@ -33,13 +33,15 @@ export class Item extends ItemGeneralImpl {
   public edit: boolean  // 该Item是否正在被编辑(只读)
   public nested: boolean = false
   public parentElement: HTMLElement
+  public readonly domImpl: DomFunctionImpl
+  public pos: ItemPos
 
   //----------------vue专用---------------------//
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
   private _mounted: boolean = false
-  private _resizeTabEl: null | HTMLElement = null
-  private _closeEl: null | HTMLElement = null
+  private _resizeTabEl?: HTMLElement
+  private _closeEl?: HTMLElement
   public __temp__: Record<any, any> = {
     // -------------不可写变量--------------//
 
@@ -68,24 +70,25 @@ export class Item extends ItemGeneralImpl {
    * Item间距 [左右, 上下]
    * */
   public get margin(): MarginOrSizeDesc {  //
-    return this.container.getConfig('margin')
+    return this.container.getConfig('margin') as MarginOrSizeDesc
   }
 
   /**
    * Item宽高 [宽度, 高度]
    * */
   public get size(): MarginOrSizeDesc {  //
-    return this.container.getConfig('size')
+    return this.container.getConfig('size') as MarginOrSizeDesc
   }
 
   //----------------------------------------------------------
-  constructor(itemOption: ItemLayoutOption) {
+  constructor(itemOption: CustomItem) {
     super()
     if (itemOption.el instanceof Element) {
       this.el = itemOption.el
       this.element = itemOption.el
     }
     merge(this, itemOption)
+    this.domImpl = new DomFunctionImpl(this)
     this.pos = new ItemPos(itemOption.pos)
     this.pos.belongItem = this
     this._itemSizeLimitCheck()
@@ -172,7 +175,7 @@ export class Item extends ItemGeneralImpl {
     const item = this
     const exposeConfig: Record<any, any> = {}
     let exposePos: Record<any, any>
-    exposePos = item.pos.export(otherFieldList)
+    exposePos = item.pos.export?.(otherFieldList)
 
     if (banFieldList.includes('x')) delete exposePos.x
     if (banFieldList.includes('y')) delete exposePos.y
@@ -214,7 +217,7 @@ export class Item extends ItemGeneralImpl {
       this.attr = <any>Array.from(this.element.attributes)
       this.element.classList.add(this.className)
       this.classList = Array.from(this.element.classList)
-      this.updateStyle(defaultStyle.gridItem)
+      this.domImpl.updateStyle(defaultStyle.gridItem)
       this.updateItemLayout()
       //--------------开启编辑和动画------------------
       this._handleResize(this.resize)
@@ -304,7 +307,7 @@ export class Item extends ItemGeneralImpl {
         } else if (transition.time === 0) {
           style.transition = 'none'
         }
-        this.updateStyle(style)
+        this.domImpl.updateStyle(style)
       },
       rule: () => this.__temp__.isDelayLoadAnimation
     })
@@ -318,7 +321,7 @@ export class Item extends ItemGeneralImpl {
 
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
   public updateItemLayout() {
-    this.updateStyle(this._genItemStyle())
+    this.domImpl.updateStyle(this.genItemStyle())
   }
 
   /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框 */
@@ -398,12 +401,12 @@ export class Item extends ItemGeneralImpl {
   private _handleResize(isResize = false) {
     const handleResizeFunc = () => {
       const className = 'grid-item-resizable-handle'
-      if (isResize && this._resizeTabEl === null) {
+      if (isResize && !this._resizeTabEl) {
         const handleResizeEls = this.element.querySelectorAll('.' + className)
         if (handleResizeEls.length > 0) return;
         const resizeTabEl = document.createElement('span')
         resizeTabEl.innerHTML = '⊿'
-        this.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
+        this.domImpl.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
         this.element.appendChild(resizeTabEl)
         resizeTabEl.classList.add(className)
         this._resizeTabEl = resizeTabEl
@@ -412,7 +415,6 @@ export class Item extends ItemGeneralImpl {
           const node = this.element.children[i]
           if (node.className.includes(className)) {
             this.element.removeChild(node)
-            this._resizeTabEl = null
           }
         }
       }
@@ -427,20 +429,19 @@ export class Item extends ItemGeneralImpl {
   private _closeBtn(isDisplayBtn = false) {
     const closeBtnFunc = () => {
       const className = 'grid-item-close-btn'
-      if (isDisplayBtn && this._closeEl === null) {
+      if (isDisplayBtn && !this._closeEl) {
         const _closeEl = document.createElement('div')
-        this.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
+        this.domImpl.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
         this._closeEl = _closeEl
         _closeEl.classList.add(className)
         this.element.appendChild(_closeEl)
         _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
       }
-      if (this._closeEl !== null && !isDisplayBtn) {
+      if (this._closeEl && !isDisplayBtn) {
         for (let i = 0; i < this.element.children.length; i++) {
           const node = this.element.children[i]
           if (node.className.includes(className)) {
             this.element.removeChild(node)
-            this._closeEl = null
           }
         }
       }
@@ -453,7 +454,7 @@ export class Item extends ItemGeneralImpl {
   public _mask_(isMask = false) {
     if (isMask) {
       const maskEl = document.createElement('div')
-      this.updateStyle({
+      this.domImpl.updateStyle({
         backgroundColor: 'transparent',
         height: this.element.clientHeight + 'px',
         width: this.element.clientWidth + 'px',
@@ -476,25 +477,23 @@ export class Item extends ItemGeneralImpl {
 
   /** 做Item的大小信息限制 */
   private _itemSizeLimitCheck() {
-    const pos = this.pos
-    let realW = pos.w
-    let realH = pos.h
+    let {minW, minH, maxW, maxH, w, h} = this.pos
     // 宽度
-    if (pos.minW >= pos.maxW && pos.maxW >= pos.w && pos.maxW !== Infinity) realW = pos.maxW
-    else if (pos.w > pos.maxW && pos.maxW !== Infinity) realW = pos.maxW
-    else if (pos.w < pos.minW) realW = pos.minW
+    if (minW >= maxW && maxW >= w && maxW !== Infinity) w = maxW
+    else if (w > maxW && maxW !== Infinity) w = maxW
+    else if (w < minW) w = minW
 
     // 高度
-    if (pos.minH >= pos.maxH && pos.maxH >= pos.h && pos.maxH !== Infinity) realH = pos.maxH
-    else if (pos.h > pos.maxH && pos.maxH !== Infinity) realH = pos.maxH
-    else if (pos.h < pos.minH) realH = pos.minH
+    if (minH >= maxH && maxH >= h && maxH !== Infinity) h = maxH
+    else if (h > maxH && maxH !== Infinity) h = maxH
+    else if (h < minH) h = minH
 
-    this.pos.w = realW
-    this.pos.h = realH
+    this.pos.w = w
+    this.pos.h = h
   }
 
   /** 生成该ITEM的栅格放置位置样式  */
-  private _genItemStyle = () => {
+  public genItemStyle = () => {
     // console.log(this.offsetLeft(),this.offsetTop());
     if (this.styleLock()) return {}
     //   三种布局方案，都实现了grid布局 //

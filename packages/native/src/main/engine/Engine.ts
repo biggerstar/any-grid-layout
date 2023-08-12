@@ -4,7 +4,7 @@ import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, ItemLimitType} from "@/types";
-import {ItemPos} from "@/main/item/ItemPos";
+import {ItemPos} from "@/main";
 
 /**
  * #####################################################################
@@ -44,6 +44,15 @@ export class Engine {
     this.layoutConfigManager.setContainer(this.container)
     this.layoutConfigManager.initLayoutInfo()
     this.initialized = true
+    this.test()
+  }
+
+  private test() {
+    this._sync()
+    const items = this.container.getConfig('items')
+    console.log(this.layoutManager.analysis(items));
+
+
   }
 
   /** 同步 Container 和 layoutManager 的配置信息 */
@@ -509,14 +518,14 @@ export class Engine {
    *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
    * */
   public _isCanAddItemToContainer_(item: Item, responsive: boolean = false, addSeat: boolean = false) {
-    let realLayoutPos: ItemPos | null
-    let nextStaticPos: ItemPos = item.pos.nextStaticPos ? item.pos.nextStaticPos : item.pos
+    let realLayoutPos
+    let nextStaticPos = item.pos.nextStaticPos ? item.pos.nextStaticPos : item.pos
     nextStaticPos.i = item.i
     const cloneNextStaticPos = Object.assign({}, nextStaticPos)
     if (item.pos.tempW) cloneNextStaticPos.w = item.pos.tempW
     if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
     // console.log(nextStaticPos.col);
-    realLayoutPos = this.layoutManager.findItem(cloneNextStaticPos, responsive)
+    realLayoutPos = this.layoutManager.findBlank(cloneNextStaticPos, responsive)
     if (realLayoutPos) {
       if (addSeat) {
         this.layoutManager.addItem(realLayoutPos)
@@ -619,6 +628,7 @@ export class Engine {
         this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
       }
     }
+
     // const isDebugger = false
     // if (isDebugger) {
     //     for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
