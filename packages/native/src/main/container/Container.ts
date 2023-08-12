@@ -191,7 +191,7 @@ export class Container {
   public mount(): void {
     if (this._mounted) return console.warn('[mount Function] 容器重复挂载被阻止', this)
     const _mountedFun = () => {
-      //---------------------------------------------------------//
+      //-----------------------容器dom初始化-----------------------//
       if (this.el instanceof Element) this.element = this.el
       if (!this.element) {
         if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
@@ -199,7 +199,6 @@ export class Container {
       }
       this.element['_gridContainer_'] = this       // TODO declare global
       this.element['_isGridContainer_'] = true
-      this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       // this._collectNestingMountPoint()
       if (this.platform === 'vue') {
         this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
@@ -207,10 +206,11 @@ export class Container {
         this._genGridContainerBox()
         this.domImpl.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
       }
-      this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
-      // this._define()
       this.attr = Array.from(this.element.attributes)
       this.classList = Array.from(this.element.classList)
+
+      //-----------------容器布局信息初始化与检测--------------------//
+      this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       if (this.element && this.element.clientWidth > 0) {
         this.engine._sync()
         if (!this.getConfig("responsive") && !this.getConfig("row")) {
@@ -221,6 +221,8 @@ export class Container {
         }
       }
       this._observer_()
+
+      //-------------------------其他操作--------------------------//
       let nestingTimer: any = setTimeout(() => {
         this._isNestingContainer_()
         clearTimeout(nestingTimer)
@@ -228,7 +230,7 @@ export class Container {
       })
       if (this.platform === 'native') {
         const items = <any[]>this.layout.items || []
-        items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
+        // items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
       }
       this.updateContainerStyleSize()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
@@ -416,20 +418,14 @@ export class Container {
   }
 
   /** 为dom添加新成员
-   * @param { Object || Item } item 可以是一个Item实例类或者一个配置对象
-   * @return {Item|| NonNullable}  添加成功返回该添加创建的Item，添加失败返回null
-   * item : {
-   *      el : 传入一个已经存在的 element
-   *      w : 指定宽 栅格倍数,
-   *      h : 指定高 栅格倍数
-   *      ......
-   *      }
+   * @param { CustomItem} itemOptions
+   * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
    * */
-  public add(item): null | Item {
-    // console.log(item.autoOnce);
+  public add(itemOptions): null | Item {
+    const item = new Item(itemOptions)
     item.container = this
     item.parentElement = this.contentElement
-    if (!(item instanceof Item)) item = this.engine.createItem(item)
+    item.i = this.getConfig('items').length
     return this.engine.addItem(item)
   }
 

@@ -4,7 +4,6 @@ import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, ItemLimitType} from "@/types";
-import {ItemPos} from "@/main";
 
 /**
  * #####################################################################
@@ -44,13 +43,24 @@ export class Engine {
     this.layoutConfigManager.setContainer(this.container)
     this.layoutConfigManager.initLayoutInfo()
     this.initialized = true
-    this.test()
+    this._initItems()
   }
 
-  private test() {
+  private _initItems() {
     this._sync()
-    const items = this.container.getConfig('items')
-    console.log(this.layoutManager.analysis(items));
+    const container = this.container
+    const items = container.getConfig('items')
+    const layoutManager = this.layoutManager
+    // console.log(container.getConfig('col'), container.getConfig('row'))
+    layoutManager.reset(container.getConfig('col'), container.getConfig('row'))
+    console.log(items)
+    const allItemLayoutInfo = layoutManager.analysis(items, (item, pos) => {
+      Object.assign(item.pos, pos)
+      if (pos) this.container.add(item)
+    })
+    this.container.eventManager._error_('')
+    // layoutManager.markList(allItemLayoutInfo.success.map((item) => item.pos))
+    console.log(allItemLayoutInfo)
 
 
   }
@@ -237,7 +247,8 @@ export class Engine {
     this.container.mount()
   }
 
-  /** 添加一个Item 只添加不挂载 */
+
+
   public addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const itemLimit = this.container.getConfig("itemLimit")    // Container所有Item的限制信息
     const eventManager = this.container.eventManager
@@ -277,63 +288,71 @@ export class Engine {
     // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
     // this.items.push(item)
     // return true
-    const autoReorder = () => {
-      let success = false
-      // 用于响应式下自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
-      // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
-      // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
-      if (this.items.length <= 1) {
-        this.items.push(item)
-        success = true
-      } else {
-        let nextIndexItem, nowIndexItem
-        for (let i = 0; i < this.items.length; i++) {
-          if (this.items.length > i) {
-            nowIndexItem = this.items[i]
-            nextIndexItem = this.items[i + 1]
-          }
-          if (nextIndexItem) {
-            const nowPos = nowIndexItem.pos
-            const nextPos = nextIndexItem.pos
-            if (!realLayoutPos) return false
-            if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
-              this.insert(item, i + 1)
-              success = true
-              break
-            }
-          } else {
-            this.items.push(item)
-            success = true
-            break
-          }
-        }
-      }
-      return success
-    }
-    //-----------------------添加新Item的逻辑---------------------------//
-    // TODO 将_isCanAddItemToContainer_添加逻辑移动到addItem函数，_tryPush值作为判断能否添加的工具函数
-    let realLayoutPos: ItemPos | null
-    if (!item.autoOnce) {
-      // 如果是指定了x和y，必然能添加进去
-      this.items.push(item)
-      this.layoutConfigManager.autoSetColAndRows()
-      this._isCanAddItemToContainer_(item, item.autoOnce, true)
-      const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
-      if (!realLayoutPos) return false  // 此时指定了x,y,Item位置重叠
-      else this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
-      return true
-    } else {
-      // console.log(item.pos);
-      realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
-      // console.log(realLayoutPos?.col)
-      if (!realLayoutPos) return false
-      if (this.container.getConfig("autoReorder") && this.container.getConfig('responsive')) {
-        return autoReorder()  // 只有响应式下生效
-      } else {
-        this.items.push(item)
-        return true
-      }
-    }
+
+    const foundPos = this.layoutManager.findBlank(item.pos)
+    // console.log(foundPos)
+    if (!foundPos) return false
+    this.items.push(item)
+    return true
+
+
+    // const autoReorder = () => {
+    //   let success = false
+    //   // 用于响应式下自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
+    //   // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
+    //   // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
+    //   if (this.items.length <= 1) {
+    //     this.items.push(item)
+    //     success = true
+    //   } else {
+    //     let nextIndexItem, nowIndexItem
+    //     for (let i = 0; i < this.items.length; i++) {
+    //       if (this.items.length > i) {
+    //         nowIndexItem = this.items[i]
+    //         nextIndexItem = this.items[i + 1]
+    //       }
+    //       if (nextIndexItem) {
+    //         const nowPos = nowIndexItem.pos
+    //         const nextPos = nextIndexItem.pos
+    //         if (!realLayoutPos) return false
+    //         if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
+    //           this.insert(item, i + 1)
+    //           success = true
+    //           break
+    //         }
+    //       } else {
+    //         this.items.push(item)
+    //         success = true
+    //         break
+    //       }
+    //     }
+    //   }
+    //   return success
+    // }
+    // //-----------------------添加新Item的逻辑---------------------------//
+    // // TODO 将_isCanAddItemToContainer_添加逻辑移动到addItem函数，_tryPush值作为判断能否添加的工具函数
+    // let realLayoutPos: ItemPos | null
+    // if (!item.autoOnce) {
+    //   // 如果是指定了x和y，必然能添加进去
+    //   this.items.push(item)
+    //   this.layoutConfigManager.autoSetColAndRows()
+    //   this._isCanAddItemToContainer_(item, item.autoOnce, true)
+    //   const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
+    //   if (!realLayoutPos) return false  // 此时指定了x,y,Item位置重叠
+    //   else this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
+    //   return true
+    // } else {
+    //   // console.log(item.pos);
+    //   realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
+    //   // console.log(realLayoutPos?.col)
+    //   if (!realLayoutPos) return false
+    //   if (this.container.getConfig("autoReorder") && this.container.getConfig('responsive')) {
+    //     return autoReorder()  // 只有响应式下生效
+    //   } else {
+    //     this.items.push(item)
+    //     return true
+    //   }
+    // }
 
   }
 
@@ -371,7 +390,8 @@ export class Engine {
 
   /** 清除重置布局矩阵 */
   public reset() {
-    this.layoutManager.reset()
+    return
+    this.layoutManager.reset(this.container.getConfig('col'), this.container.getConfig('row'))
   }
 
   /** 清除所有Items */
@@ -437,20 +457,6 @@ export class Engine {
     })   // 为当前位置的Item按items底标索引重新编号
   }
 
-  /** 使用itemOption对象创建一个Item, 如果有传入的el会直接将该el对应的Element对象转化成Item */
-  public createItem(itemOption) {
-    //-------后面增加item需用的实例化传参需在这里为item添加该参数------//
-    //   也能直接使用merge函数合并，这里分开没为什么
-    itemOption.container = this.container
-    itemOption.size = this.container.getConfig("size")
-    itemOption.margin = this.container.getConfig('margin')
-    itemOption.resize = Boolean(itemOption.resize)
-    itemOption.draggable = Boolean(itemOption.draggable)
-    itemOption.close = Boolean(itemOption.close)
-    //-----------------------------------------------------------//
-    itemOption.i = this.items.length  // 为item自动编号，动态值，决定因素是原始html元素加上后面添加的item
-    return new Item(itemOption)
-  }
 
   /**  参数详情见类 Container.find 函数
    * */
@@ -525,7 +531,9 @@ export class Engine {
     if (item.pos.tempW) cloneNextStaticPos.w = item.pos.tempW
     if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
     // console.log(nextStaticPos.col);
-    realLayoutPos = this.layoutManager.findBlank(cloneNextStaticPos, responsive)
+    return
+    realLayoutPos = this.layoutManager.findBlank(cloneNextStaticPos)
+    // console.log(realLayoutPos)
     if (realLayoutPos) {
       if (addSeat) {
         this.layoutManager.addItem(realLayoutPos)

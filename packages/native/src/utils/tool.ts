@@ -207,7 +207,7 @@ export const singleTouchToCommonEvent = (touchEvent) => {
  *    fillInItemLayoutList(items,{ close:true })
  *    //  items结果: [{  pos:{w:h},close:true }]
  * */
-export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, force: boolean = false): CustomItems[] {
+export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, force: boolean = false): CustomItems {
   return items.map((item) => {
     if (force) {
       item = Object.assign(item, fillFields)

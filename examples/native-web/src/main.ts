@@ -163,9 +163,9 @@ const container1 = new Container({
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData11, {
-        draggable: true,
-        resize: true,
-        close: true,
+        // draggable: true,
+        // resize: true,
+        // close: true,
       }),
       // minCol: 5,
     },
@@ -210,7 +210,7 @@ const container1 = new Container({
   },
   events: {
     error(err) {
-      console.log(err);
+      // console.log(err);
       // err.from.remove()
     },
     itemMove(item, nowX, nowY) {

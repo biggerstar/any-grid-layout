@@ -241,8 +241,7 @@ export class LayoutConfigManager {
       }
       if (
         coverRow
-        || !row
-        || (responsive && !container.getConfig("row")/*初次加载时*/)
+        || (!col && !margin[1] && !size[1])
         || (row || Infinity) < smartInfo.smartRow) {  // 没给出row则自适应，自动计算有
         //  如果静态模式下col和row有任何一个没有指定，则看看是否有static成员并获取其最大位置
         maxRow = smartInfo.smartRow
@@ -254,8 +253,9 @@ export class LayoutConfigManager {
 
       // console.log(maxRow);
     }
-    // console.log(maxCol, maxRow)
     AutoSetting()
+
+    // console.log(maxCol, maxRow)
 
 
     let containerW = maxCol
@@ -271,8 +271,8 @@ export class LayoutConfigManager {
       container.setConfig('col', maxCol)
       container.setConfig('row', maxRow)
 
-      layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
-      layoutManager.addCol(maxCol - layoutManager._layoutMatrix[0].length)
+      // layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
+      // layoutManager.addCol(maxCol - layoutManager._layoutMatrix[0].length)
       const preCol = container.__ownTemp__.preCol
       const preRow = container.__ownTemp__.preRow
       if (maxCol !== preCol) {

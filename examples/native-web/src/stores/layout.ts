@@ -7,6 +7,7 @@ export const layoutData11: CustomItems = [
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 2, x: 1, y: 2}, static: true, resize: false},
+  {pos: {w: 1, h: 2, x: 1, y: 3}, static: true},
   {pos: {w: 1, h: 1}},
   {pos: {w: 2, h: 2, x: 3, y: 6}, static: true},
   {pos: {w: 1, h: 1}},
@@ -15,6 +16,13 @@ export const layoutData11: CustomItems = [
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
+
+  {pos: {w: 4, h: 3}},
+  {pos: {w: 2, h: 3}},
+  {pos: {w: 2, h: 3}},
+  {pos: {w: 4, h: 3}},
+  {pos: {w: 1, h: 3}},
+
 ]
 
 export const layoutData22: CustomItems = [

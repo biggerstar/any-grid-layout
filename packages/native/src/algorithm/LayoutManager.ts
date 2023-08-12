@@ -4,8 +4,8 @@
  *  pos 是ItemPos类成员
  * */
 import {Layout} from "@/algorithm/Layout";
-import {Item, ItemPos} from "@/main";
-import {CustomItem} from "@/types";
+import {Item, ItemPos, ItemPosGeneralImpl} from "@/main";
+import {CustomItem, CustomItemPos} from "@/types";
 
 export class LayoutManager extends Layout {
   //-----------很有用的用户参数----------//
@@ -29,12 +29,9 @@ export class LayoutManager extends Layout {
   }
 
 
-  /** 用于重设清空矩阵信息和当前组件们的布局信息  */
-  reset() {
-    this._layoutMatrix = [[]]
-  }
-
-  /** ItemPos转用于算法布局计算的ItemLayout */
+  /**
+   * ItemPos转成用于算法布局计算的ItemLayout
+   * */
   itemPosToItemLayout(posOption) {
     return {
       w: posOption.w,
@@ -49,20 +46,76 @@ export class LayoutManager extends Layout {
     }
   }
 
-
-  analysis(items: Item[] | CustomItem[]) {
+  /**
+   * 传入Item列表，分析当前所有Item预添加到矩阵中的情况
+   * 该函数只是并没有实际添加
+   * @param items
+   * @param fn  回调
+   *
+   * */
+  analysis(items: Item[] | CustomItem[], fn?: (item: CustomItem, pos: CustomItemPos | null) => any)
+    : {
+    /** 允许添加的item */
+    success: Item[],
+    /** 不允许添加的item */
+    failed: Item[],
+  } {
+    this.reset()
     items = this.sortStatic(items)
-    console.log(items)
-
+    const success = []
+    const failed = []
     items.forEach((item) => {
-      const realPos = this.findBlank(<ItemPos>item.pos, true)
-      console.log(realPos)
+      const finalPos = this.findBlank(<ItemPosGeneralImpl>{...item.pos})
+      finalPos ? success.push(item) : failed.push(item)
+      if (typeof fn === 'function') fn(item, finalPos)
+      if (finalPos) this.mark(<any>finalPos)
+    })
+    this.reset()
+    return {
+      success,
+      failed,
+    }
+  }
+
+
+  layout(items: Item[] | CustomItem[]) {
+    this.reset()
+    items.forEach((item)=>{
 
     })
 
 
-    return ''
+
   }
+
+  /**
+   * 传入一个pos，查看当前矩阵中是否存在适合该pos的空位
+   * 有两种情况:
+   * - 如果pos指定了x,y则查看当前矩阵该位置是否有空位
+   * - 如果pos没有指定x,y，则自动寻找当前矩阵中适合w,h尺寸的空位
+   * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
+   *
+   * */
+  findBlank(pos: CustomItemPos): CustomItemPos | null {
+    const {w, h, x, y} = pos
+    const isStaticPos = x > 0 && y > 0 && x !== Infinity && y !== Infinity
+    let resPos = null
+    if (isStaticPos) {
+      if (this.isBlank(pos)) resPos = {...pos}
+    } else {
+      this.each((curRow, curCol) => {
+        const tryPos = {
+          w,
+          h,
+          x: curCol + 1,
+          y: curRow + 1,
+        }
+        if (this.isBlank(tryPos)) return resPos = tryPos
+      })
+    }
+    return resPos
+  }
+
 
   addItem(itemLayout) {
     this._updateSeatLayout(itemLayout)
@@ -74,34 +127,35 @@ export class LayoutManager extends Layout {
    * @param auto {boolean} 是否自动排列
    * @return ItemPos | null 布局对象
    * */
-  findBlank = (posOption: ItemPos, auto: boolean = false): ItemPos | null => {
-    if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
-    let findItemLayout
-    // console.log(posOption);
-    // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-    findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
-    if (!findItemLayout) return null
-    if (posOption.i) findItemLayout.iName = this._toINameHash(posOption.i)
+  // findBlank = (posOption: ItemPos, auto: boolean = false): ItemPos | null => {
+  //   if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
+  //   let findItemLayout
+  //   // console.log(posOption);
+  //   // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
+  //   findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
+  //   if (!findItemLayout) return null
+  //   if (posOption.i) findItemLayout.iName = this._toINameHash(posOption.i)
+  //
+  //   if (!auto) {
+  //     if (this.isStaticBlank111(posOption)) {
+  //       findItemLayout = this.itemPosToItemLayout(posOption)
+  //       return findItemLayout
+  //     } else return null
+  //   }
+  //   // console.log(findItemLayout);
+  //   if (!auto && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
+  //   else return findItemLayout
+  // }
 
-    if (auto) {
-    } else {
-      if (this.isStaticBlank(posOption)) {
-        findItemLayout = this.itemPosToItemLayout(posOption)
-        return findItemLayout
-      } else return null
-    }
-    // console.log(findItemLayout);
-    if (!auto && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
-    else return findItemLayout
-  }
 
-
-  /** 静态布局情况下根据x,y,w,h判断是否在布局矩阵中有空位，[该函数不适用于静态跨容器检测]
+  /**
+   * 该函数为了优化： 只判断某个item位置变化而不是所有item
+   * 静态布局情况下根据x,y,w,h判断是否在布局矩阵中有空位，[该函数不适用于静态跨容器检测]
    * 如果要静态检测可以用 engine.findCoverItemFromPosition找范围内的Item，没啥太大区别
    *  @param {ItemPos} nextStaticPos 主要是决定判断结果的只有 x,y,w,h
    *  @return {Boolean} isBlank
    * */
-  isStaticBlank(nextStaticPos) {
+  isStaticBlank111(nextStaticPos) {
     if (nextStaticPos === null) return false
     const {xStart, yStart, xEnd, yEnd} = this.itemPosToItemLayout(nextStaticPos)
     let isBlank = true
@@ -115,7 +169,7 @@ export class LayoutManager extends Layout {
         const point = this._layoutMatrix[rowIndex][colIndex]
         // 静态外部跨容器同iName会检测失效，存在该表达式作用时静态resize能允许忽略同iName下检测结果为有空格，该函数不适用于静态跨容器
         if (iName.toString() === point) continue
-        if (point !== false) {
+        if (point === this.placed) {
           isBlank = false
           break
         }
@@ -135,52 +189,43 @@ export class LayoutManager extends Layout {
     let xPointStart = 0
     let xPointEnd = this.col - 1
     let yPointStart = 0
-    let rowPointData = []
+
+    let rowData = []
     let counter = 0
-    while (counter++ < 500) {  // counter 加一次索引行数加1,500表示最大500行,正常这够用了吧？
-      if (this._layoutMatrix.length < (h + yPointStart)) {
-        if (this.isAutoRow) {
-          this.addRow((h + yPointStart) - this._layoutMatrix.length)  // 缺几行添加几行,响应式模式用到静态布局没用到
-        }
-      }
-      let findSuccess = true
+
+    while (counter++ < this._layoutMatrix.length - 1) {  // 列数
+      let foundSuccess = true
       let rowFindDone = false
 
       for (let j = 0; j < h; j++) { // 假设高度足够，计算整个组件占用区域是否被占用，不够addRow函数自动添加
-        // if (xPointEnd === 0 && j === 0) xPointEnd = rowPointData.length
-        rowPointData = this._layoutMatrix[yPointStart + j]
-        let rowBlankInfo = this._findRowBlank(rowPointData, w, xPointStart, xPointEnd)
+        rowData = this._layoutMatrix[yPointStart + j]
+        let rowBlankInfo = this._findRowBlank(rowData, w, xPointStart, xPointEnd)
         // console.log(rowBlankInfo);
         // console.log('w:', w, 'x:', xPointStart, 'y:', yPointStart);
-        // console.log('rowBlankInfo', rowBlankInfo);
 
         if (!rowBlankInfo.success) {
-          // console.log('失败了');  // 该行没空间了，跳出到while层换下一行检测
-          findSuccess = false
+          // 该行没空间了，跳出到while层换下一行检测
+          foundSuccess = false
           if (!rowFindDone) {
             j = -1
             xPointStart = xPointEnd + 1
             xPointEnd = this.col - 1
           }
-          // console.log(xPointStart,xPointEnd)
           if (xPointStart > xPointEnd) {
             rowFindDone = true
             break
           }
 
         } else if (rowBlankInfo.success) {
-          // console.log(yPointStart,'成功',rowBlankInfo)
-          findSuccess = true
+          foundSuccess = true
           if (j === 0) {
-            // console.log('----------------------------');
-            // console.log('第一次');  //  第一层找到空白行xIndex了,后面检测的h根据xStart，和 xEnd = xStart + w 来形成该item计划所处矩阵
             xPointStart = rowBlankInfo['xStart']
             xPointEnd = rowBlankInfo['xEnd']
           }
         }
       }
       // console.log(findSuccess)
-      if (findSuccess) {
+      if (foundSuccess) {
         const res = {
           w, h,
           xStart: xPointStart + 1,
@@ -191,12 +236,10 @@ export class LayoutManager extends Layout {
           y: yPointStart + 1,     // 和 yStart值永远相等
           // 四个都加1是因为数组构成的矩阵索引是0,变成普通容易理解的网格几行几列的方式需要索引都加上一
         }
-        let a = 1
         // console.log(res);
         return res
       } else {
         xPointStart = 0;
-        xPointEnd = this.col - 1
         yPointStart++
       }
     }
@@ -212,14 +255,15 @@ export class LayoutManager extends Layout {
    * reName: 覆盖iName的值
    * */
   _updateSeatLayout({xStart, yStart, xEnd, yEnd, iName}, reName = null) {
-    if (iName === undefined) iName = 'true'
-    let setName = reName !== null ? reName : iName.toString()
+    // if (iName === undefined) iName = 'true'
+    // let setName = reName !== null ? reName : iName.toString()
     // if (this._layoutMatrix.length < yEnd) this.addRow(yEnd - this._layoutMatrix.length + 1)
     // console.log(xStart,yStart,xEnd,yEnd,iName);
     for (let rowIndex = yStart - 1; rowIndex <= yEnd - 1; rowIndex++) {
       for (let colIndex = xStart - 1; colIndex <= xEnd - 1; colIndex++) {
         try {
-          this._layoutMatrix[rowIndex][colIndex] = setName
+          // this._layoutMatrix[rowIndex][colIndex] = setName
+          this._layoutMatrix[rowIndex][colIndex] = this.placed
         } catch (e) {
           console.log(e);
         }
