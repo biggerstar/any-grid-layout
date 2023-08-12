@@ -1,5 +1,7 @@
 import {ItemLayoutOption} from "@/types";
 
+
+/** 节流 */
 export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self, args;
   let old = 0;
@@ -14,6 +16,7 @@ export function throttle(func, wait = 350) {  // 全局共用节流函数通道�
   }
 }
 
+/** 防抖 */
 export function debounce(fn, delay = 500) {
   let timer = null;
   return function () {

@@ -3,6 +3,8 @@
  *  pos 是ItemPos类成员
  * */
 import {ItemPos} from "@/main/item/ItemPos";
+import {CustomItems} from "@/types";
+import {Item} from "@/main/item/Item";
 
 export class LayoutManager {
   //-----------调试用-----------//
@@ -112,11 +114,6 @@ export class LayoutManager {
     this.layoutPositions = []
   }
 
-  /** 传入一个ItemPos，根据新的w和h判断是否  */
-  isOverlap() {
-
-  }
-
 
   /** 计算当前最大值row情况下补充满整个矩阵空处需要再增加几行 */
   computedNeedRow() {
@@ -141,6 +138,18 @@ export class LayoutManager {
     }
   }
 
+  /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
+  public sortStatic(items): Item[] {
+    const staticItems = []
+    const ordinaryItems = []
+    items.forEach((item) => {
+      if (item.static) {
+        staticItems.push(item)
+      } else ordinaryItems.push(item)
+    })
+    // console.log(items);
+    return staticItems.concat(ordinaryItems)
+  }
 
   addItem(itemLayout) {
     // console.log(itemLayout);

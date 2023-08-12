@@ -1,5 +1,5 @@
 import {defaultStyle} from "@/default/style/defaultStyle";
-import {merge, throttle} from "@/utils/tool";
+import {debounce, merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {TempStore} from "@/utils/TempStore";
 import {Sync} from "@/utils/Sync";
@@ -179,7 +179,7 @@ export class Container extends DomFunctionImpl {
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): ContainerGeneralImpl[Name] {
     // console.log(name, this.useLayout[name], this._default[name])
-    return this.useLayout[name] || this.global[name] || this._default[name]
+    return this.useLayout[name] || this.layout[name] || this.global[name] || this._default[name]
   }
 
   /** 将值设置到当前使用的配置信息中 */
@@ -360,24 +360,24 @@ export class Container extends DomFunctionImpl {
   /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
    *  @param {string} direction  要满覆盖的方向， all || col || row
    * */
-  public cover(direction: 'all' | 'col' | 'row' = 'all') {
-    return console.error('执行了cover，但是未实现')
-    //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
-    // let coverCol = false
-    // let coverRow = false
-    // let customLayout = this.engine.layoutConfigManager.genCustomLayout()
-    // if (direction === 'all') {
-    //   coverCol = true
-    //   coverRow = true
-    // }
-    // if (direction === 'col') coverCol = true
-    // if (direction === 'row') coverRow = true
-    // this.engine.layoutConfigManager.autoSetColAndRows( true, {
-    //   ...customLayout,
-    //   coverCol: coverCol,
-    //   coverRow: coverRow
-    // })
-  }
+  // public cover(direction: 'all' | 'col' | 'row' = 'all') {
+  //   // return console.error('执行了cover，但是未实现')
+  //   //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
+  //   // let coverCol = false
+  //   // let coverRow = false
+  //   // let customLayout = this.engine.layoutConfigManager.genCustomLayout()
+  //   // if (direction === 'all') {
+  //   //   coverCol = true
+  //   //   coverRow = true
+  //   // }
+  //   // if (direction === 'col') coverCol = true
+  //   // if (direction === 'row') coverRow = true
+  //   // this.engine.layoutConfigManager.autoSetColAndRows( true, {
+  //   //   ...customLayout,
+  //   //   coverCol: coverCol,
+  //   //   coverRow: coverRow
+  //   // })
+  // }
 
   /** 将item成员从Container中全部移除
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
@@ -409,54 +409,41 @@ export class Container extends DomFunctionImpl {
     this.__ownTemp__.observer['disconnect']()
   }
 
+  private _trySwitchLayout() {
+    const useLayout = this.useLayout
+    if (!this.getConfig("px") || !useLayout.px) return
+    if (this.getConfig("px") === useLayout.px) return;
+    if (this.platform === 'native') {
+      // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
+      this.engine.unmount(false)
+      this.engine.clear();
+      (useLayout.items as Item[]).forEach((item) => this.add(item))
+    }
+    this.eventManager._callback_('useLayoutChange', this.useLayout, this.element.clientWidth, this)
+    const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
+    if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
+  }
+
   /**
    * 监听浏览器窗口resize
    * */
   public _observer_() {
     const layoutChangeFun = () => {
       if (!this._mounted) return
-      let useLayout = this.useLayout  // TODO 排查bug
       let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.useLayout
       const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, this.element.clientWidth, this)
       if (res === null || res === false) return
-      if (typeof res === 'object') useLayout = res
-      // console.log(this.px, useLayout.px);
-      if (!this.getConfig("px") || !useLayout.px) return;
-      if (this.getConfig("px") !== useLayout.px) {
-        if (this.platform === 'native') {
-          // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
-          this.engine.unmount(false)
-          this.engine.clear();
-          (useLayout.items as Item[]).forEach((item) => this.add(item))
-          this.engine.mountAll()
-        }
-        this.eventManager._callback_('useLayoutChange', this.useLayout, this.element.clientWidth, this)
-        const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
-        if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayoutConfig)
-      }
+      this._trySwitchLayout()
       this.engine.updateLayout(true)
       this.updateContainerStyleSize()
-
-    }
-    const debounce = (fn, delay = 350) => {
-      let ownTemp = this.__ownTemp__
-      return function () {
-        if (ownTemp.deferUpdatingLayoutTimer) {
-          clearTimeout(ownTemp.deferUpdatingLayoutTimer)
-        }
-        ownTemp.deferUpdatingLayoutTimer = <any>setTimeout(() => {
-          fn.apply(this, arguments)
-          ownTemp.deferUpdatingLayoutTimer = null
-        }, delay)
-      }
     }
     const observerResize = () => {
       layoutChangeFun()
-      debounce(() => {
-        layoutChangeFun()
-      }, 100)()
+      _debounce() // 防抖，保证最后一次执行执行最终布局
     }
-    this.__ownTemp__.observer = new ResizeObserver(throttle(observerResize, 50))
+    const _debounce = debounce(layoutChangeFun, 300)
+    const _throttle = throttle(observerResize, 200)
+    this.__ownTemp__.observer = new ResizeObserver(_throttle)
     this.__ownTemp__.observer['observe'](this.element)
   }
 

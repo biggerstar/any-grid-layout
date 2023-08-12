@@ -162,7 +162,7 @@ const container1 = new Container({
       // row:8,
       margin: [10, 10],
       size: [60, 80],
-      items: fillItemLayoutList(layoutData, {
+      items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,

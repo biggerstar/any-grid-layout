@@ -197,7 +197,9 @@ export class Engine {
     }
   }
 
-  /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
+  /**
+   * @deprecated
+   * 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
   public sortStatic(isUpdate: boolean = false) {
     const staticItems = []
     const items = []
@@ -213,14 +215,6 @@ export class Engine {
     if (isUpdate) this.items = items
     return staticItems.concat(items)
   }
-
-  // /** 将item成员全部挂载到Container  */
-  // public mountAll() {
-  //   this.items.forEach((item: Item) => item.mount())
-  //   if (this.container.getConfig("responsive")) {
-  //     this.container.setConfig("row", this.layoutManager.row) //静态布局的row是固定的，响应式不固定
-  //   }
-  // }
 
   /** 将item成员从Container中全部移除,items数据还在  */
   public unmount(isForce = false) {
@@ -625,7 +619,6 @@ export class Engine {
         this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
       }
     }
-
     // const isDebugger = false
     // if (isDebugger) {
     //     for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {

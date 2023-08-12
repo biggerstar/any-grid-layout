@@ -271,8 +271,6 @@ export class LayoutConfigManager {
       container.setConfig('col', maxCol)
       container.setConfig('row', maxRow)
 
-      console.log(maxCol, maxRow, col, row);
-
       layoutManager.setColNum(maxCol)
       layoutManager.setRowNum(maxRow)
       layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
