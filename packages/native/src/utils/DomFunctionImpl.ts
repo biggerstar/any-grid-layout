@@ -13,12 +13,16 @@ export class DomFunctionImpl {
   /** 直接将符合style对象形式的表达对象传入，会对Item`自身`的样式进行覆盖更新
    *  isCssText 是否通过 cssText 防止回流重绘
    * */
-  public updateStyle(style, element = null, isCssText = true) {
+  public updateStyle(
+    style: Partial<CSSStyleDeclaration> & { [ket: string]: any },
+    element: HTMLElement | null = null,
+    isCssText: boolean = true
+  ) {
     if (Object.keys(style).length === 0) return
     element = element ? element : this.element
     let cssText = ''
     Object.keys(style).forEach((key) => {
-      if (!isCssText) element.style[key] = style[key]
+      if (!isCssText && element) element.style[key] = style[key]
       else cssText = `${cssText} ${getKebabCase(key)}:${style[key]}; `
     })
     if (isCssText) element.style.cssText = element.style.cssText + ';' + cssText

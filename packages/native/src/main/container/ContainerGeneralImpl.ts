@@ -1,4 +1,4 @@
-import {CustomItems, ItemLimitType, MarginOrSizeDesc} from "@/types";
+import {CustomItems, MarginOrSizeDesc} from "@/types";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段

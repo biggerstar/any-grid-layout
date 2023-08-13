@@ -97,16 +97,23 @@ export class LayoutManager extends Layout {
    * */
   findBlank(pos: CustomItemPos): CustomItemPos | null {
     const {w, h, x, y} = pos
-    const isStaticPos = x > 0 && y > 0 && x !== Infinity && y !== Infinity
+    const isStaticPos = (
+      typeof x === 'number'
+      && typeof y === 'number'
+      && x > 0
+      && y > 0
+      && x !== Infinity
+      && y !== Infinity
+    )
     let resPos = null
-    if (isStaticPos) {
-      if (this.isBlank(pos)) resPos = {...pos}
+    if (isStaticPos) {  // 已经有x,y直接看是否有空位
+      if (this.isBlank(pos)) resPos = {w, h, x, y}
     } else {
-      this.each((curRow, curCol) => {
+      this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
         const tryPos = {
           w,
           h,
-          x: curCol + 1,
+          x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
           y: curRow + 1,
         }
         if (this.isBlank(tryPos)) return resPos = tryPos

@@ -119,11 +119,8 @@ export class ItemPos extends ItemPosGeneralImpl {
   _typeCheck(pos) {
     Object.keys(pos).forEach((posKey) => {
       if (['w', 'h', 'x', 'y', 'col', 'row', 'minW', 'maxW', 'minH', 'maxH', 'tempW', 'tempH'].includes(posKey)) {
-        if (pos[posKey] === Infinity) return
-        if (pos[posKey] === undefined) return
-        if (pos[posKey] === null) return
+        if ([Infinity, undefined, null].includes(pos[posKey])) return
         pos[posKey] = parseInt(pos[posKey].toString())
-        // if (pos[posKey] === 'tempW') console.log(111111111111111111)
       }
       if (posKey === 'x') this.initialX = parseInt(pos[posKey].toString())
       if (posKey === 'y') this.initialY = parseInt(pos[posKey].toString())

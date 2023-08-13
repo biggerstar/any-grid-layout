@@ -3,7 +3,7 @@ import {Item} from "@/main/item/Item";
 import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
-import {ContainerInstantiationOptions, ItemLimitType} from "@/types";
+import {ContainerInstantiationOptions, CustomItem, ItemLimitType} from "@/types";
 
 /**
  * #####################################################################
@@ -48,27 +48,17 @@ export class Engine {
 
   private _initItems() {
     this._sync()
-    const container = this.container
-    const items = container.getConfig('items')
-    const layoutManager = this.layoutManager
-    // console.log(container.getConfig('col'), container.getConfig('row'))
-    layoutManager.reset(container.getConfig('col'), container.getConfig('row'))
-    console.log(items)
-    const allItemLayoutInfo = layoutManager.analysis(items, (item, pos) => {
-      Object.assign(item.pos, pos)
-      if (pos) this.container.add(item)
-    })
-    this.container.eventManager._error_('')
-    // layoutManager.markList(allItemLayoutInfo.success.map((item) => item.pos))
-    console.log(allItemLayoutInfo)
-
-
+    let items = this.container.getConfig('items')
+    items.forEach((item) => this.addItem(item))
   }
 
   /** 同步 Container 和 layoutManager 的配置信息 */
   public _sync() {
+    const layoutManager = this.layoutManager
+    const container = this.container
     this.layoutConfigManager.autoSetColAndRows()
     this.layoutConfigManager.autoSetSizeAndMargin()
+    layoutManager.reset(container.getConfig('col'), container.getConfig('row'))
   }
 
   /**
@@ -228,24 +218,30 @@ export class Engine {
     this.container.mount()
   }
 
-  public addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
-    const eventManager = this.container.eventManager
-    item.autoOnce = !(item.pos.x && item.pos.y)
-    const success = this._tryPush(item)
-    if (success) {
-      // console.log(this.layoutManager._layoutMatrix);
+  public addItem(itemOptions: CustomItem): Item | null {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    const container = this.container
+    const eventManager = container.eventManager
+    const item = new Item(itemOptions)
+    const foundPos = this.layoutManager.findBlank(item.pos)
+    if (foundPos) {
+      this.layoutManager.mark(foundPos)
+      Object.assign(item.pos, foundPos)
+      this.items.push(item)
       this.container.setConfig("col", this.layoutManager.col)
       this.container.setConfig("row", this.layoutManager.row)
-      eventManager._callback_('addItemSuccess', item)
+      item.container = container
+      item.parentElement = container.contentElement
+      item.i = container.getConfig('items').length
       item.mount()
+      eventManager._callback_('addItemSuccess', item)
+      return item
     } else {
       eventManager._error_('ContainerOverflowError',
         "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
         "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
-        , item, item)
+        , itemOptions, itemOptions)
+      return null
     }
-    return success ? item : null  //  添加成功返回该Item，添加失败返回null
-    return null
   }
 
   /**
@@ -261,11 +257,11 @@ export class Engine {
     // this.items.push(item)
     // return true
 
-    const foundPos = this.layoutManager.findBlank(item.pos)
-    // console.log(foundPos)
-    if (!foundPos) return false
-    this.items.push(item)
-    return true
+    // const foundPos = this.layoutManager.findBlank(item.pos)
+    // // console.log(foundPos)
+    // if (!foundPos) return false
+    // this.items.push(item)
+    // return true
 
 
     // const autoReorder = () => {

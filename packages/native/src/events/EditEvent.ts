@@ -706,11 +706,6 @@ export class EditEvent {
           dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
           dragItem.pos.nextStaticPos.x = nowMoveWidth < 1 ? 1 : nowMoveWidth  // 栅格索引最低1
           dragItem.pos.nextStaticPos.y = nowMoveHeight < 1 ? 1 : nowMoveHeight
-          // console.log(container.engine.layoutManager._layoutMatrix);
-          // const Matrix= container.engine.layoutManager._layoutMatrix
-          // for (let i = 0; i < Matrix.length; i++) {
-          //     // console.log(Matrix[i]);
-          // }
 
           let foundItems: Item[] = container.engine.findCoverItemFromPosition(dragItem.pos.nextStaticPos.x
             , dragItem.pos.nextStaticPos.y, dragItem.pos.w, dragItem.pos.h)  // 找到该位置下的所有Item
@@ -754,44 +749,6 @@ export class EditEvent {
             dragItem.container.eventManager._callback_('itemMovePositionChange', oldPos.x, oldPos.y, dragItem.pos.x, dragItem.pos.y)
           }
         })
-
-
-        //------判断Item是左右平移还是上下平移的算法，二分过半判断(初始算法，不如简单版来的实在，留着或许以后有用)------//
-        // console.log('move');
-        // let left
-        // let top
-        // if (tempStore.fromContainer === toItem.container) {
-        //     left = ev.pageX - mousedownEvent.pageX + tempStore.offsetPageX
-        //     top = ev.pageY - mousedownEvent.pageY + tempStore.offsetPageY
-        // } else {
-        //     left = ev.pageX - container.contentElement.offsetLeft
-        //     top = ev.pageY - container.contentElement.offsetTop
-        // }
-
-        // console.log(left / (container.size[0] + container.margin[0]), top / (container.size[1] + container.margin[1]));
-        // let moveBoundaryX = document.body.clientWidth / (container.size[0] + container.margin[0])
-        // let moveBoundaryY = document.body.clientHeight / (container.size[1] + container.margin[1])
-        // 要反应灵敏一点  修改 sensitivity值
-        // let dragItem = tempStore.moveItem  ? moveItem : fromItem
-        // console.log(left,top);
-        // console.log(ev);
-
-        // // console.log(toItem.pos.x - 1 + (toItem.pos.w / container.sensitivity),moveBoundaryX);
-        // if (dragItem.pos.x > toItem.pos.x && (toItem.pos.x - 1 + (toItem.pos.w - (toItem.pos.w * container.sensitivity)) >= moveBoundaryX)) {
-        //     // 左移动,希望 toItem.pos.w / sensitivity等这种偏移大一点，越大越接近右边左移也更快，总体感觉就灵敏
-        //     container.engine.move(dragItem, toItem.i)
-        // } else if (dragItem.pos.x < toItem.pos.x && (toItem.pos.x - 1 + (toItem.pos.w * container.sensitivity) <= moveBoundaryX)) {
-        //     // 右移动 希望XX偏移小一点 (toItem.pos.w - (toItem.pos.w / sensitivity)) 减去是因为和左移相反，扣除左移距离left部分便能和toItem中形成轴对称点
-        //     container.engine.move(dragItem, toItem.i)
-        // } else if (dragItem.pos.y > toItem.pos.y && (toItem.pos.y - 1 + (toItem.pos.h - (toItem.pos.h * container.sensitivity)) >= moveBoundaryY)) {
-        //     // 上移动   希望XX偏移大一点
-        //     container.engine.exchange(dragItem, toItem)
-        // } else if (dragItem.pos.y < toItem.pos.y && (toItem.pos.y - 1 + (toItem.pos.h * container.sensitivity) <= moveBoundaryY)) {
-        //     // 下移动  希望XX偏移小一点
-        //     container.engine.exchange(dragItem, toItem)
-        // }
-        //------------------------------------------------------------------------------------//
-
       }, 36),
       mousemoveFromClone: (ev) => {
         //  对drag克隆元素的操作

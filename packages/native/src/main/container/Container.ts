@@ -6,9 +6,10 @@ import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerInstantiationOptions, CustomEventOptions} from "@/types";
+import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
+import {cloneDeep} from "lodash";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -283,7 +284,8 @@ export class Container {
     }
   }
 
-  /** 将item成员从Container中全部移除
+  /**
+   * 将item成员从Container中全部移除
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
   public unmount(isForce = false) {
@@ -356,20 +358,19 @@ export class Container {
     this.__ownTemp__.observer['observe'](this.element)
   }
 
-  /** 为dom添加新成员
+  /**
+   * 为dom添加新成员
    * @param { CustomItem} itemOptions
    * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
    * */
-  public add(itemOptions): null | Item {
-    const item = new Item(itemOptions)
-    // this.layout.items.push(itemOptions)
-    item.container = this
-    item.parentElement = this.contentElement
-    item.i = this.getConfig('items').length
-    return this.engine.addItem(item)
+  public add(itemOptions: CustomItem): Item | null {
+    itemOptions = cloneDeep(itemOptions)
+    this.layout.items.push(itemOptions)
+    return this.engine.addItem(itemOptions)
   }
 
-  /** 使用css class 或者 Item的对应name, 或者 Element元素 找到该对应的Item，并返回所有符合条件的Item
+  /**
+   * 使用css class 或者 Item的对应name, 或者 Element元素 找到该对应的Item，并返回所有符合条件的Item
    * name的值在创建 Item的时候可以传入 或者直接在标签属性上使用name键值，在这边也能获取到
    * @param { String,Element } nameOrClassOrElement  宽度 高度 是栅格的倍数
    * @return {Array} 所有符合条件的Item
