@@ -5,7 +5,7 @@
  * */
 import {Layout} from "@/algorithm/Layout";
 import {Item, ItemPos, ItemPosGeneralImpl} from "@/main";
-import {CustomItem, CustomItemPos} from "@/types";
+import {CustomItemPos} from "@/types";
 
 export class LayoutManager extends Layout {
   //-----------很有用的用户参数----------//
@@ -49,24 +49,36 @@ export class LayoutManager extends Layout {
   /**
    * 传入Item列表，分析当前所有Item预添加到矩阵中的情况
    * 该函数只是并没有实际添加
-   * @param items
+   * @param items 必须是Item，而不能是CustomItem 或者 ItemGeneralImpl
    * @param fn  回调
    *
    * */
-  analysis(items: Item[] | CustomItem[], fn?: (item: CustomItem, pos: CustomItemPos | null) => any)
+  analysis(items: Item[], fn?: (item: Item, pos: CustomItemPos | null) => any)
     : {
-    /** 允许添加的item */
-    success: Item[],
+    /** 允许添加的item列表 */
+    success: Array<{
+      /** item，此时pos可能不是最新位置 */
+      item: Item,
+      /** 该pos将是当前在矩阵最新位置 */
+      pos: CustomItemPos,
+    }>,
     /** 不允许添加的item */
     failed: Item[],
+
+    /** 将当前成功的所有列表中的pos信息派发更新到对应的item中
+     * @param handler 传入最新pos的item作为参数
+     * */
+    patch: (handler?: (item: Item) => void) => void
   } {
     this.reset()
     items = this.sortStatic(items)
-    const success = []
+    const success: Array<{ item: Item, pos: CustomItemPos, }> = []
     const failed = []
     items.forEach((item) => {
       const finalPos = this.findBlank(<ItemPosGeneralImpl>{...item.pos})
-      finalPos ? success.push(item) : failed.push(item)
+      finalPos
+        ? success.push({item, pos: finalPos})
+        : failed.push(item)
       if (typeof fn === 'function') fn(item, finalPos)
       if (finalPos) this.mark(<any>finalPos)
     })
@@ -74,17 +86,13 @@ export class LayoutManager extends Layout {
     return {
       success,
       failed,
+      patch: (handler?: (item: Item) => void) => {
+        success.forEach(({item, pos}) => {
+          Object.assign(item.pos, pos)
+          if (typeof handler === 'function') handler(item)
+        })
+      }
     }
-  }
-
-
-  layout(items: Item[] | CustomItem[]) {
-    this.reset()
-    items.forEach((item) => {
-
-    })
-
-
   }
 
   /**
@@ -120,12 +128,6 @@ export class LayoutManager extends Layout {
       })
     }
     return resPos
-  }
-
-
-  addItem(itemLayout) {
-    return
-    // this._updateSeatLayout(itemLayout)
   }
 
 

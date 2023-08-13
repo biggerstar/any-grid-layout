@@ -3,6 +3,7 @@ import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, CustomItem, ItemLimitType} from "@/types";
+import {__ref_item__} from "@/constant/constant";
 
 export class Engine {
   public items = []
@@ -34,20 +35,22 @@ export class Engine {
     this.layoutConfigManager.setContainer(this.container)
     this.layoutConfigManager.initLayoutInfo()
     this.initialized = true
-    this._initItems()
+    this.mountAll()
   }
 
-  private _initItems() {
+  private mountAll() {
     this._sync()
+    this.reset()
     let items = this.container.getConfig('items')
     items.forEach((item) => this.addItem(item))
   }
 
-  /** 同步 Container 和 layoutManager 的配置信息 */
+  /**
+   * 计算并同步当前尺寸下的col,row,size,margin等信息到container
+   * */
   public _sync() {
     this.layoutConfigManager.autoSetColAndRows()
     this.layoutConfigManager.autoSetSizeAndMargin()
-    this.reset()
   }
 
   /**
@@ -208,15 +211,22 @@ export class Engine {
     this.container.mount()
   }
 
+
+  /** 添加一个item，框架内部添加Item时所有的Item必须通过这里添加到容器中 */
   public addItem(itemOptions: CustomItem): Item | null {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const container = this.container
     const eventManager = container.eventManager
     const item = new Item(itemOptions)
     const foundPos = this.layoutManager.findBlank(item.pos)
     if (foundPos) {
+      Object.defineProperty(itemOptions, __ref_item__, {
+        get: () => item,
+        enumerable: false
+      })
       this.layoutManager.mark(foundPos)
       Object.assign(item.pos, foundPos)
       this.items.push(item)
+      item.__ref_use__ = itemOptions
       item.container = container
       item.parentElement = container.contentElement
       item.i = container.getConfig('items').length
@@ -343,6 +353,14 @@ export class Engine {
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
   public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
+    const useItems = <any>this.container.getConfig('items').map((item: Item) => item[__ref_item__]).filter(Boolean)
+    const res = this.layoutManager.analysis(useItems)
+    res.patch((item) => item.updateItemLayout())
+    // console.log(useItems, res);
+
+
+    return;
+   // TODO  弃用下方原本的更新逻辑
     //---------------------------更新响应式布局-------------------------------//
     const staticItems = this.items.filter((item) => {
       if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {
@@ -356,9 +374,9 @@ export class Engine {
     else if (!items && updateItemList.length === 0) return
     if (items === true) items = this.items
     if (!Array.isArray(items)) return
+    this._sync()
     this.reset()
     this.renumber()
-    this._sync()
     updateItemList = updateItemList.filter(item => (items as []).includes(item) && !item.static)
     if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)  // 没找到更新元素，则默认更新全部
     // console.log(items.length, updateItemList);
@@ -378,16 +396,9 @@ export class Engine {
       updateItemLayout(item)
     })
     items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
-      if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
-      if (this.container.getConfig("responsive")) item.autoOnce = true
+      if (updateItemList.includes(item) || staticItems.includes(item)) return   //  前面已经处理
       updateItemLayout(item)
     })
-
-    // console.log(items);
-    // for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
-    //     console.log(this.layoutManager._layoutMatrix[i]);
-    // }
-    // console.log('-----------------------------------------');
 
     //---------------------------------------------------------------------//
     this._checkUpdated()

@@ -35,6 +35,8 @@ export class Item extends ItemGeneralImpl {
   public parentElement: HTMLElement
   public readonly domImpl: DomFunctionImpl
   public pos: ItemPos
+  public __ref_use__: CustomItem
+
   //----------------vue专用---------------------//
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//

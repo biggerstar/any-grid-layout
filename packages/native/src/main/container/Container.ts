@@ -8,7 +8,6 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
-import {cloneDeep} from "@/utils/tool";
 import {TempStore} from "@/store/TempStore";
 
 //---------------------------------------------------------------------------------------------//
@@ -211,15 +210,8 @@ export class Container {
       this.classList = Array.from(this.element.classList)
 
       //-----------------容器布局信息初始化与检测--------------------//
-      this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
-      if (this.element && this.element.clientWidth > 0) {
-        this.engine._sync()
-        if (!this.element.clientWidth) {
-          throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
-        }
-      }
+      this.engine.init()
       this._observer_()
-
       //-------------------------其他操作--------------------------//
       let nestingTimer: any = setTimeout(() => {
         this._isNestingContainer_()
@@ -360,7 +352,6 @@ export class Container {
    * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
    * */
   public add(itemOptions: CustomItem): Item | null {
-    itemOptions = cloneDeep(itemOptions)
     this.layout.items.push(itemOptions)
     return this.engine.addItem(itemOptions)
   }
