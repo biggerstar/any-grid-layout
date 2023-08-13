@@ -2,7 +2,6 @@
 
 import {merge} from "@/utils/tool";
 import {defaultStyle} from "@/default/style/defaultStyle";
-import {TempStore} from "@/utils/TempStore";
 import {Sync} from "@/utils/Sync";
 import {EditEvent} from "@/events/EditEvent";
 import {Container} from "@/main/container/Container";
@@ -10,6 +9,7 @@ import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
+import {TempStore} from "@/store";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store

@@ -45,7 +45,7 @@ export class LayoutConfigManager {
   }
 
   /**
-   * auto computed margin，size，col
+   * 自动计算 margin，size 并设置到container上
    * @param direction {Number}  col | row 的值
    * @param containerBoxLen {Number}  element width or height
    * @param size {Number}  set custom size value
@@ -120,7 +120,7 @@ export class LayoutConfigManager {
 
 
   /**
-   * 自动设置size和margin
+   * 自动计算size和margin并设置到container上
    * */
   public autoSetSizeAndMargin(): void {
     const {clientWidth: containerWidth, clientHeight: containerHeight} = this.container.element || {}
@@ -292,21 +292,15 @@ export class LayoutConfigManager {
   }
 
 
-  /** 智能计算当前 items 中最大col边界值和最大row边界值 */
+  /**
+   * 智能计算当前 items 中最大col边界值和最大row边界值
+   * */
   public computeSmartRowAndCol = (items: Item[] = []) => {
     items = items.length ? items : <Item[]>this.items
     let smartCol = this.container.getConfig("col") || 1
     let smartRow = this.container.getConfig("row") || 1
-    // const allItemsNoXY /* 是否所有的item都没有指定xy */ = !items.find((item) => item.pos.x && item.pos.y)
-    // console.log(allItemsNoXY)
-    // if (!allItemsNoXY) {  // 如果items中有明确指定的xy
-    //
-    // } else { // 如果items没有指定xy则使用当前宽计算col
-    //
-    // }
     items.forEach(({pos}: Item) => {
       const {x, y, w, h} = pos as ItemPos
-      // console.log({x, y, w, h})
       if ((x + w - 1) > smartCol) smartCol = x + w - 1
       if ((y + h - 1) > smartRow) smartRow = y + h - 1
     })

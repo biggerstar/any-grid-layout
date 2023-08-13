@@ -1,7 +1,6 @@
 import {defaultStyle} from "@/default/style/defaultStyle";
 import {debounce, merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
-import {TempStore} from "@/utils/TempStore";
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {EventCallBack} from "@/events/EventCallBack";
@@ -10,6 +9,7 @@ import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/t
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
 import {cloneDeep} from "lodash";
+import {TempStore} from "@/store/TempStore";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -226,10 +226,6 @@ export class Container {
         clearTimeout(nestingTimer)
         nestingTimer = null
       })
-      if (this.platform === 'native') {
-        const items = <any[]>this.layout.items || []
-        // items.forEach((item: Item) => this.add(JSON.parse(JSON.stringify(item))))
-      }
       this.updateContainerStyleSize()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
@@ -376,9 +372,12 @@ export class Container {
    * @return {Array} 所有符合条件的Item
    * */
   public find(nameOrClassOrElement: string | HTMLElement): Item[] {
-    return this.engine.findItem(nameOrClassOrElement)
+    return this.engine.items.filter((item) => {
+      return item.name === nameOrClassOrElement
+        || item.classList.includes(nameOrClassOrElement)
+        || item.element === nameOrClassOrElement
+    })
   }
-
 
   /** 生成该栅格容器布局样式  */
   public genContainerStyle(): {

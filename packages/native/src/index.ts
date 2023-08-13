@@ -1,5 +1,5 @@
-export * from "@/main"
-export * from "@/events"
-export * from "@/utils"
-export * from "@/algorithm"
 
+export * from './entry'
+import * as anyGridLayout from './entry'
+
+window['anyGridLayout'] = anyGridLayout

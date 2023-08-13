@@ -10,10 +10,10 @@ import {
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
 import {Sync} from "@/utils/Sync";
-import {TempStore} from "@/utils/TempStore";
 import {Container} from "@/main/container/Container";
 import {ItemPos} from "@/main";
 import {ItemTransitionObject} from "@/types";
+import {TempStore} from "@/store/TempStore";
 
 const tempStore = TempStore.store
 
@@ -1016,7 +1016,7 @@ export class EditEvent {
         //----------移除Drag或者Resize创建的克隆备份-------------//
         if (tempStore.cloneElement !== null) {   //  清除对Item拖动或者调整大小产生的克隆对象
           let timer = null
-          const gridCloneEls = document.querySelectorAll('.grid-clone-el')
+          const gridCloneEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
           //------------------进行拖动归位延时动画执行和执行完毕后移除克隆元素--------------------//
           //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
           for (let i = 0; i < gridCloneEls.length; i++) {

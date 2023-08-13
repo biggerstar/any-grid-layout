@@ -124,34 +124,9 @@ export class LayoutManager extends Layout {
 
 
   addItem(itemLayout) {
-    this._updateSeatLayout(itemLayout)
+    return
+    // this._updateSeatLayout(itemLayout)
   }
-
-  /**
-   * 找到当前布局矩阵中的空位
-   * @param posOption {ItemPos} XXX
-   * @param auto {boolean} 是否自动排列
-   * @return ItemPos | null 布局对象
-   * */
-  // findBlank = (posOption: ItemPos, auto: boolean = false): ItemPos | null => {
-  //   if (posOption.w <= 0 || posOption.h <= 0) throw new Error(' w 或 h 是一个正整数')
-  //   let findItemLayout
-  //   // console.log(posOption);
-  //   // 如果是静态布局直接赋值后占位，外部最好所有的static成员先加载后再加载非静态成员,这样不会照成重叠
-  //   findItemLayout = this._findBlankPosition(posOption.w, posOption.h)
-  //   if (!findItemLayout) return null
-  //   if (posOption.i) findItemLayout.iName = this._toINameHash(posOption.i)
-  //
-  //   if (!auto) {
-  //     if (this.isStaticBlank111(posOption)) {
-  //       findItemLayout = this.itemPosToItemLayout(posOption)
-  //       return findItemLayout
-  //     } else return null
-  //   }
-  //   // console.log(findItemLayout);
-  //   if (!auto && this.isOverFlowMatrix(posOption)) return null   // 静态模式下超过边界返回null
-  //   else return findItemLayout
-  // }
 
 
   /**
@@ -195,7 +170,6 @@ export class LayoutManager extends Layout {
     let xPointStart = 0
     let xPointEnd = this.col - 1
     let yPointStart = 0
-
     let rowData = []
     let counter = 0
 
@@ -208,7 +182,6 @@ export class LayoutManager extends Layout {
         let rowBlankInfo = this._findRowBlank(rowData, w, xPointStart, xPointEnd)
         // console.log(rowBlankInfo);
         // console.log('w:', w, 'x:', xPointStart, 'y:', yPointStart);
-
         if (!rowBlankInfo.success) {
           // 该行没空间了，跳出到while层换下一行检测
           foundSuccess = false
@@ -221,7 +194,6 @@ export class LayoutManager extends Layout {
             rowFindDone = true
             break
           }
-
         } else if (rowBlankInfo.success) {
           foundSuccess = true
           if (j === 0) {
@@ -232,7 +204,7 @@ export class LayoutManager extends Layout {
       }
       // console.log(findSuccess)
       if (foundSuccess) {
-        const res = {
+        return {
           w, h,
           xStart: xPointStart + 1,
           yStart: yPointStart + 1,
@@ -242,8 +214,6 @@ export class LayoutManager extends Layout {
           y: yPointStart + 1,     // 和 yStart值永远相等
           // 四个都加1是因为数组构成的矩阵索引是0,变成普通容易理解的网格几行几列的方式需要索引都加上一
         }
-        // console.log(res);
-        return res
       } else {
         xPointStart = 0;
         yPointStart++

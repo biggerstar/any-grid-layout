@@ -1,6 +1,5 @@
 import {CustomItem, CustomItems} from "@/types";
 import deepmerge from 'deepmerge'
-import {cloneDeep} from 'lodash'
 
 /** 节流 */
 export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
@@ -29,6 +28,23 @@ export function debounce(fn, delay = 500) {
       timer = null
     }, delay)
   }
+}
+
+/** 深度克隆对象  */
+export const cloneDeep = (obj) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
+  let objClone = Array.isArray(obj) ? [] : {};
+  if (obj && typeof obj === "object") {
+    for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        if (obj[key] && typeof obj[key] === "object") {
+          objClone[key] = cloneDeep(obj[key]);
+        } else {
+          objClone[key] = obj[key];
+        }
+      }
+    }
+  }
+  return objClone;
 }
 
 /** 驼峰转短横线  */

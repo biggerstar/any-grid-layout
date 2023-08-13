@@ -81,6 +81,7 @@ export class Layout {
    * @param rowData 某行的当前矩阵中占位的数据
    * @param w 打算占位的宽度
    * @param x 执行x起点
+   * @param xEnd 执行x终点
    * */
   _findRowBlank(rowData = [], w, x, xEnd) {
     let blankCount = 0

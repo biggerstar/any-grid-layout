@@ -1,4 +1,3 @@
-import {merge} from "@/utils/tool";
 import {Item} from "@/main/item/Item";
 import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
@@ -54,15 +53,14 @@ export class Engine {
 
   /** 同步 Container 和 layoutManager 的配置信息 */
   public _sync() {
-    const layoutManager = this.layoutManager
-    const container = this.container
     this.layoutConfigManager.autoSetColAndRows()
     this.layoutConfigManager.autoSetSizeAndMargin()
-    layoutManager.reset(container.getConfig('col'), container.getConfig('row'))
+    this.reset()
   }
 
   /**
    * 计算当前Items的特征，如果[ Item列表长度,宽高，位置 ] 变化会触发updated变化
+   * 目的: 支持并发出 updated 事件
    *  */
   private _checkUpdated() {
     let hashContent = ''
@@ -227,8 +225,6 @@ export class Engine {
       this.layoutManager.mark(foundPos)
       Object.assign(item.pos, foundPos)
       this.items.push(item)
-      this.container.setConfig("col", this.layoutManager.col)
-      this.container.setConfig("row", this.layoutManager.row)
       item.container = container
       item.parentElement = container.contentElement
       item.i = container.getConfig('items').length
@@ -242,86 +238,6 @@ export class Engine {
         , itemOptions, itemOptions)
       return null
     }
-  }
-
-  /**
-   * 添加Item到容器中
-   * 返回false会抛出错误.
-   * 抛出条件:
-   * 1. 容器溢出
-   * 2. 指定了x,y 的Item位置重叠
-   * 自动寻位: 如果在矩阵范围内会根据要添加对象的pos自动排序找到位置(左上角先行后列优先顺序)
-   * */
-  private _tryPush(item: Item) {
-    // layouts布局切换需要用原本的顺序才不会乱，和下面二取一，后面再改，小w,h布局用这个，有大Item用下面的(现以被sortResponsiveItem函数取代，下面逻辑不管，但是吧先留着)
-    // this.items.push(item)
-    // return true
-
-    // const foundPos = this.layoutManager.findBlank(item.pos)
-    // // console.log(foundPos)
-    // if (!foundPos) return false
-    // this.items.push(item)
-    // return true
-
-
-    // const autoReorder = () => {
-    //   let success = false
-    //   // 用于响应式下自动排列Item在this.Items中的顺序，排序的结果和传入pos或者data的结果布局是一致的，
-    //   // 同时用于解决大的Item成员在接近右侧容器边界index本是靠前却被挤压到下一行，而index比该大容器大的却布局在大Item上方，
-    //   // 该函数下方逻辑便能解决这个问题，最终两个Item用于布局的结果是完全一样的
-    //   if (this.items.length <= 1) {
-    //     this.items.push(item)
-    //     success = true
-    //   } else {
-    //     let nextIndexItem, nowIndexItem
-    //     for (let i = 0; i < this.items.length; i++) {
-    //       if (this.items.length > i) {
-    //         nowIndexItem = this.items[i]
-    //         nextIndexItem = this.items[i + 1]
-    //       }
-    //       if (nextIndexItem) {
-    //         const nowPos = nowIndexItem.pos
-    //         const nextPos = nextIndexItem.pos
-    //         if (!realLayoutPos) return false
-    //         if (nowPos.y <= realLayoutPos.y && nextPos.y > realLayoutPos.y) {
-    //           this.insert(item, i + 1)
-    //           success = true
-    //           break
-    //         }
-    //       } else {
-    //         this.items.push(item)
-    //         success = true
-    //         break
-    //       }
-    //     }
-    //   }
-    //   return success
-    // }
-    // //-----------------------添加新Item的逻辑---------------------------//
-    // // TODO 将_isCanAddItemToContainer_添加逻辑移动到addItem函数，_tryPush值作为判断能否添加的工具函数
-    // let realLayoutPos: ItemPos | null
-    // if (!item.autoOnce) {
-    //   // 如果是指定了x和y，必然能添加进去
-    //   this.items.push(item)
-    //   this.layoutConfigManager.autoSetColAndRows()
-    //   this._isCanAddItemToContainer_(item, item.autoOnce, true)
-    //   const realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, false)  // 先查看能否添加进去，不能添加会返回null
-    //   if (!realLayoutPos) return false  // 此时指定了x,y,Item位置重叠
-    //   else this._isCanAddItemToContainer_(item, item.autoOnce, true)  //  正式添加
-    //   return true
-    // } else {
-    //   // console.log(item.pos);
-    //   realLayoutPos = this._isCanAddItemToContainer_(item, item.autoOnce, true)
-    //   // console.log(realLayoutPos?.col)
-    //   if (!realLayoutPos) return false
-    //   if (this.container.getConfig("autoReorder") && this.container.getConfig('responsive')) {
-    //     return autoReorder()  // 只有响应式下生效
-    //   } else {
-    //     this.items.push(item)
-    //     return true
-    //   }
-    // }
-
   }
 
   /** 已经挂载后的情况下重新排列响应式Item的顺序,通过映射遍历前台可视化形式的网格位置方式重新排序Item顺序(所见即所得)，
@@ -357,8 +273,7 @@ export class Engine {
   }
 
   /** 清除重置布局矩阵 */
-  public reset() {
-    return
+  public reset(): void {
     this.layoutManager.reset(this.container.getConfig('col'), this.container.getConfig('row'))
   }
 
@@ -426,97 +341,6 @@ export class Engine {
   }
 
 
-  /**  参数详情见类 Container.find 函数
-   * */
-  public findItem(nameOrClassOrElement) {
-    return this.items.filter((item) => {
-      return item.name === nameOrClassOrElement
-        || item.classList.includes(nameOrClassOrElement)
-        || item.element === nameOrClassOrElement
-    })
-  }
-
-  /**  检查该Item在某个位置是否溢出，溢出的话则进行修改
-   *  @param item {Item} item
-   *  @param modify {Boolean} 是否对该溢出容器的Item大小进行修改成适配容器大小的尺寸
-   * */
-  public checkOverflow(item: Item, modify: boolean = true) {
-    const pos = item.pos
-    const {w, h, x, y, tempW, tempH} = pos
-    let itemOverflow = false  /* item是否溢出 */
-    const container = item.container
-    const newW = container.getConfig('col') - x + 1
-    const newH = container.getConfig('row') - y + 1
-    const col = container.getConfig("col")
-    const row = container.getConfig("row")
-    const responsive = container.getConfig("responsive")
-    if (w + x - 1 > col && tempW) {
-      if (!responsive) {
-        if (tempW !== newW && tempW <= w) itemOverflow = true
-        if (modify && w > tempW && newW <= w) pos.tempW = newW
-      }
-    }
-
-    if (h + y - 1 > row && pos.tempH) {
-      if (!responsive) {
-        if (tempH !== newH && tempH <= h) itemOverflow = true
-        if (modify && h > tempH && newH <= h) pos.tempH = newH
-      }
-    }
-
-    if (w > col && pos.tempW) { // 一列只有一个成员，w比容器都大
-      if (tempW !== newW && tempW <= w) itemOverflow = true
-      if (modify && w > tempW && newW <= w) pos.tempW = newW
-    }
-
-    if (h > row && pos.tempH) {  // 一行只有一个成员，y比容器都大
-      if (tempH !== newH && tempH <= h) itemOverflow = true
-      if (modify && h > tempH && newH <= h) pos.tempH = newH
-    }
-
-    /** 在溢出情况下警告，警告前需要确认该Item是否还在容器中，因为可能已经清除或者移动到其他容器中 */
-    if (itemOverflow && this.items.includes(item)) {
-      this.container.eventManager._warn_('temporaryResetItemSize',
-        '\nITEM: ' + 'w:' + w + ' h:' + h
-        + '超过栅格大小，临时调整该ITEM尺寸为'
-        + 'w:' + (pos.tempW ? pos.tempW : pos.w) + ' h:'
-        + (pos.tempH ? pos.tempH : pos.h)
-        + '\n进行适配容器空间,此时pos.w和pos.h还是原来的尺寸,'
-        + '\n在容器中一但存在足够空间则该Item便会恢复原来的尺寸', item)
-    }
-  }
-
-  /**  是否可以添加Item到当前的Container,请注意addSeat为true时该操作将会影响布局管理器中的_layoutMatrix,每次检查成功将会占用该检查成功所指定的空间
-   *  @param item {Item}
-   *  @param responsive {Boolean}  是否响应式还是静态布局
-   *  @param addSeat {Boolean}  检测的时候是否在当前操作的矩阵中添加占位，同时修改Item中的pos
-   * */
-  public _isCanAddItemToContainer_(item: Item, responsive: boolean = false, addSeat: boolean = false) {
-    let realLayoutPos
-    let nextStaticPos = item.pos.nextStaticPos ? item.pos.nextStaticPos : item.pos
-    nextStaticPos.i = item.i
-    const cloneNextStaticPos = Object.assign({}, nextStaticPos)
-    if (item.pos.tempW) cloneNextStaticPos.w = item.pos.tempW
-    if (item.pos.tempH) cloneNextStaticPos.h = item.pos.tempH
-    // console.log(nextStaticPos.col);
-    return
-    realLayoutPos = this.layoutManager.findBlank(cloneNextStaticPos)
-    // console.log(realLayoutPos)
-    if (realLayoutPos) {
-      if (addSeat) {
-        this.layoutManager.addItem(realLayoutPos)
-        realLayoutPos.w = nextStaticPos.w
-        realLayoutPos.h = nextStaticPos.h
-        merge(item.pos, realLayoutPos)
-        item.pos.nextStaticPos = null
-        item.autoOnce = false
-      }
-      return realLayoutPos
-    } else {
-      return null
-    }
-  }
-
   /**  根据是否响应式布局或者静态布局更新容器内的Item布局
    *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
    *  @param items {Array || Boolean} Array: 要更新的对应Item ，Array方案正常用于静态模式，
@@ -546,9 +370,6 @@ export class Engine {
     if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)  // 没找到更新元素，则默认更新全部
     // console.log(items.length, updateItemList);
     const updateItemLayout = (item) => {
-      this._isCanAddItemToContainer_(item, !!item.autoOnce, true)
-      this.checkOverflow(item)
-      // console.log(item.static,realPos);
       item.updateItemLayout()
     }
 
@@ -563,7 +384,6 @@ export class Engine {
       item.autoOnce = false
       updateItemLayout(item)
     })
-
     items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
       if (updateItemList.includes(item) || staticItems.includes(item)) return   //  后面处理
       if (this.container.getConfig("responsive")) item.autoOnce = true
