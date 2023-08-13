@@ -213,9 +213,6 @@ export class Container {
       this.engine.init()    //  初始化后就能找到用户指定的 this.useLayout
       if (this.element && this.element.clientWidth > 0) {
         this.engine._sync()
-        if (!this.getConfig("responsive") && !this.getConfig("row")) {
-          throw new Error('您正在使用静态布局: 字段row 和 字段sizeWidth 必须都指定值,sizeWidth等价于size[0]\n\t若没定义col则会自动生成')
-        }
         if (!this.element.clientWidth) {
           throw new Error('您应该为Container指定一个宽度，响应式布局使用指定动态宽度，静态布局可以直接设定固定宽度')
         }
@@ -254,33 +251,6 @@ export class Container {
     this.contentElement.classList.add(this.className)
   }
 
-
-  /** 导出当前使用的 items 列表 */
-  public exportItems(otherFieldList = []) {
-    // console.log(this.engine.items.length)
-    return this.engine.items.map((item) => item.exportConfig(otherFieldList))
-  }
-
-  /** 导出用户初始化传进来的global配置信息 */
-  public exportGlobal() {
-    return this.global
-  }
-
-  /** 导出用户初始化传进来的的useLayout配置信息 ,若未传入size或margin，导出后将添加上当前的值 */
-  public exportLayouts() {
-    let layouts = this.layouts
-    this.layout.items = this.exportItems()  // 必要
-    if (layouts && layouts.length === 1) return layouts[0]
-    else return layouts
-  }
-
-  public exportConfig() {
-    return {
-      global: this.exportGlobal(),
-      layouts: this.exportLayouts(),
-    }
-  }
-
   /** 手动添加item渲染 */
   public render(renderCallback: Function) {
     Sync.run(() => {
@@ -313,33 +283,6 @@ export class Container {
     }
   }
 
-  /** 将包含Item初始化信息的对象列表转成Item集合 */
-  public toItemList(items) {
-    return items.map(pos => this.engine.createItem(pos))
-  }
-
-  /** 自动通过items的x,y,w,h计算当前所有成员的最大col和row，并将其作为容器大小完全覆盖充满容器
-   *  @param {string} direction  要满覆盖的方向， all || col || row
-   * */
-  // public cover(direction: 'all' | 'col' | 'row' = 'all') {
-  //   // return console.error('执行了cover，但是未实现')
-  //   //  该函数可以配合leaveContainerArea自动增加栅格数，然后itemMoved，itemResizing调用该函数实现栅格自动增长和减少的功能
-  //   // let coverCol = false
-  //   // let coverRow = false
-  //   // let customLayout = this.engine.layoutConfigManager.genCustomLayout()
-  //   // if (direction === 'all') {
-  //   //   coverCol = true
-  //   //   coverRow = true
-  //   // }
-  //   // if (direction === 'col') coverCol = true
-  //   // if (direction === 'row') coverRow = true
-  //   // this.engine.layoutConfigManager.autoSetColAndRows( true, {
-  //   //   ...customLayout,
-  //   //   coverCol: coverCol,
-  //   //   coverRow: coverRow
-  //   // })
-  // }
-
   /** 将item成员从Container中全部移除
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
@@ -366,10 +309,15 @@ export class Container {
     this.engine.updateLayout(items, ignoreList)
   }
 
-  public _disconnect_() {
+
+  /** 移除对容器的resize监听  */
+  private _disconnect_() {
     this.__ownTemp__.observer['disconnect']()
   }
 
+  /**
+   * 尝试切换并渲染布局  // TODO getter layout 里面判断窗口大小并返回对应布局数据
+   * */
   private _trySwitchLayout() {
     const useLayout = this.useLayout
     if (!this.getConfig("px") || !useLayout.px) return
@@ -408,15 +356,6 @@ export class Container {
     this.__ownTemp__.observer['observe'](this.element)
   }
 
-
-  /** 检查当前布局下指定Item是否能添加进Container，如果不行返回null，如果可以返回该Item可以添加的位置信息
-   * @param {Item} item 想要检查的Item信息
-   * @param {Boolean} responsive 是否响应式检查，如果是响应式自动返回可以添加的位置，如果是静态则确定该Item指定的位置是否被占用
-   *  */
-  public isBlank(item, responsive) {
-    return this.engine._isCanAddItemToContainer_(item, responsive)
-  }
-
   /** 为dom添加新成员
    * @param { CustomItem} itemOptions
    * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
@@ -453,6 +392,11 @@ export class Container {
     }
   }
 
+  /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
+  public updateContainerStyleSize(): void {
+    this.domImpl.updateStyle(this.genContainerStyle(), this.contentElement)
+  }
+
   /** 计算当前Items所占用的Container宽度  */
   public nowWidth(): number {
     let marginWidth = 0
@@ -467,11 +411,6 @@ export class Container {
     let nowRow = this.getConfig("row")
     if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
     return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
-  }
-
-  /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  public updateContainerStyleSize(): void {
-    this.domImpl.updateStyle(this.genContainerStyle(), this.contentElement)
   }
 
   /** 根据挂载在实例上的containerW和containerH的值自动根据大小对Container进行更新 */

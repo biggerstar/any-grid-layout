@@ -133,11 +133,6 @@
   sensitivity: number = 0.45
 
   /**
-   * 单位栅格倍数{minW,maxW,minH,maxH} ,接受的Item大小限制,同样适用于嵌套Item交换通信,建议最好在外部限制
-   * */
-  itemLimit: ItemLimitType = {}
-
-  /**
    * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
    * @default 0.45
    * */

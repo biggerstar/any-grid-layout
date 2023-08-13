@@ -229,29 +229,22 @@ export class Engine {
   }
 
   public addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
-    const itemLimit = this.container.getConfig("itemLimit")    // Container所有Item的限制信息
     const eventManager = this.container.eventManager
-    if (itemLimit.minW > item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定minW为:${itemLimit.minW},当前w为${item.pos.w}`, item, item)
-    else if (itemLimit.maxW < item.pos.w) eventManager._error_('itemLimitError', `itemLimit配置指定maxW为:${itemLimit.maxW},当前w为${item.pos.w}`, item, item)
-    else if (itemLimit.minH > item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定minH为:${itemLimit.minH},当前h为${item.pos.h}`, item, item)
-    else if (itemLimit.maxH < item.pos.h) eventManager._error_('itemLimitError', `itemLimit配置指定maxH为:${itemLimit.maxH},当前h为${item.pos.h}`, item, item)
-    else {
-      item.autoOnce = !(item.pos.x && item.pos.y)
-      const success = this._tryPush(item)
-      if (success) {
-        // console.log(this.layoutManager._layoutMatrix);
-        this.container.setConfig("col", this.layoutManager.col)
-        this.container.setConfig("row", this.layoutManager.row)
-        eventManager._callback_('addItemSuccess', item)
-        item.mount()
-      } else {
-        eventManager._error_('ContainerOverflowError',
-          "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
-          "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
-          , item, item)
-      }
-      return success ? item : null  //  添加成功返回该Item，添加失败返回null
+    item.autoOnce = !(item.pos.x && item.pos.y)
+    const success = this._tryPush(item)
+    if (success) {
+      // console.log(this.layoutManager._layoutMatrix);
+      this.container.setConfig("col", this.layoutManager.col)
+      this.container.setConfig("row", this.layoutManager.row)
+      eventManager._callback_('addItemSuccess', item)
+      item.mount()
+    } else {
+      eventManager._error_('ContainerOverflowError',
+        "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
+        "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
+        , item, item)
     }
+    return success ? item : null  //  添加成功返回该Item，添加失败返回null
     return null
   }
 
@@ -592,7 +585,6 @@ export class Engine {
 
     //---------------------------更新数据和存储-------------------------------//
     this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-    this.container.layout.items = this.container.exportItems()   // 将最新data同步到当前使用的layout中
     this.container.updateContainerStyleSize()
     const genBeforeSize = (container: Container) => {
       return {
