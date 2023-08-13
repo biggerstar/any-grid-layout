@@ -1,5 +1,4 @@
 import {CustomItem, CustomItems} from "@/types";
-import deepmerge from 'deepmerge'
 
 /** 节流 */
 export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
@@ -46,6 +45,36 @@ export const cloneDeep = (obj) => {  // 使用lodash.cloneDeep在lib模式下打
   }
   return objClone;
 }
+/** 深度合并对象  */
+function mergeDeep(target, source) {
+  // 判断目标和源是否都是对象
+  if (typeof target !== 'object' || typeof source !== 'object') {
+    return source;
+  }
+
+  // 遍历源对象的属性
+  for (const key in source) {
+    // 判断属性是否是源对象自身的属性（非继承）
+    if (source.hasOwnProperty(key)) {
+      // 判断源对象的属性是否是对象
+      if (typeof source[key] === 'object') {
+        // 如果目标对象没有该属性，直接赋值
+        if (!target.hasOwnProperty(key)) {
+          target[key] = source[key];
+        } else {
+          // 进一步递归合并
+          target[key] = mergeDeep(target[key], source[key]);
+        }
+      } else {
+        // 直接赋值
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+}
+
 
 /** 驼峰转短横线  */
 export function getKebabCase(str) {
@@ -212,7 +241,7 @@ export const singleTouchToCommonEvent = (touchEvent) => {
 export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, isDeepClone: boolean = true): CustomItems {
   return items.map((item) => {
     if (isDeepClone) item = cloneDeep(item)
-    item = deepmerge(item, fillFields)
+    item = mergeDeep(item, fillFields)
     return item
   })
 }

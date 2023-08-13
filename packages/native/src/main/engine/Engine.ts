@@ -4,14 +4,6 @@ import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, CustomItem, ItemLimitType} from "@/types";
 
-/**
- * #####################################################################
- * 用于连接Container 和 Item 和 LayoutManager 之间的通信
- * 更改布局的操作也都在这里，外部只能通过调用相关函数通信
- * 所有的最新参数都会同步到这里
- * 特殊情况: Container中的事件操作没去写通信接口，里面多次直接操作对应事件监听的所指Item
- * 目前需改善：有一定耦合度，思路实现的时候多次解耦，但是还是有多个地方直接通过引用进行操作，后面再改善吧
- * ##################################################################### */
 export class Engine {
   public items = []
   public layoutManager: LayoutManager
@@ -232,10 +224,11 @@ export class Engine {
       eventManager._callback_('addItemSuccess', item)
       return item
     } else {
-      eventManager._error_('ContainerOverflowError',
-        "容器溢出或者Item重叠，只有明确指定了x,y位置情况下会出现此错误,您可以使用error事件函数接收该错误，" +
-        "那么该错误就不会抛出而是将错误传到error事件函数的第二个形参"
-        , itemOptions, itemOptions)
+      eventManager._error_(
+        'ContainerOverflowError',
+        "容器溢出或者Item重叠，只有item明确指定了x,y或者容器col,row情况下会出现此错误"
+        , itemOptions
+        , itemOptions)
       return null
     }
   }
@@ -423,14 +416,6 @@ export class Engine {
         this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
       }
     }
-
-    // const isDebugger = false
-    // if (isDebugger) {
-    //     for (let i = 0; i < this.layoutManager._layoutMatrix.length; i++) {
-    //         console.log(this.layoutManager._layoutMatrix[i]);
-    //     }
-    //     console.log('-----------------------------------------');
-    // }
   }
 
 }
