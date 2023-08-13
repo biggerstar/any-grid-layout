@@ -71,10 +71,11 @@ export default defineViteRunConfig({
       }
     },
     build_lib: (options) => {
+      const name = options.name === 'native' ? 'anyGridLayout' : options.name
       return {
         lib: {
           entry: resolve(options.packagePath, 'src', `index.ts`),
-          name: options.name,
+          name: name,
           fileName: (format) => `index.${format}.js`,
         },
         rollupOptions: {
