@@ -27,6 +27,9 @@ export default defineViteRunConfig({
       types: [
         ['build_lib', 'es_lib', 'types']
       ],
+      size: [
+        ['build_lib', 'es_lib', 'minify', 'bundleAnalyzer']
+      ],
     },
     // 'vue3': {
     //   build: [
@@ -71,7 +74,6 @@ export default defineViteRunConfig({
       return {
         lib: {
           entry: resolve(options.packagePath, 'src', `index.ts`),
-          formats: ['umd', 'es'],
           name: options.name,
           fileName: (format) => `index.${format}.js`,
         },
@@ -128,22 +130,12 @@ export default defineViteRunConfig({
     }
   },
   plugins: {
-    types: (options: ViteRunHandleFunctionOptions) => {
+    types: () => {
       return [
         dts({
           copyDtsFiles: true,
           declarationOnly: true,
         }),
-        // createCopyDts({
-        //   root: options.packagePath,
-        //   files: [
-        //     {
-        //       from: ['types/*.d.ts'],
-        //       to: `dist/${options.name}.d.ts`,
-        //       excludes: ['types/index.d.ts']
-        //     }
-        //   ]
-        // }),
       ]
     }
   }
@@ -186,7 +178,6 @@ function getBaseConfig(options: ViteRunHandleFunctionOptions): BaseConfigReturnT
     },
     plugins: [
       viteRunLogPlugin(),
-      // bundleAnalyzer({}),
     ]
   }
 }

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite-run dev",
     "build": "rimraf dist && vite-run build && vite-run types",
+    "size": "vite-run size",
     "preview": "vite-run preview",
     "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags ",
     "clean": "npm run clean:dist && npm run clean:module",
@@ -15,8 +16,10 @@
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.4.8",
     "@vitejs/plugin-vue": "^4.2.3",
-    "lodash": "^4.17.21",
+    "deepmerge": "^4.3.1",
+    "lodash.clonedeep": "^4.5.0",
     "pinia": "^2.1.6",
+    "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^5.0.1",
     "rollup-plugin-bundle-analyzer": "^1.6.6",
     "typescript": "^5.1.6",
@@ -37,8 +40,6 @@
     "dist"
   ],
   "dependencies": {
-    "@corex/deepmerge": "^4.0.43",
-    "deepmerge": "^4.3.1",
-    "resize-observer-polyfill": "^1.5.1"
+    "@types/lodash.clonedeep": "^4.5.7"
   }
 }

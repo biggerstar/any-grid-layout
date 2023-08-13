@@ -8,7 +8,7 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
-import {cloneDeep} from "lodash";
+import {cloneDeep} from "@/utils/tool";
 import {TempStore} from "@/store/TempStore";
 
 //---------------------------------------------------------------------------------------------//
