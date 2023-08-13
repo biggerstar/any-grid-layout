@@ -80,10 +80,9 @@ export class LayoutManager extends Layout {
 
   layout(items: Item[] | CustomItem[]) {
     this.reset()
-    items.forEach((item)=>{
+    items.forEach((item) => {
 
     })
-
 
 
   }

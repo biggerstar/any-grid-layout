@@ -163,51 +163,30 @@ const container1 = new Container({
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData11, {
-        // draggable: true,
-        // resize: true,
-        // close: true,
-      }),
-      // minCol: 5,
-    },
-    {
-      px: 360,
-      // margin: [0, 0],
-      size: [36, 80],
-      items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,
+        pos:{
+          // minH:2,
+          // maxH:1,
+          // minW:2,
+          // maxW:5
+        }
       }),
-      // minCol: 3,
+      // minCol: 5,
     },
+    // {
+    //   px: 360,
+    //   // margin: [0, 0],
+    //   size: [36, 80],
+    //   items: fillItemLayoutList(layoutData11, {
+    //     draggable: true,
+    //     resize: true,
+    //     close: true,
+    //   }),
+    //   // minCol: 3,
+    // },
   ],
-  //  TODO   第一次mount全部正常(未挂载)，第二次挂载时机(render和container3.mount()保证第一次挂载能运行render)
-  layouts1: {
-    from: '来自layout1',
-    // ratioCol: 0.1,
-    responsive: true,
-    col: 10,
-    row: 5,
-    margin: [20, 10],
-    size: [100, 60],
-    // minRow: 10,
-    // maxRow:6,
-    // items: layoutData11,
-    items: fillItemLayoutList(layoutData, {
-      draggable: true,
-      resize: true,
-      close: true,
-      static: true
-    }),  // TODO  bug  col first load with 1
-    // responsive:true,
-    // minCol: 2,
-    // maxCol:6,
-    itemLimit: {
-      // minW:2,
-      // maxH:1,
-      // maxW:1,
-    }
-  },
   events: {
     error(err) {
       // console.log(err);

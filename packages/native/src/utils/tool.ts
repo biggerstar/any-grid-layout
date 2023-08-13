@@ -1,5 +1,6 @@
 import {CustomItem, CustomItems} from "@/types";
-
+import deepmerge from 'deepmerge'
+import {cloneDeep} from 'lodash'
 
 /** 节流 */
 export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
@@ -56,23 +57,6 @@ export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
     }
   })
   return clone ? cloneData : to
-}
-
-
-export const cloneDeep = (obj) => {
-  let objClone = Array.isArray(obj) ? [] : {};
-  if (obj && typeof obj === "object") {
-    for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        if (obj[key] && typeof obj[key] === "object") {
-          objClone[key] = cloneDeep(obj[key]);
-        } else {
-          objClone[key] = obj[key];
-        }
-      }
-    }
-  }
-  return objClone;
 }
 
 /**  用于将target Element在原型链中对象中往root方向最新的的Path链解析出来 */
@@ -194,11 +178,13 @@ export const singleTouchToCommonEvent = (touchEvent) => {
   return touchEvent
 }
 
-/** 为传入的items填充默认数据, 会返回一个深度克隆后的对象
+/**
+ * 为传入的items填充默认数据, 会返回一个深度克隆后的对象
+ * 合并方式: 使用 `Object.assign` 合并首层数据
  * 比如
  * @param items  最小可用成员构造对象数组，比如 {pos: {w: 1,h: 1 }}
- * @param fillFields  要为items所有成员添加填充的字段
- * @param force 是否强制使用fillFields覆盖原本items成员数组，内部使用Object.assign函数实现fillFields覆盖item对象键值
+ * @param fillFields  要为items所有成员添加 填充 的字段
+ * @param isDeepClone 是否强制使用fillFields覆盖原本items成员数组，内部使用Object.assign函数实现fillFields覆盖item对象键值
  * @example
  *    const items = [{
  *      pos:{w:h}
@@ -207,15 +193,10 @@ export const singleTouchToCommonEvent = (touchEvent) => {
  *    fillInItemLayoutList(items,{ close:true })
  *    //  items结果: [{  pos:{w:h},close:true }]
  * */
-export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, force: boolean = false): CustomItems {
+export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, isDeepClone: boolean = true): CustomItems {
   return items.map((item) => {
-    if (force) {
-      item = Object.assign(item, fillFields)
-    } else {
-      for (const k in fillFields) {
-        if (!item.hasOwnProperty(k)) item[k] = fillFields[k]
-      }
-    }
-    return JSON.parse(JSON.stringify(item))
+    if (isDeepClone) item = cloneDeep(item)
+    item = deepmerge(item, fillFields)
+    return item
   })
 }

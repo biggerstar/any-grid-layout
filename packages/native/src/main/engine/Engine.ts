@@ -209,30 +209,11 @@ export class Engine {
     }
   }
 
-  /** 根据当前的 i 获取对应的Item  */
+  /** 根据当前的 i 获取对应的Item.pos.i  */
   public index(indexVal: number): void | Item {
     for (let i = 0; i < this.items.length; i++) {
       if (this.items[i].i === indexVal) return this.items[i]
     }
-  }
-
-  /**
-   * @deprecated
-   * 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
-  public sortStatic(isUpdate: boolean = false) {
-    const staticItems = []
-    const items = []
-    this.items.forEach((item) => {
-      if (!(item instanceof Item)) return
-      if (item.static) {
-        staticItems.push(item)
-        console.log(item);
-      } else items.push(item)
-    })
-    this.renumber()
-    // console.log(items);
-    if (isUpdate) this.items = items
-    return staticItems.concat(items)
   }
 
   /** 将item成员从Container中全部移除,items数据还在  */
@@ -246,8 +227,6 @@ export class Engine {
     this.unmount()
     this.container.mount()
   }
-
-
 
   public addItem(item: Item) {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const itemLimit = this.container.getConfig("itemLimit")    // Container所有Item的限制信息

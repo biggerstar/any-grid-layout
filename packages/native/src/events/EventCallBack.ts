@@ -24,7 +24,7 @@ export class EventCallBack {
         msg: 'getErrAttr=>[name|type|msg|from] ' + msg,
         from: fromData || ''   //  来自哪个数据或者实例
       }, ...args)
-    } else console.error(errName, msg + '(你可以用error事件函数来接受处理该错误使其不在控制台显示)', fromData)
+    } else console.error(`[${errName}]`, msg + '(你可以用error事件函数来接受处理该错误使其不在控制台显示)', fromData)
   }
 
   /** 不会抛出错误中止执行，使用系统控制台的warn方法，可附带对象参数 */
@@ -36,7 +36,7 @@ export class EventCallBack {
         msg: 'getWarnAttr=>[name|type|msg|from]  ' + msg,
         from: fromData    //  来自哪个数据或者实例
       }, ...args)
-    } else console.warn(warnName, msg + '(你可以用warn事件函数来接受处理或者忽略该警告使其不在控制台显示)', fromData)
+    } else console.warn(`${warnName}`, msg + '(你可以用warn事件函数来接受处理或者忽略该警告使其不在控制台显示)', fromData)
   }
 }
 

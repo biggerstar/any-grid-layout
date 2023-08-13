@@ -423,6 +423,7 @@ export class Container {
    * */
   public add(itemOptions): null | Item {
     const item = new Item(itemOptions)
+    // this.layout.items.push(itemOptions)
     item.container = this
     item.parentElement = this.contentElement
     item.i = this.getConfig('items').length
