@@ -1,5 +1,5 @@
 import {prevent, windowResize} from "@/events/common";
-import {containerEvent} from "@/events/container/main";
+import {containerEvent} from "@/events/container";
 
 
 export function startGlobalEvent() {
@@ -21,23 +21,22 @@ export function startGlobalEvent() {
   //
   document.addEventListener('mouseleave', windowResize.setResizeFlag)
   document.addEventListener('mouseenter', windowResize.removeResizeFlag)
-
 }
 
-// function removeGlobalEvent() {
-//   // document.removeEventListener('mousedown', EPF.container.touchstartOrMousedown)
-//   // document.removeEventListener('touchstart', EPF.container.touchstartOrMousedown)
-//   //
-//   // document.removeEventListener('dragstart', EEF.prevent.false)
-//   // document.removeEventListener('selectstart', EEF.prevent.defaultAndFalse)
-//   //
-//   // //-----------------------------------------------------------------------------//
-//   // document.removeEventListener('mousemove', EPF.container.touchmoveOrMousemove)
-//   // document.removeEventListener('touchmove', EPF.container.touchmoveOrMousemove)
-//   //
-//   // document.removeEventListener('mouseup', EPF.container.touchendOrMouseup)
-//   // document.removeEventListener('touchend', EPF.container.touchendOrMouseup)
-//   //
-//   // document.removeEventListener('mouseleave', EEF.windowResize.setResizeFlag)
-//   // document.removeEventListener('mouseenter', EEF.windowResize.removeResizeFlag)
-// }
+function removeGlobalEvent() {
+  document.removeEventListener('mousedown', containerEvent.touchstartOrMousedown)
+  document.removeEventListener('touchstart', containerEvent.touchstartOrMousedown)
+
+  document.removeEventListener('dragstart', prevent.false)
+  document.removeEventListener('selectstart', prevent.defaultAndFalse)
+
+  //-----------------------------------------------------------------------------//
+  document.removeEventListener('mousemove', containerEvent.touchmoveOrMousemove)
+  document.removeEventListener('touchmove', containerEvent.touchmoveOrMousemove)
+
+  document.removeEventListener('mouseup', containerEvent.touchendOrMouseup)
+  document.removeEventListener('touchend', containerEvent.touchendOrMouseup)
+
+  document.removeEventListener('mouseleave', windowResize.setResizeFlag)
+  document.removeEventListener('mouseenter', windowResize.removeResizeFlag)
+}
