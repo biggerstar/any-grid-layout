@@ -1,3 +1,3 @@
-export * from "@/events/item-resize/doItemResize";
-export * from './itemResizeMouseup'
+export * from "./doItemResize";
+export * from './itemResize_mouseup'
 

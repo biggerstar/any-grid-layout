@@ -8,7 +8,7 @@ import {check, cursor} from "@/events";
  * 可能是 slidePage | close | drag | resize
  * 并保存一些相关信息到全局store中以便后面操作
  * */
-export function itemDragMousedown(ev) {
+export function itemDrag_mousedown(ev) {
   const {isDragging, isResizing, dragOrResize} = tempStore
   if (isDragging || isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
   const container: Container = parseContainer(ev)

@@ -1,1 +1,1 @@
-export * from './slidePage'
+export * from './slidePage_mousemove'

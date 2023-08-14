@@ -2,18 +2,16 @@ import {Container, Item} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
 import {tempStore} from "@/store";
 import {cursor} from "@/events";
-import {ItemTransitionObject} from "@/types";
 
 /**
  * 做拖动结束的后续清理工作
  * */
-export function itemDragMouseup(ev) {
+export function itemDrag_mouseup(ev) {
   const {
     fromItem,
     moveItem,
     isDragging,
     isResizing,
-    cloneElement,
     mouseDownElClassName,
     fromContainer,
     moveContainer,
@@ -26,65 +24,13 @@ export function itemDragMouseup(ev) {
   if (container && cursor.cursor !== 'in-container') cursor.inContainer()
   const dragItem: Item | null = moveItem || fromItem
 
-  //----------移除Drag或者Resize创建的克隆备份-------------//
-  if (cloneElement) {   //  清除对Item拖动或者调整大小产生的克隆对象
-    let timer = null
-    const gridCloneEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
-    //------------------进行拖动归位延时动画执行和执行完毕后移除克隆元素--------------------//
-    //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
-    for (let i = 0; i < gridCloneEls.length; i++) {
-      const gridCloneEl = gridCloneEls[i]
-      if (dragItem && dragItem.transition) {
-        const transition = <ItemTransitionObject>dragItem.transition
-        const containerElOffset = dragItem.container.contentElement.getBoundingClientRect()
-        if (isDragging) {
-          let left = window.scrollX + containerElOffset.left + dragItem.offsetLeft()
-          let top = window.scrollY + containerElOffset.top + dragItem.offsetTop()
-          dragItem.domImpl.updateStyle({
-            transitionProperty: `${transition.field}`,
-            transitionDuration: `${transition.time}ms`,
-            width: `${dragItem.nowWidth()}px`,
-            height: `${dragItem.nowHeight()}px`,
-            left: `${left}px`,
-            top: `${top}px`
-          }, gridCloneEl)
-        } else if (isResizing) {
-          dragItem.domImpl.updateStyle({
-            transitionProperty: `${transition.field}`,
-            transitionDuration: `${transition.time}ms`,
-            width: `${dragItem.nowWidth()}px`,
-            height: `${dragItem.nowHeight()}px`,
-            left: `${dragItem.offsetLeft()}px`,
-            top: `${dragItem.offsetTop()}px`
-          }, gridCloneEl)
-        }
-      }
 
-      function removeCloneEl() {
-        if (!dragItem || !fromItem) return
-        dragItem.domImpl.removeClass('grid-dragging-source-el', 'grid-resizing-source-el')
-        try {    // 拖拽
-          gridCloneEl.parentNode.removeChild(gridCloneEl)
-        } catch (e) {
-        }
-        dragItem.__temp__.dragging = false
-        fromItem.__temp__.dragging = false
-        clearTimeout(timer)
-        timer = null
-      }
-
-      if (dragItem && dragItem.transition) {
-        timer = setTimeout(removeCloneEl, (dragItem.transition as ItemTransitionObject).time)
-      } else removeCloneEl()
-    }
-  }
   //  清除Item限制操作的遮罩层
   const maskList = document.querySelectorAll('.grid-item-mask')
   for (let i = 0; i < maskList.length; i++) {
     const maskEl = maskList[i]
     maskEl.parentElement.removeChild(maskEl)
   }
-
 
   //--------------------------点击关闭按钮-----------------------------//
   const downTagClassName = mouseDownElClassName

@@ -2,7 +2,7 @@ import {Item} from "@/main";
 import {tempStore} from "@/store";
 import {Sync} from "@/utils";
 
-export function crossContainerMouseenter(ev, container) {
+export function crossContainer_mouseenter(ev, container) {
   const {moveItem, fromItem, isLeftMousedown, exchangeItems} = tempStore
   if (!container && ev.target._isGridContainer_) {
     ev.preventDefault()

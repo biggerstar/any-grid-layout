@@ -2,10 +2,10 @@ import {tempStore} from "@/store";
 import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
 import {prevent} from "@/events";
-import {itemDragMousemove} from "@/events/item-drag/itemDragMousemove";
+import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 
 /** 做触屏和桌面端兼容 */
-export function touchstartOrMousedown(ev) {
+export function compatible_touchstart_mousedown(ev) {
   // touch 和 drag效果是一样的
   ev = ev || window['event']
   if (ev.touches) {
@@ -21,7 +21,7 @@ export function touchstartOrMousedown(ev) {
     tempStore.timeOutEvent = setTimeout(() => {
       if (ev.preventDefault) ev.preventDefault()
       tempStore.allowTouchMoveItem = true
-      itemDragMousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
+      itemDrag_mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
       let timer: any = setTimeout(() => {
         document.removeEventListener('contextmenu', prevent.defaultAndFalse)
         clearTimeout(timer)

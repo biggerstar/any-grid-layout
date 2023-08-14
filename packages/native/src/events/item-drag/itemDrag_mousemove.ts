@@ -9,14 +9,14 @@ import {Container} from "@/main";
 import {tempStore} from "@/store";
 import {
   crossContainerLeaveEnter,
-  crossContainerMouseenter,
-  crossContainerMouseleave,
+  crossContainer_mouseenter,
+  crossContainer_mouseleave,
   cursor,
   doItemResize,
 } from "@/events";
 
 
-export const itemDragMousemove: Function = throttle((ev) => {
+export const itemDrag_mousemove: Function = throttle((ev) => {
   const {
     isLeftMousedown,
     currentContainerArea,
@@ -40,8 +40,8 @@ export const itemDragMousemove: Function = throttle((ev) => {
     } else {
       if (containerArea || currentContainerArea) {
         // 非相邻容器中的网页其他空白元素移进来某个容器中
-        if (!currentContainerArea) crossContainerMouseenter(null, container)
-        if (!containerArea) crossContainerMouseleave(null, currentContainer)
+        if (!currentContainerArea) crossContainer_mouseenter(null, container)
+        if (!containerArea) crossContainer_mouseleave(null, currentContainer)
       }
     }
 

@@ -6,7 +6,7 @@ import {tempStore} from "@/store";
 /**
  * 拖拽到边界自动滚动container内容
  * */
-export const slidePage: Function = throttle((ev) => {
+export const slidePage_mousemove: Function = throttle((ev) => {
   const {mousedownEvent, dragOrResize, isLeftMousedown, slidePageOffsetInfo} = tempStore
   // 拖拽滑动整个容器元素
   if (dragOrResize !== 'slidePage' || !isLeftMousedown || !mousedownEvent) return

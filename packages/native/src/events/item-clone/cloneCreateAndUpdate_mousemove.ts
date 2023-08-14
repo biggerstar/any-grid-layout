@@ -5,22 +5,22 @@ import {parseContainer, Sync, throttle} from "@/utils";
 /**
  * 鼠标点击后创建一个克隆可实时拖动的元素
  * */
-export const mousemoveFromClone: Function = throttle((ev) => {
+export const cloneCreateAndUpdate_mousemove: Function = throttle((ev) => {
   //  对drag克隆元素的操作
   const {
     mousedownEvent,
     fromItem,
     moveItem,
+    isDragging,
     cloneElement,
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
   } = tempStore
-  if (!mousedownEvent || !fromItem || !tempStore.isDragging) return
+  if (!mousedownEvent || !fromItem || !isDragging) return
   let dragItem = moveItem || fromItem
   const container: Container = parseContainer(ev)
   dragItem.__temp__.dragging = true
-
-  if (cloneElement) {
+  if (!cloneElement) {
     const newNode = <HTMLElement>dragItem.element.cloneNode(true)
     tempStore.cloneElement = newNode
     newNode.classList.add('grid-clone-el', 'grid-dragging-clone-el')
@@ -33,6 +33,7 @@ export const mousemoveFromClone: Function = throttle((ev) => {
     }, newNode)
   } else {
     if (container && container.__ownTemp__.firstEnterUnLock) {
+      console.log(111111111111111111)
       Sync.run({
         func: () => {
           // 交换进入新容器时重新给Item样式

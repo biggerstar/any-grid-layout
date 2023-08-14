@@ -2,7 +2,7 @@ import {tempStore} from "@/store";
 import {singleTouchToCommonEvent} from "@/utils";
 
 /** 做触屏和桌面端兼容 */
-export function touchmoveOrMousemove(ev) {
+export function compatible_touchmove_mousemove(ev) {
   ev = ev || window['event']
   if (ev.stopPropagation) ev.stopPropagation()
   if (ev.touches) {

@@ -1,6 +1,6 @@
 import {tempStore} from "@/store";
 
-export function itemResizeMouseup(_: Event) {
+export function itemResize_mouseup(_: Event) {
   const {isResizing, fromItem} = tempStore
   if (!isResizing) return
   if (!fromItem) return
