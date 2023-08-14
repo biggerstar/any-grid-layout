@@ -1,6 +1,9 @@
 import {Container, Item} from "@/main";
 import {tempStore} from "@/store";
 
+/**
+ * 做跨容器的item交换
+ * */
 export function doItemExchange(container: Container, itemPositionMethod: Function = null) {
   const fromItem: Item = tempStore.fromItem
   const moveItem: Item = tempStore.moveItem

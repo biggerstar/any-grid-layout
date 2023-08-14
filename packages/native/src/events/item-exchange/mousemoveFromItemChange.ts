@@ -3,8 +3,8 @@ import {tempStore} from "@/store";
 import {Container, Item, ItemPos} from "@/main";
 import {cursor, doItemExchange} from "@/events";
 
-
-/** 跨容器Item成员交换
+/**
+ * 自身容器Item交换和跨容器Item成员交换
  * @param {Container} container
  * @param {Function} itemPositionMethod(newItem)  执行该函数的前提是Item已经转移到当前鼠标对应的Container中，
  *                                                  itemPositionMethod函数接受一个参数newItem,

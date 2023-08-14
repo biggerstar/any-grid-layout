@@ -2,6 +2,9 @@ import {tempStore} from "@/store";
 import {Container, Item} from "@/main";
 import {parseContainer, Sync, throttle} from "@/utils";
 
+/**
+ * 鼠标点击后创建一个克隆可实时拖动的元素
+ * */
 export const mousemoveFromClone: Function = throttle((ev) => {
   //  对drag克隆元素的操作
   // ev.stopPropagation()

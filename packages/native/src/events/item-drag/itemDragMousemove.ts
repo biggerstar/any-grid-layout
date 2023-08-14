@@ -8,13 +8,14 @@ import {
 import {Container} from "@/main";
 import {tempStore} from "@/store";
 import {
+  crossContainerLeaveEnter,
+  crossContainerMouseenter,
+  crossContainerMouseleave,
   cursor,
   doItemResize,
-  moveOuterContainerLeaveEnter,
-  moveOuterContainerMouseenter,
-  moveOuterContainerMouseleave,
   slidePage
 } from "@/events";
+
 
 export const itemDragMousemove: Function = throttle((ev) => {
   const containerArea: HTMLElement = parseContainerAreaElement(ev)
@@ -29,16 +30,16 @@ export const itemDragMousemove: Function = throttle((ev) => {
       if (tempStore.currentContainerArea !== tempStore.beforeContainerArea) {
         // 从相邻容器移动过去，旧容器 ==>  新容器
         // console.log(tempStore.beforeContainer, tempStore.currentContainer);
-        moveOuterContainerLeaveEnter(tempStore.beforeContainer, tempStore.currentContainer)
+        crossContainerLeaveEnter(tempStore.beforeContainer, tempStore.currentContainer)
       }
     } else {
       if (tempStore.currentContainerArea !== null || tempStore.beforeContainerArea !== null) {
         if (tempStore.beforeContainerArea === null) {
           // 非相邻容器中的网页其他空白元素移进来某个容器中
-          moveOuterContainerMouseenter(null, tempStore.currentContainer)
+          crossContainerMouseenter(null, tempStore.currentContainer)
         }
         if (tempStore.currentContainerArea === null) {
-          moveOuterContainerMouseleave(null, tempStore.beforeContainer)
+          crossContainerMouseleave(null, tempStore.beforeContainer)
         }
       }
     }

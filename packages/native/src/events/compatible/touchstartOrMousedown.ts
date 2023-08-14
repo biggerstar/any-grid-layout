@@ -3,8 +3,8 @@ import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
 import {prevent} from "@/events";
 import {itemDragMousemove} from "@/events/item-drag/itemDragMousemove";
-import {itemDragMousedown} from "@/events/item-drag/itemDragMousedown";
 
+/** 做触屏和桌面端兼容 */
 export function touchstartOrMousedown(ev) {
   // touch 和 drag效果是一样的
   ev = ev || window['event']
@@ -30,5 +30,4 @@ export function touchstartOrMousedown(ev) {
       clearTimeout(tempStore.timeOutEvent)
     }, pressTime)
   }
-  itemDragMousedown(ev)
 }

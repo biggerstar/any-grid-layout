@@ -1,6 +1,11 @@
 export * from './listen'
 export * from './common'
+
+export * from './compatible'
 export * from './item-drag'
 export * from './item-resize'
-export * from './move-outer-container'
+export * from './item-clone'
+export * from './item-exchange'
+export * from './cross-container-exchange'
+export * from './slide-page'
 export * from './other'

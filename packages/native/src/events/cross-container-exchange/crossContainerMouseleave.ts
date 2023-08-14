@@ -1,7 +1,7 @@
 import {Container, Item} from "@/main";
 import {tempStore} from "@/store";
 
-export function moveOuterContainerMouseleave(ev, container = null) {
+export function crossContainerMouseleave(ev, container = null) {
   let fromItem: Item = tempStore.fromItem
   let moveItem: Item = tempStore.moveItem
   let dragItem: Item = tempStore.moveItem ? moveItem : fromItem

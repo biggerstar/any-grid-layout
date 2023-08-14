@@ -4,6 +4,10 @@ import {tempStore} from "@/store";
 import {cursor, itemResizeMouseup} from "@/events";
 import {ItemTransitionObject} from "@/types";
 
+
+/**
+ * 做拖动结束的后续清理工作
+ * */
 export function itemDragMouseup(ev) {
   const container: Container = parseContainer(ev)
   if (tempStore.isResizing) itemResizeMouseup(ev)

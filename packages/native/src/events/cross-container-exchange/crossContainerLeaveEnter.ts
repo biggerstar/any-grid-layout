@@ -1,6 +1,6 @@
 import {Container, Item} from "@/main";
 import {tempStore} from "@/store";
-import {moveOuterContainerMouseenter, moveOuterContainerMouseleave} from "@/events";
+import {crossContainerMouseenter, crossContainerMouseleave} from "@/events";
 
 /**用于嵌套情况两个【相邻】Container的直接过渡
  * @param {Container}  fromContainer   从那个Container中来
@@ -8,14 +8,14 @@ import {moveOuterContainerMouseenter, moveOuterContainerMouseleave} from "@/even
  * 在嵌套容器中假设父容器为A，被嵌套容器为B,  如果A到 B 则fromContainer为A，toContainer为B,此时dragItem属于A，
  * 如果A到 B 此时鼠标不抬起继续从B返回A 则fromContainer为 B，toContainer为A，此时dragItem还是属于A,通过dragItem的归属能确定跨容器时候是否鼠标被抬起
  * */
-export function moveOuterContainerLeaveEnter(fromContainer: Container, toContainer: Container) {
+export function crossContainerLeaveEnter(fromContainer: Container, toContainer: Container) {
   if (!fromContainer || !toContainer) return
   let fromItem: Item = tempStore.fromItem
   let moveItem: Item = tempStore.moveItem
   let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
   // console.log(fromContainer,toContainer,dragItem);
   //------------下方代码固定顺序-------------//
-  moveOuterContainerMouseleave(null, fromContainer)
+  crossContainerMouseleave(null, fromContainer)
   // console.log(dragItem.container,toContainer)
 
   if (dragItem.container === toContainer) {
@@ -30,7 +30,7 @@ export function moveOuterContainerLeaveEnter(fromContainer: Container, toContain
     }
   }
   toContainer.__ownTemp__.nestingEnterBlankUnLock = true
-  moveOuterContainerMouseenter(null, toContainer)
+  crossContainerMouseenter(null, toContainer)
   //  如果现在点击嵌套容器空白部分选择的Item会是父容器的Item,按照mouseenter逻辑对应不可能删除当前Item(和前面一样是fromItem)在插入
   //  接上:因为这样是会直接附加在父级Container最后面，这倒不如什么都不做直接等待后面逻辑执行换位功能
 }

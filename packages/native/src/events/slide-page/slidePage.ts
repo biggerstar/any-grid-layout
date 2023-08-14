@@ -3,6 +3,10 @@ import {parseContainer} from "@/utils";
 import {tempStore} from "@/store";
 import {updateSlidePageInfo} from "@/events";
 
+
+/**
+ * 拖拽到边界自动滚动container内容
+ * */
 export function slidePage(ev) {
   // 拖拽滑动整个容器元素
   const container: Container = parseContainer(ev)

@@ -3,6 +3,7 @@ import {singleTouchToCommonEvent} from "@/utils";
 import {prevent} from "@/events";
 import {itemDragMouseup} from "@/events/item-drag/itemDragMouseup";
 
+/** 做触屏和桌面端兼容 */
 export function touchendOrMouseup(ev) {
   ev = ev || window['event']
   if (ev.touches) {

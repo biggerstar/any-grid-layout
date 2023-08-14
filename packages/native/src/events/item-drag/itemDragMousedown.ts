@@ -3,6 +3,11 @@ import {Container} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
 import {check, cursor} from "@/events";
 
+/**
+ * 鼠标点击判断操作意图
+ * 可能是 slidePage | close | drag | resize
+ * 并保存一些相关信息到全局store中以便后面操作
+ * */
 export function itemDragMousedown(ev) {
   if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
   const container: Container = parseContainer(ev)
