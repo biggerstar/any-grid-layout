@@ -40,6 +40,7 @@
     "dist"
   ],
   "dependencies": {
-    "@types/lodash.clonedeep": "^4.5.7"
+    "@types/lodash.clonedeep": "^4.5.7",
+    "fast-deep-equal": "^3.1.3"
   }
 }

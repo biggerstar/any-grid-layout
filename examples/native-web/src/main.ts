@@ -128,9 +128,8 @@ const container1 = new Container({
   el: '#container1',
   global: {
     ratioCol: 0.1,
-    // responsive: true
     // ratioRow: 0.1,
-    // responsive:true
+    responsive:true
   },
   layouts: [
     // {

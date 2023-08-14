@@ -3,7 +3,6 @@ import {Item} from "@/main/item/Item";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 
 export class ItemPos extends ItemPosGeneralImpl {
-  [key: string]: any
   public belongItem?: Item
   public el?: Element
   public i?: number
@@ -20,10 +19,20 @@ export class ItemPos extends ItemPosGeneralImpl {
   constructor(pos) {
     super()
     this._define()
-    if (typeof pos === 'object') this.update(pos)
     for (let i = 0; i < 4; i++) {
       this.posHash = this.posHash + String.fromCharCode(Math.floor(Math.random() * 26) + "a".charCodeAt(0))
     }
+    merge(this, pos, false, ['x', 'y', 'w', 'h'])   // 1.先排除w, h先加载minX,maxX...等限制后
+    merge(this, pos)  //  2. 再合并所有
+  }
+
+  /** 传入一个值，返回经过限制值边界大小后的结果 */
+  filterLimit(newVal: number, min: number, max: number): number {
+    let limitVal = newVal
+    if (!isFinite(max) && min > max) limitVal = max   // 1. 先看min,max如果min > max 则此时新值永远等于 max 对应的值
+    else if (newVal < min) limitVal = min   // 2. 限制不小于min
+    else if (!isFinite(max) && newVal > max) limitVal = max  // 3. 2. 限制不大于max
+    return limitVal
   }
 
   _define() {
@@ -32,30 +41,17 @@ export class ItemPos extends ItemPosGeneralImpl {
     let tempH = null
     let w = 1
     let h = 1
+
     Object.defineProperties(<object>this, {
       /** 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
       w: {
         get: () => w,
-        set: (v) => {
-          let limitW = v
-          const {maxW, minW} = self
-          if (!isFinite(maxW) && minW > maxW) limitW = maxW
-          else if (w < minW) limitW = minW
-          else if (!isFinite(maxW) && w > maxW) limitW = maxW
-          w = limitW
-        }
+        set: (v) => w = self.filterLimit(v, self.minW, self.maxW)
       },
       /** 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
       h: {
         get: () => h,
-        set: (v) => {
-          let limitH = v
-          const {maxH, minH} = self
-          if (!isFinite(maxH) && minH > maxH) limitH = maxH
-          else if (w < minH) limitH = minH
-          else if (!isFinite(maxH) && w > maxH) limitH = maxH
-          h = limitH
-        }
+        set: (v) => h = self.filterLimit(v, self.minH, self.maxH)
       },
       tempW: {
         get: () => {
@@ -89,43 +85,5 @@ export class ItemPos extends ItemPosGeneralImpl {
         }
       },
     })
-  }
-
-  update(pos) {
-    // console.log(pos);
-    merge(this, this._typeCheck(pos))
-    return this
-  }
-
-  export(otherFieldList = []): any {
-    const exportFields = {}
-    Object.keys(this).forEach((posKey) => {
-      if (['w', 'h', 'x', 'y'].includes(posKey)) {
-        exportFields[posKey] = this[posKey]
-      }
-      if (['minW', 'minH'].includes(posKey)) {
-        if (this[posKey] > 1) exportFields[posKey] = this[posKey]
-      }
-      if (['maxW', 'maxH'].includes(posKey)) {
-        if (this[posKey] !== Infinity) exportFields[posKey] = this[posKey]
-      }
-      if (otherFieldList.includes(posKey)) {
-        if (this[posKey]) exportFields[posKey] = this[posKey]
-      }
-    })
-    return exportFields
-  }
-
-  _typeCheck(pos) {
-    Object.keys(pos).forEach((posKey) => {
-      if (['w', 'h', 'x', 'y', 'col', 'row', 'minW', 'maxW', 'minH', 'maxH', 'tempW', 'tempH'].includes(posKey)) {
-        if ([Infinity, undefined, null].includes(pos[posKey])) return
-        pos[posKey] = parseInt(pos[posKey].toString())
-      }
-      if (posKey === 'x') this.initialX = parseInt(pos[posKey].toString())
-      if (posKey === 'y') this.initialY = parseInt(pos[posKey].toString())
-    })
-    // console.log(pos);
-    return pos
   }
 }

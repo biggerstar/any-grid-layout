@@ -3,12 +3,13 @@ import {debounce, merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
-import {EventCallBack} from "@/events/EventCallBack";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
 import {TempStore} from "@/store/TempStore";
+import {EventCallBack} from "@/utils/EventCallBack";
+import {startGlobalEvent} from "@/events/listen";
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -55,6 +56,10 @@ export class Container {
   public global: ContainerGeneralImpl = {} as any
   public layouts: ContainerGeneralImpl[] = [] as any
   //----------------内部需要的参数---------------------//
+  /**
+   * 当前正在使用的布局，为layouts中的某一个适合当前屏幕的布局配置的地址引用
+   * 该布局会信息会在切换布局的时候被修改，原因是为了同步当前最新布局保存到layouts中
+   * */
   public readonly layout: ContainerGeneralImpl = {} as any
   public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public classList: string[] = []
@@ -115,6 +120,7 @@ export class Container {
       this.isNesting = true
     }
     //-------------------------------------------------
+    startGlobalEvent()
   }
 
   private _define() {

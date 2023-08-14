@@ -226,7 +226,6 @@ export class Engine {
       this.layoutManager.mark(foundPos)
       Object.assign(item.pos, foundPos)
       this.items.push(item)
-      item.__ref_use__ = itemOptions
       item.container = container
       item.parentElement = container.contentElement
       item.i = container.getConfig('items').length
@@ -243,13 +242,15 @@ export class Engine {
     }
   }
 
-  /** 已经挂载后的情况下重新排列响应式Item的顺序,通过映射遍历前台可视化形式的网格位置方式重新排序Item顺序(所见即所得)，
+  /**
+   * 已经挂载后的情况下重新排列响应式Item的顺序,通过映射遍历前台可视化形式的网格位置方式重新排序Item顺序(所见即所得)，
    * 排序后的布局和原本的布局是一样的，只是顺序可能有变化，在拖动交换的时候不会出错
-   *  原理是通过遍历当前网页内Container对应的矩阵点(point),先行后列遍历,记录下所遍历到的顺序，该顺序的布局是和原本的item列表一样的
-   *  只是在Item调用engine.move时可能因为右边过宽的Item被挤压到下一行，后面的小Item会被补位到上一行，
-   *  这种情况其实大Item的index顺序是在小Item前面的，但是通过move函数交换可能会出错
+   * 原理是通过遍历当前网页内Container对应的矩阵点(point),先行后列遍历,记录下所遍历到的顺序，该顺序的布局是和原本的item列表一样的
+   * 只是在Item调用engine.move时可能因为右边过宽的Item被挤压到下一行，后面的小Item会被补位到上一行，
+   * 这种情况其实大Item的index顺序是在小Item前面的，但是通过move函数交换可能会出错
    * */
   public sortResponsiveItem() {
+    return
     const items = []
     for (let y = 1; y <= this.container.getConfig("row"); y++) {
       for (let x = 1; x <= this.container.getConfig("col"); x++) {
@@ -320,6 +321,7 @@ export class Engine {
       }
     }
     if (fromIndex !== null) {
+      console.log(fromIndex,toIndex)
       this.items.splice(fromIndex, 1)
       this.items.splice(toIndex, 0, item)
     }
@@ -328,6 +330,7 @@ export class Engine {
 
   /** 交换自身Container中两个Item在this.items的位置 */
   public exchange(itemA: Item, itemB: Item) {
+    console.log(arguments);
     if (this.items.includes(itemA) && this.items.includes(itemB)) {
       this.items[itemA.i] = itemB
       this.items[itemB.i] = itemA
@@ -353,14 +356,18 @@ export class Engine {
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
   public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
-    const useItems = <any>this.container.getConfig('items').map((item: Item) => item[__ref_item__]).filter(Boolean)
-    const res = this.layoutManager.analysis(useItems)
-    res.patch((item) => item.updateItemLayout())
+
+    // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
+    const res = this.layoutManager.analysis(this.items)
+    console.log(res);
+    res.patch((item) => {
+      this.layoutManager.mark(item.pos)
+      item.updateItemLayout()
+    })
     // console.log(useItems, res);
 
-
     return;
-   // TODO  弃用下方原本的更新逻辑
+    // TODO  弃用下方原本的更新逻辑
     //---------------------------更新响应式布局-------------------------------//
     const staticItems = this.items.filter((item) => {
       if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {

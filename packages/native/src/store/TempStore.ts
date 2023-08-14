@@ -77,3 +77,4 @@ export class TempStore {
     return TempStore
   }
 }
+export const tempStore = TempStore.store

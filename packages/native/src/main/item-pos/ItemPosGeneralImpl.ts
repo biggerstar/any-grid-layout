@@ -1,4 +1,5 @@
 export class ItemPosGeneralImpl {
+  [key: string]: any
   public w?: number = 1
   public h?: number = 1
   public x?: number

@@ -4,7 +4,7 @@
  *  pos 是ItemPos类成员
  * */
 import {Layout} from "@/algorithm/Layout";
-import {Item, ItemPos, ItemPosGeneralImpl} from "@/main";
+import {Item, ItemPos} from "@/main";
 import {CustomItemPos} from "@/types";
 
 export class LayoutManager extends Layout {
@@ -75,7 +75,11 @@ export class LayoutManager extends Layout {
     const success: Array<{ item: Item, pos: CustomItemPos, }> = []
     const failed = []
     items.forEach((item) => {
-      const finalPos = this.findBlank(<ItemPosGeneralImpl>{...item.pos})
+      // console.log(item.__ref_use__?.pos)
+      const pos = new ItemPos(item.__ref_use__?.pos || item.pos)
+      // const {x, y, w, h} = pos
+      // console.log({x, y, w, h});
+      const finalPos = this.findBlank(pos)
       finalPos
         ? success.push({item, pos: finalPos})
         : failed.push(item)

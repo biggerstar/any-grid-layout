@@ -1,15 +1,12 @@
-// noinspection JSUnusedGlobalSymbols
-
-import {merge} from "@/utils/tool";
 import {defaultStyle} from "@/default/style/defaultStyle";
 import {Sync} from "@/utils/Sync";
-import {EditEvent} from "@/events/EditEvent";
 import {Container} from "@/main/container/Container";
 import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import {TempStore} from "@/store";
+import equal from 'fast-deep-equal'
 
 //---------------------------------------------------------------------------------------------//
 const tempStore = TempStore.store
@@ -34,12 +31,14 @@ export class Item extends ItemGeneralImpl {
   public nested: boolean = false
   public parentElement: HTMLElement
   public readonly domImpl: DomFunctionImpl
+  /** 运行时pos */
   public pos: ItemPos
   public __ref_use__: CustomItem
 
   //----------------vue专用---------------------//
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
+  public readonly _default: ItemGeneralImpl
   private _mounted: boolean = false
   private _resizeTabEl?: HTMLElement
   private _closeEl?: HTMLElement
@@ -84,77 +83,58 @@ export class Item extends ItemGeneralImpl {
   //----------------------------------------------------------
   constructor(itemOption: CustomItem) {
     super()
-    if (itemOption.el instanceof Element) {
-      this.el = itemOption.el
-      this.element = itemOption.el
-    }
-    merge(this, itemOption)
+    if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
     this.domImpl = new DomFunctionImpl(this)
-    this.pos = new ItemPos(itemOption.pos)
-    this.pos.belongItem = this
-    this._itemSizeLimitCheck()
+    this.__ref_use__ = itemOption
+    this._default = new ItemGeneralImpl()
+    this._define(itemOption)
   }
 
-  /** 让draggable，resize，close，edit 等支持getter 和 setter 直接复制控制 item 的对应行为状态 */
-  private _define() {
+  /**
+   * 用于代理中转用户配置和支持获取默认配置
+   * 对item 所有操作只要键值在 ItemGeneralImpl 中的，则会根据一定规则同步到当前item状态到container.layout中
+   * 若当前值和 ItemGeneralImpl 中默认值一样，则不会同步，保证用户配置最简化
+   * */
+  private _define(itemOption) {
     const self = this
-    let draggable = this.draggable
-    let resize = this.resize
-    let close = this.close
-    let edit = draggable || resize || close
-    // console.log( draggable, resize, close)
-    let transition = this.transition
+    const _default = this._default
+    const _customOptions = this.__ref_use__
+    const pos = new ItemPos(itemOption.pos)
+    pos.belongItem = this
+
+    const get = (k: keyof ItemGeneralImpl) => _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]
+    const set = (k: keyof ItemGeneralImpl, v: any) => !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
+
+    for (const k in _default) {
+      Object.defineProperty(<object>this, k, {
+        get: () => get(<any>k),      /* 优先获取用户配置,没有的话则获取item默认配置 */
+        set: (v) => set(<any>k, v)   /* 如果该值等于默认值，则不需要同步到用户配置上  */
+      })
+    }
+
     Object.defineProperties(<object>this, {
+      pos: {
+        value: pos
+      },
       draggable: {
-        configurable: false,
-        get: () => draggable,
-        set(v) {
-          if (typeof v === 'boolean') {
-            if (draggable === v) return
-            draggable = v
-            self.edit = draggable || resize || close
-          }
-        }
+        get: () => get('draggable'),
+        set: (v) => set('draggable', Boolean(v))
       },
       resize: {
-        configurable: false,
-        get: () => resize,
-        set(v) {
-          if (typeof v === 'boolean') {
-            if (resize === v) return
-            resize = v
-            self._handleResize(v)
-            self.edit = draggable || resize || close
-          }
-        }
+        get: () => get('resize'),
+        set: (v) => set('resize', Boolean(v)) || self._handleResize(v)
       },
       close: {
-        configurable: false,
-        get: () => close,
-        set(v) {
-          if (typeof v === 'boolean') {
-            if (close === v) return
-            close = v
-            self._closeBtn(v)
-            self.edit = draggable || resize || close
-          }
-        }
+        get: () => get('close'),
+        set: (v) => set('close', Boolean(v)) || self._closeBtn(v)
       },
       edit: {
-        configurable: false,
-        get: () => edit,
-        set(v) {
-          if (typeof v === 'boolean') {
-            if (edit === v) return
-            edit = v
-            self._edit(edit)
-          }
-        }
+        get: () => true,
       },
       transition: {
-        configurable: false,
-        get: () => transition,
+        get: () => get('transition'),
         set(v) {
+          const transition = get('transition')
           if (v === false) transition['time'] = 0
           if (typeof v === 'number') transition['time'] = v
           if (typeof v === 'object') {
@@ -167,49 +147,11 @@ export class Item extends ItemGeneralImpl {
     })
   }
 
-
-  /** 导出当前Item的配置，忽略和默认配置一样的字段
-   * @param otherFieldList {Array} 要导出的除了默认以外其他存在的字段
-   * @param banFieldList {Array} 要禁止导出的字段
+  /**
+   * 渲染, 直接渲染添加到 Container 中
    * */
-  public exportConfig = (otherFieldList = [], banFieldList = []) => {
-    const item = this
-    const exposeConfig: Record<any, any> = {}
-    let exposePos: Record<any, any>
-    exposePos = item.pos.export?.(otherFieldList)
-
-    if (banFieldList.includes('x')) delete exposePos.x
-    if (banFieldList.includes('y')) delete exposePos.y
-
-    exposeConfig['pos'] = exposePos
-    Array.from(['static', 'draggable', 'resize', 'close']).forEach((field => {
-      if (item[field] !== false) exposeConfig[field] = item[field]
-    }))
-    Array.from(['follow', 'dragOut', 'resizeOut', 'exchange']).forEach((field => {
-      if (item[field] !== true) exposeConfig[field] = item[field]
-    }))
-    if (item.name) exposeConfig.name = item.name
-    if (typeof item.type === 'string') exposeConfig.type = item.type
-    //transition 特殊导出
-    let transition: Record<any, any> = {}
-    if (item.transition['field'] !== 'top,left,width,height') {
-      transition.field = item.transition['field']
-      if (item.transition['time'] !== 180) transition.time = item.transition['time']
-      exposeConfig.transition = transition
-    } else {
-      if (item.transition['time'] !== 180) {
-        exposeConfig.transition = item.transition['time']
-      }
-    }
-    // exposeConfig.el = this.element
-    //transition 特殊导出结束
-    return exposeConfig
-  }
-
-  /** 渲染, 直接渲染添加到 Container 中 */
   public mount() {
     const _mountedFun = () => {
-      this._define()
       if (this._mounted) return
       if (this.container.platform === 'native') {
         if (!this.element) this.element = document.createElement(this.tagName)
@@ -238,7 +180,8 @@ export class Item extends ItemGeneralImpl {
   }
 
 
-  /** 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
+  /**
+   * 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
   public unmount(isForce = false) {
@@ -250,7 +193,7 @@ export class Item extends ItemGeneralImpl {
         }
         this._handleResize(false)
         this._closeBtn(false)
-        EditEvent.removeEventFromItem(this)
+        // EditEvent.removeEventFromItem(this)
         this.container.contentElement.removeChild(this.element)
         this.container.eventManager._callback_('itemUnmounted', this)
       } else {
@@ -261,7 +204,8 @@ export class Item extends ItemGeneralImpl {
     this._mounted = false
   }
 
-  /** 将自己从Items列表中移除
+  /**
+   *  将自己从Items列表中移除
    * @param {Boolean}  force  是否强力删除Dom节点，true为删除引用，false为不删除引用只删除Item占位
    * */
   public remove(force = false) {
@@ -271,31 +215,35 @@ export class Item extends ItemGeneralImpl {
     }
   }
 
-  /** 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
-   *  @param {Boolean}  isEdit    是否开启编辑模式
+  /**
+   * 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
+   * @param {Boolean}  isEdit    是否开启编辑模式
    * */
   private _edit(isEdit = false) {
+    return
     if (this.edit) {
       if (!this.__temp__.editNumUsing) {
-        EditEvent.startEvent(null, this)
+        // EditEvent.startEvent(null, this)
         this.__temp__.editNumUsing = true
         tempStore.editItemNum++   // 未占用editNum 进行占用
       }
     } else if (!this.edit) {
       if (this.__temp__.editNumUsing) {
-        EditEvent.removeEvent(null, this)
+        // EditEvent.removeEvent(null, this)
         tempStore.editItemNum--   // 占用了editNum 进行释放
         this.__temp__.editNumUsing = false
       }
     }
   }
 
-  /** 对该Item开启位置变化过渡动画
-   *  @param {Object} transition  Item移动或者大小癌变要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
+  /**
+   * TODO  animation 和 对应setter还能再优化
+   * 对该Item开启位置变化过渡动画
+   * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
    * */
   public animation(transition) {
     if (typeof transition !== "object") {
-      console.log('参数应该是对象形式{time:Number, field:String}')
+      console.log('参数应该是对象形式{ time: Number, field: String }')
       return
     }
     Sync.run({
@@ -315,31 +263,33 @@ export class Item extends ItemGeneralImpl {
     this.__temp__.isDelayLoadAnimation = true
   }
 
-  /**  */
-  public followStatus(isFollow = true) {
-    this.follow = isFollow
-  }
 
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
   public updateItemLayout() {
     this.domImpl.updateStyle(this.genItemStyle())
   }
 
-  /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框 */
+  /**
+   * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
+   * */
   public offsetLeft() {
     let marginWidth = 0
     if ((this.pos.x) > 1) marginWidth = (this.pos.x - 1) * this.margin[0]
     return ((this.pos.x - 1) * this.size[0]) + marginWidth
   }
 
-  /**  @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框 */
+  /**
+   * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
+   * */
   public offsetTop() {
     let marginHeight = 0
     if ((this.pos.y) > 1) marginHeight = (this.pos.y - 1) * this.margin[1]
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
   }
 
-  /**  @return  获取该Item 当前的宽度 */
+  /**
+   * @return  获取该Item 当前的宽度
+   * */
   public nowWidth = (w = null) => {
     let marginWidth = 0
     const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
@@ -349,7 +299,9 @@ export class Item extends ItemGeneralImpl {
     return (nowW * this.size[0]) + marginWidth
   }
 
-  /**  @return  获取该Item 当前的高度 */
+  /**
+   * @return  获取该Item 当前的高度
+   * */
   public nowHeight = (h = null) => {
     let marginHeight = 0
     const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
@@ -358,7 +310,9 @@ export class Item extends ItemGeneralImpl {
     return (nowH * this.size[1]) + marginHeight
   }
 
-  /**  @return   根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小 */
+  /**
+   * @return   根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
+   * */
   public minWidth() {
     let marginWidth = 0
     if (this.pos.minW === Infinity) return Infinity
@@ -366,7 +320,9 @@ export class Item extends ItemGeneralImpl {
     return (this.pos.minW * this.size[0]) + marginWidth
   }
 
-  /**   @return  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小 */
+  /**
+   * @return  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
+   * */
   public minHeight = () => {
     let marginHeight = 0
     if (this.pos.minH === Infinity) return Infinity
@@ -374,7 +330,9 @@ export class Item extends ItemGeneralImpl {
     return (this.pos.minH * this.size[1]) + marginHeight
   }
 
-  /** @return  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小 */
+  /**
+   * @return  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
+   * */
   public maxWidth() {
     let marginWidth = 0
     if (this.pos.maxW === Infinity) return Infinity
@@ -382,7 +340,9 @@ export class Item extends ItemGeneralImpl {
     return (this.pos.maxW * this.size[0]) + marginWidth
   }
 
-  /** @return  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小 */
+  /**
+   * @return  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
+   * */
   public maxHeight = () => {
     let marginHeight = 0
     if (this.pos.maxH === Infinity) return Infinity
@@ -390,15 +350,19 @@ export class Item extends ItemGeneralImpl {
     return (this.pos.maxH * this.size[1]) + marginHeight
   }
 
-  /** 是否锁定CSS 样式的渲染 不传参数返回当前的状态 ，传布尔参数将状态设置成相应的布尔值    */
+  /**
+   * 是否锁定CSS 样式的渲染 不传参数返回当前的状态 ，传布尔参数将状态设置成相应的布尔值
+   * */
   public styleLock(isStyle = null) {
     if (isStyle === null) return this.__temp__.styleLock
     if (isStyle === true) return this.__temp__.styleLock = true
     if (isStyle === false) return this.__temp__.styleLock = false
   }
 
-  /**  手动生成resize元素，可以将resize字段设置成false，然后在被Item包裹的子元素中将某个要指定为resize按钮的标签
-   * 的class设置成grid-item-resizable-handle也能将该元素当成作为resize的触发按钮 */
+  /**
+   * 手动生成resize元素，可以将resize字段设置成false，然后在被Item包裹的子元素中将某个要指定为resize按钮的标签
+   * 的class设置成grid-item-resizable-handle也能将该元素当成作为resize的触发按钮
+   * */
   private _handleResize(isResize = false) {
     const handleResizeFunc = () => {
       const className = 'grid-item-resizable-handle'
@@ -420,13 +384,13 @@ export class Item extends ItemGeneralImpl {
         }
       }
     }
-    if (this.element) handleResizeFunc()
-    else Sync.run(handleResizeFunc)
+    this.element ? handleResizeFunc() : Sync.run(handleResizeFunc)
   }
 
-  /**  手动生成close关闭按钮，可以将close字段设置成false，然后在被Item包裹
-   * 的子元素中将某个要指定为close按钮的标签的class设置成grid-item-close-btn也能将该元素当成作为close的触发按钮 */
-
+  /**
+   * 手动生成close关闭按钮，可以将close字段设置成false，然后在被Item包裹
+   * 的子元素中将某个要指定为close按钮的标签的class设置成grid-item-close-btn也能将该元素当成作为close的触发按钮
+   * */
   private _closeBtn(isDisplayBtn = false) {
     const closeBtnFunc = () => {
       const className = 'grid-item-close-btn'
@@ -447,71 +411,30 @@ export class Item extends ItemGeneralImpl {
         }
       }
     }
-    if (this.element) closeBtnFunc()
-    else Sync.run(closeBtnFunc)
+    this.element ? closeBtnFunc() : Sync.run(closeBtnFunc)
   }
 
-  /** 创建拖动时防止经过某个Item且触发Item里面元素遮罩，已弃用 */
-  public _mask_(isMask = false) {
-    if (isMask) {
-      const maskEl = document.createElement('div')
-      this.domImpl.updateStyle({
-        backgroundColor: 'transparent',
-        height: this.element.clientHeight + 'px',
-        width: this.element.clientWidth + 'px',
-        position: 'absolute',
-        left: '0',
-        top: '0',
-      }, maskEl)
-      this.__temp__.maskEl = maskEl
-      this.element.appendChild(maskEl)
-      maskEl.classList.add('grid-item-mask')
 
-    }
-    if (this.__temp__.maskEl !== null && !isMask) {
-      try {  // 和Container联动的话在Container可能已经被清除掉了，这里只是尝试再次清理
-        this.element.removeChild(this.__temp__.maskEl)
-      } catch (e) {
-      }
-    }
-  }
-
-  /** 做Item的大小信息限制 */
-  private _itemSizeLimitCheck() {
-    let {minW, minH, maxW, maxH, w, h} = this.pos
-    // 宽度
-    if (minW >= maxW && maxW >= w && maxW !== Infinity) w = maxW
-    else if (w > maxW && maxW !== Infinity) w = maxW
-    else if (w < minW) w = minW
-
-    // 高度
-    if (minH >= maxH && maxH >= h && maxH !== Infinity) h = maxH
-    else if (h > maxH && maxH !== Infinity) h = maxH
-    else if (h < minH) h = minH
-
-    this.pos.w = w
-    this.pos.h = h
-  }
-
-  /** 生成该ITEM的栅格放置位置样式  */
+  /**
+   * 生成该ITEM的栅格放置位置样式
+   * */
   public genItemStyle = () => {
-    // console.log(this.offsetLeft(),this.offsetTop());
     if (this.styleLock()) return {}
     //   三种布局方案，都实现了grid布局 //
     return {
       width: this.nowWidth() + 'px',
       height: this.nowHeight() + 'px',
-
-      // gridColumn: `${this.pos.x} / span ${this.pos.w}`,
-      // gridRow: `${this.pos.y} / span ${this.pos.h}`,
-
       left: this.offsetLeft() + 'px',
       top: this.offsetTop() + 'px',
+      // gridColumn: `${this.pos.x} / span ${this.pos.w}`,
+      // gridRow: `${this.pos.y} / span ${this.pos.h}`,
 
       // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
     }
   }
-
+  /**
+   * 生成限制当前元素宽高的样式对象
+   * */
   public _genLimitSizeStyle = () => {
     if (this.styleLock()) return {}
     const minWidth = this.minWidth()

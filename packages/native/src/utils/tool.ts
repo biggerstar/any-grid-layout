@@ -1,7 +1,7 @@
 import {CustomItem, CustomItems} from "@/types";
 
 /** 节流 */
-export function throttle(func, wait = 350) {  // 全局共用节流函数通道：返回的是函数，记得再执行
+export function throttle(func: Function, wait: number = 350): Function {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self, args;
   let old = 0;
   return function () {
@@ -16,7 +16,7 @@ export function throttle(func, wait = 350) {  // 全局共用节流函数通道�
 }
 
 /** 防抖 */
-export function debounce(fn, delay = 500) {
+export function debounce(fn: Function, delay: number = 500) {
   let timer = null;
   return function () {
     if (timer) {
@@ -30,7 +30,7 @@ export function debounce(fn, delay = 500) {
 }
 
 /** 深度克隆对象  */
-export const cloneDeep = (obj) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
+export const cloneDeep = (obj: Record<any, any>) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
   let objClone = Array.isArray(obj) ? [] : {};
   if (obj && typeof obj === "object") {
     for (let key in obj) {
@@ -45,39 +45,24 @@ export const cloneDeep = (obj) => {  // 使用lodash.cloneDeep在lib模式下打
   }
   return objClone;
 }
+
 /** 深度合并对象  */
 function mergeDeep(target, source) {
-  // 判断目标和源是否都是对象
-  if (typeof target !== 'object' || typeof source !== 'object') {
-    return source;
-  }
-
-  // 遍历源对象的属性
-  for (const key in source) {
-    // 判断属性是否是源对象自身的属性（非继承）
+  if (typeof target !== 'object' || typeof source !== 'object') return source
+  for (const key in source) {  // 判断属性是否是源对象自身的属性（非继承）
     if (source.hasOwnProperty(key)) {
-      // 判断源对象的属性是否是对象
-      if (typeof source[key] === 'object') {
-        // 如果目标对象没有该属性，直接赋值
-        if (!target.hasOwnProperty(key)) {
-          target[key] = source[key];
-        } else {
-          // 进一步递归合并
-          target[key] = mergeDeep(target[key], source[key]);
-        }
-      } else {
-        // 直接赋值
-        target[key] = source[key];
-      }
+      if (typeof source[key] === 'object') {    // 判断源对象的属性是否是对象
+        if (!target.hasOwnProperty(key)) target[key] = source[key]   // 如果目标对象没有该属性，直接赋值
+        else target[key] = mergeDeep(target[key], source[key])    // 递归合并
+      } else target[key] = source[key]
     }
   }
-
   return target;
 }
 
 
 /** 驼峰转短横线  */
-export function getKebabCase(str) {
+export function getKebabCase(str: string) {
   return str.replace(/[A-Z]/g, function (i) {
     return '-' + i.toLowerCase();
   })
