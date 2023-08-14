@@ -1,8 +1,7 @@
 import {tempStore} from "@/store";
 import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
-import {prevent} from "@/events";
-import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
+import {itemCloneCreateAndUpdate_mousemove, prevent} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchstart_mousedown(ev) {
@@ -21,7 +20,7 @@ export function compatible_touchstart_mousedown(ev) {
     tempStore.timeOutEvent = setTimeout(() => {
       if (ev.preventDefault) ev.preventDefault()
       tempStore.allowTouchMoveItem = true
-      itemDrag_mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
+      itemCloneCreateAndUpdate_mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
       let timer: any = setTimeout(() => {
         document.removeEventListener('contextmenu', prevent.defaultAndFalse)
         clearTimeout(timer)

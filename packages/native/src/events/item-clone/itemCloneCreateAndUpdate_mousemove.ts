@@ -3,10 +3,10 @@ import {Container} from "@/main";
 import {parseContainer, Sync, throttle} from "@/utils";
 
 /**
- * 鼠标点击后创建一个克隆可实时拖动的元素
+ * 鼠标开始移动后创建一个克隆可实时拖动的元素
+ * 鼠标移动过程中实时更新当前克隆元素的位置
  * */
-export const cloneCreateAndUpdate_mousemove: Function = throttle((ev) => {
-  //  对drag克隆元素的操作
+export const itemCloneCreateAndUpdate_mousemove: Function = throttle((ev) => {
   const {
     mousedownEvent,
     fromItem,
@@ -33,7 +33,6 @@ export const cloneCreateAndUpdate_mousemove: Function = throttle((ev) => {
     }, newNode)
   } else {
     if (container && container.__ownTemp__.firstEnterUnLock) {
-      console.log(111111111111111111)
       Sync.run({
         func: () => {
           // 交换进入新容器时重新给Item样式

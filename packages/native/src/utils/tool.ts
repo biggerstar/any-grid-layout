@@ -195,7 +195,10 @@ export const parseItem = (ev, reverse = false): Item | null => {
   return item
 }
 
-/** 触屏模式下点击屏幕触发的触屏事件转成和鼠标事件类似的通用事件，只支持一个手指 */
+/**
+ * 触屏模式下点击屏幕触发的触屏事件转成和鼠标事件类似的通用事件，只支持一个手指
+ * 会将相关信息挂载到ev上并通过事件流分发到各个事件中
+ * */
 export const singleTouchToCommonEvent = (touchEvent) => {
   let useTouchKey = 'touches'
   if (touchEvent.touches && touchEvent.touches.length === 0) useTouchKey = 'changedTouches'  // 正常用于touchEnd获取最后改变的point

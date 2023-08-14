@@ -4,32 +4,37 @@ import {
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown
 } from "@/events/compatible";
-import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 import {itemDrag_mousedown} from "@/events/item-drag/itemDrag_mousedown";
 import {slidePage_mousemove} from "@/events/slide-page";
 import {itemResize_mouseup} from "@/events/item-resize";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
-import {cloneCreateAndUpdate_mousemove, cloneRemove_mouseup} from "@/events/item-clone";
+import {itemCloneCreateAndUpdate_mousemove, itemCloneRemove_mouseup} from "@/events/item-clone";
 import {fromItemChange_mousemove} from "@/events/item-exchange";
+import {cursor_mousemove} from "@/events/cursor";
+import {crossContainer_mousemove} from "@/events/cross-container-exchange/crossContainer_mousemove";
 
 
 function allMousedown(ev) {
   compatible_touchstart_mousedown(ev)
+  //------------------------------
   itemDrag_mousedown(ev)
 }
 
 function allMousemove(ev) {
-  cloneCreateAndUpdate_mousemove(ev)
   compatible_touchmove_mousemove(ev)
+  itemCloneCreateAndUpdate_mousemove(ev)
+  cursor_mousemove(ev)
+  crossContainer_mousemove(ev)
+  //------------------------------
   fromItemChange_mousemove(ev)
-  itemDrag_mousemove(ev)
   slidePage_mousemove(ev)
 }
 
 
 function allMouseup(ev) {
   compatible_touchend_mouseup(ev)
-  cloneRemove_mouseup(ev)
+  //------------------------------
+  itemCloneRemove_mouseup(ev)
   itemResize_mouseup(ev)
   itemDrag_mouseup(ev)
 }

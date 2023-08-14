@@ -1,8 +1,10 @@
 import {ItemTransitionObject} from "@/types";
 import {tempStore} from "@/store";
+import {Item} from "@/main";
 
-export function cloneRemove_mouseup(_) {
-  const {cloneElement, dragItem, isDragging, fromItem, isResizing} = tempStore
+export function itemCloneRemove_mouseup(_) {
+  const {cloneElement, moveItem, fromItem, isDragging, isResizing} = tempStore
+  const dragItem: Item | null = moveItem || fromItem
   //----------移除Drag或者Resize创建的克隆备份-------------//
   if (cloneElement) {   //  清除对Item拖动或者调整大小产生的克隆对象
     let timer = null

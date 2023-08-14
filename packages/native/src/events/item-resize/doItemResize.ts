@@ -91,7 +91,7 @@ export const doItemResize: Function = throttle((ev: MouseEvent) => {
       h = fromItem.pos.h   //必要，将当前实际高给newResize
     }
     if (Object.keys(updateStyle).length > 0) {
-      fromItem.domImpl.updateStyle(updateStyle, cloneElement)
+      fromItem.domImpl.updateStyle(updateStyle, tempStore.cloneElement)
     }
     return {
       w,
