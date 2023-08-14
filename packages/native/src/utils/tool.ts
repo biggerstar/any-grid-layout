@@ -1,4 +1,5 @@
 import {CustomItem, CustomItems} from "@/types";
+import {Item} from "@/main";
 
 /** 节流 */
 export function throttle(func: Function, wait: number = 350): () => void {  // 全局共用节流函数通道：返回的是函数，记得再执行
@@ -173,7 +174,7 @@ export const parseContainerAreaElement = (ev, reverse = false) => {
 }
 
 /** 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item */
-export const parseItem = (ev, reverse = false) => {
+export const parseItem = (ev, reverse = false): Item | null => {
   let item = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
   if (target._isGridItem_) {

@@ -7,12 +7,11 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
-import {TempStore} from "@/store/TempStore";
 import {EventCallBack} from "@/utils/EventCallBack";
 import {startGlobalEvent} from "@/events/listen";
+import {tempStore} from "@/store";
 
 //---------------------------------------------------------------------------------------------//
-const tempStore = TempStore.store
 
 //---------------------------------------------------------------------------------------------//
 

@@ -1,9 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {parseContainer} from "@/utils";
-import {TempStore} from '@/store'
+import {tempStore} from '@/store'
 
-const tempStore = TempStore.store
 export const prevent = {
   default: (ev) => ev.preventDefault(),
   false: () => false,
@@ -15,24 +14,21 @@ export const prevent = {
 }
 export const check = {
   resizeOrDrag: (ev: MouseEvent) => {
+    const {dragOrResize, fromItem} = tempStore
     const container = parseContainer(ev)
     if (!container) return
-    if (tempStore.fromItem?.draggable && tempStore.dragOrResize === 'drag') {
+    if (fromItem?.draggable && dragOrResize === 'drag') {
       tempStore.isDragging = true
       tempStore.isResizing = false
       return 'drag'
-    } else if (tempStore.fromItem?.resize && tempStore.dragOrResize === 'resize') {
+    } else if (fromItem?.resize && dragOrResize === 'resize') {
       tempStore.isResizing = true
       tempStore.isDragging = false
       return 'resize'
-    } else if (tempStore.dragOrResize === 'slidePage') {
+    } else if (dragOrResize === 'slidePage') {
       return 'slidePage'
     }
   }
-}
-export const windowResize = {
-  setResizeFlag: () => tempStore.isWindowResize = true,
-  removeResizeFlag: () => tempStore.isWindowResize = false,
 }
 export const cursor = {
   cursor: 'notFound',

@@ -9,10 +9,10 @@ import {crossContainerMouseenter, crossContainerMouseleave} from "@/events";
  * 如果A到 B 此时鼠标不抬起继续从B返回A 则fromContainer为 B，toContainer为A，此时dragItem还是属于A,通过dragItem的归属能确定跨容器时候是否鼠标被抬起
  * */
 export function crossContainerLeaveEnter(fromContainer: Container, toContainer: Container) {
+  const {moveItem, fromItem} = tempStore
   if (!fromContainer || !toContainer) return
-  let fromItem: Item = tempStore.fromItem
-  let moveItem: Item = tempStore.moveItem
-  let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
+  let dragItem: Item | null = moveItem || fromItem
+  if (!dragItem) return
   // console.log(fromContainer,toContainer,dragItem);
   //------------下方代码固定顺序-------------//
   crossContainerMouseleave(null, fromContainer)

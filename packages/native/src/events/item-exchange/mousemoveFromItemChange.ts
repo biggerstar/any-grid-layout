@@ -12,16 +12,27 @@ import {cursor, doItemExchange} from "@/events";
  *                                                  静态模式下只要定义了pos后任何顺序都是不影响位置的。所以该函数主要针对响应式
  * */
 export const mousemoveFromItemChange: Function = throttle((ev) => {
+  const {
+    fromItem,
+    moveItem,
+    mousedownEvent,
+    isLeftMousedown,
+    isDragging,
+    mousedownItemOffsetLeft,
+    mousedownItemOffsetTop,
+    fromContainer,
+    scrollReactionStatic,
+    deviceEventMode,
+    isCoverRow,
+    mouseSpeed: mouseSpeedTemp,
+  } = tempStore
   //  Item的交换主逻辑
   ev.stopPropagation()
-  if (!tempStore.isDragging) return
-  let fromItem: Item = tempStore.fromItem
+  if (!isDragging) return
   let toItem: Item | null = parseItem(ev)
   if (toItem) tempStore.toItem = toItem
-  const moveItem = tempStore.moveItem
-  const mousedownEvent: MouseEvent = tempStore.mousedownEvent
-  if (!fromItem || !mousedownEvent || !tempStore.isLeftMousedown) return
-  let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
+  if (!fromItem || !mousedownEvent || !isLeftMousedown || !fromContainer) return
+  let dragItem: Item = moveItem || fromItem
   let container: Container = dragItem.container
   let overContainer: Container
 
@@ -42,8 +53,8 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
   }
   //-----------------------是否符合交换环境参数检测结束-----------------------//
   // offsetDragItemX 和 offsetDragItemY 是换算跨容器触发比例，比如大Item到小Item容器换成小Item容器的拖拽触发尺寸
-  const offsetDragItemX = tempStore.mousedownItemOffsetLeft * (container.getConfig('size')[0] / tempStore.fromContainer.getConfig('size')[0])
-  const offsetDragItemY = tempStore.mousedownItemOffsetTop * (container.getConfig('size')[1] / tempStore.fromContainer.getConfig('size')[1])
+  const offsetDragItemX = mousedownItemOffsetLeft * (container.getConfig('size')[0] / fromContainer.getConfig('size')[0])
+  const offsetDragItemY = mousedownItemOffsetTop * (container.getConfig('size')[1] / fromContainer.getConfig('size')[1])
   // console.log(offsetDragItemX,offsetDragItemY);
   const dragContainerElRect = container.contentElement.getBoundingClientRect()
   // Item距离容器的px
@@ -66,7 +77,7 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
         if (['X', 'Y'].includes(isScroll.direction)) direction = isScroll.direction
       }
       const scrollWaitTime = container ? container.getConfig('scrollWaitTime') : 800  // 当Item移动到容器边缘，等待多久进行自动滚动
-      if (tempStore.scrollReactionStatic === 'stop') {
+      if (scrollReactionStatic === 'stop') {
         tempStore.scrollReactionStatic = 'wait'
         tempStore.scrollReactionTimer = setTimeout(() => {
           tempStore.scrollReactionStatic = 'scroll'
@@ -127,7 +138,7 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
   if (nowMoveHeight < 1) nowMoveHeight = 1
   // console.log(offsetLeftPx,offsetTopPx);
   const growContainer: Container = dragItem.container
-  if (growContainer.getConfig('autoGrowRow') && tempStore.isCoverRow) growContainer?.['cover']?.('row')
+  if (growContainer.getConfig('autoGrowRow') && isCoverRow) growContainer?.['cover']?.('row')
   dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
   const responsiveLayoutAlgorithm = () => {
     if (dragItem === toItem) return   // 减少执行，和静态移动的话不同，对静态不进行限制，使得静态能在大Item下对微距的[移动move]调整更精确反应
@@ -138,22 +149,22 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
     startX = ev.screenX
     startY = ev.screenY
     const mouseSpeed = () => {
-      let dt = now - tempStore.mouseSpeed.timestamp;
-      let distanceX = Math.abs(startX - tempStore.mouseSpeed.endX)
-      let distanceY = Math.abs(startY - tempStore.mouseSpeed.endY)
+      let dt = now - mouseSpeedTemp.timestamp;
+      let distanceX = Math.abs(startX - mouseSpeedTemp.endX)
+      let distanceY = Math.abs(startY - mouseSpeedTemp.endY)
       let distance = distanceX > distanceY ? distanceX : distanceY   //  选一个移动最多的方向
       let speed = Math.round(distance / dt * 1000);
       // console.log(dt, distance, speed);
-      tempStore.mouseSpeed.endX = startX
-      tempStore.mouseSpeed.endY = startY
-      tempStore.mouseSpeed.timestamp = now;
+      mouseSpeedTemp.endX = startX
+      mouseSpeedTemp.endY = startY
+      mouseSpeedTemp.timestamp = now;
       return {distance, speed}
     }
 
     //------对移动速度和距离做出限制,某个周期内移动速度太慢或距离太短忽略本次移动(only mouse event)------//
     if (!container.__ownTemp__.firstEnterUnLock) {
       const {distance, speed} = mouseSpeed()
-      if (tempStore.deviceEventMode === 'mouse' && toItem && toItem.pos.w > 2 && toItem.pos.h > 2) {
+      if (deviceEventMode === 'mouse' && toItem && toItem.pos.w > 2 && toItem.pos.h > 2) {
         if (container.getConfig('size')[0] < 30 || container.getConfig('size')[1] < 30) {
           if (distance < 3) return
         } else if (container.getConfig('size')[0] < 60 || container.getConfig('size')[1] < 60) {
@@ -215,7 +226,7 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
       dragItem.pos.nextStaticPos.y = nextPos.y
       dragItem.pos.autoOnce = true
       if (toItem) {   // 进入的是容器Item的覆盖位置区域
-        if (tempStore.fromItem.container.parentItem === toItem) {
+        if (fromItem.container.parentItem === toItem) {
           return  // 必要，拖动Item边缘相邻容器初进可能识别toItem区域为源容器占用的地，触发toItem.i移动到源容器位置
         }
         if (dragItem.container === toItem.container) return
@@ -232,8 +243,8 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
     if (!toItem) return
 
     const fromItemPosInfo = dragItem.element.getBoundingClientRect()
-    const proportionX = Math.abs(ev.pageX - fromItemPosInfo.left - tempStore.mousedownItemOffsetLeft) / toItem.element.clientWidth
-    const proportionY = Math.abs(ev.pageY - fromItemPosInfo.top - tempStore.mousedownItemOffsetTop) / toItem.element.clientHeight
+    const proportionX = Math.abs(ev.pageX - fromItemPosInfo.left - mousedownItemOffsetLeft) / toItem.element.clientWidth
+    const proportionY = Math.abs(ev.pageY - fromItemPosInfo.top - mousedownItemOffsetTop) / toItem.element.clientHeight
     const xOrY = proportionX > proportionY
     // console.log(proportionX,proportionY);
     if (Math.abs(proportionX - proportionY) < container.getConfig('sensitivity')) return

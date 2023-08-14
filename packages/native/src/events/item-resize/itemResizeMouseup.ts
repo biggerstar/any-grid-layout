@@ -1,8 +1,8 @@
-import {Item} from "@/main";
 import {tempStore} from "@/store";
 
 export function itemResizeMouseup(_: Event) {
-  const fromItem: Item = tempStore.fromItem
+  const {isResizing, fromItem} = tempStore
+  if (!isResizing) return
   if (!fromItem) return
   //----------------------------------------//
   fromItem.__temp__.clientWidth = fromItem.nowWidth()

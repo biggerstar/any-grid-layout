@@ -5,11 +5,10 @@ import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
-import {TempStore} from "@/store";
 import equal from 'fast-deep-equal'
+import {tempStore} from "@/store";
 
 //---------------------------------------------------------------------------------------------//
-const tempStore = TempStore.store
 
 //---------------------------------------------------------------------------------------------//
 
@@ -221,19 +220,19 @@ export class Item extends ItemGeneralImpl {
    * */
   private _edit(isEdit = false) {
     return
-    if (this.edit) {
-      if (!this.__temp__.editNumUsing) {
-        // EditEvent.startEvent(null, this)
-        this.__temp__.editNumUsing = true
-        tempStore.editItemNum++   // 未占用editNum 进行占用
-      }
-    } else if (!this.edit) {
-      if (this.__temp__.editNumUsing) {
-        // EditEvent.removeEvent(null, this)
-        tempStore.editItemNum--   // 占用了editNum 进行释放
-        this.__temp__.editNumUsing = false
-      }
-    }
+    // if (this.edit) {
+    //   if (!this.__temp__.editNumUsing) {
+    //     // EditEvent.startEvent(null, this)
+    //     this.__temp__.editNumUsing = true
+    //     tempStore.editItemNum++   // 未占用editNum 进行占用
+    //   }
+    // } else if (!this.edit) {
+    //   if (this.__temp__.editNumUsing) {
+    //     // EditEvent.removeEvent(null, this)
+    //     tempStore.editItemNum--   // 占用了editNum 进行释放
+    //     this.__temp__.editNumUsing = false
+    //   }
+    // }
   }
 
   /**

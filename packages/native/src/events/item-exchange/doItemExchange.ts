@@ -5,10 +5,16 @@ import {tempStore} from "@/store";
  * 做跨容器的item交换
  * */
 export function doItemExchange(container: Container, itemPositionMethod: Function = null) {
-  const fromItem: Item = tempStore.fromItem
-  const moveItem: Item = tempStore.moveItem
-  if (!tempStore.isDragging || !fromItem || !container || !tempStore.isLeftMousedown) return
-  const dragItem: Item = tempStore.moveItem ? moveItem : fromItem
+  const {
+    fromItem,
+    moveItem,
+    isDragging,
+    isLeftMousedown,
+    deviceEventMode,
+    cloneElement
+  } = tempStore
+  if (!isDragging || !fromItem || !container || !isLeftMousedown) return
+  const dragItem: Item | null = moveItem || fromItem
   // console.log(container);
   // console.log(fromItem,fromItem.container.exchange,dragItem.container.exchange,dragItem.exchange);
   // TODO  exchange getConfig
@@ -53,9 +59,9 @@ export function doItemExchange(container: Container, itemPositionMethod: Functio
       container._VueEvents['vueCrossContainerExchange'](newItem, tempStore, (newItem) => {
         dragItem.unmount()
         dragItem.remove()
-        if (tempStore.deviceEventMode === 'touch' && tempStore.cloneElement) {
+        if (deviceEventMode === 'touch' &&  cloneElement) {
           // 在触屏模式下， 原本的fromItem克隆源必须保留在文档流中，所以省事临时放置在该克隆元素中，当鼠标抬起后会被自动移除
-          tempStore.cloneElement.appendChild(document.adoptNode(dragItem.element))
+          cloneElement.appendChild(document.adoptNode(dragItem.element))
         }
         doItemPositionMethod(newItem)
         if (container) {

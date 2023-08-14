@@ -13,45 +13,42 @@ import {
   crossContainerMouseleave,
   cursor,
   doItemResize,
-  slidePage
 } from "@/events";
 
 
 export const itemDragMousemove: Function = throttle((ev) => {
+  const {
+    isLeftMousedown,
+    currentContainerArea,
+    currentContainer,
+    isDragging,
+    isResizing,
+  } = tempStore
   const containerArea: HTMLElement = parseContainerAreaElement(ev)
   const container: Container | null = parseContainerFromPrototypeChain(containerArea)
   const overItem = parseItem(ev)
-  if (tempStore.isLeftMousedown) {
-    tempStore.beforeContainerArea = tempStore.currentContainerArea
-    tempStore.currentContainerArea = containerArea || null
-    tempStore.beforeContainer = tempStore.currentContainer
-    tempStore.currentContainer = container || null
-    if (tempStore.currentContainerArea !== null && tempStore.beforeContainerArea !== null) {   // 表示进去了某个Container内
-      if (tempStore.currentContainerArea !== tempStore.beforeContainerArea) {
+  if (isLeftMousedown) {
+    tempStore.beforeContainerArea = currentContainerArea
+    tempStore.currentContainerArea = containerArea
+    tempStore.beforeContainer = currentContainer
+    tempStore.currentContainer = container
+    if (containerArea && currentContainerArea) {   // 表示进去了某个Container内
+      if (containerArea !== currentContainerArea) {
         // 从相邻容器移动过去，旧容器 ==>  新容器
-        // console.log(tempStore.beforeContainer, tempStore.currentContainer);
-        crossContainerLeaveEnter(tempStore.beforeContainer, tempStore.currentContainer)
+        crossContainerLeaveEnter(<any>currentContainer, <any>container)
       }
     } else {
-      if (tempStore.currentContainerArea !== null || tempStore.beforeContainerArea !== null) {
-        if (tempStore.beforeContainerArea === null) {
-          // 非相邻容器中的网页其他空白元素移进来某个容器中
-          crossContainerMouseenter(null, tempStore.currentContainer)
-        }
-        if (tempStore.currentContainerArea === null) {
-          crossContainerMouseleave(null, tempStore.beforeContainer)
-        }
+      if (containerArea || currentContainerArea) {
+        // 非相邻容器中的网页其他空白元素移进来某个容器中
+        if (!currentContainerArea) crossContainerMouseenter(null, container)
+        if (!containerArea) crossContainerMouseleave(null, currentContainer)
       }
     }
-    if (tempStore.dragOrResize === 'slidePage') {
-      slidePage(ev)
-      return
-    }
+
     // console.log(tempStore.dragOrResize);
     const mousedownDragCursor = () => {
       // 鼠标按下状态的样式
       // console.log(container);
-      // const dragItem = tempStore.moveItem || tempStore.fromItem
       if (!container) {
         if (cursor.cursor !== 'no-drop') cursor.notDrop()  // 容器外
       } else if (container) {
@@ -65,9 +62,9 @@ export const itemDragMousemove: Function = throttle((ev) => {
         }
       }
     }
-    if (tempStore.isDragging) {
+    if (isDragging) {
       mousedownDragCursor()
-    } else if (tempStore.isResizing) {
+    } else if (isResizing) {
       doItemResize(ev)
     }
   } else {

@@ -2,12 +2,11 @@ import {Container, Item} from "@/main";
 import {tempStore} from "@/store";
 
 export function crossContainerMouseleave(ev, container = null) {
-  let fromItem: Item = tempStore.fromItem
-  let moveItem: Item = tempStore.moveItem
-  let dragItem: Item = tempStore.moveItem ? moveItem : fromItem
+  const {fromItem, moveItem, isLeftMousedown} = tempStore
+  let dragItem: Item | null = moveItem || fromItem
   container.__ownTemp__.firstEnterUnLock = false
   container.__ownTemp__.nestingEnterBlankUnLock = false
-  if (tempStore.isLeftMousedown) {
+  if (isLeftMousedown && dragItem) {
     //自动增长row
     const growContainer: Container = dragItem.container
     if (growContainer.getConfig('autoGrowRow') && growContainer === container) {

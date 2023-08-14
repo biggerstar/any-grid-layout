@@ -1,18 +1,26 @@
 import {throttle} from "@/utils";
 import {tempStore} from "@/store";
-import {Container, Item, ItemPos} from "@/main";
+import {Container, ItemPos} from "@/main";
 
 export const doItemResize: Function = throttle((ev: MouseEvent) => {
-  const mousedownEvent = tempStore.mousedownEvent
-  const isLeftMousedown = tempStore.isLeftMousedown
-  const fromItem: Item = tempStore.fromItem
-  if (!fromItem || mousedownEvent === null || !isLeftMousedown) return
+  const {
+    isResizing,
+    isLeftMousedown,
+    mousedownEvent,
+    fromItem,
+    cloneElement,
+    fromContainer,
+    isCoverRow
+  } = tempStore
+  if (!isResizing || !isLeftMousedown) return
+  if (!fromItem || !mousedownEvent || !isLeftMousedown) return
   const container: Container = fromItem.container
-  if (tempStore.cloneElement === null) {
-    tempStore.cloneElement = fromItem.element.cloneNode(true)
-    tempStore.cloneElement.classList.add('grid-clone-el', 'grid-resizing-clone-el')
-    if (tempStore.cloneElement) tempStore.fromContainer.contentElement.appendChild(tempStore.cloneElement)
-    fromItem.domImpl.updateStyle({transition: 'none'}, tempStore.cloneElement)
+  if (!cloneElement) {
+    const newNode = <HTMLElement>fromItem.element.cloneNode(true)
+    tempStore.cloneElement = newNode
+    newNode.classList.add('grid-clone-el', 'grid-resizing-clone-el')
+    if (fromContainer) fromContainer.contentElement.appendChild(newNode)
+    fromItem.domImpl.updateStyle({transition: 'none'}, newNode)
     fromItem.domImpl.addClass('grid-resizing-source-el')
   }
   // console.log(fromItem.pos);
@@ -83,7 +91,7 @@ export const doItemResize: Function = throttle((ev: MouseEvent) => {
       h = fromItem.pos.h   //必要，将当前实际高给newResize
     }
     if (Object.keys(updateStyle).length > 0) {
-      fromItem.domImpl.updateStyle(updateStyle, tempStore.cloneElement)
+      fromItem.domImpl.updateStyle(updateStyle, cloneElement)
     }
     return {
       w,
@@ -100,10 +108,10 @@ export const doItemResize: Function = throttle((ev: MouseEvent) => {
     if (typeof fromItem._VueEvents['vueItemResizing'] === 'function') {
       fromItem._VueEvents['vueItemResizing'](fromItem, newResize.w, newResize.h)
     }
-    if (container.getConfig('autoGrowRow') && tempStore.isCoverRow) container?.['cover']?.('row')
+    if (container.getConfig('autoGrowRow') && isCoverRow) container?.['cover']?.('row')
     fromItem.container.eventManager._callback_('itemResizing', newResize.w, newResize.h, fromItem)
 
-    tempStore?.fromContainer.updateLayout(fromItem.container.getConfig("responsive") ? true : [fromItem])
+    if (fromContainer) fromContainer.updateLayout(fromItem.container.getConfig("responsive") ? true : [fromItem])
     fromItem.domImpl.updateStyle(fromItem._genLimitSizeStyle())
     fromItem.container.updateContainerStyleSize()
   }

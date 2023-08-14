@@ -1,8 +1,10 @@
-import {prevent, windowResize} from "@/events/common";
+import {prevent} from "@/events/common";
 import {mousemoveFromClone, mousemoveFromItemChange} from "@/events/item-drag";
 import {touchendOrMouseup, touchmoveOrMousemove, touchstartOrMousedown} from "@/events/compatible";
 import {itemDragMousemove} from "@/events/item-drag/itemDragMousemove";
 import {itemDragMousedown} from "@/events/item-drag/itemDragMousedown";
+import {slidePage} from "@/events/slide-page";
+import {itemResizeMouseup} from "@/events/item-resize";
 
 
 function allMousedown(ev) {
@@ -15,6 +17,13 @@ function allMousemove(ev) {
   touchmoveOrMousemove(ev)
   mousemoveFromItemChange(ev)
   itemDragMousemove(ev)
+  slidePage(ev)
+}
+
+
+function allMouseup(ev) {
+  touchendOrMouseup(ev)
+  itemResizeMouseup(ev)
 }
 
 export function startGlobalEvent() {
@@ -31,11 +40,8 @@ export function startGlobalEvent() {
   document.addEventListener('mousemove', allMousemove)
   document.addEventListener('touchmove', allMousemove, {passive: false})
   //
-  document.addEventListener('mouseup', touchendOrMouseup)
-  document.addEventListener('touchend', touchendOrMouseup, {passive: false})
-  //
-  document.addEventListener('mouseleave', windowResize.setResizeFlag)
-  document.addEventListener('mouseenter', windowResize.removeResizeFlag)
+  document.addEventListener('mouseup', allMouseup)
+  document.addEventListener('touchend', allMouseup, {passive: false})
 }
 
 
@@ -53,6 +59,4 @@ export function startGlobalEvent() {
 //   document.removeEventListener('mouseup', touchendOrMouseup)
 //   document.removeEventListener('touchend', touchendOrMouseup)
 //
-//   document.removeEventListener('mouseleave', windowResize.setResizeFlag)
-//   document.removeEventListener('mouseenter', windowResize.removeResizeFlag)
 // }
