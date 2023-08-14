@@ -1,14 +1,14 @@
 import {tempStore} from "@/store";
 import {Container, Item} from "@/main";
-import {parseContainer, Sync} from "@/utils";
+import {parseContainer, Sync, throttle} from "@/utils";
 
-export function mousemoveFromClone(ev)  {
+export const mousemoveFromClone: Function = throttle((ev) => {
   //  对drag克隆元素的操作
   // ev.stopPropagation()
   const mousedownEvent = tempStore.mousedownEvent
   const fromItem: Item = tempStore.fromItem
   const moveItem: Item = tempStore.moveItem
-  if (!mousedownEvent || !fromItem) return
+  if (!mousedownEvent || !fromItem || !tempStore.isDragging) return
   let dragItem = tempStore.moveItem ? moveItem : fromItem
   const container: Container = parseContainer(ev)
   dragItem.__temp__.dragging = true
@@ -59,4 +59,4 @@ export function mousemoveFromClone(ev)  {
     left: left + 'px',
     top: top + 'px',
   }, tempStore.cloneElement)
-}
+}, 15)

@@ -1,8 +1,16 @@
 import {parseContainer, parseItem, Sync, throttle} from "@/utils";
 import {tempStore} from "@/store";
 import {Container, Item, ItemPos} from "@/main";
-import {cursor, index} from "@/events";
+import {cursor, doItemExchange} from "@/events";
 
+
+/** 跨容器Item成员交换
+ * @param {Container} container
+ * @param {Function} itemPositionMethod(newItem)  执行该函数的前提是Item已经转移到当前鼠标对应的Container中，
+ *                                                  itemPositionMethod函数接受一个参数newItem,
+ *                                                  之后在该回调函数中可以决定该移动的Item在Items中的排序(响应式模式下)
+ *                                                  静态模式下只要定义了pos后任何顺序都是不影响位置的。所以该函数主要针对响应式
+ * */
 export const mousemoveFromItemChange: Function = throttle((ev) => {
   //  Item的交换主逻辑
   ev.stopPropagation()
@@ -211,11 +219,11 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
           return  // 必要，拖动Item边缘相邻容器初进可能识别toItem区域为源容器占用的地，触发toItem.i移动到源容器位置
         }
         if (dragItem.container === toItem.container) return
-        index.mousemoveExchange(container, (newItem) => {
+        doItemExchange(container, (newItem) => {
           container.engine.move(newItem, (toItem as Item).i)
         })
       } else {   //直接进入容器空白区域
-        index.mousemoveExchange(container)
+        doItemExchange(container)
       }
       tempStore.dragContainer = container
       return   // 交换成功后直接退出
@@ -297,7 +305,7 @@ export const mousemoveFromItemChange: Function = throttle((ev) => {
     }
     if (foundItems.length === 0) {  // 如果该位置下没有Item,则移动过去
       if (container.__ownTemp__.firstEnterUnLock) {
-        index.mousemoveExchange(container)
+        doItemExchange(container)
         tempStore.dragContainer = container
       } else if (dragItem.pos.x !== dragItem.pos.nextStaticPos.x
         || dragItem.pos.y !== dragItem.pos.nextStaticPos.y

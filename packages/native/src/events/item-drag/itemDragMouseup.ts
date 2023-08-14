@@ -1,12 +1,12 @@
 import {Container, Item} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
 import {tempStore} from "@/store";
-import {cursor, itemResizeEvent} from "@/events";
+import {cursor, itemResizeMouseup} from "@/events";
 import {ItemTransitionObject} from "@/types";
 
-export function mouseup (ev)  {
+export function itemDragMouseup(ev) {
   const container: Container = parseContainer(ev)
-  if (tempStore.isResizing) itemResizeEvent.mouseup(ev)
+  if (tempStore.isResizing) itemResizeMouseup(ev)
   // if (tempStore.isDragging) EEF.itemDrag.mouseup(ev)
 
   if (container && cursor.cursor !== 'in-container') cursor.inContainer()

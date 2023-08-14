@@ -1,7 +1,7 @@
 import {Item} from "@/main";
 import {tempStore} from "@/store";
 
-export function mouseup(_: Event) {
+export function itemResizeMouseup(_: Event) {
   const fromItem: Item = tempStore.fromItem
   if (!fromItem) return
   //----------------------------------------//

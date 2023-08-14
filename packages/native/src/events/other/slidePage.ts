@@ -1,7 +1,7 @@
 import {Container} from "@/main";
 import {parseContainer} from "@/utils";
 import {tempStore} from "@/store";
-import {otherEvent} from "@/events";
+import {updateSlidePageInfo} from "@/events";
 
 export function slidePage(ev) {
   // 拖拽滑动整个容器元素
@@ -15,5 +15,5 @@ export function slidePage(ev) {
   const offsetTop = tempStore.slidePageOffsetInfo.offsetTop - offsetY
   if (offsetLeft >= 0) element.scrollLeft = offsetLeft
   if (offsetTop >= 0) element.scrollTop = offsetTop
-  otherEvent.updateSlidePageInfo(ev.pageX, ev.pageY)
+  updateSlidePageInfo(ev.pageX, ev.pageY)
 }

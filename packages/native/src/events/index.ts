@@ -1,7 +1,6 @@
 export * from './listen'
 export * from './common'
 export * from './item-drag'
-export * from './container'
 export * from './item-resize'
 export * from './move-outer-container'
 export * from './other'

@@ -3,7 +3,7 @@ import {Container} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
 import {check, cursor} from "@/events";
 
-export function mousedown(ev) {
+export function itemDragMousedown(ev) {
   if (tempStore.isDragging || tempStore.isResizing) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
   const container: Container = parseContainer(ev)
   if (!container) return   // 只有点击Container或里面元素才生效

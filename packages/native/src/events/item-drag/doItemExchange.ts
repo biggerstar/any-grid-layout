@@ -1,7 +1,7 @@
 import {Container, Item} from "@/main";
 import {tempStore} from "@/store";
 
-export function mousemoveExchange(container: Container, itemPositionMethod: Function = null) {
+export function doItemExchange(container: Container, itemPositionMethod: Function = null) {
   const fromItem: Item = tempStore.fromItem
   const moveItem: Item = tempStore.moveItem
   if (!tempStore.isDragging || !fromItem || !container || !tempStore.isLeftMousedown) return

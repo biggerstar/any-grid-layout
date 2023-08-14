@@ -2,7 +2,7 @@ import {throttle} from "@/utils";
 import {tempStore} from "@/store";
 import {Container, Item, ItemPos} from "@/main";
 
-export const doResize: Function = throttle((ev: MouseEvent) => {
+export const doItemResize: Function = throttle((ev: MouseEvent) => {
   const mousedownEvent = tempStore.mousedownEvent
   const isLeftMousedown = tempStore.isLeftMousedown
   const fromItem: Item = tempStore.fromItem

@@ -7,9 +7,16 @@ import {
 } from "@/utils";
 import {Container} from "@/main";
 import {tempStore} from "@/store";
-import {cursor, index, itemResizeEvent, moveOuterContainerEvent, otherEvent} from "@/events";
+import {
+  cursor,
+  doItemResize,
+  moveOuterContainerLeaveEnter,
+  moveOuterContainerMouseenter,
+  moveOuterContainerMouseleave,
+  slidePage
+} from "@/events";
 
-export const mousemove: Function = throttle((ev) => {
+export const itemDragMousemove: Function = throttle((ev) => {
   const containerArea: HTMLElement = parseContainerAreaElement(ev)
   const container: Container | null = parseContainerFromPrototypeChain(containerArea)
   const overItem = parseItem(ev)
@@ -22,21 +29,21 @@ export const mousemove: Function = throttle((ev) => {
       if (tempStore.currentContainerArea !== tempStore.beforeContainerArea) {
         // 从相邻容器移动过去，旧容器 ==>  新容器
         // console.log(tempStore.beforeContainer, tempStore.currentContainer);
-        moveOuterContainerEvent.leaveToEnter(tempStore.beforeContainer, tempStore.currentContainer)
+        moveOuterContainerLeaveEnter(tempStore.beforeContainer, tempStore.currentContainer)
       }
     } else {
       if (tempStore.currentContainerArea !== null || tempStore.beforeContainerArea !== null) {
         if (tempStore.beforeContainerArea === null) {
           // 非相邻容器中的网页其他空白元素移进来某个容器中
-          moveOuterContainerEvent.mouseenter(null, tempStore.currentContainer)
+          moveOuterContainerMouseenter(null, tempStore.currentContainer)
         }
         if (tempStore.currentContainerArea === null) {
-          moveOuterContainerEvent.mouseleave(null, tempStore.beforeContainer)
+          moveOuterContainerMouseleave(null, tempStore.beforeContainer)
         }
       }
     }
     if (tempStore.dragOrResize === 'slidePage') {
-      otherEvent.slidePage(ev)
+      slidePage(ev)
       return
     }
     // console.log(tempStore.dragOrResize);
@@ -58,10 +65,9 @@ export const mousemove: Function = throttle((ev) => {
       }
     }
     if (tempStore.isDragging) {
-      index.mousemoveFromClone(ev)   // 控制drag克隆移动
       mousedownDragCursor()
     } else if (tempStore.isResizing) {
-      itemResizeEvent.doResize(ev)
+      doItemResize(ev)
     }
   } else {
     // 鼠标抬起状态的样式

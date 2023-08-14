@@ -1,7 +1,3 @@
-import {slidePage} from "@/events/other/slidePage";
-import {updateSlidePageInfo} from "@/events/other/updateSlidePageInfo";
+export * from "@/events/other/slidePage";
+export * from "@/events/other/updateSlidePageInfo";
 
-export const otherEvent = {
-  updateSlidePageInfo,
-  slidePage
-}

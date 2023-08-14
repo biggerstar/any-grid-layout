@@ -1,7 +1,3 @@
-import {doResize} from "@/events/item-resize/doResize";
-import {mouseup} from './mouseup'
+export * from "@/events/item-resize/doItemResize";
+export * from './itemResizeMouseup'
 
-export const itemResizeEvent = {
-  doResize,
-  mouseup,
-}

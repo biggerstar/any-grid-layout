@@ -2,7 +2,7 @@ import {Item} from "@/main";
 import {tempStore} from "@/store";
 import {Sync} from "@/utils";
 
-export function mouseenter(ev, container = null) {
+export function moveOuterContainerMouseenter(ev, container = null) {
   if (!container && ev.target._isGridContainer_) {
     ev.preventDefault()
     container = ev.target._gridContainer_
