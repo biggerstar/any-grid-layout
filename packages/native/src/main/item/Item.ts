@@ -31,7 +31,6 @@ export class Item extends ItemGeneralImpl {
   public readonly domImpl: DomFunctionImpl
   /** 运行时pos */
   public pos: ItemPos
-  public __ref_use__: CustomItem
 
   //----------------vue专用---------------------//
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
@@ -83,7 +82,6 @@ export class Item extends ItemGeneralImpl {
     super()
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
     this.domImpl = new DomFunctionImpl(this)
-    this.__ref_use__ = itemOption
     this._default = new ItemGeneralImpl()
     this._define(itemOption)
   }
@@ -96,11 +94,17 @@ export class Item extends ItemGeneralImpl {
   private _define(itemOption) {
     const self = this
     const _default = this._default
-    const _customOptions = this.__ref_use__
+    const _customOptions = itemOption
     const pos = new ItemPos(itemOption.pos)
-
-    const get = (k: keyof ItemGeneralImpl) => _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]
-    const set = (k: keyof ItemGeneralImpl, v: any) => !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
+    pos.defineSyncCustomOptions(itemOption)
+    const get = (k: keyof ItemGeneralImpl) => {
+      if (k === 'pos') return pos
+      return _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]
+    }
+    const set = (k: keyof ItemGeneralImpl, v: any) => {
+      if (k === 'pos') return  // 不允许更改pos
+      !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
+    }
 
     for (const k in _default) {
       Object.defineProperty(<object>this, k, {
@@ -110,9 +114,6 @@ export class Item extends ItemGeneralImpl {
     }
 
     Object.defineProperties(<object>this, {
-      pos: {
-        value: pos
-      },
       draggable: {
         get: () => get('draggable'),
         set: (v) => set('draggable', Boolean(v))

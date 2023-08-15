@@ -2,6 +2,7 @@ import {parseContainer, parseItem, Sync, throttle} from "@/utils";
 import {tempStore} from "@/store";
 import {Container, Item, ItemPos} from "@/main";
 import {cursor, doItemExchange} from "@/events";
+import {h} from "vue";
 
 /**
  * 自身容器Item交换和跨容器Item成员交换
@@ -82,7 +83,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
   let nowMoveY = pxToGridPosH(offsetTopPx)
   // console.log(nowMoveX, nowMoveY)
 
-  container.engine.layoutManager.move(container.engine.items, fromItem)
+  container.engine.layoutManager.move(container.engine.items, fromItem, nowMoveX, nowMoveY)
 
 
   return;
@@ -137,7 +138,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     const innerContentArea = () => {
       // 在containerArea覆盖区域内的交换
       if (!dragItem.follow) return
-      const rangeLimitItems = container.engine.layoutManager.findCoverItemFromPosition(container.engine.items,{
+      const rangeLimitItems = container.engine.layoutManager.findCoverItemFromPosition(container.engine.items, {
         x: nextPos.x, y: nextPos.y, w: nextPos.w, h: nextPos.h
       })
       // console.log(rangeLimitItems)
@@ -150,7 +151,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     const outerContentArea = () => {
       // 在响应式流Items覆盖区域外的检测，为了使得鼠标拖拽超出Items覆盖区域后dragItem还能跟随鼠标位置在流区域进行移动或交换
       // 说人话就是实现dragItem在鼠标超出边界还能跟随鼠标位置移动到边界
-      const rangeLimitItems = container.engine.layoutManager.findResponsiveItemFromPosition(container.engine.items,nextPos.x, nextPos.y)
+      const rangeLimitItems = container.engine.layoutManager.findResponsiveItemFromPosition(container.engine.items, nextPos.x, nextPos.y)
       // console.log(rangeLimitItems);
       if (!rangeLimitItems) return
       toItem = rangeLimitItems
@@ -262,8 +263,12 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     dragItem.pos.nextStaticPos.x = nowMoveX < 1 ? 1 : nowMoveX  // 栅格索引最低1
     dragItem.pos.nextStaticPos.y = nowMoveY < 1 ? 1 : nowMoveY
 
-    let foundItems: Item[] = container.engine.findCoverItemFromPosition(dragItem.pos.nextStaticPos.x
-      , dragItem.pos.nextStaticPos.y, dragItem.pos.w, dragItem.pos.h)  // 找到该位置下的所有Item
+    let foundItems: Item[] = container.engine.layoutManager.findCoverItemFromPosition(container.engine.items,{
+      x: dragItem.pos.nextStaticPos.x,
+      y: dragItem.pos.nextStaticPos.y,
+      w: dragItem.pos.w,
+      h: dragItem.pos.h
+    })  // 找到该位置下的所有Item
 
     if (foundItems.length > 0) {
       foundItems = foundItems.filter(item => dragItem !== item)

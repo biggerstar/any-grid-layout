@@ -1,13 +1,15 @@
 import {merge} from "@/utils/tool";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
+import {CustomItem, CustomItemPos} from "@/types";
 
 export class ItemPos extends ItemPosGeneralImpl {
-  // public el?: Element
   public i?: number
   public nextStaticPos?: ItemPos | null
   public tempW?: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
   public tempH?: number    // 临时高度，用于溢出栅格后适配临时作为item的高
   public posHash?: string = ''  // 每个pos的hash，有极低极低的概率重复
+  public _default?: ItemPosGeneralImpl  // 框架默认配置
+  public _customOptions?: CustomItem  // 框架默认配置
   constructor(pos) {
     super()
     this._define()
@@ -16,6 +18,7 @@ export class ItemPos extends ItemPosGeneralImpl {
     }
     merge(this, pos, false, ['x', 'y', 'w', 'h'])   // 1.先排除w, h先加载minX,maxX...等限制后
     merge(this, pos)  //  2. 再合并所有
+    this._default = new ItemPosGeneralImpl()
   }
 
   /** 传入一个值，返回经过限制值边界大小后的结果 */
@@ -27,24 +30,49 @@ export class ItemPos extends ItemPosGeneralImpl {
     return limitVal
   }
 
-  _define() {
+  /**
+   * 定义如何将最新状态的配置同步到用户传入的原始配置上
+   * */
+  public defineSyncCustomOptions(_customOptions) {
     const self = this
+    const _default = this._default
+    this._customOptions = _customOptions
+    const _tempPos = {}  // 用于部分无法设置到用户pos上的状态保留对象，在get的时候能获取
+    const getCurPos = () => _customOptions.pos || {}  // 防止用户外部直接替换原本pos引用
+    const get = (k: keyof ItemPosGeneralImpl) => {
+      const curCustomPos = getCurPos()
+      return curCustomPos.hasOwnProperty(k) ? curCustomPos[k] : (_tempPos[k] || _default?.[k])
+    }
+    const set = (k: keyof ItemPosGeneralImpl, v: any) => {
+      /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
+      if (k === 'w') v = self.filterLimit(v, self.minW, self.maxW)
+      /* 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
+      if (k === 'h') v = self.filterLimit(v, self.minH, self.maxH)
+      const curCustomPos = getCurPos()
+      if (['w', 'h', 'x', 'y'].includes(<string>k)) {  // 如果是x,y,w,h外面没有指定则不会修改用户传入配置
+        curCustomPos.hasOwnProperty(k) ? curCustomPos[k] = v : _tempPos[k] = v
+      } else {  // 如果是minX,maxX等,不等于默认值则会直接修改用户传入的配置
+        if (_default?.[k] && curCustomPos[k] !== _default?.[k]) curCustomPos[k] = v
+      }
+    }
+
+    for (const k in _default) {
+      Object.defineProperty(<object>this, k, {
+        get: () => get(<any>k),      /* 优先获取用户配置,没有的话则获取item默认配置 */
+        set: (v) => set(<any>k, v)   /* 如果原本的pos上没有定义该值，则不需要同步到用户配置上  */
+      })
+    }
+  }
+
+  getCustomPos(): CustomItemPos {
+    return <CustomItemPos>this._customOptions?.pos
+  }
+
+  _define() {
     let tempW = null
     let tempH = null
-    let w = 1
-    let h = 1
 
     Object.defineProperties(<object>this, {
-      /** 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
-      w: {
-        get: () => w,
-        set: (v) => w = self.filterLimit(v, self.minW, self.maxW)
-      },
-      /** 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
-      h: {
-        get: () => h,
-        set: (v) => h = self.filterLimit(v, self.minH, self.maxH)
-      },
       tempW: {
         get: () => {
           // if (this.w === tempW) tempW = null // 只要原本的宽度和临时的宽度相等，说明已经复位，重置tempW为null

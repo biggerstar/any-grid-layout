@@ -61,7 +61,6 @@ export class Layout extends Finder {
         staticItems.push(item)
       } else ordinaryItems.push(item)
     })
-    // console.log(items);
     return staticItems.concat(ordinaryItems)
   }
 
@@ -122,8 +121,7 @@ export class Layout extends Finder {
     const success: Array<{ item: Item, pos: CustomItemPos, }> = []
     const failed = []
     items.forEach((item) => {
-      // console.log(item.__ref_use__?.pos)
-      const pos = new ItemPos(item.__ref_use__?.pos || item.pos)
+      const pos = item.pos.getCustomPos()
       // const {x, y, w, h} = pos
       // console.log({x, y, w, h});
       const finalPos = this.findBlank(pos)
@@ -146,6 +144,18 @@ export class Layout extends Finder {
     }
   }
 
+  public isStaticPos(pos) {
+    const {x, y} = pos
+    return (
+      typeof x === 'number'
+      && typeof y === 'number'
+      && x > 0
+      && y > 0
+      && x !== Infinity
+      && y !== Infinity
+    )
+  }
+
   /**
    * 传入一个pos，查看当前矩阵中是否存在适合该pos的空位
    * 有两种情况:
@@ -156,14 +166,7 @@ export class Layout extends Finder {
    * */
   public findBlank(pos: CustomItemPos): CustomItemPos | null {
     const {w, h, x, y} = pos
-    const isStaticPos = (
-      typeof x === 'number'
-      && typeof y === 'number'
-      && x > 0
-      && y > 0
-      && x !== Infinity
-      && y !== Infinity
-    )
+    const isStaticPos = this.isStaticPos(pos)
     let resPos = null
     if (isStaticPos) {  // 已经有x,y直接看是否有空位
       if (this.isBlank(pos)) resPos = {w, h, x, y}

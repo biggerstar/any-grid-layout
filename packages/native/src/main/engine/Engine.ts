@@ -185,7 +185,8 @@ export class Engine {
     this.items.splice(index, 0, item)
   }
 
-  /** 某个Item在this.items列表移动到指定位置
+  /**
+   * 某个Item在this.items列表移动到指定位置
    * @param {Item} item  item
    * @param {Number} toIndex  移动到哪个索引
    * @dataParam {Number} fromIndex  来自哪个索引
