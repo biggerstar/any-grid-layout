@@ -105,12 +105,6 @@ export class ContainerGeneralImpl {
   ratioRow?: number = 0.1
 
   /**
-   * 是否在有上层滚动盒子包裹住容器时, 在鼠标拖动item到容器边缘时进行自动滚动
-   * @default true
-   * */
-  followScroll?: boolean = true
-
-  /**
    * 拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
    * @default 0.45
    * */

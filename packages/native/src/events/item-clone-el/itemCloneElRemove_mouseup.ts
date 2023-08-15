@@ -2,7 +2,7 @@ import {ItemTransitionObject} from "@/types";
 import {tempStore} from "@/store";
 import {Item} from "@/main";
 
-export function itemCloneRemove_mouseup(_) {
+export function itemCloneElRemove_mouseup(_) {
   const {cloneElement, moveItem, fromItem, isDragging, isResizing} = tempStore
   const dragItem: Item | null = moveItem || fromItem
   //----------移除Drag或者Resize创建的克隆备份-------------//

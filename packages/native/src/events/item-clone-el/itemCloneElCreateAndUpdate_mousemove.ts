@@ -6,7 +6,7 @@ import {parseContainer, Sync, throttle} from "@/utils";
  * 鼠标开始移动后创建一个克隆可实时拖动的元素
  * 鼠标移动过程中实时更新当前克隆元素的位置
  * */
-export const itemCloneCreateAndUpdate_mousemove: Function = throttle((ev) => {
+export const itemCloneElCreateAndUpdate_mousemove: Function = throttle((ev) => {
   const {
     mousedownEvent,
     fromItem,
