@@ -8,5 +8,20 @@ export class LayoutManager extends Layout {
     super()
   }
 
+
+  move(items, dragItem) {
+    console.log(dragItem.pos);
+    // console.log(this._layoutMatrix);
+    // console.log(items, dragItem);
+    console.log(this.findCoverItemFromPosition(items, {
+      x: 4,
+      y: 3,
+      w: 2,
+      h: 3
+    }))
+
+  }
+
+
 }
 

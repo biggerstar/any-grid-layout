@@ -8,6 +8,7 @@ import {parseContainer} from "@/utils";
 export function autoScrollPage_mousedown(ev) {
   const {fromItem} = tempStore
   const container: Container = parseContainer(ev)
+  if (!container) return
   if ((!fromItem || fromItem.container !== container) && !ev.touches) {
     tempStore.slidePageOffsetInfo = {
       offsetTop: container.element.scrollTop,

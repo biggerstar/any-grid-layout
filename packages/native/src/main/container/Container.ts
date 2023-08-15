@@ -170,24 +170,6 @@ export class Container {
     return this.useLayout[name] = data
   }
 
-  /** 获取所有的Item，返回一个列表(数组) */
-  public getItemList() {
-    return this.engine.items
-  }
-
-  /** 在页面上添加一行的空间*/
-  public addRowSpace(num = 1) {
-    this.setConfig("row", this.getConfig("row") + num)
-  }
-
-  /** 在页面上删除一行的空间，已弃用*/
-  public removeRowSpace(num = 1) {
-    const row = this.getConfig("row")
-    this.setConfig("row", row - num)
-    if (row < 0) throw new Error('行数不应该小于0，请设置一个大于0的值')
-    this.updateLayout(true)
-  }
-
   /**
    * el 参数可以传入一个具名ID  或者一个原生的 Element 对象
    * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 items 数据渲染出来，
@@ -204,11 +186,10 @@ export class Container {
       }
       this.element['_gridContainer_'] = this       // TODO declare global
       this.element['_isGridContainer_'] = true
-      // this._collectNestingMountPoint()
       if (this.platform === 'vue') {
         this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
       } else {
-        this._genGridContainerBox()
+        this._patchGridContainerBox()
         this.domImpl.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
       }
       this.attr = Array.from(this.element.attributes)
@@ -236,7 +217,7 @@ export class Container {
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
-  public _genGridContainerBox = () => {
+  public _patchGridContainerBox = () => {
     this.contentElement = document.createElement('div')
     this.contentElement.classList.add('grid-container-area')
     this.contentElement['_isGridContainerArea'] = true
@@ -257,24 +238,6 @@ export class Container {
       if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
       this.updateLayout(true)
     })
-  }
-
-  public _nestingMount(ntList = null) {
-    // 将收集的挂载点分配给各个Item,ntList是预挂载点列表
-    ntList = ntList ? ntList : tempStore.nestingMountPointList
-    for (let i = 0; i < this.engine.items.length; i++) {
-      const item = this.engine.items[i]
-      for (let j = 0; j < ntList.length; j++) {
-        if (ntList[j].id === (item.nested || '').replace('#', '')) {
-          let ntNode = ntList[j]
-          // console.log(ntNode);
-          ntNode = ntNode.cloneNode(true)
-          // newNode.id = ntList[j].id
-          item.element.appendChild(ntNode)
-          break
-        }
-      }
-    }
   }
 
   /**
@@ -303,7 +266,6 @@ export class Container {
   public updateLayout(items = null, ignoreList = []) {
     this.engine.updateLayout(items, ignoreList)
   }
-
 
   /** 移除对容器的resize监听  */
   private _disconnect_() {
@@ -407,14 +369,6 @@ export class Container {
     let nowRow = this.getConfig("row")
     if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
     return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
-  }
-
-  /** 根据挂载在实例上的containerW和containerH的值自动根据大小对Container进行更新 */
-  public _collectNestingMountPoint(): void {
-    for (let i = 0; i < this.element.children.length; i++) {
-      if (tempStore.nestingMountPointList.includes(this.element.children[i])) continue
-      tempStore.nestingMountPointList.push(document.adoptNode(this.element.children[i]))
-    }
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */

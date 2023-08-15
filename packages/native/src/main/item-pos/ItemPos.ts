@@ -1,21 +1,13 @@
 import {merge} from "@/utils/tool";
-import {Item} from "@/main/item/Item";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 
 export class ItemPos extends ItemPosGeneralImpl {
-  public belongItem?: Item
-  public el?: Element
+  // public el?: Element
   public i?: number
-  public initialX?: number    //  第一次传入的X值
-  public initialY?: number    //  第一次传入的Y值
-  public iName?: string = ''
   public nextStaticPos?: ItemPos | null
   public tempW?: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
   public tempH?: number    // 临时高度，用于溢出栅格后适配临时作为item的高
-
-  public beforePos?: ItemPos   //  跨容器时候保存上一个容器的位置
-  public autoOnce?: boolean  // 静态布局下在下一次指定是否自动寻找容器中的空位
-  public posHash?: string = ''  // 每个pos的唯一hash，可能重复
+  public posHash?: string = ''  // 每个pos的hash，有极低极低的概率重复
   constructor(pos) {
     super()
     this._define()

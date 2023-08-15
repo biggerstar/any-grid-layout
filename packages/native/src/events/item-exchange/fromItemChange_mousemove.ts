@@ -78,19 +78,20 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     } else return Math.round(h) + 1
   }
 
-  let nowMoveWidth = pxToGridPosW(offsetLeftPx)
-  let nowMoveHeight = pxToGridPosH(offsetTopPx)
-  console.log(nowMoveWidth, nowMoveHeight)
+  let nowMoveX = pxToGridPosW(offsetLeftPx)
+  let nowMoveY = pxToGridPosH(offsetTopPx)
+  // console.log(nowMoveX, nowMoveY)
 
-  // container.engine.layoutManager.analysis()
+  container.engine.layoutManager.move(container.engine.items, fromItem)
+
 
   return;
-  if (nowMoveWidth < 1) nowMoveWidth = 1
-  if (nowMoveHeight < 1) nowMoveHeight = 1
+  if (nowMoveX < 1) nowMoveX = 1
+  if (nowMoveY < 1) nowMoveY = 1
   // console.log(offsetLeftPx,offsetTopPx);
   const growContainer: Container = dragItem.container
   if (growContainer.getConfig('autoGrowRow') && isCoverRow) growContainer?.['cover']?.('row')
-  dragItem.container.eventManager._callback_('itemMoving', nowMoveWidth, nowMoveHeight, dragItem)
+  dragItem.container.eventManager._callback_('itemMoving', nowMoveX, nowMoveY, dragItem)
   const responsiveLayoutAlgorithm = () => {
     if (dragItem === toItem) return   // 减少执行，和静态移动的话不同，对静态不进行限制，使得静态能在大Item下对微距的[移动move]调整更精确反应
     // 响应式Item交换算法
@@ -127,8 +128,8 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
 
     //-----------找到dragItem当前移动覆盖的Item位置，取左上角第一个设定成toItem-------------//
     const nextPos = {
-      x: nowMoveWidth < 1 ? 1 : nowMoveWidth,
-      y: nowMoveHeight < 1 ? 1 : nowMoveHeight,
+      x: nowMoveX < 1 ? 1 : nowMoveX,
+      y: nowMoveY < 1 ? 1 : nowMoveY,
       w: dragItem.pos.w,
       h: dragItem.pos.h,
     }
@@ -136,7 +137,9 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     const innerContentArea = () => {
       // 在containerArea覆盖区域内的交换
       if (!dragItem.follow) return
-      const rangeLimitItems = container.engine.findCoverItemFromPosition(nextPos.x, nextPos.y, nextPos.w, nextPos.h)
+      const rangeLimitItems = container.engine.layoutManager.findCoverItemFromPosition(container.engine.items,{
+        x: nextPos.x, y: nextPos.y, w: nextPos.w, h: nextPos.h
+      })
       // console.log(rangeLimitItems)
       if (rangeLimitItems.length > 0) {
         let updateItems = rangeLimitItems.filter(item => dragItem !== item)
@@ -147,7 +150,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     const outerContentArea = () => {
       // 在响应式流Items覆盖区域外的检测，为了使得鼠标拖拽超出Items覆盖区域后dragItem还能跟随鼠标位置在流区域进行移动或交换
       // 说人话就是实现dragItem在鼠标超出边界还能跟随鼠标位置移动到边界
-      const rangeLimitItems = container.engine.findResponsiveItemFromPosition(nextPos.x, nextPos.y)
+      const rangeLimitItems = container.engine.layoutManager.findResponsiveItemFromPosition(container.engine.items,nextPos.x, nextPos.y)
       // console.log(rangeLimitItems);
       if (!rangeLimitItems) return
       toItem = rangeLimitItems
@@ -175,7 +178,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
       dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
       dragItem.pos.nextStaticPos.x = nextPos.x
       dragItem.pos.nextStaticPos.y = nextPos.y
-      dragItem.pos.autoOnce = true
+      // dragItem.pos.autoOnce = true
       if (toItem) {   // 进入的是容器Item的覆盖位置区域
         if (fromItem.container.parentItem === toItem) {
           return  // 必要，拖动Item边缘相邻容器初进可能识别toItem区域为源容器占用的地，触发toItem.i移动到源容器位置
@@ -256,8 +259,8 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     // 静态布局的Item交换算法
     if (!dragItem.follow && !parseContainer(ev)) return     // 静态模式设定不跟随且移动到容器之外不进行算法操作
     dragItem.pos.nextStaticPos = new ItemPos(dragItem.pos)
-    dragItem.pos.nextStaticPos.x = nowMoveWidth < 1 ? 1 : nowMoveWidth  // 栅格索引最低1
-    dragItem.pos.nextStaticPos.y = nowMoveHeight < 1 ? 1 : nowMoveHeight
+    dragItem.pos.nextStaticPos.x = nowMoveX < 1 ? 1 : nowMoveX  // 栅格索引最低1
+    dragItem.pos.nextStaticPos.y = nowMoveY < 1 ? 1 : nowMoveY
 
     let foundItems: Item[] = container.engine.findCoverItemFromPosition(dragItem.pos.nextStaticPos.x
       , dragItem.pos.nextStaticPos.y, dragItem.pos.w, dragItem.pos.h)  // 找到该位置下的所有Item

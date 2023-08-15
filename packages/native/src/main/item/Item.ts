@@ -25,7 +25,6 @@ export class Item extends ItemGeneralImpl {
   public tagName: string = 'div'
   public classList: string[] = []
   public attr: string[] = []
-  public autoOnce: boolean
   public edit: boolean  // 该Item是否正在被编辑(只读)
   public nested: boolean = false
   public parentElement: HTMLElement
@@ -99,7 +98,6 @@ export class Item extends ItemGeneralImpl {
     const _default = this._default
     const _customOptions = this.__ref_use__
     const pos = new ItemPos(itemOption.pos)
-    pos.belongItem = this
 
     const get = (k: keyof ItemGeneralImpl) => _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]
     const set = (k: keyof ItemGeneralImpl, v: any) => !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null

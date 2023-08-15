@@ -74,8 +74,8 @@ export function doItemExchange(container: Container, itemPositionMethod: Functio
       })
     }
     const nativeExchange = () => {
-      if (container.getConfig('responsive')) newItem.pos.autoOnce = true
-      else if (!container.getConfig('responsive')) newItem.pos.autoOnce = false
+      // if (container.getConfig('responsive')) newItem.pos.autoOnce = true
+      // else if (!container.getConfig('responsive')) newItem.pos.autoOnce = false
       container.add(newItem)
       dragItem.unmount()  // 先成功移除原来容器中Item后再在新容器新添加Item，移除不成功不添加
       dragItem.remove()

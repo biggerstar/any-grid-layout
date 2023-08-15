@@ -1,11 +1,12 @@
 import {Item} from "@/main/item/Item";
 import {CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
+import {Finder} from "@/algorithm/Finder";
 
 /**
  * 该类提供一些API用于快捷构建自定义布局算法
  * */
-export class Layout {
+export class Layout extends Finder {
   public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
   }
@@ -256,7 +257,6 @@ export class Layout {
         }
       }
   }
-
 }
 
 
