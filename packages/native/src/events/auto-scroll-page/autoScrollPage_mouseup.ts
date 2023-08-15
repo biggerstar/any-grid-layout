@@ -1,11 +1,11 @@
 import {Container} from "@/main";
 import {tempStore} from "@/store";
 
-export function slidePage_mouseup(ev) {
-  const {isLeftMousedown, dragOrResize, fromContainer, slidePageOffsetInfo} = tempStore
-  if (!isLeftMousedown || !fromContainer || dragOrResize !== 'slidePage') return
+export function autoScrollPage_mouseup(ev) {
+  const {isLeftMousedown, handleMethod, fromContainer, slidePageOffsetInfo} = tempStore
+  if (!isLeftMousedown || !fromContainer || handleMethod !== 'autoScrollPage') return
   const container: Container = fromContainer
-  if (!container || !container.getConfig('slidePage')) return
+  if (!container || !container.getConfig('autoScrollPage')) return
   const sPFI = slidePageOffsetInfo
   const offsetLeft = sPFI.newestPageX - ev.pageX
   const offsetTop = sPFI.newestPageY - ev.pageY

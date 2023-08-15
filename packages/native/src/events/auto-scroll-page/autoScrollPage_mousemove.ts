@@ -5,10 +5,10 @@ import {tempStore} from "@/store";
 /**
  * 拖拽到边界自动滚动container内容
  * */
-export const slidePage_mousemove: Function = throttle((ev) => {
+export const autoScrollPage_mousemove: Function = throttle((ev) => {
   const {
     mousedownEvent,
-    dragOrResize,
+    handleMethod,
     isLeftMousedown,
     dragItem,
     fromItem,
@@ -16,10 +16,10 @@ export const slidePage_mousemove: Function = throttle((ev) => {
     slidePageOffsetInfo
   } = tempStore
 
-  if (dragOrResize !== 'slidePage' || !fromItem || !mousedownEvent || !isLeftMousedown) return
+  if (handleMethod !== 'autoScrollPage' || !fromItem || !mousedownEvent || !isLeftMousedown) return
   const container: Container = parseContainer(ev)
   if (!container) return
-  if (!container || !container.getConfig('slidePage')) return
+  if (!container || !container.getConfig('autoScrollPage')) return
   //------------------------------------------------------------------------------------------------
   //------如果容器内容超出滚动条盒子在边界的时候自动滚动(上高0.25倍下高0.75倍触发，左宽0.25倍右宽0.75倍触发)-----//
   const scrollContainerBoxEl = container.contentElement.parentElement

@@ -7,6 +7,9 @@ import {itemCloneElCreateAndUpdate_mousemove, prevent} from "@/events";
 export function compatible_touchstart_mousedown(ev) {
   // touch 和 drag效果是一样的
   ev = ev || window['event']
+  tempStore.isLeftMousedown = true
+  tempStore.mousedownEvent = ev
+  //----------------------------------------------------
   if (ev.touches) {
     if (ev.stopPropagation) ev.stopPropagation()
     tempStore.deviceEventMode = 'touch'

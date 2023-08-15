@@ -1,26 +1,31 @@
 import {prevent} from "@/events/common";
 import {
+  autoScrollPage_mousemove,
+  autoScrollPage_mouseup,
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown,
   crossContainer_mousemove,
+  cursor_mousedown,
   cursor_mousemove,
   cursor_mouseup,
   fromItemChange_mousemove,
   itemCloneElCreateAndUpdate_mousemove,
   itemCloneElRemove_mouseup,
+  itemClose_mouseup,
   itemDrag_mousedown,
   itemDrag_mouseup,
-  itemResize_mouseup,
-  slidePage_mousemove
+  itemResize_mousedown,
+  itemResize_mouseup
 } from "@/events";
-import {slidePage_mouseup} from "@/events/slide-page/slidePage_mouseup";
-import {itemClose_mouseup} from "@/events/item-close/itemClose_mouseup";
+import {autoScrollPage_mousedown} from "@/events/auto-scroll-page/autoScrollPage_mousedown";
 
 function allMousedown(ev) {
   compatible_touchstart_mousedown(ev)
-  //------------------------------
-  itemDrag_mousedown(ev)
+  itemDrag_mousedown(ev)  // drag必须在前面，后面通过优先级判断确定最终dragOrResize
+  autoScrollPage_mousedown(ev)
+  itemResize_mousedown(ev)
+  cursor_mousedown(ev)
 }
 
 function allMousemove(ev) {
@@ -28,7 +33,7 @@ function allMousemove(ev) {
   itemCloneElCreateAndUpdate_mousemove(ev)
   cursor_mousemove(ev)
   crossContainer_mousemove(ev)
-  slidePage_mousemove(ev)
+  autoScrollPage_mousemove(ev)
   //------------------------------
   fromItemChange_mousemove(ev)
 }
@@ -38,7 +43,7 @@ function allMouseup(ev) {
   itemCloneElRemove_mouseup(ev)
   cursor_mouseup(ev)
   itemResize_mouseup(ev)
-  slidePage_mouseup(ev)
+  autoScrollPage_mouseup(ev)
   itemClose_mouseup(ev)
   //------------------------------
   itemDrag_mouseup(ev)

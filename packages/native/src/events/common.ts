@@ -1,8 +1,5 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {parseContainer} from "@/utils";
-import {tempStore} from '@/store'
-
 export const prevent = {
   default: (ev) => ev.preventDefault(),
   false: () => false,
@@ -12,24 +9,7 @@ export const prevent = {
   },
   contextmenu: (ev) => ev.preventDefault()
 }
-export const check = {
-  resizeOrDrag: (ev: MouseEvent) => {
-    const {dragOrResize, fromItem} = tempStore
-    const container = parseContainer(ev)
-    if (!container) return
-    if (fromItem?.draggable && dragOrResize === 'drag') {
-      tempStore.isDragging = true
-      tempStore.isResizing = false
-      return 'drag'
-    } else if (fromItem?.resize && dragOrResize === 'resize') {
-      tempStore.isResizing = true
-      tempStore.isDragging = false
-      return 'resize'
-    } else if (dragOrResize === 'slidePage') {
-      return 'slidePage'
-    }
-  }
-}
+
 export const cursor = {
   cursor: 'notFound',
   removeAllCursors: () => {

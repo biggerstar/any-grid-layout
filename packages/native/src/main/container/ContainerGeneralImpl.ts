@@ -150,7 +150,7 @@ export class ContainerGeneralImpl {
    * 点击container的空白处是否能拖拽进行滑动容器
    * @default true
    * */
-  slidePage?: boolean = true
+  autoScrollPage?: boolean = true
 
   /**
    * 如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许

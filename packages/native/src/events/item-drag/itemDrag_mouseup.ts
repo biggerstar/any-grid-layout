@@ -4,7 +4,7 @@ import {tempStore} from "@/store";
 /**
  * 做拖动结束的后续清理工作
  * */
-export function itemDrag_mouseup() {
+export function itemDrag_mouseup(_) {
   const {
     fromItem,
     moveItem,
@@ -80,7 +80,7 @@ export function itemDrag_mouseup() {
     'isResizing',
     'isLeftMousedown',
     'isCoverRow',
-    'dragOrResize',
+    'handleMethod',
     'mousedownEvent',
     'mousedownItemOffsetLeft',
     'mousedownItemOffsetTop',
