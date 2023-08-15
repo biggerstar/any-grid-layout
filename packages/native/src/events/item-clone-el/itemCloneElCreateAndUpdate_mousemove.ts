@@ -67,4 +67,4 @@ export const itemCloneElCreateAndUpdate_mousemove: Function = throttle((ev) => {
     left: left + 'px',
     top: top + 'px',
   }, tempStore.cloneElement)  // 必须重新从tempStore获取当前克隆节点
-}, 15)
+}, 12)

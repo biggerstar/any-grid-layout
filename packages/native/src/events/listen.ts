@@ -1,5 +1,6 @@
 import {prevent} from "@/events/common";
 import {
+  autoScrollPage_mousedown,
   autoScrollPage_mousemove,
   autoScrollPage_mouseup,
   compatible_touchend_mouseup,
@@ -9,16 +10,15 @@ import {
   cursor_mousedown,
   cursor_mousemove,
   cursor_mouseup,
+  endWork_mouseup,
   fromItemChange_mousemove,
   itemCloneElCreateAndUpdate_mousemove,
   itemCloneElRemove_mouseup,
   itemClose_mouseup,
   itemDrag_mousedown,
-  itemDrag_mouseup,
   itemResize_mousedown,
   itemResize_mouseup
 } from "@/events";
-import {autoScrollPage_mousedown} from "@/events/auto-scroll-page/autoScrollPage_mousedown";
 
 function allMousedown(ev) {
   compatible_touchstart_mousedown(ev)
@@ -45,8 +45,7 @@ function allMouseup(ev) {
   itemResize_mouseup(ev)
   autoScrollPage_mouseup(ev)
   itemClose_mouseup(ev)
-  //------------------------------
-  itemDrag_mouseup(ev)
+  endWork_mouseup(ev)
 }
 
 export function startGlobalEvent() {
