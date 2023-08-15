@@ -2,24 +2,26 @@ import {Item} from "@/main/item/Item";
 import {CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
 
+/**
+ * 该类提供一些API用于快捷构建自定义布局算法
+ * */
 export class Layout {
-  get col(): number {
+  public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
   }
 
-  get row(): number {
+  public get row(): number {
     return this._layoutMatrix.length | 1
   }
 
-  _layoutMatrix = [[]]   // 布局矩阵
-
-  place = 0
-  placed = 1
+  protected _layoutMatrix = [[]]   // 布局矩阵
+  protected place = 0
+  protected placed = 1
 
   /**
    * @param {Number} num  添加一行
    * */
-  addRow = (num = null) => {
+  public addRow = (num = null) => {
     if (!num) return
     for (let i = 0; i < num; i++) {
       this._layoutMatrix.push(new Array(this.col).fill(this.place))
@@ -28,7 +30,7 @@ export class Layout {
   /**
    * @param {Number} num  添加一列
    * */
-  addCol = (num = null) => {
+  public addCol = (num = null) => {
     if (!num) return
     for (let i = 0; i < this._layoutMatrix.length; i++) {  // 遍历row
       for (let j = 0; j < num; j++) {     // 往col添加指定num个默认值
@@ -37,72 +39,20 @@ export class Layout {
     }
   }
 
-
-  /**
-   * 删除空白的最后一行,若已被占用不进行删除
-   * TODO 弃用
-   * */
-  removeOneRow = () => {
-    if (this._layoutMatrix.length === 0) {
-      console.log('栅格内行数已经为空')
-      return false
-    }
-    if (!this._layoutMatrix[this._layoutMatrix.length - 1].includes(this.placed)) {
-      this._layoutMatrix.pop()
-      return true
-    } else {
-      console.log('计划删除的栅格内存在组件,未删除包含组件的栅格')
-      return false
-    }
-  }
-
-  /**
-   * 删除尾部(下方)所有空白的行
-   * */
-  removeBlankRow = (num) => {
-    for (let i = 0; i < num; i++) {
-      if (!this.removeOneRow()) return
-    }
-  }
-
   /**
    * 判断该pos是否超出当前的矩阵范围,通常用于静态模式
    * @return {Boolean} 超过：true  未超过：false
    * */
-  isOverFlowMatrix(nextStaticPos) {
-    return (nextStaticPos.x + nextStaticPos.w - 1) > this.col
-      || (nextStaticPos.y + nextStaticPos.h - 1) > this.row
+  public isOverFlowMatrix(pos: CustomItemPos) {
+    return (pos.x + pos.w - 1) > this.col
+      || (pos.y + pos.h - 1) > this.row
   }
 
   /**
-   * 以w宽度为准，找到该行可供item放置的空白位置
-   * 如果没有空白位置，则返回失败对象
-   *
-   * @param rowData 某行的当前矩阵中占位的数据
-   * @param w 打算占位的宽度
-   * @param x 执行x起点
-   * @param xEnd 执行x终点
+   * 为包含static item优先排序
+   * 返回一个所有static都在数组前面的新数组
    * */
-  _findRowBlank(rowData = [], w, x, xEnd) {
-    let blankCount = 0
-    if (w <= 0) new Error('宽度不能为0或负数，请使用正整数')
-    for (let i = x; i <= xEnd; i++) { //  因为块矩阵start和end指向同个索引所以取值要加一偏移计算
-      if (rowData[i] !== this.place) blankCount = 0  // 如果该行该位置被占用清空预放置行的空格计数
-      else if ((rowData[i] === this.place)) blankCount++
-      if (blankCount === w) {  //  如果该行能放置符合w的新组件
-        return {
-          success: true,
-          xStart: i + 1 - w,   // 加1是起始索引假设1-6, w为2 ，所占空间只有index0,index1
-          xEnd: i,
-          xWidth: w
-        }
-      }
-    }
-    return {success: false}
-  }
-
-  /** 返回一个新的重新排序为包含static的Item的数组,优先排在前面 */
-  sortStatic(items): Item[] {
+  public sortStatic(items): Item[] {
     const staticItems = []
     const ordinaryItems = []
     items.forEach((item) => {
@@ -115,9 +65,9 @@ export class Layout {
   }
 
   /**
-   * 用于重设布局矩阵
+   * 用于重设,置空布局矩阵
    * */
-  reset(col?: number, row?: number) {
+  public reset(col?: number, row?: number) {
     col = col || this.col
     row = row || this.row
     for (let i = 0; i < row; i++) {
@@ -128,9 +78,10 @@ export class Layout {
     }
   }
 
-
-  /** 转成适合矩阵数组操作的pos，外部pos要适配矩阵操作需要使用该函数转换 */
-  toLayoutPos(pos: CustomItemPos): CustomItemPos {
+  /**
+   * 转成适合矩阵数组操作的pos，外部pos要适配矩阵操作需要使用该函数转换
+   * */
+  public toLayoutPos(pos: CustomItemPos): CustomItemPos {
     const x = pos.x - 1
     const y = pos.y - 1
     if (isNaN(x) || isNaN(y)) console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
@@ -142,9 +93,97 @@ export class Layout {
   }
 
   /**
+   * 传入Item列表，分析当前所有Item预添加到矩阵中的情况
+   * 该函数只是并没有实际添加
+   *
+   * @param items 必须是Item，而不能是CustomItem 或者 ItemGeneralImpl
+   * @param fn  回调
+   * */
+  public analysis(items: Item[], fn?: (item: Item, pos: CustomItemPos | null) => any)
+    : {
+    /** 允许添加的item列表 */
+    success: Array<{
+      /** item，此时pos可能不是最新位置 */
+      item: Item,
+      /** 该pos将是当前在矩阵最新位置 */
+      pos: CustomItemPos,
+    }>,
+    /** 不允许添加的item */
+    failed: Item[],
+
+    /** 将当前成功的所有列表中的pos信息派发更新到对应的item中
+     * @param handler 传入最新pos的item作为参数
+     * */
+    patch: (handler?: (item: Item) => void) => void
+  } {
+    this.reset()
+    items = this.sortStatic(items)
+    const success: Array<{ item: Item, pos: CustomItemPos, }> = []
+    const failed = []
+    items.forEach((item) => {
+      // console.log(item.__ref_use__?.pos)
+      const pos = new ItemPos(item.__ref_use__?.pos || item.pos)
+      // const {x, y, w, h} = pos
+      // console.log({x, y, w, h});
+      const finalPos = this.findBlank(pos)
+      finalPos
+        ? success.push({item, pos: finalPos})
+        : failed.push(item)
+      if (typeof fn === 'function') fn(item, finalPos)
+      if (finalPos) this.mark(<any>finalPos)
+    })
+    this.reset()
+    return {
+      success,
+      failed,
+      patch: (handler?: (item: Item) => void) => {
+        success.forEach(({item, pos}) => {
+          Object.assign(item.pos, pos)
+          if (typeof handler === 'function') handler(item)
+        })
+      }
+    }
+  }
+
+  /**
+   * 传入一个pos，查看当前矩阵中是否存在适合该pos的空位
+   * 有两种情况:
+   * - 如果pos指定了x,y则查看当前矩阵该位置是否有空位
+   * - 如果pos没有指定x,y，则自动寻找当前矩阵中适合w,h尺寸的空位
+   *
+   * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
+   * */
+  public findBlank(pos: CustomItemPos): CustomItemPos | null {
+    const {w, h, x, y} = pos
+    const isStaticPos = (
+      typeof x === 'number'
+      && typeof y === 'number'
+      && x > 0
+      && y > 0
+      && x !== Infinity
+      && y !== Infinity
+    )
+    let resPos = null
+    if (isStaticPos) {  // 已经有x,y直接看是否有空位
+      if (this.isBlank(pos)) resPos = {w, h, x, y}
+    } else {
+      this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
+        const tryPos = {
+          w,
+          h,
+          x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
+          y: curRow + 1,
+        }
+        if (this.isBlank(tryPos)) return resPos = tryPos
+      })
+    }
+    return resPos
+  }
+
+  /**
    * 判断一个pos在当前矩阵中能否放置
    * */
-  isBlank(pos: CustomItemPos): boolean {
+  public isBlank(pos: CustomItemPos): boolean {
     const {w, h, x, y} = this.toLayoutPos(pos)
     if ((this.row - h - y) < 0 || (this.col - w - x) < 0) return false // 如果指定的x,y超出矩阵直接返回false
     let isBlank = true
@@ -162,11 +201,10 @@ export class Layout {
     return isBlank
   }
 
-
   /**
    * 在矩阵中标记某个数组的所有pos占位
    * */
-  markList(posList: CustomItemPos[] | ItemPos[]): void {
+  public markList(posList: CustomItemPos[] | ItemPos[]): void {
     posList.forEach((pos) => this.mark(pos))
   }
 
@@ -174,7 +212,7 @@ export class Layout {
    * 在矩阵中标记该pos占位
    * @return {CustomItemPos} 传入的pos原样返回
    * */
-  mark(pos: CustomItemPos | ItemPos): CustomItemPos {
+  public mark(pos: CustomItemPos | ItemPos): CustomItemPos {
     const {w, h, x, y} = this.toLayoutPos(pos)
     this.each((curRow, curCol) => {
       // console.log(curRow, curCol,this._layoutMatrix[curRow][curCol])
@@ -189,7 +227,7 @@ export class Layout {
   }
 
   /**
-   * 遍历整个矩阵 (先行后列)
+   * 遍历整个矩阵 (先行后列),内部使用双层for i实现
    * @param {(curRow, curCol) => any} fn  回调函数,返回 !!res === true 将结束each循环, curRow当前行索引，curCol当前列索引
    * @param options
    * @param {number} options.startRow 从第几行开始，起始为0，默认为0
@@ -197,7 +235,7 @@ export class Layout {
    * @param {number} options.endRow   到第几行结束，起始为0，默认为到当前矩阵的行数
    * @param {number} options.endCol 到第几列结束，起始为0，默认为到当前矩阵的列数
    * */
-  each(fn: (curRow, curCol) => any, options: {
+  public each(fn: (curRow, curCol) => any, options: {
     startRow?: number
     startCol?: number
     endRow?: number

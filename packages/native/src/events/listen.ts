@@ -20,7 +20,7 @@ import {
   itemResize_mouseup
 } from "@/events";
 
-function allMousedown(ev) {
+export function allMousedown(ev) {
   compatible_touchstart_mousedown(ev)
   itemDrag_mousedown(ev)  // drag必须在前面，后面通过优先级判断确定最终dragOrResize
   autoScrollPage_mousedown(ev)
@@ -28,17 +28,17 @@ function allMousedown(ev) {
   cursor_mousedown(ev)
 }
 
-function allMousemove(ev) {
+export function allMousemove(ev) {
   compatible_touchmove_mousemove(ev)
   itemCloneElCreateAndUpdate_mousemove(ev)
   cursor_mousemove(ev)
-  crossContainer_mousemove(ev)
   autoScrollPage_mousemove(ev)
+  crossContainer_mousemove(ev)
   //------------------------------
   fromItemChange_mousemove(ev)
 }
 
-function allMouseup(ev) {
+export function allMouseup(ev) {
   compatible_touchend_mouseup(ev)
   itemCloneElRemove_mouseup(ev)
   cursor_mouseup(ev)

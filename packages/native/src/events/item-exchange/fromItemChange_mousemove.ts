@@ -12,6 +12,7 @@ import {cursor, doItemExchange} from "@/events";
  *                                                  静态模式下只要定义了pos后任何顺序都是不影响位置的。所以该函数主要针对响应式
  * */
 export const fromItemChange_mousemove: Function = throttle((ev) => {
+  //  Item的交换主逻辑
   const {
     fromItem,
     moveItem,
@@ -25,7 +26,6 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     isCoverRow,
     mouseSpeed: mouseSpeedTemp,
   } = tempStore
-  //  Item的交换主逻辑
   ev.stopPropagation()
   if (!isDragging) return
   let toItem: Item | null = parseItem(ev)
@@ -80,8 +80,11 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
 
   let nowMoveWidth = pxToGridPosW(offsetLeftPx)
   let nowMoveHeight = pxToGridPosH(offsetTopPx)
-  // console.log(nowMoveWidth,nowMoveHeight)
+  console.log(nowMoveWidth, nowMoveHeight)
 
+  // container.engine.layoutManager.analysis()
+
+  return;
   if (nowMoveWidth < 1) nowMoveWidth = 1
   if (nowMoveHeight < 1) nowMoveHeight = 1
   // console.log(offsetLeftPx,offsetTopPx);

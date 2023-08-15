@@ -11,7 +11,7 @@ export const prevent = {
 }
 
 export const cursor = {
-  cursor: 'notFound',
+  cursor: '',
   removeAllCursors: () => {
     document.body.classList.forEach(className => {
       if (className.includes('grid-cursor')) {

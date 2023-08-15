@@ -52,4 +52,4 @@ export const cursor_mousemove: Function = throttle((ev) => {
       if (cursor.cursor !== 'in-container') cursor.inContainer()
     } else if (cursor.cursor !== 'default') cursor.default()
   }
-}, 120)
+}, 45)

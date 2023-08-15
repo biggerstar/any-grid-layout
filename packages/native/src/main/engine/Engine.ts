@@ -321,7 +321,7 @@ export class Engine {
       }
     }
     if (fromIndex !== null) {
-      console.log(fromIndex,toIndex)
+      // console.log(fromIndex,toIndex)
       this.items.splice(fromIndex, 1)
       this.items.splice(toIndex, 0, item)
     }
@@ -330,7 +330,7 @@ export class Engine {
 
   /** 交换自身Container中两个Item在this.items的位置 */
   public exchange(itemA: Item, itemB: Item) {
-    console.log(arguments);
+    // console.log(arguments);
     if (this.items.includes(itemA) && this.items.includes(itemB)) {
       this.items[itemA.i] = itemB
       this.items[itemB.i] = itemA
@@ -359,7 +359,7 @@ export class Engine {
 
     // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
     const res = this.layoutManager.analysis(this.items)
-    console.log(res);
+    // console.log(res);
     res.patch((item) => {
       this.layoutManager.mark(item.pos)
       item.updateItemLayout()

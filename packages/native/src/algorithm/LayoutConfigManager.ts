@@ -220,7 +220,7 @@ export class LayoutConfigManager {
     const AutoSetting = () => {
       // 自动设置col和row
       // 响应式模式后面所有操作将自动转变成autoRow,该情况不限制row，如果用户传入maxRow的话会限制ContainerH
-      layoutManager.autoRow(!row || responsive)
+      // layoutManager.autoRow(!row || responsive)
       if (marginX) margin[0] = marginX
       if (marginY) margin[1] = marginY
       if (sizeWidth) size[0] = sizeWidth
@@ -271,8 +271,6 @@ export class LayoutConfigManager {
       container.setConfig('col', maxCol)
       container.setConfig('row', maxRow)
 
-      // layoutManager.addRow(maxRow - layoutManager._layoutMatrix.length)
-      // layoutManager.addCol(maxCol - layoutManager._layoutMatrix[0].length)
       const preCol = container.__ownTemp__.preCol
       const preRow = container.__ownTemp__.preRow
       if (maxCol !== preCol) {
