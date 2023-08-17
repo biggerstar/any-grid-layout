@@ -21,14 +21,44 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
     fromContainer,
+    deviceEventMode,
+    mouseSpeed: mouseSpeedTemp,
   } = tempStore
   if (!isDragging) return
   let toItem: Item | null = parseItem(ev)
   if (toItem) tempStore.toItem = toItem
   if (!fromItem || !mousedownEvent || !isLeftMousedown || !fromContainer) return
   let dragItem: Item = moveItem || fromItem
+  if (!dragItem) return
   let container: Container = dragItem.container
   let overContainer: Container
+
+  //------计算鼠标的移动速度，太慢不做操作-----------//
+  let startY, startX
+  let now = Date.now()
+  startX = ev.screenX
+  startY = ev.screenY
+  const mouseSpeed = () => {
+    let dt = now - mouseSpeedTemp.timestamp;
+    let distanceX = Math.abs(startX - mouseSpeedTemp.endX)
+    let distanceY = Math.abs(startY - mouseSpeedTemp.endY)
+    let distance = distanceX > distanceY ? distanceX : distanceY   //  选一个移动最多的方向
+    let speed = Math.round(distance / dt * 1000);
+    // console.log(dt, distance, speed);
+    mouseSpeedTemp.endX = startX
+    mouseSpeedTemp.endY = startY
+    mouseSpeedTemp.timestamp = now;
+    return {distance, speed}
+  }
+  //------对移动速度和距离做出限制,某个周期内移动速度太慢或距离太短忽略本次移动(only mouse event)------//
+  // const {distance, speed} = mouseSpeed()
+  // if (deviceEventMode === 'mouse' && toItem) {
+  //   // console.log(speed)
+  //   const [size0, size1] = container.getConfig('size')
+  //   const av = Math.min(<number>size0, <number>size1) / 7
+  //   if (distance < av || speed < av) return
+  // }
+  //---------------------------------------------------------------------------------------------
 
   if (dragItem.exchange) {  // 如果目标允许参与交换，则判断当前是否在自身容器移动，如果是阻止进入防止自身嵌套
     overContainer = parseContainer(ev)

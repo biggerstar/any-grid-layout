@@ -35,6 +35,8 @@ export abstract class Finder {
 
   /** 寻找某个指定矩阵范围内包含的所有Item,下方四个变量构成一个域范围;
    *  Item可能不完全都在该指定矩阵范围内落点，只是有一部分落在范围内，该情况也会被查找收集起来
+   *  若传入pos可设定w = 1, h = 1, 这样可以直接查某个点的item
+   *
    *  @param items 在该Items列表中查找
    *  @param pos  x坐标
    *
@@ -42,19 +44,20 @@ export abstract class Finder {
    * */
   public findCoverItemsFromPosition(items, pos: CustomItemPos): Item[] {
     const {x, y, w, h} = pos
-    // console.log(x,y,w,h);
     const resItemList = []
     for (let i = 0; i < items.length; i++) {
       let item = items[i]
+      //------------------------要找的域----------------------------//
       const xBoundaryStart = x       // 左边界
       const yBoundaryStart = y       // 上边界
       const xBoundaryEnd = x + w - 1  //  右边界
       const yBoundaryEnd = y + h - 1  // 下边界
+      //----------------------遍历item的域--------------------------//
       const xItemStart = item.pos.x          // Item左边界
       const yItemStart = item.pos.y           // Item上边界
       const xItemEnd = item.pos.x + item.pos.w - 1    // Item右边界
       const yItemEnd = item.pos.y + item.pos.h - 1    // Item下边界
-
+      //------------------------碰撞检测---------------------------//
       if ((xItemEnd >= xBoundaryStart && xItemEnd <= xBoundaryEnd      // 左边界碰撞
           || xItemStart >= xBoundaryStart && xItemStart <= xBoundaryEnd  // X轴中间部分碰撞
           || xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd)    // 右边界碰撞
@@ -135,21 +138,24 @@ export abstract class Finder {
    * ......
    * */
   public getCurrentMatrixSortItems(items: Item[] = []) {
+    const sortItems = []
     for (let y = 1; y <= this.row; y++) {
       for (let x = 1; x <= this.col; x++) {
+        //------------------------------------
         for (let index = 0; index < items.length; index++) {
           const item = items[index]
           if (x >= item.pos.x && x < (item.pos.x + item.pos.w)
             && y >= item.pos.y && y < (item.pos.y + item.pos.h)) {
-            if (!items.includes(item)) {
-              items.push(item)
+            if (!sortItems.includes(item)) {
+              sortItems.push(item)
             }
             break
           }
         }
+        //-------------------------------------
       }
     }
-    return items
+    return sortItems
   }
 }
 

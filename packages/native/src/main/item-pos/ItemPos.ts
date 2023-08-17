@@ -10,6 +10,7 @@ export class ItemPos extends ItemPosGeneralImpl {
   public posHash?: string = ''  // 每个pos的hash，有极低极低的概率重复
   public _default?: ItemPosGeneralImpl  // 框架默认配置
   public _customPos?: CustomItemPos  // 框架默认配置
+  public _lastPos?: CustomItemPos  // 框架默认配置
   constructor(pos) {
     super()
     this._default = new ItemPosGeneralImpl() // 必须在_defineXXX 之前

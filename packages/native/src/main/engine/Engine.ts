@@ -93,6 +93,7 @@ export class Engine {
   public addItem(itemOptions: CustomItem): Item | null {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const container = this.container
     const eventManager = container.eventManager
+    this.items = this.layoutManager.getCurrentMatrixSortItems(this.items)  // 每次添加新item之前为其他已存在的item排好序
     const item = new Item(itemOptions)
     const foundPos = this.layoutManager.findBlank(item.pos)
     if (foundPos) {
@@ -133,7 +134,7 @@ export class Engine {
 
   /** 清除所有Items */
   public clear() {
-    this.items.splice(0,this.items.length)
+    this.items.splice(0, this.items.length)
   }
 
   /** 移除指定items实例 */
@@ -146,15 +147,10 @@ export class Engine {
     }
   }
 
-  /**  根据是否响应式布局或者静态布局更新容器内的Item布局
-   *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
-   *  @param items {Array || Boolean} Array: 要更新的对应Item ，Array方案正常用于静态模式，
-   *                                          响应式也能指定更新，用于静态优先更新(将传入的Item作为静态Item进行占位)
-   *                                  Boolean: 参数为true 传入true的话不管静态还是响应式强制刷新该容器的布局
-   *                                  不传值(默认null): 静态模式不进行更新，响应式模式进行全部更新
-   *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
+  /**
+   * 更新并渲染布局
    * */
-  public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
+  public updateLayout() {
     // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
     const res = this.layoutManager.analysis(this.items)
     res.patch((item) => {
@@ -162,8 +158,7 @@ export class Engine {
       this.layoutManager.mark(item.pos)
       item.updateItemLayout()
     })
-    // console.log(useItems, res);
-
+    this.items = this.layoutManager.getCurrentMatrixSortItems(this.items)  // 被更新了布局后再次排序
     //---------------------------------------------------------------------//
     this._checkUpdated()
     // this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
