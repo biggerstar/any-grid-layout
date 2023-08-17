@@ -74,7 +74,8 @@ export const doItemResize: Function = throttle((ev: MouseEvent) => {
     //-----------------响应式和静态的resize最大可调整空间算法实现---------------------//
     //  静态模式下对resize进行重置范围的限定，如果resize超过容器边界或者压住其他静态成员，直接打断退出resize过程
     const nowElSize = limitCloneEl()
-    const maxBlankMatrixLimit = fromItem.container.engine.findStaticBlankMaxMatrixFromItem(fromItem)
+    const engine = fromItem.container.engine
+    const maxBlankMatrixLimit = engine.layoutManager.findStaticBlankMaxMatrixFromItem(engine.items, fromItem)
     const updateStyle: Record<any, any> = {}
     // console.log(maxBlankMatrixLimit);
     if (w > maxBlankMatrixLimit.minW && h > maxBlankMatrixLimit.minH) return   // 最低要求限制不能同时超过

@@ -206,74 +206,11 @@ export class Engine {
       item.updateItemLayout()
     })
     // console.log(useItems, res);
-    return;
-    // TODO  弃用下方原本的更新逻辑
-    //---------------------------更新响应式布局-------------------------------//
-    const staticItems = this.items.filter((item) => {
-      if (item.static && item.pos.x && item.pos.y && this.items.includes(item)) {
-        return item
-      }
-      return false
-    })
-    let updateItemList = []
-    if (items === null) updateItemList = []
-    else if (Array.isArray(items)) updateItemList = items
-    else if (!items && updateItemList.length === 0) return
-    if (items === true) items = this.items
-    if (!Array.isArray(items)) return
-    this._sync()
-    this.reset()
-    this.renumber()
-    updateItemList = updateItemList.filter(item => (items as []).includes(item) && !item.static)
-    if (updateItemList.length === 0) updateItemList = items.filter(item => item.__temp__.resizeLock)  // 没找到更新元素，则默认更新全部
-    // console.log(items.length, updateItemList);
-    const updateItemLayout = (item) => {
-      item.updateItemLayout()
-    }
-
-    staticItems.forEach((item) => {   // 1.先对所有静态成员占指定静态位
-      // item.autoOnce = false
-      // console.log(item.static, item.pos.x, item.pos.y);
-      updateItemLayout(item)
-    })
-
-    updateItemList.forEach((item) => {   // 2.先对要进行更新成员占指定静态位
-      // console.log(item.pos.x,item.pos.y)
-      // item.autoOnce = false
-      updateItemLayout(item)
-    })
-    items.forEach(item => {   // 3.再对剩余成员按顺序找位置坐下
-      if (updateItemList.includes(item) || staticItems.includes(item)) return   //  前面已经处理
-      updateItemLayout(item)
-    })
 
     //---------------------------------------------------------------------//
-    this._checkUpdated()
+    // this._checkUpdated()
+    // this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
+    // this.container.updateContainerStyleSize()
 
-    //---------------------------更新数据和存储-------------------------------//
-    this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-    this.container.updateContainerStyleSize()
-    const genBeforeSize = (container: Container) => {
-      return {
-        row: container.getConfig('row'),
-        col: container.getConfig('col'),
-        containerW: container.containerW,
-        containerH: container.containerH,
-        width: container.nowWidth(),
-        height: container.nowHeight()
-      }
-    }
-    const container: Container = this.container
-    if (!container.__ownTemp__.beforeContainerSizeInfo) {
-      container.__ownTemp__.beforeContainerSizeInfo = <any>genBeforeSize(container)
-    } else {
-      const beforeSize = container.__ownTemp__.beforeContainerSizeInfo
-      if (beforeSize['containerW'] !== container.containerW || beforeSize['containerH'] !== container.containerH) {
-        const nowSize = genBeforeSize(container)
-        container.__ownTemp__.beforeContainerSizeInfo = <any>genBeforeSize(container)
-        this.container.eventManager._callback_('containerSizeChange', beforeSize, nowSize, container)
-      }
-    }
   }
-
 }

@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {defaultStyle} from "@/default/style/defaultStyle";
 import {debounce, merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
