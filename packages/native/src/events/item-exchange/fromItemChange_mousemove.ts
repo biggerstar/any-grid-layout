@@ -2,7 +2,6 @@ import {parseContainer, parseItem, Sync, throttle} from "@/utils";
 import {tempStore} from "@/store";
 import {Container, Item, ItemPos} from "@/main";
 import {cursor, doItemExchange} from "@/events";
-import {h} from "vue";
 
 /**
  * 自身容器Item交换和跨容器Item成员交换
@@ -24,7 +23,6 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     mousedownItemOffsetTop,
     fromContainer,
     deviceEventMode,
-    isCoverRow,
     mouseSpeed: mouseSpeedTemp,
   } = tempStore
   ev.stopPropagation()
@@ -69,21 +67,26 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     const w = (offsetLeftPx) / (container.getConfig('size')[0] + container.getConfig('margin')[0])
     if (w + dragItem.pos.w >= container.containerW) {
       return container.containerW - dragItem.pos.w + 1
-    } else return Math.round(w) + 1
+    } else {
+      const rand = Math.round(w) + 1
+      return rand <= 0 ? 1 : rand
+    }
   }
   const pxToGridPosH = (offsetTopPx) => {
     const h = (offsetTopPx) / (container.getConfig('size')[1] + container.getConfig('margin')[1])
     // console.log(h);
     if (h + dragItem.pos.h >= container.containerH) {
       return container.containerH - dragItem.pos.h + 1
-    } else return Math.round(h) + 1
+    } else{
+      const rand = Math.round(h) + 1
+      return rand <= 0 ? 1 : rand
+    }
   }
 
   let nowMoveX = pxToGridPosW(offsetLeftPx)
   let nowMoveY = pxToGridPosH(offsetTopPx)
   // console.log(nowMoveX, nowMoveY)
-
-  container.engine.layoutManager.move(container.engine.items, fromItem, nowMoveX, nowMoveY)
+  container.engine.layoutManager.moveTo(container.engine.items, fromItem, nowMoveX, nowMoveY)
 
 
   return;

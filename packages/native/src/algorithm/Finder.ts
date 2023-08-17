@@ -11,13 +11,10 @@ export abstract class Finder {
    *
    *  @return {Item | null}
    * */
-  public findResponsiveItemFromPosition(items = [], fromX: number, fromY: number): Item | null {
+  public findItemFromXY(items = [], fromX: number, fromY: number): Item | null {
     let pointItem = null
     let lastY = 1
-    if (items.length > 0) {
-      const item = items[items.length - 1]
-      lastY = item.pos.y
-    }
+    if (items.length === 0) return null
     for (let i = 0; i < items.length; i++) {
       let item: Item = items[i]
       if (!item) continue
@@ -43,7 +40,7 @@ export abstract class Finder {
    *
    *  @return {Item[]}
    * */
-  public findCoverItemFromPosition(items, pos: CustomItemPos): Item[] {
+  public findCoverItemsFromPosition(items, pos: CustomItemPos): Item[] {
     const {x, y, w, h} = pos
     // console.log(x,y,w,h);
     const resItemList = []

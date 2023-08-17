@@ -166,10 +166,10 @@ const container1 = new Container({
         resize: true,
         close: true,
         pos:{
-          minH:2,
+          // minH:2,
           // maxH:1,
           // minW:2,
-          // maxW:5
+          // maxW:1
         }
       }),
       // minCol: 5,

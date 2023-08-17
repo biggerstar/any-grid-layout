@@ -2,34 +2,65 @@
  * 某种布局具体实现算法
  * */
 import {Layout} from "@/algorithm/Layout";
+import {Item} from "@/main";
 
 export class LayoutManager extends Layout {
-  constructor() {
-    super()
+  // 'default' | 'exchange' | 'stream'
+  /**
+   * 某个Item在this.items列表移动到指定位置
+   * @param {Item[]} items  item
+   * @param {Item} item  item
+   * @param {Number} toIndex  移动到哪个索引
+   * @dataParam {Number} fromIndex  来自哪个索引
+   * */
+  public move(items: Item[], item: Item, toIndex: number) {
+    if (toIndex < 0) toIndex = 0
+    let fromIndex = null
+    for (let i = 0; i < items.length; i++) {
+      if (items[i] === item) {
+        fromIndex = i
+        break
+      }
+    }
+    if (fromIndex !== null) {
+      // console.log(fromIndex,toIndex)
+      items.splice(fromIndex, 1)
+      items.splice(toIndex, 0, item)
+    }
   }
 
-  // 'default' | 'exchange' | 'stream'
 
-  move(items, dragItem, x, y) {
-    // console.log(dragItem.pos, x, y);
-    // console.log(this._layoutMatrix);
-    // console.log(items, dragItem);
-    // console.log(dragItem)
+  /** 交换自身Container中两个Item在this.items的位置 */
+  public exchange(items: Item[], itemA: Item, itemB: Item) {
+    // console.log(arguments);
+    if (items.includes(itemA) && items.includes(itemB)) {
+      items[itemA.i] = itemB
+      items[itemB.i] = itemA
+    }
+  }
 
-    // console.log(dragItem.pos.getCustomPos());
+  moveTo(items, dragItem, x, y) {
+    const toPos = {
+      ...dragItem.pos,
+      x,
+      y
+    }
+    const isCanMove = this.isCanMove(items, dragItem, toPos)
+    if (isCanMove) {
+      console.log(this.findItemFromXY(items, x, y));
 
+    }
 
-    //  TODO  通过 static定义是否获取pos时候返回 x,y
-    items = this.sortStatic(items)
-    const res = this.analysis(items, (item, pos) => {
-    })
-    res.patch((item) => {
-      item = item !== dragItem ? dragItem : item
-      this.mark(item.pos)
-      item?.updateItemLayout?.()
-    })
+    // console.log(isCanMove)
+    // const res = this.analysis(items)
+    // res.patch((item) => {
+    //   item = item !== dragItem ? dragItem : item
+    //   this.mark(item.pos)
+    //   item?.updateItemLayout?.()
+    // })
+    // console.log(dragItem.__ref_use__.pos)
     return
-    console.log(this.findCoverItemFromPosition(items, {
+    console.log(this.findCoverItemsFromPosition(items, {
       x: 4,
       y: 3,
       w: 2,

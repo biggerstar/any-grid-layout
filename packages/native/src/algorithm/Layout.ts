@@ -12,7 +12,7 @@ export class Layout extends Finder {
   }
 
   public get row(): number {
-    return this._layoutMatrix.length | 1
+    return this._layoutMatrix.length || 1
   }
 
   protected _layoutMatrix = [[]]   // 布局矩阵
@@ -53,15 +53,18 @@ export class Layout extends Finder {
    * 为包含static item优先排序
    * 返回一个所有static都在数组前面的新数组
    * */
-  public sortStatic(items): Item[] {
-    const staticItems = []
-    const ordinaryItems = []
+  public sortStatic(items): Record<'sortItems' | 'staticItems' | 'ordinaryItems', Item[]> {
+    const staticItems = []   // 静态items
+    const ordinaryItems = []  // 普通items
     items.forEach((item) => {
-      if (item.static) {
-        staticItems.push(item)
-      } else ordinaryItems.push(item)
+      if (this.isStaticPos(item.pos.getCustomPos())) staticItems.push(item)
+      else ordinaryItems.push(item)
     })
-    return staticItems.concat(ordinaryItems)
+    return {
+      sortItems: [...staticItems, ...ordinaryItems],  // 静态优先排序后的数组
+      staticItems,  // 静态items
+      ordinaryItems,  // 普通没有x,y值的items
+    }
   }
 
   /**
@@ -82,8 +85,8 @@ export class Layout extends Finder {
    * 转成适合矩阵数组操作的pos，外部pos要适配矩阵操作需要使用该函数转换
    * */
   public toLayoutPos(pos: CustomItemPos): CustomItemPos {
-    const x = pos.x - 1
-    const y = pos.y - 1
+    const x = pos.x - 1 <= 0 ? 0 : pos.x - 1
+    const y = pos.y - 1 <= 0 ? 0 : pos.y - 1
     if (isNaN(x) || isNaN(y)) console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
     return {
       ...pos,
@@ -117,13 +120,11 @@ export class Layout extends Finder {
     patch: (handler?: (item: Item) => void) => void
   } {
     this.reset()
-    items = this.sortStatic(items)
+    items = this.sortStatic(items).staticItems
     const success: Array<{ item: Item, pos: CustomItemPos, }> = []
     const failed = []
     items.forEach((item) => {
       const pos = item.pos.getCustomPos()
-      // const {x, y, w, h} = pos
-      // console.log({x, y, w, h});
       const finalPos = this.findBlank(pos)
       finalPos
         ? success.push({item, pos: finalPos})
@@ -203,6 +204,30 @@ export class Layout extends Finder {
       endRow: y + h,
     })
     return isBlank
+  }
+
+  /**
+   * 判断是否能让item移动到新的`pos`位置
+   *
+   * @return boolean
+   * */
+  public isCanMove(items: Item[], item: Item, pos: CustomItemPos): boolean {
+    const remainItem = items.filter((member) => member !== item)  // 将当前要移动的item过滤出去
+    let isCanMove: any = true
+    this.reset()
+    const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
+    this.markList(staticItems.map((item) => item.pos.getCustomPos()))  // 站位所有静态item
+    if (!this.isBlank(pos)) isCanMove = false // 没有位置,此时该位置上有静态item
+    else {
+      this.mark(pos) // 有位置则站位，此时可能为空位置或者其他普通非静态item
+      for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
+        const member = ordinaryItems[i]
+        const foundPos = this.findBlank(member.pos.getCustomPos())
+        if (!foundPos) break
+        this.mark(<any>foundPos)
+      }
+    }
+    return !!isCanMove
   }
 
   /**

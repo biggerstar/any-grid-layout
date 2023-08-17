@@ -96,7 +96,6 @@ export class Item extends ItemGeneralImpl {
     const _default = this._default
     const _customOptions = itemOption
     const pos = new ItemPos(itemOption.pos)
-    pos.defineSyncCustomOptions(itemOption)
     const get = (k: keyof ItemGeneralImpl) => {
       if (k === 'pos') return pos
       return _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]

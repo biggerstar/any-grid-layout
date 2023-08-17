@@ -2,7 +2,7 @@ import {Item} from "@/main/item/Item";
 import {LayoutManager} from "@/algorithm/LayoutManager";
 import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
-import {ContainerInstantiationOptions, CustomItem, ItemLimitType} from "@/types";
+import {ContainerInstantiationOptions, CustomItem} from "@/types";
 import {__ref_item__} from "@/constant/constant";
 
 export class Engine {
@@ -68,7 +68,6 @@ export class Engine {
       this.__temp__.previousHash = hashContent
     }
   }
-
 
 
   /** 根据当前的 i 获取对应的Item.pos.i  */
@@ -185,37 +184,6 @@ export class Engine {
     this.items.splice(index, 0, item)
   }
 
-  /**
-   * 某个Item在this.items列表移动到指定位置
-   * @param {Item} item  item
-   * @param {Number} toIndex  移动到哪个索引
-   * @dataParam {Number} fromIndex  来自哪个索引
-   * */
-  public move(item: Item, toIndex: number) {
-    if (toIndex < 0) toIndex = 0
-    let fromIndex = null
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i] === item) {
-        fromIndex = i
-        break
-      }
-    }
-    if (fromIndex !== null) {
-      // console.log(fromIndex,toIndex)
-      this.items.splice(fromIndex, 1)
-      this.items.splice(toIndex, 0, item)
-    }
-  }
-
-
-  /** 交换自身Container中两个Item在this.items的位置 */
-  public exchange(itemA: Item, itemB: Item) {
-    // console.log(arguments);
-    if (this.items.includes(itemA) && this.items.includes(itemB)) {
-      this.items[itemA.i] = itemB
-      this.items[itemB.i] = itemA
-    }
-  }
 
   /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
   public renumber(items?: Item[]) {
@@ -236,16 +204,14 @@ export class Engine {
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
   public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
-
+    return;
     // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
     const res = this.layoutManager.analysis(this.items)
-    // console.log(res);
     res.patch((item) => {
       this.layoutManager.mark(item.pos)
       item.updateItemLayout()
     })
     // console.log(useItems, res);
-
     return;
     // TODO  弃用下方原本的更新逻辑
     //---------------------------更新响应式布局-------------------------------//
