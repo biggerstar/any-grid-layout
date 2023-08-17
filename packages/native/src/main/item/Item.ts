@@ -171,6 +171,10 @@ export class Item extends ItemGeneralImpl {
       this.element['_isGridItem_'] = true
       this._mounted = true
       this.container.eventManager._callback_('itemMounted', this)
+
+      this.element.innerHTML = this.i.toString()
+
+
     }
     if (this.container.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)

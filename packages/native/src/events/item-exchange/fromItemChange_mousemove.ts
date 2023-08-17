@@ -86,7 +86,8 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
   let nowMoveX = pxToGridPosW(offsetLeftPx)
   let nowMoveY = pxToGridPosH(offsetTopPx)
   // console.log(nowMoveX, nowMoveY)
-  container.engine.layoutManager.moveTo(container.engine.items, fromItem, nowMoveX, nowMoveY)
+  container.engine.layoutManager.layout(container.engine.items, fromItem, nowMoveX, nowMoveY)
+  container.engine.updateLayout(true)
 
 
   return;

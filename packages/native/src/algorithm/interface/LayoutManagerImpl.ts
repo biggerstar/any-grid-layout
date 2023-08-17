@@ -1,12 +1,13 @@
 import {Item} from "@/main/item/Item";
 import {CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
-import {Finder} from "@/algorithm/Finder";
+import {Finder} from "@/algorithm/interface/Finder";
 
 /**
  * 该类提供一些API用于快捷构建自定义布局算法
+ * 继承该类的子类算法主要就是实现layout函数，layout函数也可以理解成算法入口
  * */
-export class Layout extends Finder {
+export abstract class LayoutManagerImpl extends Finder {
   public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
   }
@@ -47,6 +48,33 @@ export class Layout extends Finder {
   public isOverFlowMatrix(pos: CustomItemPos) {
     return (pos.x + pos.w - 1) > this.col
       || (pos.y + pos.h - 1) > this.row
+  }
+
+  /**
+   * 某个Item在this.items列表移动到指定位置
+   * @param {Item[]} items 源items
+   * @param {Item} fromItem 要移动的item
+   * @param {Number} toItem 目标item位置，fromItem插入toItem位置，而fromItem与其后续成员都将索引加1
+   * */
+  public move(items: Item[], fromItem: Item, toItem: Item) {
+    let fromIndex = items.findIndex((v) => fromItem === v)
+    let toIndex = items.findIndex((v) => toItem === v)
+    if (fromIndex < 0 || toIndex < 0) return
+    items.splice(fromIndex, 1)
+    items.splice(toIndex, 0, fromItem)
+  }
+
+
+  /**
+   * 交换在items中两个Item的位置
+   * */
+  public exchange(items: Item[], fromItem: Item, toItem: Item) {
+    const indexA = items.findIndex((item) => fromItem === item)
+    const indexB = items.findIndex((item) => toItem === item)
+    if (indexA > -1 && indexB > -1) {
+      items[indexA] = toItem
+      items[indexB] = fromItem
+    }
   }
 
   /**
@@ -120,7 +148,7 @@ export class Layout extends Finder {
     patch: (handler?: (item: Item) => void) => void
   } {
     this.reset()
-    items = this.sortStatic(items).staticItems
+    items = this.sortStatic(items).sortItems
     const success: Array<{ item: Item, pos: CustomItemPos, }> = []
     const failed = []
     items.forEach((item) => {

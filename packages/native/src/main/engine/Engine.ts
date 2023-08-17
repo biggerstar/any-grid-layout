@@ -106,7 +106,7 @@ export class Engine {
       this.items.push(item)
       item.container = container
       item.parentElement = container.contentElement
-      item.i = container.getConfig('items').length
+      item.i = this.items.length
       item.mount()
       eventManager._callback_('addItemSuccess', item)
       return item
@@ -179,12 +179,6 @@ export class Engine {
     }
   }
 
-  /** 将某个Item插入到items列表指定索引位置 */
-  public insert(item: Item, index: number) {
-    this.items.splice(index, 0, item)
-  }
-
-
   /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
   public renumber(items?: Item[]) {
     items = items ? items : this.items
@@ -204,10 +198,10 @@ export class Engine {
    *  @param ignoreList {Array} 暂未支持  TODO 更新时忽略的Item列表，计划只对静态模式生效
    * */
   public updateLayout(items: Item[] | boolean | null = null, ignoreList = []) {
-    return;
     // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
     const res = this.layoutManager.analysis(this.items)
     res.patch((item) => {
+      // console.log(item,item.pos)
       this.layoutManager.mark(item.pos)
       item.updateItemLayout()
     })

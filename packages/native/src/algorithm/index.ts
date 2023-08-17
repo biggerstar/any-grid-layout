@@ -1,3 +1,4 @@
 export * from "./LayoutManager"
 export * from "./LayoutConfigManager"
-export * from "./Layout"
+export * from "./interface"
+export * from "./layout-method"

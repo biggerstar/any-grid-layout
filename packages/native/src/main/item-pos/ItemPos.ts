@@ -22,8 +22,8 @@ export class ItemPos extends ItemPosGeneralImpl {
   /** 传入一个值，返回经过限制值边界大小后的结果 */
   filterLimit(newVal: number, min: number, max: number): number {
     if (min >= max) newVal = max // 1. 先看min,max如果min > max 则此时新值永远等于 max 对应的值
-    else if (newVal > max) newVal = max  // 3. 限制不大于max
-    else if (newVal < min) newVal = min   // 2. 限制不小于min
+    else if (newVal > max) newVal = max  // 2. 限制不大于max
+    else if (newVal < min) newVal = min   // 3. 限制不小于min
     return newVal
   }
 
