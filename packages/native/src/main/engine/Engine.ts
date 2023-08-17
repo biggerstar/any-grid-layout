@@ -89,7 +89,6 @@ export class Engine {
     this.container.mount()
   }
 
-
   /** 添加一个item，框架内部添加Item时所有的Item必须通过这里添加到容器中 */
   public addItem(itemOptions: CustomItem): Item | null {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const container = this.container
@@ -120,33 +119,6 @@ export class Engine {
     }
   }
 
-  /**
-   * 已经挂载后的情况下重新排列响应式Item的顺序,通过映射遍历前台可视化形式的网格位置方式重新排序Item顺序(所见即所得)，
-   * 排序后的布局和原本的布局是一样的，只是顺序可能有变化，在拖动交换的时候不会出错
-   * 原理是通过遍历当前网页内Container对应的矩阵点(point),先行后列遍历,记录下所遍历到的顺序，该顺序的布局是和原本的item列表一样的
-   * 只是在Item调用engine.move时可能因为右边过宽的Item被挤压到下一行，后面的小Item会被补位到上一行，
-   * 这种情况其实大Item的index顺序是在小Item前面的，但是通过move函数交换可能会出错
-   * */
-  public sortResponsiveItem() {
-    return
-    const items = []
-    for (let y = 1; y <= this.container.getConfig("row"); y++) {
-      for (let x = 1; x <= this.container.getConfig("col"); x++) {
-        for (let index = 0; index < this.items.length; index++) {
-          const item = this.items[index]
-          if (x >= item.pos.x && x < (item.pos.x + item.pos.w)
-            && y >= item.pos.y && y < (item.pos.y + item.pos.h)) {
-            if (!items.includes(item)) {
-              items.push(item)
-            }
-            break
-          }
-        }
-      }
-    }
-    this.items = items
-  }
-
   /** 移除某个存在的item */
   public removeItem(item) {
     for (let i = 0; i < this.items.length; i++) {
@@ -161,12 +133,7 @@ export class Engine {
 
   /** 清除所有Items */
   public clear() {
-    this.items = []
-  }
-
-  /** 是否包含Item */
-  public includes(item) {
-    return this.items.includes(item)
+    this.items.splice(0,this.items.length)
   }
 
   /** 移除指定items实例 */
@@ -178,16 +145,6 @@ export class Engine {
       }
     }
   }
-
-  /** 在挂载后为自身Container中的this.items重新编号防止编号冲突 */
-  public renumber(items?: Item[]) {
-    items = items ? items : this.items
-    items.forEach((item, index) => {
-      item.i = index
-      item.pos.i = index
-    })   // 为当前位置的Item按items底标索引重新编号
-  }
-
 
   /**  根据是否响应式布局或者静态布局更新容器内的Item布局
    *  items是指定要更新的几个Item，否则更新全部 ignoreList暂时未支持
@@ -208,9 +165,8 @@ export class Engine {
     // console.log(useItems, res);
 
     //---------------------------------------------------------------------//
-    // this._checkUpdated()
+    this._checkUpdated()
     // this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
     // this.container.updateContainerStyleSize()
-
   }
 }
