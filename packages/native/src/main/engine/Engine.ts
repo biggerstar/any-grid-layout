@@ -30,7 +30,7 @@ export class Engine {
 
   public init() {
     if (this.initialized) return
-    this.layoutManager = new LayoutManager()
+    this.layoutManager = new LayoutManager(this.container)
     this.layoutConfigManager = new LayoutConfigManager(this.options)
     this.layoutConfigManager.setContainer(this.container)
     this.layoutConfigManager.initLayoutInfo()

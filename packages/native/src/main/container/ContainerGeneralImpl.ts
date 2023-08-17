@@ -18,7 +18,8 @@ export class ContainerGeneralImpl {
    * */
   responsive?: boolean = false
 
-  /** default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
+  /**
+   * default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
    * @default 'default'
    * */
   responseMode?: 'default' | 'exchange' | 'stream' = 'default'
