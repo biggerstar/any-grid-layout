@@ -3,7 +3,7 @@ import {Item} from "@/main";
 
 export class StreamLayout extends Layout {
   public name = 'stream'
-  public wait = 150
+  public wait = 120
 
   /** 进行布局 */
   public layout(items: Item[], dragItem: Item, x: number, y: number): void {

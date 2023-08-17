@@ -10,3 +10,6 @@
 
 
 - `ItemAlreadyRemove` ： item已经被移除
+
+
+- `NoFoundLayoutMethod` ： 算法名称指定错误
