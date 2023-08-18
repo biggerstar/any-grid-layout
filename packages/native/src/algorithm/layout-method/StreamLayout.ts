@@ -3,7 +3,9 @@ import {Item} from "@/main";
 import {parseContainer} from "@/utils";
 
 /**
- * 流式布局，TODO  优化算法和交互
+ * 流式布局
+ * 建议只在item大小全部一样的时候使用该算法
+ * TODO  优化算法和交互
  * */
 export class StreamLayout extends Layout {
   public name = 'stream'

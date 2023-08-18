@@ -23,7 +23,7 @@ export class LayoutManager extends LayoutManagerImpl {
   /**
    * 所有当前使用的布局算法名和其`实例`的映射
    * */
-  public method: Record<ContainerGeneralImpl['responseMode'], Layout> = <any>{}
+  public method: Record<ContainerGeneralImpl['layoutMode'], Layout> = <any>{}
   public container: Container
 
   constructor(container: Container) {
@@ -39,7 +39,7 @@ export class LayoutManager extends LayoutManagerImpl {
    * */
   layout(...args: any[]): void {
     // TODO 未找到指定算法自动降级到默认算法
-    const layoutMode = this.container.getConfig('responseMode')
+    const layoutMode = this.container.getConfig('layoutMode')
     const layoutIns = this.method[layoutMode]
     if (!layoutIns) {
       return this.container.eventManager._error_(
