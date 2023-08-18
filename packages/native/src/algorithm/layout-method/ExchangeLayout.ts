@@ -3,29 +3,19 @@ import {Item} from "@/main";
 import {parseContainer} from "@/utils";
 
 /**
- * 流式布局，TODO  优化算法和交互
+ * 交换算法，fromItem和toItem两两交换
+ * 建议只在item大小全部一样的时候使用该算法
+ *   TODO  优化算法和交互
  * */
-export class StreamLayout extends Layout {
-  public name = 'stream'
-  public wait = 20
+
+export class ExchangeLayout extends Layout {
+  public name = 'exchange'
+  public wait = 50
 
   public defaultDirection(name) {
-    const {toItem, dragItem, x, y} = this.options
-    if (toItem) this.manager.moveToPos(this.items, dragItem, {
-      ...dragItem.pos,
-      x,
-      y,
-    })
-  }
-
-  left() {
     const {toItem, dragItem} = this.options
-    if (toItem) this.manager.move(this.items, dragItem, toItem)
-  }
-
-  right() {
-    const {toItem, dragItem} = this.options
-    if (toItem) this.manager.move(this.items, dragItem, toItem)
+    if(!toItem) return
+    this.manager.exchange(this.items, dragItem, toItem)
   }
 
   public layout(items: Item[], options: object): void {

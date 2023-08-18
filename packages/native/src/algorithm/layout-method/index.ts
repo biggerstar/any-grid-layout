@@ -1,1 +1,1 @@
-export * from './StreamLayout'
+export * from './DefaultLayout'

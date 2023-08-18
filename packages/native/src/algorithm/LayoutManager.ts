@@ -1,13 +1,17 @@
 import {LayoutManagerImpl} from "@/algorithm/interface";
-import {StreamLayout} from "@/algorithm/layout-method";
+import {DefaultLayout} from "@/algorithm/layout-method";
 import {Layout} from "@/algorithm/interface/Layout";
 import {Container, ContainerGeneralImpl} from "@/main";
+import {StreamLayout} from "@/algorithm/layout-method/StreamLayout";
+import {ExchangeLayout} from "@/algorithm/layout-method/ExchangeLayout";
 
 /**
  * 布局算法名称和`实现类`的映射
  * */
 const ALL_LAYOUT_METHOD = {
-  stream: StreamLayout
+  default: DefaultLayout,
+  stream: StreamLayout,
+  exchange: ExchangeLayout,
 }
 
 //--------------------------------------------------------------------------------//
@@ -38,13 +42,13 @@ export class LayoutManager extends LayoutManagerImpl {
     const layoutMode = this.container.getConfig('responseMode')
     const layoutIns = this.method[layoutMode]
     if (!layoutIns) {
-      this.container.eventManager._error_(
+      return this.container.eventManager._error_(
         'NoFoundLayoutMethod',
         '未找到布局算法，请检查您指定的`算法名称`是否正确',
         this
       )
     }
-    layoutIns.layout(...args)
+    layoutIns.layout?.(...args)
   }
 }
 

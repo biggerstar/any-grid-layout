@@ -1,5 +1,5 @@
 import {CustomItem, CustomItems} from "@/types";
-import {Item} from "@/main";
+import {Container, Item} from "@/main";
 
 /** 节流 */
 export function throttle(func: Function, wait: number = 350): () => void {  // 全局共用节流函数通道：返回的是函数，记得再执行
@@ -128,7 +128,7 @@ export const parseContainerFromPrototypeChain = (target) => {
 }
 
 /**  用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container*/
-export const parseContainer = (ev, reverse = false) => {
+export const parseContainer = (ev, reverse = false): Container | null => {
   let container = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
   if (target._isGridContainer_) {
@@ -151,7 +151,7 @@ export const parseContainer = (ev, reverse = false) => {
 }
 
 /**  用于将domEvent对象中往root方向最新的的containerAreaElement解析出来，reverse是最远的靠近root的containerAreaElement*/
-export const parseContainerAreaElement = (ev, reverse = false) => {
+export const parseContainerAreaElement = (ev, reverse = false): HTMLElement | null => {
   let containerAreaElement = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
   if (target._isGridContainerArea) {

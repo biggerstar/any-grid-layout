@@ -1,5 +1,9 @@
 import {LayoutManagerImpl} from "@/algorithm";
-import {CustomItemPos} from "@/types";
+import {Item} from "@/main";
+
+
+type MoveDirection = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'letBottom' | 'rightTop' | 'rightBottom'
+
 
 /**
  * 布局算法接口，实现真正的算法逻辑
@@ -8,9 +12,9 @@ export abstract class Layout {
   constructor(manager: LayoutManagerImpl) {
     this.manager = manager
     let old = 0;
-    this.throttle = (func, wait) => {
+    this.throttle = (func) => {
       let now = new Date().valueOf();
-      if (now - old > (wait || this.wait)) {
+      if (now - old > this.wait) {
         func.apply(this, arguments);
         old = now;
       }
@@ -21,6 +25,13 @@ export abstract class Layout {
    * 布局名称
    * */
   protected name: string = ''
+
+  protected items: Item[]
+
+  /**
+   * layout函数参数2传入被保存起来的配置信息
+   * */
+  public options
 
   /**
    * 节流时间
@@ -39,29 +50,69 @@ export abstract class Layout {
 
   /**
    * 外部调用进行布局的入口，子类需要进行实现
+   * @param items
+   * @param options
+   * @param options.dragItem  当前正在操作拖动的item
+   * @param options.x  item的左上角X坐标，endX 是x坐标加上w - 1
+   * @param options.y  item的左上角Y坐标，endY 是y坐标加上h - 1
+   * @param options.distance  本次鼠标移动的距离
+   * @param options.speed  本次鼠标移动的速度，距离/时间
+   * @param args
    * */
-  public abstract layout(...args: any[]): any
+  public abstract layout(items,options,...args: any[]): any
+
+  public abstract defaultDirection(name?: MoveDirection): void
 
   /**
-   * 保存移动路径的长度
+   * 调用对应移动方向的布局函数，如果没有则使用默认defaultDirection函数钩子
+   * 可以所有方向都不指定直接实现defaultDirection，这样的话等于所有钩子都是使用defaultDirection逻辑
    * */
-  protected pathLen = 2
-
-  /**
-   * 保存移动路径的数组
-   * */
-  protected pathPassed = []
-
-  /**
-   * 添加到移动路径记录中,队列尾为索引0
-   * */
-  protected _addHistory(pos) {
-    if (this.pathPassed.length >= this.pathLen) this.pathPassed.pop()
-    this.pathPassed.unshift({...pos})
+  public callDirectionHook(name: MoveDirection) {
+    const hook = this[name]
+    if (typeof hook === 'function') hook.call(<object>this)
+    else if (typeof this.defaultDirection === 'function') this.defaultDirection(name)
   }
 
-  /** 查看记录看该位置经过的倒数几个路径位置是否之前有被经过 */
-  public hasPassed(pos: CustomItemPos) {
-    return !!this.pathPassed.find((pathPos) => pathPos.x === pos.x && pathPos.y === pos.y)
+  /**
+   * 分析当前鼠标操作移动在源item的某个方向，并执行对应方向的钩子
+   * */
+  public patchDirection() {
+    const {
+      dragItem,
+      x,
+      y
+    } = this.options
+    const X = x - dragItem.pos.x
+    const Y = y - dragItem.pos.y
+
+    if (X !== 0 && Y !== 0) {
+      if (X > 0 && Y > 0) this.callDirectionHook('rightBottom')
+      if (X < 0 && Y > 0) this.callDirectionHook('letBottom')
+      if (X < 0 && Y < 0) this.callDirectionHook('leftTop')
+      if (X > 0 && Y < 0) this.callDirectionHook('rightTop')
+    } else if (X !== 0) {
+      if (X > 0) this.callDirectionHook("right")
+      if (X < 0) this.callDirectionHook("left")
+    } else if (Y !== 0) {
+      if (Y > 0) this.callDirectionHook("bottom")
+      if (Y < 0) this.callDirectionHook("top")
+    }
   }
+
+  public abstract left?(): void
+
+  public abstract right?(): void
+
+  public abstract top?(): void
+
+  public abstract bottom?(): void
+
+  public abstract leftTop?(): void
+
+  public abstract letBottom?(): void
+
+  public abstract rightTop?(): void
+
+  public abstract rightBottom?(): void
+
 }

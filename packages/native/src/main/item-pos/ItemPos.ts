@@ -56,7 +56,7 @@ export class ItemPos extends ItemPosGeneralImpl {
       if (['w', 'h', 'x', 'y'].includes(<string>k)) {  // 如果是x,y,w,h外面没有指定则不会修改用户传入配置
         curCustomPos.hasOwnProperty(k) ? curCustomPos[k] = v : _tempPos[k] = v
       } else {  // 如果是minX,maxX等,不等于默认值则会直接修改用户传入的配置
-        if (curCustomPos[k] !== _default?.[k]) curCustomPos[k] = v
+        if (v !== _default?.[k]) curCustomPos[k] = v
       }
     }
     for (const k in _default) {

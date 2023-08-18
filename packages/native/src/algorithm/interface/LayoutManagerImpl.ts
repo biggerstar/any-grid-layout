@@ -64,6 +64,22 @@ export abstract class LayoutManagerImpl extends Finder {
     items.splice(toIndex, 0, fromItem)
   }
 
+  /**
+   * 将item移动指定位置，会不被挤开
+   * 原理是先将静态item和该item布局后续其他普通item再进行寻位
+   * */
+  public moveToPos(items, item, toPos) {
+    console.log(toPos)
+    const resCanMove = this.analysisCanMove(items, item, toPos)
+    const {isCanMove, success} = resCanMove
+    console.log(isCanMove)
+    if (!isCanMove || !success) return
+    resCanMove.patch()
+    const resItems = this.getCurrentMatrixSortItems(success.map((item) => item.item))
+    for (const index in items) {
+      items[index] = resItems[index]
+    }
+  }
 
   /**
    * 交换在items中两个Item的位置
@@ -124,6 +140,21 @@ export abstract class LayoutManagerImpl extends Finder {
   }
 
   /**
+   * 判断是否是静态pos，判断的依据是是否定义了x,y
+   * */
+  public isStaticPos(pos: CustomItemPos): boolean {
+    const {x, y} = pos
+    return (
+      typeof x === 'number'
+      && typeof y === 'number'
+      && x > 0
+      && y > 0
+      && x !== Infinity
+      && y !== Infinity
+    )
+  }
+
+  /**
    * 传入Item列表，分析当前所有Item预添加到矩阵中的情况
    * 该函数只是并没有实际添加
    *
@@ -171,18 +202,6 @@ export abstract class LayoutManagerImpl extends Finder {
         })
       }
     }
-  }
-
-  public isStaticPos(pos) {
-    const {x, y} = pos
-    return (
-      typeof x === 'number'
-      && typeof y === 'number'
-      && x > 0
-      && y > 0
-      && x !== Infinity
-      && y !== Infinity
-    )
   }
 
   /**
@@ -235,27 +254,63 @@ export abstract class LayoutManagerImpl extends Finder {
   }
 
   /**
-   * 判断是否能让item移动到新的`pos`位置
-   *
+   * 分析判断是否能让item移动到指定的`pos`位置
+   * @param items
+   * @param item 要移动哪个item
+   * @param toPos 要移动过去的新位置
    * @return boolean
    * */
-  public isCanMove(items: Item[], item: Item, pos: CustomItemPos): boolean {
+  public analysisCanMove(items: Item[], item: Item, toPos: CustomItemPos): {
+    /** 能否将指定item添加到目标位置 */
+    isCanMove: boolean
+    /** 允许添加的item列表 */
+    success: Array<{
+      /** item，此时pos可能不是最新位置 */
+      item: Item,
+      /** 该pos将是当前在矩阵最新位置 */
+      pos: CustomItemPos,
+    }> | null
+    /** 将当前成功的所有列表中的pos信息派发更新到对应的item中
+     * @param handler 传入最新pos的item作为参数
+     * */
+    patch: (handler?: (option: Item) => void) => void
+  } {
     const remainItem = items.filter((member) => member !== item)  // 将当前要移动的item过滤出去
     let isCanMove: any = true
     this.reset()
     const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
     this.markList(staticItems.map((item) => item.pos.getCustomPos()))  // 站位所有静态item
-    if (!this.isBlank(pos)) isCanMove = false // 没有位置,此时该位置上有静态item
+    const success: Array<{ item: Item, pos: CustomItemPos }> = staticItems.map((item) => ({item, pos: item.pos}))
+    success.push({item, pos: toPos})
+    //---------------------------------------------------------------------
+    if (!this.isBlank(toPos)) isCanMove = false // 没有位置,此时该位置上有静态item
     else {
-      this.mark(pos) // 有位置则站位，此时可能为空位置或者其他普通非静态item
+      this.mark(toPos) // 有位置则站位，此时可能为空位置或者其他普通非静态item
       for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
         const member = ordinaryItems[i]
         const foundPos = this.findBlank(member.pos.getCustomPos())
-        if (!foundPos) break
+        if (!foundPos) {
+          isCanMove = false
+          break
+        }
         this.mark(<any>foundPos)
+        success.push({
+          item: member,
+          pos: foundPos
+        })
       }
     }
-    return !!isCanMove
+    return {
+      isCanMove,
+      success: isCanMove ? success : null,
+      patch: (handler?) => {
+        success.forEach(({item, pos}) => {
+          if (!isCanMove) return
+          Object.assign(item.pos, pos)
+          if (typeof handler === 'function') handler(item)
+        })
+      }
+    }
   }
 
   /**
