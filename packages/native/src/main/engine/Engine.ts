@@ -151,14 +151,9 @@ export class Engine {
    * 更新并渲染布局
    * */
   public updateLayout() {
-    // const useItems = this.items.map((item: Item) => item[__ref_item__]).filter(Boolean)
-    // const res = this.layoutManager.analysis(this.items)
-    // res.patch((item) => {
-    //   // console.log(item,item.pos)
-    //   this.layoutManager.mark(item.pos)
-    //   item.updateItemLayout()
-    // })
-    // this.items = this.layoutManager.getCurrentMatrixSortItems(this.items)  // 被更新了布局后再次排序
+
+
+
     //---------------------------------------------------------------------//
     this._checkUpdated()
     // this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整

@@ -189,3 +189,38 @@ export type CustomEventOptions = {
   /** row列数改变 */
   rowChange?(row, preRow, container): void,
 }
+
+export type MoveDirection = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'letBottom' | 'rightTop' | 'rightBottom'
+
+export type LayoutOptions = {
+  [key: string]: any,
+  /**
+   * 当前正在操作拖动的item
+   * */
+  dragItem?: Item,
+
+  /**
+   * 当前鼠标坐标下的某一个item
+   * toItem 为null则是空白处
+   * */
+  toItem?: Item | null,
+  /**
+   * item的左上角X坐标，endX 是x坐标加上w - 1
+   * */
+  x?: number,
+
+  /**
+   * item的左上角Y坐标，endY 是x坐标加上y - 1
+   * */
+  y?: number,
+
+  /**
+   * 本次事件响应鼠标移动的距离，响应时间间隔是浏览器对mousemove的间隔
+   * */
+  distance?: number,
+
+  /**
+   * 本次鼠标移动的速度，距离/时间，响应时间间隔是浏览器对mousemove的间隔
+   * */
+  speed?: number
+}

@@ -1,8 +1,9 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
-import {parseContainer} from "@/utils";
+import {LayoutOptions} from "@/types";
 
 export class DefaultLayout extends Layout {
+  public options: Required<LayoutOptions>
   public name = 'default'
   protected wait = 30
 
@@ -23,18 +24,14 @@ export class DefaultLayout extends Layout {
   }
 
   public layout(items: Item[], options: any): void {
-    this.options = options
     const {
-      ev,
       distance,
       speed,
       toItem
     } = options
-    const mouseOverContainer = parseContainer(ev)
+    const mouseOverContainer = this.manager.container
     if (!mouseOverContainer) return
     if (distance < 10 || speed < 20) return
-    this.items = items
-
     this.throttle(() => {
       if (toItem) {  // 检测是否在动画中，如果还在动画且完成距离较长，退出该次执行
         const to: Item = toItem

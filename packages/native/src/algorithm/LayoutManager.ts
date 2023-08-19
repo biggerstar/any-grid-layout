@@ -3,6 +3,7 @@ import {DefaultLayout} from "@/algorithm/layout-method";
 import {Layout} from "@/algorithm/interface/Layout";
 import {Container, ContainerGeneralImpl} from "@/main";
 import {ExchangeLayout, StaticLayout, StreamLayout} from "@/algorithm";
+import {LayoutOptions} from "@/types";
 
 /**
  * 布局算法名称和`实现类`的映射
@@ -37,21 +38,24 @@ export class LayoutManager extends LayoutManagerImpl {
   /**
    * 算法执行入口，会自动分发并执行当前指定的算法
    * */
-  layout(...args: any[]): void {
+  layout(options: LayoutOptions): void {
     // TODO 未找到指定算法自动降级到默认算法
     const layoutMode = this.container.getConfig('layoutMode')
-    const layoutIns = this.method[layoutMode]
+    let layoutIns = this.method[layoutMode]
     if (!layoutIns) {
-      return this.container.eventManager._error_(
+      layoutIns = this.method['default']
+      this.container.eventManager._warn_(
         'NoFoundLayoutMethod',
-        '未找到布局算法，请检查您指定的`算法名称`是否正确',
+        `未找到名为${layoutMode}的布局算法
+             为保证可用性，已自动转为「default」算法`,
         this
       )
     }
-    layoutIns.layout?.(...args)
     const engine = this.container.engine
+    layoutIns.options = options
+    layoutIns.items = engine.items
+    layoutIns.layout?.(engine.items, options)
     engine.items.forEach((item) => item.updateItemLayout())
-
   }
 }
 

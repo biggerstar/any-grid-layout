@@ -1,15 +1,12 @@
-import {LayoutManagerImpl} from "@/algorithm";
+import {LayoutManager} from "@/algorithm";
 import {Item} from "@/main";
-
-
-type MoveDirection = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'letBottom' | 'rightTop' | 'rightBottom'
-
+import {LayoutOptions, MoveDirection} from "@/types";
 
 /**
  * 布局算法接口，实现真正的算法逻辑
  * */
 export abstract class Layout {
-  constructor(manager: LayoutManagerImpl) {
+  constructor(manager: LayoutManager) {
     this.manager = manager
     let old = 0;
     this.throttle = (func) => {
@@ -26,31 +23,22 @@ export abstract class Layout {
    * */
   protected name: string = ''
 
-  protected items: Item[]
+  public items: Item[]
 
   /**
    * layout函数参数2传入被保存起来的配置信息
    * */
-  public options: {
-    [key: string]: any,
-    ev: Event & Record<any, any>,
-    dragItem: Item,
-    toItem: Item,  /* toItem 为null则是空白处 */
-    x: number,
-    y: number,
-    distance: number,
-    speed: number
-  }
+  public options: LayoutOptions
 
   /**
    * 节流时间
    * */
-  protected wait?: number = 80
+  public wait?: number = 80
 
   /**
    * 管理器实例化布局算法的时候传入的管理器实例
    * */
-  protected manager: LayoutManagerImpl
+  public manager: LayoutManager
 
   /**
    * 通过改造过的立即执行无返回函数的节流函数,可用于高频布局请求节流
@@ -59,14 +47,6 @@ export abstract class Layout {
 
   /**
    * 外部调用进行布局的入口，子类需要进行实现
-   * @param items
-   * @param options
-   * @param options.dragItem  当前正在操作拖动的item
-   * @param options.x  item的左上角X坐标，endX 是x坐标加上w - 1
-   * @param options.y  item的左上角Y坐标，endY 是y坐标加上h - 1
-   * @param options.distance  本次鼠标移动的距离
-   * @param options.speed  本次鼠标移动的速度，距离/时间
-   * @param args
    * */
   public abstract layout(items, options, ...args: any[]): any
 
@@ -91,6 +71,7 @@ export abstract class Layout {
       x,
       y
     } = this.options
+    if (!dragItem) return
     const X = x - dragItem.pos.x
     const Y = y - dragItem.pos.y
 

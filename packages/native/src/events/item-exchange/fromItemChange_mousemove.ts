@@ -21,7 +21,6 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
     fromContainer,
-    deviceEventMode,
     mouseSpeed: mouseSpeedTemp,
   } = tempStore
   if (!isDragging) return
@@ -30,7 +29,6 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
   if (!fromItem || !mousedownEvent || !isLeftMousedown || !fromContainer) return
   let dragItem: Item = moveItem || fromItem
   if (!dragItem) return
-  if (toItem === dragItem) return
   let container: Container = dragItem.container
   let overContainer: Container | null
 
@@ -101,8 +99,7 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
   let nowMoveX = pxToGridPosW(offsetLeftPx)
   let nowMoveY = pxToGridPosH(offsetTopPx)
   // console.log(nowMoveX, nowMoveY)
-  container.engine.layoutManager.layout(container.engine.items, {
-    ev,
+  container.engine.layoutManager.layout({
     dragItem,
     toItem,  /* toItem 为null则是空白处 */
     x: nowMoveX,
