@@ -129,8 +129,8 @@ const container1 = new Container({
   global: {
     ratioCol: 0.1,
     // ratioRow: 0.1,
-    layoutMode:'default',
-    responsive:false
+    layoutMode: 'static',
+    responsive: false
   },
   layouts: [
     // {
@@ -159,14 +159,14 @@ const container1 = new Container({
     {
       px: 900,
       // col: 9,
-      row:8,
+      row: 8,
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,
-        pos:{
+        pos: {
           // minH:2,
           // maxH:1,
           // minW:2,

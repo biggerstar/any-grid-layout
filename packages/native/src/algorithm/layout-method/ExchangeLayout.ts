@@ -18,7 +18,7 @@ export class ExchangeLayout extends Layout {
     this.manager.exchange(this.items, dragItem, toItem)
   }
 
-  public layout(items: Item[], options: object): void {
+  public layout(items: Item[], options: any): void {
     this.options = options
     const {
       ev,
@@ -31,10 +31,8 @@ export class ExchangeLayout extends Layout {
     this.items = items
     this.throttle(() => {
       this.patchDirection()
-      const engine = mouseOverContainer.engine
       const res = this.manager.analysis(this.items)
       res.patch()
-      engine.items.forEach((item) => item.updateItemLayout())
     })
   }
 }

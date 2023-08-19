@@ -31,7 +31,16 @@ export abstract class Layout {
   /**
    * layout函数参数2传入被保存起来的配置信息
    * */
-  public options
+  public options: {
+    [key: string]: any,
+    ev: Event & Record<any, any>,
+    dragItem: Item,
+    toItem: Item,  /* toItem 为null则是空白处 */
+    x: number,
+    y: number,
+    distance: number,
+    speed: number
+  }
 
   /**
    * 节流时间
@@ -59,7 +68,7 @@ export abstract class Layout {
    * @param options.speed  本次鼠标移动的速度，距离/时间
    * @param args
    * */
-  public abstract layout(items,options,...args: any[]): any
+  public abstract layout(items, options, ...args: any[]): any
 
   public abstract defaultDirection(name?: MoveDirection): void
 

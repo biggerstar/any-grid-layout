@@ -4,13 +4,11 @@ import {CustomItemPos} from "@/types";
 
 export class ItemPos extends ItemPosGeneralImpl {
   public i?: number
-  public nextStaticPos?: ItemPos | null
   public tempW?: number    // 临时宽度，用于溢出栅格后适配临时作为item的宽
   public tempH?: number    // 临时高度，用于溢出栅格后适配临时作为item的高
   public posHash?: string = ''  // 每个pos的hash，有极低极低的概率重复
   public _default?: ItemPosGeneralImpl  // 框架默认配置
   public _customPos?: CustomItemPos  // 框架默认配置
-  public _lastPos?: CustomItemPos  // 框架默认配置
   constructor(pos) {
     super()
     this._default = new ItemPosGeneralImpl() // 必须在_defineXXX 之前

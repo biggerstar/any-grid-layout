@@ -2,8 +2,7 @@ import {LayoutManagerImpl} from "@/algorithm/interface";
 import {DefaultLayout} from "@/algorithm/layout-method";
 import {Layout} from "@/algorithm/interface/Layout";
 import {Container, ContainerGeneralImpl} from "@/main";
-import {StreamLayout} from "@/algorithm/layout-method/StreamLayout";
-import {ExchangeLayout} from "@/algorithm/layout-method/ExchangeLayout";
+import {ExchangeLayout, StaticLayout, StreamLayout} from "@/algorithm";
 
 /**
  * 布局算法名称和`实现类`的映射
@@ -12,6 +11,7 @@ const ALL_LAYOUT_METHOD = {
   default: DefaultLayout,
   stream: StreamLayout,
   exchange: ExchangeLayout,
+  static: StaticLayout,
 }
 
 //--------------------------------------------------------------------------------//
@@ -49,6 +49,9 @@ export class LayoutManager extends LayoutManagerImpl {
       )
     }
     layoutIns.layout?.(...args)
+    const engine = this.container.engine
+    engine.items.forEach((item) => item.updateItemLayout())
+
   }
 }
 
