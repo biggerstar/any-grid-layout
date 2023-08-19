@@ -4,17 +4,17 @@
 import {Container, Item} from "@/main";
 
 class TempStore {
-  handleMethod: 'drag' | 'resize' | 'autoScrollPage' = 'drag'
+  handleMethod: 'drag' | 'resize' | 'autoScrollPage' | undefined
 
-  isDragging(): boolean {
+  get isDragging(): boolean {
     return this.handleMethod === 'drag'
   }
 
-  isResizing(): boolean {
+  get isResizing(): boolean {
     return this.handleMethod === 'resize'
   }
 
-  isScrollPage(): boolean {
+  get isScrollPage(): boolean {
     return this.handleMethod === 'autoScrollPage'
   }
 

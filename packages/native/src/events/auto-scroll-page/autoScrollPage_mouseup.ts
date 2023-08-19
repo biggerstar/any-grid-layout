@@ -2,8 +2,8 @@ import {Container} from "@/main";
 import {tempStore} from "@/events";
 
 export function autoScrollPage_mouseup(ev) {
-  const {isLeftMousedown, handleMethod, fromContainer, slidePageOffsetInfo} = tempStore
-  if (!isLeftMousedown || !fromContainer || handleMethod !== 'autoScrollPage') return
+  const {isLeftMousedown, isScrollPage, fromContainer, slidePageOffsetInfo} = tempStore
+  if (!isLeftMousedown || !fromContainer || !isScrollPage) return
   const container: Container = fromContainer
   if (!container || !container.getConfig('autoScrollPage')) return
   const sPFI = slidePageOffsetInfo

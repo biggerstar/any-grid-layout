@@ -8,7 +8,7 @@ import {tempStore} from "@/events";
 export const autoScrollPage_mousemove: Function = throttle((ev) => {
   const {
     mousedownEvent,
-    handleMethod,
+    isScrollPage,
     isLeftMousedown,
     dragItem,
     fromItem,
@@ -16,7 +16,7 @@ export const autoScrollPage_mousemove: Function = throttle((ev) => {
     slidePageOffsetInfo
   } = tempStore
 
-  if (handleMethod !== 'autoScrollPage' || !fromItem || !mousedownEvent || !isLeftMousedown) return
+  if (!isScrollPage || !fromItem || !mousedownEvent || !isLeftMousedown) return
   const container: Container | null = parseContainer(ev)
   if (!container) return
   if (!container || !container.getConfig('autoScrollPage')) return

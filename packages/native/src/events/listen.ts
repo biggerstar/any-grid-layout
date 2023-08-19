@@ -23,7 +23,7 @@ import {
 export function allMousedown(ev) {
   compatible_touchstart_mousedown(ev)
   itemDrag_mousedown(ev)  // drag必须在前面，后面通过优先级判断确定最终dragOrResize
-  autoScrollPage_mousedown(ev)
+  // autoScrollPage_mousedown(ev)  // TODO
   itemResize_mousedown(ev)
   cursor_mousedown(ev)
 }

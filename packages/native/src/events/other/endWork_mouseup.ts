@@ -38,7 +38,7 @@ export function endWork_mouseup(_) {
 
   //-------------------------更新所有相关操作的容器布局---------------------------//
   if (fromItem) {
-    fromItem.container.engine.updateLayout( )
+    fromItem.container.engine.updateLayout()
     // resize下操作有包含内嵌容器的外部Item
     const resizeIncludeNestedContainer = fromItem.container
     const childContainers = resizeIncludeNestedContainer.childContainer

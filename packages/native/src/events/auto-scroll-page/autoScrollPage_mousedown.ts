@@ -16,6 +16,7 @@ export function autoScrollPage_mousedown(ev) {
       newestPageX: 0,
       newestPageY: 0,
     }
+    console.log(111111111111111111)
     tempStore.handleMethod = 'autoScrollPage'
   }
 }

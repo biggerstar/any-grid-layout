@@ -15,7 +15,7 @@ export function itemDrag_mousedown(ev) {
   if (!fromItem.draggable || fromItem.static) return  // 如果pos中是要求static则取消该Item的drag
   if (fromItem.__temp__.dragging) return
   //------------------------------------------------------------------------------------------
-  tempStore.handleMethod = 'drag'  // 默认就是drag
+  tempStore.handleMethod = 'drag'
   tempStore.fromContainer = fromItem?.container || container  // 必要，表明Item来源
   //------------------------------------------------------------------------------------------
 
