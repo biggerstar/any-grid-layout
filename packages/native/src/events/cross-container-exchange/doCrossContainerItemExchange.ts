@@ -4,7 +4,7 @@ import {tempStore} from "@/store";
 /**
  * 做跨容器的item交换
  * */
-export function doItemExchange(container: Container, itemPositionMethod: Function = null) {
+export function doCrossContainerItemExchange(container: Container, itemPositionMethod: Function = null) {
   const {
     fromItem,
     moveItem,

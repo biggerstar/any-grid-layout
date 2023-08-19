@@ -11,7 +11,7 @@ import {
   cursor_mousemove,
   cursor_mouseup,
   endWork_mouseup,
-  fromItemChange_mousemove,
+  itemExchange_mousemove,
   itemCloneElCreateAndUpdate_mousemove,
   itemCloneElRemove_mouseup,
   itemClose_mouseup,
@@ -35,7 +35,7 @@ export function allMousemove(ev) {
   autoScrollPage_mousemove(ev)
   crossContainer_mousemove(ev)
   //------------------------------
-  fromItemChange_mousemove(ev)
+  itemExchange_mousemove(ev)
 }
 
 export function allMouseup(ev) {

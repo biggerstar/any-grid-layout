@@ -28,6 +28,7 @@ export class Item extends ItemGeneralImpl {
   public edit: boolean  // 该Item是否正在被编辑(只读)
   public nested: boolean = false
   public parentElement: HTMLElement
+  public itemContentElement: HTMLElement
   public readonly domImpl: DomFunctionImpl
   /** 运行时pos */
   public pos: ItemPos
@@ -152,6 +153,9 @@ export class Item extends ItemGeneralImpl {
       if (this._mounted) return
       if (this.container.platform === 'native') {
         if (!this.element) this.element = document.createElement(this.tagName)
+        this.itemContentElement = document.createElement("div")
+        this.itemContentElement.classList.add('grid-item-content')
+        this.element.appendChild(this.itemContentElement)
         this.container.contentElement.appendChild(this.element)
       }
       this.attr = <any>Array.from(this.element.attributes)
@@ -171,10 +175,6 @@ export class Item extends ItemGeneralImpl {
       this.element['_isGridItem_'] = true
       this._mounted = true
       this.container.eventManager._callback_('itemMounted', this)
-
-      this.element.innerHTML = this.i.toString()
-
-
     }
     if (this.container.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)
@@ -194,7 +194,6 @@ export class Item extends ItemGeneralImpl {
         }
         this._handleResize(false)
         this._closeBtn(false)
-        // EditEvent.removeEventFromItem(this)
         this.container.contentElement.removeChild(this.element)
         this.container.eventManager._callback_('itemUnmounted', this)
       } else {
@@ -295,8 +294,6 @@ export class Item extends ItemGeneralImpl {
     let marginWidth = 0
     const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
     if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
-    // console.log(this.pos.w, marginWidth);
-    // if (this.pos.i === 0) console.log(this,this.pos.x);
     return (nowW * this.size[0]) + marginWidth
   }
 
@@ -307,7 +304,6 @@ export class Item extends ItemGeneralImpl {
     let marginHeight = 0
     const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
     if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
-    // console.log(this.pos.h, marginHeight);
     return (nowH * this.size[1]) + marginHeight
   }
 
@@ -361,8 +357,9 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * 手动生成resize元素，可以将resize字段设置成false，然后在被Item包裹的子元素中将某个要指定为resize按钮的标签
-   * 的class设置成grid-item-resizable-handle也能将该元素当成作为resize的触发按钮
+   * 手动生成resize元素，可以将resize字段设置成false
+   * q: 如何自定义resize按钮?
+   * a: Item元素包裹下，创建一个包含class名为grid-item-resizable-handle的元素即可，用户点击该元素将会被判定为resize动作
    * */
   private _handleResize(isResize = false) {
     const handleResizeFunc = () => {
@@ -389,8 +386,9 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * 手动生成close关闭按钮，可以将close字段设置成false，然后在被Item包裹
-   * 的子元素中将某个要指定为close按钮的标签的class设置成grid-item-close-btn也能将该元素当成作为close的触发按钮
+   * 手动生成close关闭按钮，可以将close字段设置成false
+   * q: 如何自定义close按钮?
+   * a: Item元素包裹下，创建一个包含class名为grid-item-close-handle的元素即可，用户点击该元素将会被判定为close动作
    * */
   private _closeBtn(isDisplayBtn = false) {
     const closeBtnFunc = () => {
@@ -427,6 +425,7 @@ export class Item extends ItemGeneralImpl {
       height: this.nowHeight() + 'px',
       left: this.offsetLeft() + 'px',
       top: this.offsetTop() + 'px',
+
       // gridColumn: `${this.pos.x} / span ${this.pos.w}`,
       // gridRow: `${this.pos.y} / span ${this.pos.h}`,
 
@@ -448,8 +447,6 @@ export class Item extends ItemGeneralImpl {
       minWidth: Math.min(minWidth, maxWidth) + 'px',
       minHeight: Math.min(minHeight, maxHeight) + 'px',
     }
-
   }
-
 }
 

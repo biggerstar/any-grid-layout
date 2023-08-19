@@ -1,4 +1,4 @@
-import {Container, fillItemLayoutList} from '@biggerstar/layout'
+import {Container, fillItemLayoutList, Item} from '@biggerstar/layout'
 import {layoutData, layoutData11} from "@/stores/layout.js";
 
 
@@ -191,6 +191,15 @@ const container1 = new Container({
     error(err) {
       // console.log(err);
       // err.from.remove()
+    },
+    itemMounted(item: Item) {
+      item.itemContentElement.innerHTML = item.i.toString()
+      item.domImpl.updateStyle({
+        fontSize: `${<number>item.size[0] / 2}px`,
+        fontWeight: '800',
+        color: '#6b798e'
+      }, item.itemContentElement)
+
     },
     itemMove(item, nowX, nowY) {
       // console.log(nowX,nowY);

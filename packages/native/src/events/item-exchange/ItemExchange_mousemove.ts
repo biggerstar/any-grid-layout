@@ -3,14 +3,14 @@ import {tempStore} from "@/store";
 import {Container, Item} from "@/main";
 
 /**
- * 自身容器Item交换和跨容器Item成员交换  TODO  重构后缺少 itemMovePositionChange itemExchange itemMoving vueItemMovePositionChange事件
+ * 「自身容器」Item交换和跨容器Item成员交换  TODO  重构后缺少 itemMovePositionChange itemExchange itemMoving vueItemMovePositionChange事件
  * @param {Container} container
  * @param {Function} itemPositionMethod(newItem)  执行该函数的前提是Item已经转移到当前鼠标对应的Container中，
  *                                                  itemPositionMethod函数接受一个参数newItem,
  *                                                  之后在该回调函数中可以决定该移动的Item在Items中的排序(响应式模式下)
  *                                                  静态模式下只要定义了pos后任何顺序都是不影响位置的。所以该函数主要针对响应式
  * */
-export const fromItemChange_mousemove: Function = throttle((ev) => {
+export const itemExchange_mousemove: Function = throttle((ev) => {
   //  Item的交换主逻辑
   const {
     fromItem,
