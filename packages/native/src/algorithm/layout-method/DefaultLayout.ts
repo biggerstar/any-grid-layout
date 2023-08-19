@@ -43,6 +43,7 @@ export class DefaultLayout extends Layout {
       const res = this.manager.analysis(this.items)
       res.patch()
       engine.items = this.manager.getCurrentMatrixSortItems(this.items)
+      this.patchStyle()
     })
   }
 }

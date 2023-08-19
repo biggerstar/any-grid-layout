@@ -33,7 +33,7 @@ export abstract class Layout {
   /**
    * 节流时间
    * */
-  public wait?: number = 80
+  public wait?: number = 66
 
   /**
    * 管理器实例化布局算法的时候传入的管理器实例
@@ -60,6 +60,10 @@ export abstract class Layout {
     const hook = this[name]
     if (typeof hook === 'function') hook.call(<object>this)
     else if (typeof this.defaultDirection === 'function') this.defaultDirection(name)
+  }
+
+  public patchStyle() {
+    this.items.forEach((item) => item.updateItemLayout())
   }
 
   /**

@@ -55,7 +55,6 @@ export class LayoutManager extends LayoutManagerImpl {
     layoutIns.options = options
     layoutIns.items = engine.items
     layoutIns.layout?.(engine.items, options)
-    engine.items.forEach((item) => item.updateItemLayout())
   }
 }
 

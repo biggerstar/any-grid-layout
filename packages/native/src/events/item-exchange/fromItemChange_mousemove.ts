@@ -107,5 +107,4 @@ export const fromItemChange_mousemove: Function = throttle((ev) => {
     distance,
     speed
   })
-  // container.engine.updateLayout()
-}, 36)
+}, 32)

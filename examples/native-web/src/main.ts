@@ -129,7 +129,7 @@ const container1 = new Container({
   global: {
     ratioCol: 0.1,
     // ratioRow: 0.1,
-    layoutMode: 'default',
+    layoutMode: 'static',
     responsive: false
   },
   layouts: [

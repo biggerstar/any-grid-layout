@@ -45,6 +45,7 @@ export class StreamLayout extends Layout {
       this.patchDirection()
       const res = this.manager.analysis(this.items)
       res.patch()
+      this.patchStyle()
     })
   }
 }
