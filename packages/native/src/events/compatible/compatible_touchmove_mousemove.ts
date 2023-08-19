@@ -1,5 +1,5 @@
-import {tempStore} from "@/store";
 import {singleTouchToCommonEvent} from "@/utils";
+import {tempStore} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchmove_mousemove(ev) {

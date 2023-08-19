@@ -1,6 +1,6 @@
 import {Item} from "@/main";
-import {tempStore} from "@/store";
 import {Sync} from "@/utils";
+import {tempStore} from "@/events";
 
 export function crossContainer_mouseenter(ev, container) {
   const {moveItem, fromItem, isLeftMousedown, exchangeItems} = tempStore

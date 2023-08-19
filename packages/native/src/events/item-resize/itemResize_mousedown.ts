@@ -1,4 +1,4 @@
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 export function itemResize_mousedown(ev) {
   const {fromItem} = tempStore

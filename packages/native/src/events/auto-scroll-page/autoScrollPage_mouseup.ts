@@ -1,5 +1,5 @@
 import {Container} from "@/main";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 export function autoScrollPage_mouseup(ev) {
   const {isLeftMousedown, handleMethod, fromContainer, slidePageOffsetInfo} = tempStore

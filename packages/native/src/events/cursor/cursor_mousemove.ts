@@ -6,8 +6,7 @@ import {
   throttle
 } from "@/utils";
 import {Container} from "@/main";
-import {tempStore} from "@/store";
-import {cursor,} from "@/events";
+import {cursor, tempStore,} from "@/events";
 
 
 export const cursor_mousemove: Function = throttle((ev) => {
@@ -15,7 +14,7 @@ export const cursor_mousemove: Function = throttle((ev) => {
     isLeftMousedown,
     isDragging,
   } = tempStore
-  const containerArea: HTMLElement = parseContainerAreaElement(ev)
+  const containerArea: HTMLElement | null = parseContainerAreaElement(ev)
   const container: Container | null = parseContainerFromPrototypeChain(containerArea)
   const overItem = parseItem(ev)
   if (isLeftMousedown) {

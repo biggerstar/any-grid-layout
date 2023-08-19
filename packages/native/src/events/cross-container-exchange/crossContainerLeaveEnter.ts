@@ -1,6 +1,5 @@
 import {Container, Item} from "@/main";
-import {tempStore} from "@/store";
-import {crossContainer_mouseenter, crossContainer_mouseleave} from "@/events";
+import {crossContainer_mouseenter, crossContainer_mouseleave, tempStore} from "@/events";
 
 /**用于嵌套情况两个【相邻】Container的直接过渡
  * @param {Container}  fromContainer   从那个Container中来

@@ -1,6 +1,6 @@
 import {ItemTransitionObject} from "@/types";
-import {tempStore} from "@/store";
 import {Item} from "@/main";
+import {tempStore} from "@/events";
 
 export function itemCloneElRemove_mouseup(_) {
   const {cloneElement, moveItem, fromItem, isDragging, isResizing} = tempStore

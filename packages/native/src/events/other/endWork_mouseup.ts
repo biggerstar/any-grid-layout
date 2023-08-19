@@ -1,5 +1,5 @@
 import {Item} from "@/main";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 /**
  * 做拖动结束的后续清理工作
@@ -38,18 +38,18 @@ export function endWork_mouseup(_) {
 
   //-------------------------更新所有相关操作的容器布局---------------------------//
   if (fromItem) {
-    fromItem.container.engine.updateLayout(true)
+    fromItem.container.engine.updateLayout( )
     // resize下操作有包含内嵌容器的外部Item
     const resizeIncludeNestedContainer = fromItem.container
     const childContainers = resizeIncludeNestedContainer.childContainer
     childContainers.forEach((info) => {
       if (info['nestingItem'] === fromItem) {
-        info['container'].engine.updateLayout(true)   // 更新内部内嵌的Item
+        info['container'].engine.updateLayout()   // 更新内部内嵌的Item
       }
     })
   }
   if (fromItem && dragItem && dragItem.container !== fromItem.container) {
-    dragItem?.container.engine.updateLayout(true)
+    dragItem?.container.engine.updateLayout()
   }
 
   //-----------------------------------事件---------------------------------//
@@ -76,8 +76,6 @@ export function endWork_mouseup(_) {
     'moveItem',
     'offsetPageX',
     'offsetPageY',
-    'isDragging',
-    'isResizing',
     'isLeftMousedown',
     'isCoverRow',
     'handleMethod',

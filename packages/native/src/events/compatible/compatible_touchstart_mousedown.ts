@@ -1,7 +1,6 @@
-import {tempStore} from "@/store";
 import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
-import {itemCloneElCreateAndUpdate_mousemove, prevent} from "@/events";
+import {itemCloneElCreateAndUpdate_mousemove, prevent, tempStore} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchstart_mousedown(ev) {
@@ -17,7 +16,7 @@ export function compatible_touchstart_mousedown(ev) {
   } else tempStore.deviceEventMode = 'mouse'
   if (tempStore.deviceEventMode === 'touch') {
     tempStore.allowTouchMoveItem = false
-    const container: Container = parseContainer(ev)
+    const container: Container | null = parseContainer(ev)
     document.addEventListener('contextmenu', prevent.defaultAndFalse)  // 禁止长按弹出菜单
     const pressTime = container ? container.getConfig('pressTime') : 300  // 长按多久响应拖动事件，默认360ms
     tempStore.timeOutEvent = setTimeout(() => {

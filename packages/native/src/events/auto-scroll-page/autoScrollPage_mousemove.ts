@@ -1,6 +1,6 @@
 import {Container} from "@/main";
 import {parseContainer, throttle} from "@/utils";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 /**
  * 拖拽到边界自动滚动container内容
@@ -17,7 +17,7 @@ export const autoScrollPage_mousemove: Function = throttle((ev) => {
   } = tempStore
 
   if (handleMethod !== 'autoScrollPage' || !fromItem || !mousedownEvent || !isLeftMousedown) return
-  const container: Container = parseContainer(ev)
+  const container: Container | null = parseContainer(ev)
   if (!container) return
   if (!container || !container.getConfig('autoScrollPage')) return
   //------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
-import {tempStore} from "@/store";
 import {Container, Item} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
+import {tempStore} from "@/events";
 
 /**
  * 鼠标点击判断意图是否是拖动
@@ -16,7 +16,6 @@ export function itemDrag_mousedown(ev) {
   if (fromItem.__temp__.dragging) return
   //------------------------------------------------------------------------------------------
   tempStore.handleMethod = 'drag'  // 默认就是drag
-  tempStore.isDragging = true
   tempStore.fromContainer = fromItem?.container || container  // 必要，表明Item来源
   //------------------------------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 import {parseItem} from "@/utils";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 /** 点击关闭按钮 */
 export function itemClose_mouseup(ev) {
@@ -11,7 +11,7 @@ export function itemClose_mouseup(ev) {
       const isClose = evItem.container.eventManager._callback_('itemClosing', evItem)
       if (!(isClose === null || isClose === false)) {  // 返回false或者null移除关闭按钮
         evItem.remove(true)
-        evItem.container.engine.updateLayout(true)
+        evItem.container.engine.updateLayout( )
         evItem.container.eventManager._callback_('itemClosed', evItem)
       }
     }

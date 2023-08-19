@@ -1,5 +1,5 @@
 import {Container, Item} from "@/main";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 /**
  * 做跨容器的item交换
@@ -15,6 +15,7 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
   } = tempStore
   if (!isDragging || !fromItem || !container || !isLeftMousedown) return
   const dragItem: Item | null = moveItem || fromItem
+  if (!dragItem) return;
   // console.log(container);
   // console.log(fromItem,fromItem.container.exchange,dragItem.container.exchange,dragItem.exchange);
   // TODO  exchange getConfig
@@ -59,16 +60,16 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
       container._VueEvents['vueCrossContainerExchange'](newItem, tempStore, (newItem) => {
         dragItem.unmount()
         dragItem.remove()
-        if (deviceEventMode === 'touch' &&  cloneElement) {
+        if (deviceEventMode === 'touch' && cloneElement) {
           // 在触屏模式下， 原本的fromItem克隆源必须保留在文档流中，所以省事临时放置在该克隆元素中，当鼠标抬起后会被自动移除
           cloneElement.appendChild(document.adoptNode(dragItem.element))
         }
         doItemPositionMethod(newItem)
         if (container) {
           if (dragItem !== newItem && !dragItem.container.getConfig('responsive')) {
-            dragItem.container.engine.updateLayout([dragItem])
+            dragItem.container.engine.updateLayout()
           } else {
-            dragItem.container.engine.updateLayout(true)
+            dragItem.container.engine.updateLayout()
           }
         }
       })
@@ -81,14 +82,14 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
       dragItem.remove()
       if (container) {
         if (!newItem.container.getConfig("responsive")) {
-          newItem.container.engine.updateLayout([newItem])
+          newItem.container.engine.updateLayout( )
         } else {
-          newItem.container.engine.updateLayout(true)
+          newItem.container.engine.updateLayout( )
         }
         if (dragItem !== newItem && !dragItem.container.getConfig('responsive')) {
-          dragItem.container.engine.updateLayout([dragItem])
+          dragItem.container.engine.updateLayout( )
         } else {
-          dragItem.container.engine.updateLayout(true)
+          dragItem.container.engine.updateLayout( )
         }
       }
       newItem.mount()

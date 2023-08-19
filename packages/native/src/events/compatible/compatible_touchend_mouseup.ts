@@ -1,6 +1,5 @@
-import {tempStore} from "@/store";
 import {singleTouchToCommonEvent} from "@/utils";
-import {prevent} from "@/events";
+import {prevent, tempStore} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchend_mouseup(ev) {

@@ -11,7 +11,7 @@ import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
 import {EventCallBack} from "@/utils/EventCallBack";
 import {startGlobalEvent} from "@/events/listen";
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 //---------------------------------------------------------------------------------------------//
 
@@ -266,7 +266,8 @@ export class Container {
 
   /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
   public updateLayout(items = null, ignoreList = []) {
-    this.engine.updateLayout(items, ignoreList)
+    // TODO  优化
+    // this.engine.updateLayout(items, ignoreList)
   }
 
   /** 移除对容器的resize监听  */
@@ -302,7 +303,7 @@ export class Container {
       const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, this.element.clientWidth, this)
       if (res === null || res === false) return
       this._trySwitchLayout()
-      this.engine.updateLayout(true)
+      this.engine.updateLayout()
       this.updateContainerStyleSize()
     }
     const observerResize = () => {

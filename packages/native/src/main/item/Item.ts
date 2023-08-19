@@ -6,7 +6,7 @@ import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
-import {tempStore} from "@/store";
+import {tempStore} from "@/events";
 
 //---------------------------------------------------------------------------------------------//
 

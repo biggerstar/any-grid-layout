@@ -1,6 +1,6 @@
-import {tempStore} from "@/store";
 import {Container} from "@/main";
 import {parseContainer, Sync, throttle} from "@/utils";
+import {tempStore} from "@/events";
 
 /**
  * 鼠标开始移动后创建一个克隆可实时拖动的元素
@@ -18,7 +18,7 @@ export const itemCloneElCreateAndUpdate_mousemove: Function = throttle((ev) => {
   } = tempStore
   if (!mousedownEvent || !fromItem || !isDragging) return
   let dragItem = moveItem || fromItem
-  const container: Container = parseContainer(ev)
+  const container: Container | null = parseContainer(ev)
   dragItem.__temp__.dragging = true
   if (!cloneElement) {
     const newNode = <HTMLElement>dragItem.element.cloneNode(true)
@@ -51,7 +51,7 @@ export const itemCloneElCreateAndUpdate_mousemove: Function = throttle((ev) => {
   let left = ev.pageX - mousedownItemOffsetLeft
   let top = ev.pageY - mousedownItemOffsetTop
 
-  if (!dragItem.dragOut) {   // 限制是否允许拖动到容器之外
+  if (!dragItem.dragOut && container) {   // 限制是否允许拖动到容器之外
     const containerElOffset = container.contentElement.getBoundingClientRect()
     const limitLeft = window.scrollX + containerElOffset.left
     const limitTop = window.scrollY + containerElOffset.top

@@ -4,6 +4,20 @@
 import {Container, Item} from "@/main";
 
 class TempStore {
+  handleMethod: 'drag' | 'resize' | 'autoScrollPage' = 'drag'
+
+  isDragging(): boolean {
+    return this.handleMethod === 'drag'
+  }
+
+  isResizing(): boolean {
+    return this.handleMethod === 'resize'
+  }
+
+  isScrollPage(): boolean {
+    return this.handleMethod === 'autoScrollPage'
+  }
+
   //----------只读变量-----------//
   screenWidth: null | number = null  // 用户屏幕宽度
   screenHeight: null | number = null  // 用户屏幕高度
@@ -30,9 +44,6 @@ class TempStore {
   mousedownEvent: MouseEvent | null = null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
   mousedownItemOffsetLeft: number | null = null  // 鼠标点击某个Item的时候距离该Item左边界距离
   mousedownItemOffsetTop: number | null = null  // 同上
-  handleMethod: 'drag' | 'resize' | 'autoScrollPage' = 'drag'
-  isDragging: boolean = false
-  isResizing: boolean = false
   offsetPageX: number | null = null
   offsetPageY: number | null = null
   scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态

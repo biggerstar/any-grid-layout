@@ -1,5 +1,6 @@
 export * from './listen'
 export * from './common'
+export * from './TempStore'
 
 export * from './compatible'
 export * from './item-drag'

@@ -1,6 +1,6 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
-import {tempStore} from "@/store";
 import {Container, Item} from "@/main";
+import {tempStore} from "@/events";
 
 /**
  * 「自身容器」Item交换和跨容器Item成员交换  TODO  重构后缺少 itemMovePositionChange itemExchange itemMoving vueItemMovePositionChange事件

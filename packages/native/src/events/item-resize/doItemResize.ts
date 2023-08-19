@@ -1,6 +1,6 @@
 import {throttle} from "@/utils";
-import {tempStore} from "@/store";
 import {Container, ItemPos} from "@/main";
+import {tempStore} from "@/events";
 
 export const doItemResize: Function = throttle((ev: MouseEvent) => {
   const {
