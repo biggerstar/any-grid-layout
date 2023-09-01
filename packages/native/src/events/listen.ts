@@ -1,6 +1,5 @@
 import {prevent} from "@/events/common";
 import {
-  autoScrollPage_mousedown,
   autoScrollPage_mousemove,
   autoScrollPage_mouseup,
   compatible_touchend_mouseup,
@@ -11,40 +10,69 @@ import {
   cursor_mousemove,
   cursor_mouseup,
   endWork_mouseup,
-  itemExchange_mousemove,
-  itemCloneElCreateAndUpdate_mousemove,
-  itemCloneElRemove_mouseup,
   itemClose_mouseup,
   itemDrag_mousedown,
+  itemExchange_mousemove,
   itemResize_mousedown,
   itemResize_mouseup
 } from "@/events";
+import {itemResize_mousemove} from "@/events/item-resize/itemResize_mousemove";
+import {itemResizeCloneElCreate_mousemove} from "@/events/item-clone-el/itemResizeCloneElCreate_mousemove";
+import {itemDragCloneElCreate_mousemove} from "@/events/item-clone-el/itemDragCloneElCreate_mousemove";
+import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
+import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemove_mouseup";
+import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 
 export function allMousedown(ev) {
-  compatible_touchstart_mousedown(ev)
-  itemDrag_mousedown(ev)  // drag必须在前面，后面通过优先级判断确定最终dragOrResize
   // autoScrollPage_mousedown(ev)  // TODO
-  itemResize_mousedown(ev)
+
+  /* cursor */
   cursor_mousedown(ev)
+  /* compatible */
+  compatible_touchstart_mousedown(ev)
+  /* ItemResize */
+  itemResize_mousedown(ev)
+  /* close */
+  itemClose_mousedown(ev)
+  /* itemDrag */
+  itemDrag_mousedown(ev)  // drag必须在后面，前面没有被其他操作方式(handleMethod)接管则默认是drag
+
 }
 
 export function allMousemove(ev) {
+  /* compatible */
   compatible_touchmove_mousemove(ev)
-  itemCloneElCreateAndUpdate_mousemove(ev)
+  /* cursor */
   cursor_mousemove(ev)
+  /* scrollPage */
   autoScrollPage_mousemove(ev)
+  /* crossContainer */
   crossContainer_mousemove(ev)
+  /* itemDrag */
+  itemDrag_mousemove(ev)
+  itemDragCloneElCreate_mousemove(ev)
+  /* ItemResize */
+  itemResize_mousemove(ev)
+  itemResizeCloneElCreate_mousemove(ev)
   //------------------------------
+  /* itemExchange */
   itemExchange_mousemove(ev)
 }
 
 export function allMouseup(ev) {
+  /* compatible */
   compatible_touchend_mouseup(ev)
+  /* remove clone */
   itemCloneElRemove_mouseup(ev)
+  /*  cursor */
   cursor_mouseup(ev)
+  /*  itemResize */
   itemResize_mouseup(ev)
+  /*  scrollPage */
   autoScrollPage_mouseup(ev)
+  /*  itemClose */
   itemClose_mouseup(ev)
+  /*  endWork */
   endWork_mouseup(ev)
 }
 

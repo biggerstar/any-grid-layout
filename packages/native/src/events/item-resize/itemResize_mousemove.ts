@@ -2,27 +2,19 @@ import {throttle} from "@/utils";
 import {Container, ItemPos} from "@/main";
 import {tempStore} from "@/events";
 
-export const doItemResize: Function = throttle((ev: MouseEvent) => {
+export const itemResize_mousemove: Function = throttle((ev: MouseEvent) => {
   const {
     isResizing,
     isLeftMousedown,
     mousedownEvent,
     fromItem,
-    cloneElement,
     fromContainer,
     isCoverRow
   } = tempStore
   if (!isResizing || !isLeftMousedown) return
   if (!fromItem || !mousedownEvent || !isLeftMousedown) return
   const container: Container = fromItem.container
-  if (!cloneElement) {
-    const newNode = <HTMLElement>fromItem.element.cloneNode(true)
-    tempStore.cloneElement = newNode
-    newNode.classList.add('grid-clone-el', 'grid-resizing-clone-el')
-    if (fromContainer) fromContainer.contentElement.appendChild(newNode)
-    fromItem.domImpl.updateStyle({transition: 'none'}, newNode)
-    fromItem.domImpl.addClass('grid-resizing-source-el')
-  }
+
   // console.log(fromItem.pos);
   const containerElRect = fromItem.container.contentElement.getBoundingClientRect()
   let width = ev.pageX - containerElRect.left - window.scrollX - fromItem.offsetLeft()

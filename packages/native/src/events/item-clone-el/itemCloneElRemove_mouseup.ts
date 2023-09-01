@@ -1,7 +1,11 @@
-import {ItemTransitionObject} from "@/types";
-import {Item} from "@/main";
 import {tempStore} from "@/events";
+import {Item} from "@/main";
+import {ItemTransitionObject} from "@/types";
 
+
+/**
+ * 移除当前鼠标操作的clone元素 (drag,resize)
+ * */
 export function itemCloneElRemove_mouseup(_) {
   const {cloneElement, moveItem, fromItem, isDragging, isResizing} = tempStore
   const dragItem: Item | null = moveItem || fromItem

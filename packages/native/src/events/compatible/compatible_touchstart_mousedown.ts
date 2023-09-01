@@ -1,6 +1,6 @@
 import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
-import {itemCloneElCreateAndUpdate_mousemove, prevent, tempStore} from "@/events";
+import {itemDragCloneElCreate_mousemove, prevent, tempStore} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchstart_mousedown(ev) {
@@ -22,7 +22,7 @@ export function compatible_touchstart_mousedown(ev) {
     tempStore.timeOutEvent = setTimeout(() => {
       if (ev.preventDefault) ev.preventDefault()
       tempStore.allowTouchMoveItem = true
-      itemCloneElCreateAndUpdate_mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素
+      itemDragCloneElCreate_mousemove(ev)   // move 触屏模式下只为了触发生成克隆元素 TODO 可能resize也需要触发
       let timer: any = setTimeout(() => {
         document.removeEventListener('contextmenu', prevent.defaultAndFalse)
         clearTimeout(timer)

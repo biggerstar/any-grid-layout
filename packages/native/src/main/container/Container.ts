@@ -232,7 +232,7 @@ export class Container {
   public render(renderCallback: Function) {
     Sync.run(() => {
       if (this.element && this.element.clientWidth <= 0) {
-        return
+        throw new Error('请指定宽高')
       }
       if (typeof renderCallback === 'function') {
         renderCallback(this.layout.items || [], this.layout, this.element)

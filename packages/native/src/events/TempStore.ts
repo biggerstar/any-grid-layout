@@ -4,7 +4,7 @@
 import {Container, Item} from "@/main";
 
 class TempStore {
-  handleMethod: 'drag' | 'resize' | 'autoScrollPage' | undefined
+  handleMethod: 'drag' | 'resize' | 'close' | 'autoScrollPage' | undefined
 
   get isDragging(): boolean {
     return this.handleMethod === 'drag'
@@ -12,6 +12,10 @@ class TempStore {
 
   get isResizing(): boolean {
     return this.handleMethod === 'resize'
+  }
+
+  get isClosing(): boolean {
+    return this.handleMethod === 'close'
   }
 
   get isScrollPage(): boolean {
@@ -30,9 +34,9 @@ class TempStore {
   beforeContainer: Container | null = null  //  来自上一个的Container
   currentContainerArea: HTMLElement   //  当前鼠标在哪个Container容器域名
   beforeContainerArea: HTMLElement   //  来自上一个的Container容器域名
-  fromItem: Item | null = null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
-  toItem: Item | null = null      // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
-  moveItem: Item | null = null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
+  fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
+  toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
+  moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
   exchangeItems: {
     old: Item | null
     new: Item | null

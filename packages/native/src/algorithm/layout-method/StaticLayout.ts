@@ -6,6 +6,7 @@ import {Item} from "@/main";
  * */
 export class StaticLayout extends Layout {
   public name = 'static'
+  public wait = 10
 
   public defaultDirection(name) {
     const {
@@ -37,7 +38,7 @@ export class StaticLayout extends Layout {
   public layout(items: Item[], options: any): void {
     if (!this.manager.container) return
     this.patchDirection()
-    this.throttle(()=>{
+    this.throttle(() => {
       this.patchStyle()
     })
   }
