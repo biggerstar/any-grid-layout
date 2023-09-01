@@ -1,8 +1,29 @@
 ### CSS 风格自定义
 
+### 必要样式
+
+请注意：
+Item成员在布局后无任何样式，您需要编写以下基础样式才会显示内容
+
 ```css
-/*----------------any-grad-layout相关默认样式------------------*/
-/* 仅编辑模式生效   */
+/* Container的默认样式,定义宽高会被忽略 */
+.grid-container {
+  border-radius: 10px;
+  background-color: skyblue;
+}
+
+/* 所有Item的默认样式,定义宽高会被忽略 */
+.grid-item {
+  background-color: rgb(148, 145, 145);
+}
+```
+
+### 所有样式
+
+另外开发者可以在外部自行编写以下类名的 css
+
+```css
+/* 仅编辑模式(drag,resize,close)生效*/
 /* 鼠标编辑模式默认样式 */
 .grid-cursor-default {
   cursor: default;

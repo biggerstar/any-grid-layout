@@ -36,22 +36,22 @@ export class ContainerGeneralImpl {
   /** 禁止传入的数组内出现单个null */
   margin?: MarginOrSizeDesc = [null, null]
 
-  /** 距离左边，单位px，如果和margin[0]优先级大于 marginX */
+  /** 左右margin距离之和，单位px，如果和margin[0]优先级大于 marginX */
   marginX?: any = null
 
-  /** 距离右边，单位px，如果和margin[1]优先级大于 marginY*/
+  /** 上下margin距离之和，单位px，如果和margin[1]优先级大于 marginY*/
   marginY?: any = null
 
-  /** 容器大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
+  /** 成员大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
   size?: MarginOrSizeDesc = [null, null]
 
-  /** 容器宽度
-   * 如果和size[0]优先级大于 sizeWidth,在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
+  /** 成员宽度
+   *  sizeWidth优先级大于 size[0],在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
    * */
   sizeWidth?: number | null = null
 
-  /** 容器高度
-   *  如果和size[1]优先级大于 sizeHeight，sizeHeight,row,marginY都未指定的情况下将和sizeWidth大小一致
+  /** 成员高度
+   *  sizeHeight优先级大于 size[1]，sizeHeight,row,marginY都未指定的情况下将和sizeWidth大小一致
    * */
   sizeHeight?: number | null = null
 
@@ -148,7 +148,7 @@ export class ContainerGeneralImpl {
   resizeReactionDelay?: number = 50
 
   /**
-   * 点击container的空白处是否能拖拽进行滑动容器
+   * 长按container的空白处是否能拖拽进行滑动容器
    * @default true
    * */
   autoScrollPage?: boolean = true

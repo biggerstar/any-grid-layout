@@ -1,0 +1,10 @@
+/* Container的默认样式,定义宽高会被忽略 */
+.grid-container {
+  border-radius: 10px;
+  background-color: skyblue;
+}
+
+/* 所有Item的默认样式,定义宽高会被忽略 */
+.grid-item {
+  background-color: rgb(148, 145, 145);
+}

@@ -29,6 +29,7 @@ export type CustomItems = ItemGeneralImpl[]
 
 /** Container 实例化配置选项 */
 export type CustomLayoutsOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
+export type CustomLayoutsOption = ContainerGeneralImpl
 
 /** Container 实例化配置选项 */
 export type ContainerInstantiationOptions = {
@@ -71,7 +72,7 @@ export type ContainerInstantiationOptions = {
   /**
    * 当前的全局布局配置，该配置最终会和layouts中不同px下的配置合并作为最终使用的配置
    * */
-  global?: ContainerGeneralImpl,
+  global?: CustomLayoutsOption,
 }
 
 export type ItemTransition = ItemTransitionObject | number | boolean
