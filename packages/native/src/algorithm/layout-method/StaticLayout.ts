@@ -17,7 +17,7 @@ export class StaticLayout extends Layout {
     if (!dragItem) return
     const manager = this.manager
     manager.reset()
-    this.items.filter((item) => {
+    this.layoutItems.forEach((item) => {
       if (item === dragItem) return  // 当前的dragItem另外判断
       if (!manager.isBlank(item.pos)) return;
       manager.mark(item.pos)
@@ -35,11 +35,11 @@ export class StaticLayout extends Layout {
     dragItem.pos.y = y
   }
 
-  public layout(items: Item[], options: any): void {
+  public async layout(items: Item[], options: any) {
     if (!this.manager.container) return
-    this.patchDirection()
-    this.throttle(() => {
-      this.patchStyle()
+    return this.throttle(() => {
+      this.patchDirection()
+      return true
     })
   }
 }

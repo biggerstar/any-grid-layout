@@ -1,6 +1,6 @@
 import {LayoutManager} from "@/algorithm";
 import {Item} from "@/main";
-import {LayoutOptions, MoveDirection} from "@/types";
+import {CustomItemPos, LayoutOptions, MoveDirection} from "@/types";
 
 /**
  * 布局算法接口，实现真正的算法逻辑
@@ -11,10 +11,12 @@ export abstract class Layout {
     let old = 0;
     this.throttle = (func) => {
       let now = new Date().valueOf();
+      let res
       if (now - old > this.wait) {
-        func.apply(this, arguments);
+        res = func.apply(<object>this);
         old = now;
       }
+      return res
     }
   }
 
@@ -23,7 +25,64 @@ export abstract class Layout {
    * */
   protected name: string = ''
 
-  public items: Item[]
+  /**
+   * 下次要使用的布局，所有的算法操作都操作该数组，最终框架会自动
+   * */
+  public layoutItems: Item[]
+
+  /**
+   * 下次要修改的Item
+   * */
+  private _modifyItems: Array<{ item: Item, pos: CustomItemPos }> = []
+
+  /**
+   * 获取要修改的Items并清空当前列表,所有要修改的Item都添加到这里来，不要修改item本身的pos，后面检测能添加的时候会自动修改
+   * */
+  public addModifyItems(info: { item: Item, pos: CustomItemPos }) {
+    this._modifyItems.push(info)
+  }
+
+  /**
+   * 获取要修改的Items并清空当前列表
+   * */
+  public getModifyItems() {
+    const _items = this._modifyItems
+    this._modifyItems = []
+    return _items
+  }
+
+  /**
+   * 在某个item的基础上创建其要修改的pos信息
+   * */
+  public createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>) {
+    return {
+      item,
+      pos: {
+        ...item.pos,
+        ...pos
+      }
+    }
+  }
+
+  /**
+   * 在某个item的基础上创建其要修改的pos信息
+   * */
+  public patchDiffCoverItem(onlyOneItemFunc: Function, multipleItemFunc: Function): void {
+    const {dragItem, x, y} = this.options
+    if (!dragItem) return;
+    let toItemList = this.manager.findCoverItemsFromPosition(this.layoutItems, {
+      ...dragItem.pos,
+      x,
+      y
+    })
+    if (!toItemList.length) return
+    toItemList = toItemList.filter(item => item !== dragItem)
+    if (toItemList.length === 1) {
+      if (typeof onlyOneItemFunc === 'function') onlyOneItemFunc(toItemList[0])
+    } else {
+      if (typeof multipleItemFunc === 'function') toItemList.forEach((item) => multipleItemFunc(item))
+    }
+  }
 
   /**
    * layout函数参数2传入被保存起来的配置信息
@@ -41,14 +100,24 @@ export abstract class Layout {
   public manager: LayoutManager
 
   /**
-   * 通过改造过的立即执行无返回函数的节流函数,可用于高频布局请求节流
+   * 通过改造过的异步节流函数,可用于高频布局请求节流，返回值是传入函数执行后的返回值
    * */
-  public throttle: (func: Function, wait?: number) => void
+  public throttle: <Res>(func: () => infer Res, wait?: number) => Res
+
+  /**
+   * 判断两个item的大小是否相等
+   * */
+  public equalSize(item1: Item, item2: Item) {
+    return (item1.pos.w === item2.pos.w) && (item1.pos.h === item2.pos.h)
+  }
+
 
   /**
    * 外部调用进行布局的入口，子类需要进行实现
+   * 你应该在里面修改你要布局的Item.pos位置，最终返回true外部将会帮你自动更新Item的样式以改变显示位置
+   * @return {Promise<boolean>} 布局成功后需要返回true，外部会更新当前最新位置
    * */
-  public abstract layout(items, options, ...args: any[]): any
+  public abstract async layout(items, options, ...args: any[]): Promise<boolean>
 
   public abstract defaultDirection(name?: MoveDirection): void
 
@@ -58,12 +127,13 @@ export abstract class Layout {
    * */
   public callDirectionHook(name: MoveDirection) {
     const hook = this[name]
+    if (typeof this.anyDirection === 'function') this.anyDirection?.(name)
     if (typeof hook === 'function') hook.call(<object>this)
     else if (typeof this.defaultDirection === 'function') this.defaultDirection(name)
   }
 
   public patchStyle() {
-    this.items.forEach((item) => item.updateItemLayout())
+    this.layoutItems.forEach((item) => item.updateItemLayout())
   }
 
   /**
@@ -78,12 +148,11 @@ export abstract class Layout {
     if (!dragItem) return
     const X = x - dragItem.pos.x
     const Y = y - dragItem.pos.y
-
     if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) this.callDirectionHook('rightBottom')
-      if (X < 0 && Y > 0) this.callDirectionHook('letBottom')
-      if (X < 0 && Y < 0) this.callDirectionHook('leftTop')
-      if (X > 0 && Y < 0) this.callDirectionHook('rightTop')
+      else if (X < 0 && Y > 0) this.callDirectionHook('letBottom')
+      else if (X < 0 && Y < 0) this.callDirectionHook('leftTop')
+      else if (X > 0 && Y < 0) this.callDirectionHook('rightTop')
     } else if (X !== 0) {
       if (X > 0) this.callDirectionHook("right")
       if (X < 0) this.callDirectionHook("left")
@@ -92,6 +161,17 @@ export abstract class Layout {
       if (Y < 0) this.callDirectionHook("top")
     }
   }
+
+  /**
+   * 检测是否正在动画中
+   * */
+  public isAnimation(item: Item) {
+    return item.offsetLeft() - item.element.offsetLeft
+      || item.offsetTop() - item.element.offsetTop
+  }
+
+  /** 往任何方向移动都会执行 */
+  public abstract anyDirection?(name: MoveDirection): void
 
   public abstract left?(): void
 

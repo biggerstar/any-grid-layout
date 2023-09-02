@@ -46,6 +46,13 @@ const container1 = new Container({
       // Item成功挂载事件
       // console.log(item);
       // console.log(container.getItemList())
+      item.itemContentElement.innerHTML = item.i.toString()
+      item.domImpl.updateStyle({
+        fontSize: `30px`,
+        fontWeight: '800',
+        color: '#6b798e'
+      }, item.itemContentElement)
+
     },
     itemUnmounted(item) {
       // Item成功卸载事件

@@ -37,8 +37,9 @@ export class LayoutManager extends LayoutManagerImpl {
 
   /**
    * 算法执行入口，会自动分发并执行当前指定的算法
+   * @return {Boolean} 本次是否执行布局成功
    * */
-  layout(options: LayoutOptions): void {
+  async layout(options: LayoutOptions): Promise<boolean> {
     // TODO 未找到指定算法自动降级到默认算法
     const layoutMode = this.container.getConfig('layoutMode')
     let layoutIns = this.method[layoutMode]
@@ -53,8 +54,13 @@ export class LayoutManager extends LayoutManagerImpl {
     }
     const engine = this.container.engine
     layoutIns.options = options
-    layoutIns.items = engine.items
-    layoutIns.layout?.(engine.items, options)
+    layoutIns.layoutItems = Array.from(engine.items)
+    const res = await layoutIns.layout(engine.items, options)
+    if (res) {
+      layoutIns.patchStyle()
+      engine.items = layoutIns.layoutItems
+    }
+    return res
   }
 }
 

@@ -99,6 +99,7 @@ export const itemExchange_mousemove: Function = throttle((ev) => {
   let nowMoveX = pxToGridPosW(offsetLeftPx)
   let nowMoveY = pxToGridPosH(offsetTopPx)
   // console.log(nowMoveX, nowMoveY)
+
   container.engine.layoutManager.layout({
     dragItem,
     toItem,  /* toItem 为null则是空白处 */
@@ -106,5 +107,5 @@ export const itemExchange_mousemove: Function = throttle((ev) => {
     y: nowMoveY,
     distance,
     speed
-  })
+  }).then()
 }, 32)

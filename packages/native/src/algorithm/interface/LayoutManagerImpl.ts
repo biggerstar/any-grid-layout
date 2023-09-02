@@ -66,23 +66,6 @@ export abstract class LayoutManagerImpl extends Finder {
   }
 
   /**
-   * 将item移动指定位置，会不被挤开
-   * 原理是先将静态item和该item布局后续其他普通item再进行寻位
-   * */
-  public moveToPos(items, item, toPos) {
-    console.log(toPos)
-    const resCanMove = this.analysisCanMove(items, item, toPos)
-    const {isCanMove, success} = resCanMove
-    console.log(isCanMove)
-    if (!isCanMove || !success) return
-    resCanMove.patch()
-    const resItems = this.getCurrentMatrixSortItems(success.map((item) => item.item))
-    for (const index in items) {
-      items[index] = resItems[index]
-    }
-  }
-
-  /**
    * 交换在items中两个Item的位置
    * */
   public exchange(items: Item[], fromItem: Item, toItem: Item | null) {
@@ -175,7 +158,8 @@ export abstract class LayoutManagerImpl extends Finder {
     /** 不允许添加的item */
     failed: Item[],
 
-    /** 将当前成功的所有列表中的pos信息派发更新到对应的item中
+    /**
+     * 将当前成功的所有列表中的pos信息派发更新到对应的item中
      * @param handler 传入最新pos的item作为参数
      * */
     patch: (handler?: (item: Item) => void) => void
@@ -257,12 +241,10 @@ export abstract class LayoutManagerImpl extends Finder {
 
   /**
    * 分析判断是否能让item移动到指定的`pos`位置
-   * @param items
-   * @param item 要移动哪个item
-   * @param toPos 要移动过去的新位置
-   * @return boolean
+   * @param items  当前所有的items
+   * @param modifyList 要修改的列表
    * */
-  public analysisCanMove(items: Item[], item: Item, toPos: CustomItemPos): {
+  public analysisCanMove(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }>): {
     /** 能否将指定item添加到目标位置 */
     isCanMove: boolean
     /** 允许添加的item列表 */
@@ -277,17 +259,41 @@ export abstract class LayoutManagerImpl extends Finder {
      * */
     patch: (handler?: (option: Item) => void) => void
   } {
-    const remainItem = items.filter((member) => member !== item)  // 将当前要移动的item过滤出去
+    const modifyItems = modifyList.map(({item}) => item)
+    const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
     let isCanMove: any = true
     this.reset()
+    const success: Array<{
+      item: Item,
+      pos: CustomItemPos,
+    }> = []
     const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
-    this.markList(staticItems.map((item) => item.pos.getCustomPos()))  // 站位所有静态item
-    const success: Array<{ item: Item, pos: CustomItemPos }> = staticItems.map((item) => ({item, pos: item.pos}))
-    success.push({item, pos: toPos})
+    const staticSuccess = staticItems.every(member => { // 站位所有静态item
+      const pos = member.pos.getCustomPos()
+      const scs = this.isBlank(pos)
+      if (scs) {
+        this.mark(pos)
+        success.push({item: member, pos})
+      }
+      return scs
+    })
     //---------------------------------------------------------------------
-    if (!this.isBlank(toPos)) isCanMove = false // 没有位置,此时该位置上有静态item
+    if (!staticSuccess) isCanMove = false   // 此时静态Item重叠
     else {
-      this.mark(toPos) // 有位置则站位，此时可能为空位置或者其他普通非静态item
+      //----------------------------------------------------------------------------
+      // 站位toPos
+      for (const modifyItem of modifyList) {
+        const {pos} = modifyItem
+        if (this.isBlank(pos)) {
+          this.mark(pos)
+          success.push(modifyItem)
+        } else {
+          isCanMove = false // toPos没有位置,程序执行到这里此时该位置上有静态item
+          break
+        }
+      }
+      //----------------------------------------------------------------------------
+      // 剩余动态Item布局
       for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
         const member = ordinaryItems[i]
         const foundPos = this.findBlank(member.pos.getCustomPos())
@@ -306,10 +312,11 @@ export abstract class LayoutManagerImpl extends Finder {
       isCanMove,
       success: isCanMove ? success : null,
       patch: (handler?) => {
-        success.forEach(({item, pos}) => {
-          if (!isCanMove) return
-          Object.assign(item.pos, pos)
-          if (typeof handler === 'function') handler(item)
+        if (!isCanMove) return
+        items.forEach((member) => {
+          const {pos} = success.find(s => s.item === member)
+          Object.assign(member.pos, pos)
+          if (typeof handler === 'function') handler(member)
         })
       }
     }
