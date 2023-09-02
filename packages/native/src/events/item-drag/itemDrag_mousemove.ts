@@ -13,11 +13,11 @@ export function itemDrag_mousemove(ev) {
     isDragging,
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
+    cloneElement
   } = tempStore
-
   let left = ev.pageX - mousedownItemOffsetLeft
   let top = ev.pageY - mousedownItemOffsetTop
-  if (!mousedownEvent || !fromItem || !isDragging) return
+  if (!mousedownEvent || !fromItem || !isDragging || !cloneElement) return
   let dragItem = moveItem || fromItem
   const container: Container | null = parseContainer(ev)
 
@@ -34,7 +34,7 @@ export function itemDrag_mousemove(ev) {
     // console.log(containerElOffset,left,top);
   }
   dragItem.domImpl.updateStyle({
-    left: left + 'px',
-    top: top + 'px',
-  }, tempStore.cloneElement)  // 必须重新从tempStore获取当前克隆节点
+    left: `${left}px`,
+    top: `${top}px`
+  }, cloneElement)  // 必须重新从tempStore获取当前克隆节点
 }
