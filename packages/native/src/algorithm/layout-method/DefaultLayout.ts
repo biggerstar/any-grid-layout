@@ -9,7 +9,7 @@ import {LayoutOptions, MoveDirection} from "@/types";
 export class DefaultLayout extends Layout {
   public options: Required<LayoutOptions>
   public name = 'default'
-  protected wait = 30
+  public wait = 30
 
   public defaultDirection(name) {
     const {toItem, dragItem} = this.options
@@ -28,26 +28,18 @@ export class DefaultLayout extends Layout {
 
   public top() {
     const {dragItem} = this.options
-    this.patchDiffCoverItem((item) => {
+    this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         y: item.pos.y + dragItem.pos.h
-      }))
-    }, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        y: item.pos.y + item.pos.h
       }))
     })
   }
 
   public bottom() {
     const {dragItem} = this.options
-    this.patchDiffCoverItem((item) => {
+    this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         y: item.pos.y - dragItem.pos.h
-      }))
-    }, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        y: item.pos.y - item.pos.h
       }))
     })
   }
@@ -55,26 +47,18 @@ export class DefaultLayout extends Layout {
 
   public right() {
     const {dragItem} = this.options
-    this.patchDiffCoverItem((item) => {
+    this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         x: item.pos.x - dragItem.pos.w
-      }))
-    }, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        x: item.pos.x - item.pos.w
       }))
     })
   }
 
   public left() {
-    const {dragItem,} = this.options
-    this.patchDiffCoverItem((item) => {
+    const {dragItem} = this.options
+    this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         x: item.pos.x + dragItem.pos.w
-      }))
-    }, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        x: item.pos.x + item.pos.w
       }))
     })
   }
@@ -97,7 +81,7 @@ export class DefaultLayout extends Layout {
         return  // TODO 报预布局时容器溢出错误，后面封装到Layout中
       }
       res.patch()
-      this.manager.getCurrentMatrixSortItems(this.layoutItems)
+      this.layoutItems = this.manager.getCurrentMatrixSortItems(this.layoutItems)
       return true
     })
   }

@@ -67,7 +67,7 @@ export abstract class Layout {
   /**
    * 在某个item的基础上创建其要修改的pos信息
    * */
-  public patchDiffCoverItem(onlyOneItemFunc: Function, multipleItemFunc: Function): void {
+  public patchDiffCoverItem(onlyOneItemFunc: Function | null, multipleItemFunc: Function): void {
     const {dragItem, x, y} = this.options
     if (!dragItem) return;
     let toItemList = this.manager.findCoverItemsFromPosition(this.layoutItems, {
@@ -77,8 +77,8 @@ export abstract class Layout {
     })
     if (!toItemList.length) return
     toItemList = toItemList.filter(item => item !== dragItem)
-    if (toItemList.length === 1) {
-      if (typeof onlyOneItemFunc === 'function') onlyOneItemFunc(toItemList[0])
+    if (toItemList.length === 1 && typeof onlyOneItemFunc === 'function') {
+      onlyOneItemFunc(toItemList[0])
     } else {
       if (typeof multipleItemFunc === 'function') toItemList.forEach((item) => multipleItemFunc(item))
     }
