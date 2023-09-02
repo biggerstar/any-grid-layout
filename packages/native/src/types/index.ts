@@ -206,14 +206,24 @@ export type LayoutOptions = {
    * */
   toItem?: Item | null,
   /**
-   * item的左上角X坐标，endX 是x坐标加上w - 1
+   * item的左上角X坐标，endX 是x坐标加上w - 1 ，最大位置被限制在容器里
    * */
   x?: number,
 
   /**
-   * item的左上角Y坐标，endY 是x坐标加上y - 1
+   * item的左上角Y坐标，endY 是x坐标加上y - 1 ，最大位置被限制在容器里
    * */
   y?: number,
+
+  /**
+   * 当前鼠标拖动的Item左上角相对于容器的真实位置，可获取到拖动到容器外的相对位置
+   * */
+  relativeX?: number,
+
+  /**
+   * 当前鼠标拖动的Item左上角相对于容器的真实位置，可获取到拖动到容器外的相对位置
+   * */
+  relativeY?: number,
 
   /**
    * 本次事件响应鼠标移动的距离，响应时间间隔是浏览器对mousemove的间隔

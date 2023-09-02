@@ -77,27 +77,27 @@ export const itemExchange_mousemove: Function = throttle((ev) => {
   const offsetTopPx = ev.pageY - offsetDragItemY - (window.scrollY + dragContainerElRect.top)
   // console.log(dragItem);
   //------------------------------------------------------------------------------------------------//
-  const pxToGridPosW = (offsetLeftPx) => {
-    const w = (offsetLeftPx) / (container.getConfig('size')[0] + container.getConfig('margin')[0])
-    if (w + dragItem.pos.w >= container.containerW) {
+
+  const relativeX = Math.round(offsetLeftPx / (container.getConfig('size')[0] + container.getConfig('margin')[0])) + 1
+  const relativeY = Math.round(offsetTopPx / (container.getConfig('size')[1] + container.getConfig('margin')[1])) + 1
+
+  const pxToGridLimitPosW = (x) => {
+    if (x + dragItem.pos.w > container.containerW) {  // right方向超出容器进行限制
       return container.containerW - dragItem.pos.w + 1
     } else {
-      const rand = Math.round(w) + 1
-      return rand <= 0 ? 1 : rand
+      return x < 1 ? 1 : x   // left方向超出容器进行限制
     }
   }
-  const pxToGridPosH = (offsetTopPx) => {
-    const h = (offsetTopPx) / (container.getConfig('size')[1] + container.getConfig('margin')[1])
-    if (h + dragItem.pos.h >= container.containerH) {
+  const pxToGridLimitPosH = (y) => {
+    if (y + dragItem.pos.h > container.containerH) { // bottom，同上
       return container.containerH - dragItem.pos.h + 1
     } else {
-      const rand = Math.round(h) + 1
-      return rand <= 0 ? 1 : rand
+      return y < 1 ? 1 : y  // top，同上
     }
   }
 
-  let nowMoveX = pxToGridPosW(offsetLeftPx)
-  let nowMoveY = pxToGridPosH(offsetTopPx)
+  let nowMoveX = pxToGridLimitPosW(relativeX)
+  let nowMoveY = pxToGridLimitPosH(relativeY)
   // console.log(nowMoveX, nowMoveY)
 
   container.engine.layoutManager.layout({
@@ -105,6 +105,8 @@ export const itemExchange_mousemove: Function = throttle((ev) => {
     toItem,  /* toItem 为null则是空白处 */
     x: nowMoveX,
     y: nowMoveY,
+    relativeX,
+    relativeY,
     distance,
     speed
   }).then()
