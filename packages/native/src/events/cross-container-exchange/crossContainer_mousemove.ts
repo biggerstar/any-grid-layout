@@ -31,4 +31,4 @@ export const crossContainer_mousemove: Function = throttle((ev) => {
       }
     }
   }
-}, 12)
+}, 15)

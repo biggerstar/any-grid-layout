@@ -6,28 +6,30 @@ const container1 = new Container({
   // el: document.getElementById('container'),
   layouts: {
     responsive: false,
-    layoutMode: 'static',
+    layoutMode: 'default',
     from: '来自layout',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,
       close: true,
     }),
-    // col: 3,
-    // row: 5,
-    ratioCol: 0.2,
-    margin: [10, 10],
+    // col: 5,
+    // row: 15,
+    // ratioCol: 0.2,
+    // ratioRow: 0.2,
+    // marginX:10,
+    // margin: [10, 10],
     size: [120, 80],
-    minCol: 5,
-    // maxCol: 8,
-    minRow: 5,
-    // maxRow: 8,
+    // sizeWidth:200,
+    // minCol: 5,
+    // minRow: 10,
     exchange: true,
     // sizeWidth: 50,
     // sizeHeight: 80,
     // marginX: 30,
     // marginY: 50,
     // autoGrowRow:true,
+    // autoGrowCol:true
   },
   events: {
     error(err) {
@@ -117,9 +119,14 @@ const container1 = new Container({
     layoutMode: 'default',
     dragOut: true,
     exchange: true,
-    ratioCol: 0.2,
+    // ratioCol: 0.2,
     from1: '来自global',
   }
-})
+});
+
+setTimeout(() => {
+  // console.log(container1.containerH++);
+  // container1.updateContainerStyleSize()
+}, 100)
 
 export default container1

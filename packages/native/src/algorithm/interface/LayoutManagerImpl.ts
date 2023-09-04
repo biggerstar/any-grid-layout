@@ -1,5 +1,5 @@
 import {Item} from "@/main/item/Item";
-import {CustomItemPos} from "@/types";
+import {AnalysisResult, BaseLineType, CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
 
@@ -116,11 +116,13 @@ export abstract class LayoutManagerImpl extends Finder {
   public toLayoutPos(pos: CustomItemPos): CustomItemPos {
     const x = pos.x - 1 <= 0 ? 0 : pos.x - 1
     const y = pos.y - 1 <= 0 ? 0 : pos.y - 1
-    if (isNaN(x) || isNaN(y)) console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
+    if (isNaN(x) || isNaN(y)) {
+      console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
+    }
     return {
       ...pos,
       x,
-      y
+      y,
     }
   }
 
@@ -134,60 +136,9 @@ export abstract class LayoutManagerImpl extends Finder {
       && typeof y === 'number'
       && x > 0
       && y > 0
-      && x !== Infinity
-      && y !== Infinity
+      && isFinite(x)
+      && isFinite(y)
     )
-  }
-
-  /**
-   * 传入Item列表，分析当前所有Item预添加到矩阵中的情况
-   * 该函数只是并没有实际添加
-   *
-   * @param items 必须是Item，而不能是CustomItem 或者 ItemGeneralImpl
-   * @param fn  回调
-   * */
-  public analysis(items: Item[], fn?: (item: Item, pos: CustomItemPos | null) => any)
-    : {
-    /** 允许添加的item列表 */
-    success: Array<{
-      /** item，此时pos可能不是最新位置 */
-      item: Item,
-      /** 该pos将是当前在矩阵最新位置 */
-      pos: CustomItemPos,
-    }>,
-    /** 不允许添加的item */
-    failed: Item[],
-
-    /**
-     * 将当前成功的所有列表中的pos信息派发更新到对应的item中
-     * @param handler 传入最新pos的item作为参数
-     * */
-    patch: (handler?: (item: Item) => void) => void
-  } {
-    this.reset()
-    items = this.sortStatic(items).sortItems
-    const success: Array<{ item: Item, pos: CustomItemPos, }> = []
-    const failed = []
-    items.forEach((item) => {
-      const pos = item.pos.getCustomPos()
-      const finalPos = this.findBlank(pos)
-      finalPos
-        ? success.push({item, pos: finalPos})
-        : failed.push(item)
-      if (typeof fn === 'function') fn(item, finalPos)
-      if (finalPos) this.mark(<any>finalPos)
-    })
-    this.reset()
-    return {
-      success,
-      failed,
-      patch: (handler?: (item: Item) => void) => {
-        success.forEach(({item, pos}) => {
-          Object.assign(item.pos, pos)
-          if (typeof handler === 'function') handler(item)
-        })
-      }
-    }
   }
 
   /**
@@ -198,7 +149,7 @@ export abstract class LayoutManagerImpl extends Finder {
    *
    * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
    * */
-  public findBlank(pos: CustomItemPos): CustomItemPos | null {
+  public findBlank(pos: CustomItemPos, baseline: BaseLineType = 'top', auto: boolean = false): CustomItemPos | null {
     const {w, h, x, y} = pos
     const isStaticPos = this.isStaticPos(pos)
     let resPos = null
@@ -212,9 +163,18 @@ export abstract class LayoutManagerImpl extends Finder {
           x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
           y: curRow + 1,
         }
+        if (['left', 'right'].includes(baseline) && auto) {
+          const offset = this.col - curCol - w
+          if (offset < 0) this.addCol(Math.abs(offset))
+        }
+        if (['top', 'bottom'].includes(baseline) && auto) {
+          const offset = this.row - curRow - h
+          if (offset < 0) this.addRow(Math.abs(offset))
+        }
         if (this.isBlank(tryPos)) return resPos = tryPos
       })
     }
+    // console.log(resPos)
     return resPos
   }
 
@@ -243,83 +203,83 @@ export abstract class LayoutManagerImpl extends Finder {
    * 分析判断是否能让item移动到指定的`pos`位置
    * @param items  当前所有的items
    * @param modifyList 要修改的列表
+   * @param options
    * */
-  public analysisCanMove(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }>): {
-    /** 能否将指定item添加到目标位置 */
-    isCanMove: boolean
-    /** 允许添加的item列表 */
-    success: Array<{
-      /** item，此时pos可能不是最新位置 */
-      item: Item,
-      /** 该pos将是当前在矩阵最新位置 */
-      pos: CustomItemPos,
-    }> | null
-    /** 将当前成功的所有列表中的pos信息派发更新到对应的item中
-     * @param handler 传入最新pos的item作为参数
-     * */
-    patch: (handler?: (option: Item) => void) => void
-  } {
+  public analysis(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }> | null = [], options: {
+    baseline?: BaseLineType,
+    auto?: boolean
+  } = {}): AnalysisResult {
+    if (!Array.isArray(modifyList)) modifyList = []
     const modifyItems = modifyList.map(({item}) => item)
     const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
-    let isCanMove: any = true
+    let isSuccess: any = true
     this.reset()
     const success: Array<{
       item: Item,
       pos: CustomItemPos,
     }> = []
+    const failed = []
     const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
-    const staticSuccess = staticItems.every(member => { // 站位所有静态item
-      const pos = member.pos.getCustomPos()
+    /*---------------------------站位所有静态item-------------------------*/
+    staticItems.forEach(item => {
+      const pos = item.pos.getCustomPos()
       const scs = this.isBlank(pos)
       if (scs) {
         this.mark(pos)
-        success.push({item: member, pos})
+        success.push({item: item, pos})
+      } else {
+        failed.push(item)
+        isSuccess = false
       }
-      return scs
     })
+
     //---------------------------------------------------------------------
-    if (!staticSuccess) isCanMove = false   // 此时静态Item重叠
-    else {
-      //----------------------------------------------------------------------------
-      // 站位toPos
-      for (const modifyItem of modifyList) {
-        const {pos} = modifyItem
-        if (this.isBlank(pos)) {
-          this.mark(pos)
-          success.push(modifyItem)
-        } else {
-          isCanMove = false // toPos没有位置,程序执行到这里此时该位置上有静态item
-          break
-        }
+    /*--------------------------站位所有要修改的item-------------------------*/
+    for (const modifyItem of modifyList) {
+      const {pos, item} = modifyItem
+      if (this.isBlank(pos)) {
+        this.mark(pos)
+        success.push(modifyItem)
+      } else {
+        isSuccess = false // toPos没有位置,程序执行到这里此时该位置上有静态item
+        failed.push(item)
       }
-      //----------------------------------------------------------------------------
-      // 剩余动态Item布局
-      for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
-        const member = ordinaryItems[i]
-        const foundPos = this.findBlank(member.pos.getCustomPos())
-        if (!foundPos) {
-          isCanMove = false
-          break
-        }
-        this.mark(<any>foundPos)
-        success.push({
-          item: member,
-          pos: foundPos
-        })
+    }
+    /*--------------------------剩余所有未执行x,y的Item----------------------------*/
+    for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
+      const item = ordinaryItems[i]
+      const sizeXY = item.pos.getCustomPos()
+      const foundPos = this.findBlank(sizeXY, options.baseline, options.auto)
+      if (!foundPos) {
+        isSuccess = false
+        failed.push(item)
+        continue
       }
+      this.mark(<any>foundPos)
+      success.push({
+        item: item,
+        pos: foundPos
+      })
     }
     return {
-      isCanMove,
-      success: isCanMove ? success : null,
-      patch: (handler?) => {
-        if (!isCanMove) return
-        items.forEach((member) => {
-          const {pos} = success.find(s => s.item === member)
-          Object.assign(member.pos, pos)
-          if (typeof handler === 'function') handler(member)
-        })
-      }
+      isSuccess,
+      successInfo: success,
+      get successItems() {
+        return success.map(({item}) => item)
+      },
+      failedItems: failed,
+      patch: (handler?) => this.patch(success, handler)
     }
+  }
+
+  /**
+   * 派发位置更新到item的pos上
+   * */
+  public patch(items: { item: Item, pos: CustomItemPos }[], handler?: Function) {
+    items.forEach(({item, pos}) => {
+      Object.assign(item.pos, pos)
+      if (typeof handler === 'function') handler(item)
+    })
   }
 
   /**

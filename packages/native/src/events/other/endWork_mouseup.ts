@@ -40,17 +40,17 @@ export function endWork_mouseup(_) {
   if (fromItem) {
     fromItem.container.engine.updateLayout()
     // resize下操作有包含内嵌容器的外部Item
-    const resizeIncludeNestedContainer = fromItem.container
-    const childContainers = resizeIncludeNestedContainer.childContainer
-    childContainers.forEach((info) => {
-      if (info['nestingItem'] === fromItem) {
-        info['container'].engine.updateLayout()   // 更新内部内嵌的Item
-      }
-    })
+    // const resizeIncludeNestedContainer = fromItem.container
+    // const childContainers = resizeIncludeNestedContainer.childContainer
+    // childContainers.forEach((info) => {
+    //   if (info['nestingItem'] === fromItem) {
+    //     info['container'].engine.updateLayout()   // 更新内部内嵌的Item
+    //   }
+    // })
   }
-  if (fromItem && dragItem && dragItem.container !== fromItem.container) {
-    dragItem?.container.engine.updateLayout()
-  }
+  // if (fromItem && dragItem && dragItem.container !== fromItem.container) {
+  //   dragItem?.container.engine.updateLayout()
+  // }
 
   //-----------------------------------事件---------------------------------//
   if (dragItem) {
@@ -83,7 +83,13 @@ export function endWork_mouseup(_) {
     'mousedownItemOffsetLeft',
     'mousedownItemOffsetTop',
     'mouseDownElClassName',
-  ]
+    'gridX',
+    'gridY',
+    "relativeX",
+    "relativeY",
+    'mouseDownElClassName',
+    'mouseDownElClassName',
+  ] as (NonNullable<keyof typeof tempStore>)[]
   resetKeys.forEach((key) => delete tempStore[key])
   tempStore.exchangeItems = {
     new: null,

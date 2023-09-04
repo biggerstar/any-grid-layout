@@ -37,6 +37,20 @@ class TempStore {
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
+  // 当前拖动的Item，跨容器会发生删除重建，此时能使用moveItem获取最新Item
+  get dragItem(): Item | null {
+    return this.moveItem || this.fromItem
+  }
+
+  // 当前鼠标距离源容器的真实x栅格值
+  relativeX: number
+  // 当前鼠标距离源容器的真实y栅格值
+  relativeY: number
+  // 当前鼠标距离源容器且被限制在容器内位置的X值
+  gridX: number
+  // 当前鼠标距离源容器且被限制在容器内位置的Y值
+  gridY: number
+
   exchangeItems: {
     old: Item | null
     new: Item | null

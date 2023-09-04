@@ -1,5 +1,7 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
+import {tempStore} from "@/events";
+import {AnalysisResult} from "@/types";
 
 /**
  * 静态布局
@@ -11,9 +13,9 @@ export class StaticLayout extends Layout {
   public defaultDirection(name) {
     const {
       dragItem,
-      x,
-      y,
-    } = this.options
+      gridX: x,
+      gridY: y,
+    } = tempStore
     if (!dragItem) return
     const manager = this.manager
     manager.reset()
@@ -41,5 +43,9 @@ export class StaticLayout extends Layout {
       this.patchDirection()
       return true
     })
+  }
+
+  init(...args: any[]): AnalysisResult | void {
+    return undefined;
   }
 }

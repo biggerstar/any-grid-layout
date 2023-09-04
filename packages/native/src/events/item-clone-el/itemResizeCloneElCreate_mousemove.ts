@@ -27,4 +27,4 @@ export const itemResizeCloneElCreate_mousemove: Function = throttle(() => {
     , newNode)
   tempStore.cloneElement = newNode
   fromContainer.contentElement.appendChild(newNode)
-}, 12)
+}, 36)

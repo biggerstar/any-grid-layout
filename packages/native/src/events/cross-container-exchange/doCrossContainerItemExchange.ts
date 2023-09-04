@@ -10,8 +10,6 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
     moveItem,
     isDragging,
     isLeftMousedown,
-    deviceEventMode,
-    cloneElement
   } = tempStore
   if (!isDragging || !fromItem || !container || !isLeftMousedown) return
   const dragItem: Item | null = moveItem || fromItem
@@ -56,42 +54,11 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
         itemPositionMethod(newItem)
       }
     }
-    const vueExchange = () => {
-      container._VueEvents['vueCrossContainerExchange'](newItem, tempStore, (newItem) => {
-        dragItem.unmount()
-        dragItem.remove()
-        if (deviceEventMode === 'touch' && cloneElement) {
-          // 在触屏模式下， 原本的fromItem克隆源必须保留在文档流中，所以省事临时放置在该克隆元素中，当鼠标抬起后会被自动移除
-          cloneElement.appendChild(document.adoptNode(dragItem.element))
-        }
-        doItemPositionMethod(newItem)
-        if (container) {
-          if (dragItem !== newItem && !dragItem.container.getConfig('responsive')) {
-            dragItem.container.engine.updateLayout()
-          } else {
-            dragItem.container.engine.updateLayout()
-          }
-        }
-      })
-    }
     const nativeExchange = () => {
-      // if (container.getConfig('responsive')) newItem.pos.autoOnce = true
-      // else if (!container.getConfig('responsive')) newItem.pos.autoOnce = false
       container.add(newItem)
       dragItem.unmount()  // 先成功移除原来容器中Item后再在新容器新添加Item，移除不成功不添加
       dragItem.remove()
-      if (container) {
-        if (!newItem.container.getConfig("responsive")) {
-          newItem.container.engine.updateLayout( )
-        } else {
-          newItem.container.engine.updateLayout( )
-        }
-        if (dragItem !== newItem && !dragItem.container.getConfig('responsive')) {
-          dragItem.container.engine.updateLayout( )
-        } else {
-          dragItem.container.engine.updateLayout( )
-        }
-      }
+      dragItem.container.engine.updateLayout()
       newItem.mount()
       // dragItem.element.style.backgroundColor = 'red'
       tempStore.moveItem = newItem
@@ -102,8 +69,7 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
     }
     container.__ownTemp__.firstEnterUnLock = false
     container.__ownTemp__.nestingEnterBlankUnLock = false
-    if (container.platform === 'vue') vueExchange()
-    else nativeExchange()
+    nativeExchange()
   } catch (e) {
     console.error('跨容器Item移动出错', e);
   }

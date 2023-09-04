@@ -1,6 +1,6 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
-import {LayoutOptions} from "@/types";
+import {AnalysisResult, LayoutOptions} from "@/types";
 
 /**
  * 交换算法，fromItem和toItem两两交换
@@ -15,6 +15,9 @@ export class ExchangeLayout extends Layout {
   public options: Required<LayoutOptions>
   public name = 'exchange'
   public wait = 50
+  public init(...args): AnalysisResult | void {
+    return undefined;
+  }
 
   public defaultDirection(name) {
     const {toItem, dragItem} = this.options
@@ -35,7 +38,7 @@ export class ExchangeLayout extends Layout {
       if (toItem && this.isAnimation(toItem)) return
       this.patchDirection()
       const res = this.manager.analysis(this.layoutItems)
-      if (res.failed.length) return
+      if (res.failedItems.length) return
       res.patch()
       return true
     })

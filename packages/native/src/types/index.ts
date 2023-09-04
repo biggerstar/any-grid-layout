@@ -166,7 +166,7 @@ export type CustomEventOptions = {
   itemExchange?(fromItem: Item, toItem: Item): void,
 
   /**
-   * 内层容器(grid-container)col或者row大小改变触发的事件,oldSize和newSize包含以下信息{ containerW,containerH,row,col,width,height }
+   * 内层容器(grid-container)col或者row大小改变触发的事件,oldSize和newSize包含以下信息{ row,col,width,height }
    */
   containerSizeChange?(oldSize: number, newSize: number, container: Container): void,
 
@@ -235,3 +235,26 @@ export type LayoutOptions = {
    * */
   speed?: number
 }
+
+export type AnalysisResult = {
+  /** 能否将指定item添加到目标位置 */
+  isSuccess: boolean
+  /** 允许添加的item信息 */
+  successInfo: Array<{
+    /** item，此时pos可能不是最新位置 */
+    item: Item,
+    /** 该pos将是当前在矩阵最新位置 */
+    pos: CustomItemPos,
+  }> | null
+  /** 允许添加的item列表 */
+  get successItems: Item[]
+  /** 失败的的item列表 */
+  failedItems: Item[]
+  /**
+   * 将当前成功的所有列表中的pos信息派发更新到对应的item中
+   * @param handler 传入最新pos的item作为参数
+   * */
+  patch: (handler?: (item: Item) => void) => void
+}
+
+export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'

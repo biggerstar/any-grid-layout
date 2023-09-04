@@ -12,7 +12,6 @@ import {
   endWork_mouseup,
   itemClose_mouseup,
   itemDrag_mousedown,
-  itemExchange_mousemove,
   itemResize_mousedown,
   itemResize_mouseup
 } from "@/events";
@@ -22,6 +21,8 @@ import {itemDragCloneElCreate_mousemove} from "@/events/item-clone-el/itemDragCl
 import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemove_mouseup";
 import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
+import {startMove_mousemove} from "@/events/other/startMove_mousemove";
+import {endMove_mousemove} from "@/events/other/endMove_mousemove";
 
 export function allMousedown(ev) {
   // autoScrollPage_mousedown(ev)  // TODO
@@ -42,6 +43,8 @@ export function allMousedown(ev) {
 export function allMousemove(ev) {
   /* compatible */
   compatible_touchmove_mousemove(ev)
+  /* start init */
+  startMove_mousemove(ev)
   /* cursor */
   cursor_mousemove(ev)
   /* scrollPage */
@@ -55,8 +58,8 @@ export function allMousemove(ev) {
   itemResize_mousemove(ev)
   itemResizeCloneElCreate_mousemove(ev)
   //------------------------------
-  /* itemExchange */
-  itemExchange_mousemove(ev)
+  /* end move */
+  endMove_mousemove(ev)
 }
 
 export function allMouseup(ev) {

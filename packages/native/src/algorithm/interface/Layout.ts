@@ -1,6 +1,7 @@
 import {LayoutManager} from "@/algorithm";
 import {Item} from "@/main";
-import {CustomItemPos, LayoutOptions, MoveDirection} from "@/types";
+import {AnalysisResult, CustomItemPos, MoveDirection} from "@/types";
+import {tempStore} from "@/events";
 
 /**
  * 布局算法接口，实现真正的算法逻辑
@@ -68,7 +69,7 @@ export abstract class Layout {
    * 在某个item的基础上创建其要修改的pos信息
    * */
   public patchDiffCoverItem(onlyOneItemFunc: Function | null, multipleItemFunc: Function): void {
-    const {dragItem, x, y} = this.options
+    const {dragItem, gridX: x, gridY: y} = tempStore
     if (!dragItem) return;
     let toItemList = this.manager.findCoverItemsFromPosition(this.layoutItems, {
       ...dragItem.pos,
@@ -83,11 +84,6 @@ export abstract class Layout {
       if (typeof multipleItemFunc === 'function') toItemList.forEach((item) => multipleItemFunc(item))
     }
   }
-
-  /**
-   * layout函数参数2传入被保存起来的配置信息
-   * */
-  public options: LayoutOptions
 
   /**
    * 节流时间
@@ -111,15 +107,21 @@ export abstract class Layout {
     return (item1.pos.w === item2.pos.w) && (item1.pos.h === item2.pos.h)
   }
 
+  /**
+   * 用于初次加载Item到容器时初始化，用于设置容器的大小或其他操作
+   * @return {AnalysisResult | void} 返回结果，如果failed长度不为0，表明有item没添加成功则会抛出警告事件
+   * */
+  public abstract init(...args: any[]): AnalysisResult | void
+
 
   /**
    * 外部调用进行布局的入口，子类需要进行实现
    * 你应该在里面修改你要布局的Item.pos位置，最终返回true外部将会帮你自动更新Item的样式以改变显示位置
    * @return {Promise<boolean>} 布局成功后需要返回true，外部会更新当前最新位置
    * */
-  public abstract async layout(items, options, ...args: any[]): Promise<boolean>
+  public abstract async layout(items, ...args: any[]): Promise<boolean>
 
-  public abstract defaultDirection(name?: MoveDirection): void
+  public abstract defaultDirection?(name?: MoveDirection): void
 
   /**
    * 调用对应移动方向的布局函数，如果没有则使用默认defaultDirection函数钩子
@@ -129,7 +131,7 @@ export abstract class Layout {
     const hook = this[name]
     if (typeof this.anyDirection === 'function') this.anyDirection?.(name)
     if (typeof hook === 'function') hook.call(<object>this)
-    else if (typeof this.defaultDirection === 'function') this.defaultDirection(name)
+    else if (typeof this.defaultDirection === 'function') this.defaultDirection?.(name)
   }
 
   public patchStyle() {
@@ -142,9 +144,9 @@ export abstract class Layout {
   public patchDirection() {
     const {
       dragItem,
-      x,
-      y
-    } = this.options
+      gridX: x,
+      gridY: y
+    } = tempStore
     if (!dragItem) return
     const X = x - dragItem.pos.x
     const Y = y - dragItem.pos.y
@@ -166,8 +168,10 @@ export abstract class Layout {
    * 检测是否正在动画中
    * */
   public isAnimation(item: Item) {
-    return item.offsetLeft() - item.element.offsetLeft
+    return Math.abs(
+      item.offsetLeft() - item.element.offsetLeft
       || item.offsetTop() - item.element.offsetTop
+    ) > 2
   }
 
   /** 往任何方向移动都会执行 */

@@ -12,6 +12,7 @@ import {Engine} from "@/main";
 import {EventCallBack} from "@/utils/EventCallBack";
 import {startGlobalEvent} from "@/events/listen";
 import {tempStore} from "@/events";
+import {computeSmartRowAndCol} from "@/algorithm/common";
 
 //---------------------------------------------------------------------------------------------//
 
@@ -72,8 +73,6 @@ export class Container {
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
   public parent: Container   // 嵌套情况下上级Container
   public parentItem: Item
-  public containerH: number
-  public containerW: number
   public eventManager: EventCallBack      // events通过封装构建的类实例
   private readonly domImpl: DomFunctionImpl
 
@@ -146,7 +145,7 @@ export class Container {
           return layoutItem
         },
         set(_: any) {
-          debugger
+          // debugger
         }
       },
       useLayout: {
@@ -154,22 +153,72 @@ export class Container {
           return useLayout
         },
         set(_: any) {
-          debugger
+          // debugger
         }
-      }
+      },
     })
+  }
+
+  /**
+   * 是否是自动增长col方向的容器
+   * */
+  public get autoGrowCol() {
+    const baseline = this.getConfig("baseLine")
+    return !this.layout.col && (baseline === 'left' || baseline === 'right')
+  }
+
+  /**
+   * 是否是自动增长row方向的容器
+   * */
+  public get autoGrowRow() {
+    const baseline = this.getConfig("baseLine")
+    return !this.layout.row && (baseline === 'top' || baseline === 'bottom')
+  }
+
+  private _getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
+    return this.useLayout[name] || this.layout[name] || this.global[name] || this._default[name]
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
-    // console.log(name, this.useLayout[name], this._default[name])
-    return this.useLayout[name] || this.layout[name] || this.global[name] || this._default[name]
+    let data = this._getConfig(name)
+    //-------------------------------------------------------------------------//
+    let smartColRowInfo
+    if (['col', 'row'].includes(name)) smartColRowInfo = computeSmartRowAndCol(this)
+    //-------------------如果不是动态的col，则以当前containerW为准------------------//
+    if (name === 'col') {
+      const containerW = this.containerW
+      if (!data) { // 未指定col自动设置
+        if (!this.autoGrowCol || !this._mounted) data = containerW
+        else data = smartColRowInfo.smartCol
+        if (data < containerW) data = containerW
+      }
+      //-----------------------------Col限制确定---------------------------------//
+      const curMinCol = this._getConfig('minCol')
+      if (curMinCol && data < curMinCol) data = curMinCol
+      if (data < smartColRowInfo.maxItemW) data = smartColRowInfo.maxItemW
+    }
+    //-------------------如果不是动态的row，则以当前containerH为准------------------//
+    if (name === 'row') {
+      const containerH = this.containerH
+      if (!data) {  // 未指定row自动设置
+        if (!this.autoGrowRow || !this._mounted) data = containerH
+        else data = smartColRowInfo.smartRow
+        if (data < containerH) data = containerH
+      }
+      //-----------------------------Row限制确定---------------------------------//
+      const curMinRow = this._getConfig('minRow')
+      if (curMinRow && data < curMinRow) data = curMinRow
+      if (data < smartColRowInfo.maxItemH) data = smartColRowInfo.maxItemH
+      // console.log('data', data, 'containerH', containerH)
+    }
+    return data
   }
 
   /** 将值设置到当前使用的配置信息中 */
-  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): void {
-    // if (name === 'row' && data === 503) debugger
-    return this.useLayout[name] = data
+  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): this {
+     this.useLayout[name] = data
+    return this
   }
 
   /**
@@ -196,10 +245,8 @@ export class Container {
       }
       this.attr = Array.from(this.element.attributes)
       this.classList = Array.from(this.element.classList)
-
       //-----------------容器布局信息初始化与检测--------------------//
       this.engine.init()
-      this._observer_()
       //-------------------------其他操作--------------------------//
       let nestingTimer: any = setTimeout(() => {
         this._isNestingContainer_()
@@ -207,6 +254,7 @@ export class Container {
         nestingTimer = null
       })
       this.updateContainerStyleSize()
+      this._observer_()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
       this.__store__.screenHeight = window.screen.height
@@ -219,13 +267,16 @@ export class Container {
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
-  public _patchGridContainerBox = () => {
+  private _patchGridContainerBox = () => {
     this.contentElement = document.createElement('div')
     this.contentElement.classList.add('grid-container-area')
     this.contentElement['_isGridContainerArea'] = true
     this.element.appendChild(this.contentElement)
     this.domImpl.updateStyle(defaultStyle.gridContainer, this.contentElement)
     this.contentElement.classList.add(this.className)
+    setTimeout(() => {
+      this.domImpl.updateStyle(defaultStyle.gridContainerTransition, this.contentElement)
+    }, 0)
   }
 
   /** 手动添加item渲染 */
@@ -267,7 +318,7 @@ export class Container {
   /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
   public updateLayout(items = null, ignoreList = []) {
     // TODO  优化
-    // this.engine.updateLayout(items, ignoreList)
+    this.engine.updateLayout()
   }
 
   /** 移除对容器的resize监听  */
@@ -297,7 +348,9 @@ export class Container {
    * 监听浏览器窗口resize
    * */
   public _observer_() {
+    let refuseFirstCallDebounceAndThrottle = 1  // 拒绝container.mount时第一次节流函数和防抖函数执行最终调用到updateLayout
     const layoutChangeFun = () => {
+      if (refuseFirstCallDebounceAndThrottle++ < 2) return
       if (!this._mounted) return
       let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.useLayout
       const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, this.element.clientWidth, this)
@@ -372,6 +425,16 @@ export class Container {
     let nowRow = this.getConfig("row")
     if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
     return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
+  }
+
+  /** 获取当前容器可视范围的col  */
+  public get containerW(): number {
+    return Math.round(this.element.offsetWidth / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+  }
+
+  /** 获取当前容器可视范围的row */
+  public get containerH(): number {
+    return Math.round(this.element.offsetHeight / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */

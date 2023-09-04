@@ -1,4 +1,4 @@
-import {CustomItems, MarginOrSizeDesc} from "@/types";
+import {BaseLineType, CustomItems, MarginOrSizeDesc} from "@/types";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -27,11 +27,11 @@ export class ContainerGeneralImpl {
   /** 当前布局使用的数据*/
   items?: CustomItems = []
 
-  /** 列数 */
-  col?: number = 1
+  /** 列数 响应模式下col由引擎管理且col不可固定，用户指定的col永远不会生效 */
+  col?: number
 
   /** 行数， 响应模式下row由引擎管理且row不可固定，用户指定的row永远不会生效 */
-  row?: number = 1
+  row?: number
 
   /** 禁止传入的数组内出现单个null */
   margin?: MarginOrSizeDesc = [null, null]
@@ -58,12 +58,20 @@ export class ContainerGeneralImpl {
   /** 最小列数 */
   minCol?: number | null = null
 
-  /** 最大列数 */
+  /**
+   * @deprecated
+   * 弃用，因为设置了baseline必须要有一个方向能让item活动，除了静态布局
+   * 最大列数
+   * */
   maxCol?: number | null = null
 
   /** 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步 */
   minRow?: number | null = null
-  /** 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步 */
+  /**
+   * @deprecated
+   * 弃用，因为设置了baseline必须要有一个方向能让item活动，除了静态布局
+   * 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
+   * */
   maxRow?: number | null = null
 
   /**
@@ -77,6 +85,11 @@ export class ContainerGeneralImpl {
    * */
   autoGrowRow?: boolean = false
   // autoGrowCol = true     // 暂未支持
+
+  /**
+   * 同上
+   * */
+  autoGrowCol?: boolean = false
 
   /**
    * 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
@@ -160,4 +173,8 @@ export class ContainerGeneralImpl {
    * */
   nestedOutExchange?: boolean = false
 
+  /**
+   * 基准线，那个方向作为基底线   TODO left bottom，right
+   * */
+  baseLine?: BaseLineType = 'top'
 }

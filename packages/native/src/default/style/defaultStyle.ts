@@ -2,14 +2,14 @@
  *  下面是内置类名，驼峰需转横杠，通过css横杆命名修改能定义覆盖这里的默认值
  *
  * */
-type DefaultStyleNames = 'gridContainerArea' | 'gridContainer' | 'gridItem' | 'gridResizableHandle' | 'gridItemCloseBtn'
+type DefaultStyleNames = 'gridContainerArea' | 'gridContainer' | 'gridContainerTransition' | 'gridItem' | 'gridResizableHandle' | 'gridItemCloseBtn'
 type DefaultStyle = Record<DefaultStyleNames, Partial<CSSStyleDeclaration> & { [ket: string]: any }>
 
 export const defaultStyle: DefaultStyle = {
   gridContainerArea: {
     display: 'block',
   },
-  gridContainer: {   // Container初始化使用的默认样式
+  gridContainer: {   // contentElement初始化使用的默认样式
     height: 'auto',
     width: '100%',
     position: 'relative',
@@ -19,6 +19,9 @@ export const defaultStyle: DefaultStyle = {
     ['webkitUserSelect']: 'none',
     msUserSelect: 'none',
     userSelect: 'none',   // 禁止用户选择文本或元素
+  },
+  gridContainerTransition: {   // contentElement使用的动画
+    transition: 'all 0.3s',
   },
   gridItem: {   // Item初始化使用的默认样式
     height: '100%',

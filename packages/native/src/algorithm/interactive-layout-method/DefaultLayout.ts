@@ -1,25 +1,26 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
-import {LayoutOptions, MoveDirection} from "@/types";
+import {MoveDirection} from "@/types";
+import {tempStore} from "@/events";
+import {autoSetSizeAndMargin} from "@/algorithm/common";
 
 /**
  * 默认布局
  * 优点: 通过一系列优化，能支持在固定行宽的情况下基本能移动到所有位置，体验感是最好的
  * */
 export class DefaultLayout extends Layout {
-  public options: Required<LayoutOptions>
   public name = 'default'
-  public wait = 30
+  public wait = 120
 
   public defaultDirection(name) {
-    const {toItem, dragItem} = this.options
-    if (!toItem) return
+    const {toItem, dragItem} = tempStore
+    if (!toItem || !dragItem) return
     this.manager.exchange(this.layoutItems, dragItem, toItem)
   }
 
   public anyDirection(name: MoveDirection) {
-    const {dragItem, x, y} = this.options
-    // console.log(name);
+    const {dragItem, gridX: x, gridY: y} = tempStore
+    if (!dragItem) return
     this.addModifyItems(this.createModifyPosInfo(dragItem, {
       x,
       y
@@ -27,7 +28,8 @@ export class DefaultLayout extends Layout {
   }
 
   public top() {
-    const {dragItem} = this.options
+    const {dragItem} = tempStore
+    if (!dragItem) return
     this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         y: item.pos.y + dragItem.pos.h
@@ -36,7 +38,8 @@ export class DefaultLayout extends Layout {
   }
 
   public bottom() {
-    const {dragItem} = this.options
+    const {dragItem} = tempStore
+    if (!dragItem) return
     this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         y: item.pos.y - dragItem.pos.h
@@ -46,7 +49,8 @@ export class DefaultLayout extends Layout {
 
 
   public right() {
-    const {dragItem} = this.options
+    const {dragItem} = tempStore
+    if (!dragItem) return
     this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         x: item.pos.x - dragItem.pos.w
@@ -55,7 +59,8 @@ export class DefaultLayout extends Layout {
   }
 
   public left() {
-    const {dragItem} = this.options
+    const {dragItem} = tempStore
+    if (!dragItem) return
     this.patchDiffCoverItem(null, (item) => {
       this.addModifyItems(this.createModifyPosInfo(item, {
         x: item.pos.x + dragItem.pos.w
@@ -63,25 +68,36 @@ export class DefaultLayout extends Layout {
     })
   }
 
-  public async layout(items: Item[], options: LayoutOptions): Promise<boolean> {
-    const {
-      distance,
-      speed,
-      toItem,
-      dragItem,
-    } = options
-    const mouseOverContainer = this.manager.container
-    if (!mouseOverContainer || !dragItem) return
-    if (distance < 8 || speed < 20) return
+  public init() {
+    const manager = this.manager
+    const container = manager.container
+    const engine = container.engine
+    autoSetSizeAndMargin(container, true)
+    engine.reset()
+    const res = manager.analysis(engine.items)
+    res.patch()
+    this.layoutItems = res.successItems
+    return res
+  }
+
+  public async layout(items: Item[]): Promise<boolean> {
+    const {toItem, dragItem} = tempStore
+    const manager = this.manager
+    const container = manager.container
     return this.throttle(() => {
+      if (toItem) console.log(this.isAnimation(toItem))
       if (toItem && this.isAnimation(toItem)) return;  // 检测是否在动画中，如果还在动画且完成距离较长，退出该次执行
-      this.patchDirection()
-      const res = this.manager.analysisCanMove(this.layoutItems, this.getModifyItems())
-      if (!res.isCanMove) {
-        return  // TODO 报预布局时容器溢出错误，后面封装到Layout中
-      }
+      if (dragItem) this.patchDirection()
+      autoSetSizeAndMargin(container, true)
+      container.engine.reset()
+      const baseLine = container.getConfig("baseLine")
+      let res = this.manager.analysis(this.layoutItems, this.getModifyItems(), {
+        auto: true,
+        baseline: baseLine
+      })
+      if (!res.isSuccess) return
+      // this.layoutItems = manager.getCurrentMatrixSortItems()
       res.patch()
-      this.layoutItems = this.manager.getCurrentMatrixSortItems(this.layoutItems)
       return true
     })
   }

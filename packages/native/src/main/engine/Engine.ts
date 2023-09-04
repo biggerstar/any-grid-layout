@@ -1,14 +1,11 @@
 import {Item} from "@/main/item/Item";
 import {LayoutManager} from "@/algorithm/LayoutManager";
-import {LayoutConfigManager} from "@/algorithm/LayoutConfigManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, CustomItem} from "@/types";
-import {__ref_item__} from "@/constant/constant";
 
 export class Engine {
   public items = []
   public layoutManager: LayoutManager
-  public layoutConfigManager: LayoutConfigManager
   private container: Container
   private readonly options: ContainerInstantiationOptions
   private initialized = false
@@ -31,26 +28,40 @@ export class Engine {
   public init() {
     if (this.initialized) return
     this.layoutManager = new LayoutManager(this.container)
-    this.layoutConfigManager = new LayoutConfigManager(this.options)
-    this.layoutConfigManager.setContainer(this.container)
-    this.layoutConfigManager.initLayoutInfo()
-    this.initialized = true
+    this.initLayoutInfo()
     this.mountAll()
-  }
-
-  private mountAll() {
-    this._sync()
-    this.reset()
-    let items = this.container.getConfig('items')
-    items.forEach((item) => this.addItem(item))
+    const layoutMode = this.container.getConfig('layoutMode')
+    this.layoutManager.init(layoutMode)
+    this.initialized = true
   }
 
   /**
-   * 计算并同步当前尺寸下的col,row,size,margin等信息到container
+   * 用于提取用户传入的[所有]布局配置文件到 container.layouts
    * */
-  public _sync() {
-    this.layoutConfigManager.autoSetColAndRows()
-    this.layoutConfigManager.autoSetSizeAndMargin()
+  public initLayoutInfo() {
+    const options: Record<any, any> = this.options
+    let layoutInfo = []
+    if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
+    else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
+    else throw new Error("请传入layout配置信息")
+    if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
+      let isBreak = false
+      layoutInfo.sort((a, b) => {
+        if (isBreak) return 0
+        if (typeof a.px !== "number" || typeof b.px !== "number") {
+          console.warn("未指定layout的px值,传入的layout为", b)
+          isBreak = true
+        }
+        return a.px - b.px
+      })
+    }
+    this.container.layouts = JSON.parse(JSON.stringify(layoutInfo))    // items 可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
+    // console.log(layoutInfo);
+  }
+
+  private mountAll() {
+    let items = this.container.getConfig('items')
+    items.forEach((item) => this.addItem(item))
   }
 
   /**
@@ -79,7 +90,7 @@ export class Engine {
 
   /** 将item成员从Container中全部移除,items数据还在  */
   public unmount(isForce = false) {
-    this.items.forEach((item) => item.unmount(isForce))
+    this.items.forEach((item: Item) => item.unmount(isForce))
     this.reset()
   }
 
@@ -90,34 +101,14 @@ export class Engine {
   }
 
   /** 添加一个item，框架内部添加Item时所有的Item必须通过这里添加到容器中 */
-  public addItem(itemOptions: CustomItem): Item | null {   //  html收集的元素和js生成添加的成员都使用该方法添加
+  public addItem(itemOptions: CustomItem): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const container = this.container
-    const eventManager = container.eventManager
-    this.items = this.layoutManager.getCurrentMatrixSortItems(this.items)  // 每次添加新item之前为其他已存在的item排好序
     const item = new Item(itemOptions)
-    const foundPos = this.layoutManager.findBlank(item.pos)
-    if (foundPos) {
-      Object.defineProperty(itemOptions, __ref_item__, {
-        get: () => item,
-        enumerable: false
-      })
-      this.layoutManager.mark(foundPos)
-      Object.assign(item.pos, foundPos)
-      this.items.push(item)
-      item.container = container
-      item.parentElement = container.contentElement
-      item.i = this.items.length
-      item.mount()
-      eventManager._callback_('addItemSuccess', item)
-      return item
-    } else {
-      eventManager._error_(
-        'ContainerOverflowError',
-        "容器溢出或者Item重叠，只有item明确指定了x,y或者容器col,row情况下会出现此错误"
-        , itemOptions
-        , itemOptions)
-      return null
-    }
+    this.items.push(item)
+    item.container = container
+    item.parentElement = container.contentElement
+    item.i = this.items.length
+    return item
   }
 
   /** 移除某个存在的item */
@@ -151,12 +142,9 @@ export class Engine {
    * 更新并渲染布局
    * */
   public updateLayout() {
-
-
-
-    //---------------------------------------------------------------------//
+    const layoutMode = this.container.getConfig('layoutMode')
+    this.layoutManager.layout(layoutMode).then()
+    this.container.updateContainerStyleSize()
     this._checkUpdated()
-    // this.layoutConfigManager.autoSetColAndRows()  // 对响应式经过算法计算后的最新矩阵尺寸进行调整
-    // this.container.updateContainerStyleSize()
   }
 }
