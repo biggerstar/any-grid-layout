@@ -1,6 +1,6 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
-import {LayoutOptions} from "@/types";
+import {AnalysisResult, LayoutOptions} from "@/types";
 
 /**
  * 流式布局
@@ -30,10 +30,14 @@ export class StreamLayout extends Layout {
     return this.throttle(() => {
       if (toItem && this.isAnimation(toItem)) return
       this.patchDirection()
-      const res = this.manager.analysisCanMove(this.layoutItems, this.getModifyItems())
-      if (!res.isCanMove) return
+      const res = this.manager.analysis(this.layoutItems, this.getModifyItems())
+      if (!res.isSuccess) return
       res.patch()
       return true
     })
+  }
+
+  init(...args: any[]): AnalysisResult | void {
+    return undefined;
   }
 }
