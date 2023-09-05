@@ -146,10 +146,15 @@ export abstract class LayoutManagerImpl extends Finder {
    * 有两种情况:
    * - 如果pos指定了x,y则查看当前矩阵该位置是否有空位
    * - 如果pos没有指定x,y，则自动寻找当前矩阵中适合w,h尺寸的空位
-   *
+   * @param pos
+   * @param options
    * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
    * */
-  public findBlank(pos: CustomItemPos, baseline: BaseLineType = 'top', auto: boolean = false): CustomItemPos | null {
+  public findBlank(
+    pos: CustomItemPos,
+    options: { baseline?: BaseLineType; auto?: boolean })
+    : CustomItemPos | null {
+    const {baseline = 'top', auto = false} = options   // 定义默认，在形参定义的话代码太长了
     const {w, h, x, y} = pos
     const isStaticPos = this.isStaticPos(pos)
     let resPos = null
@@ -249,7 +254,7 @@ export abstract class LayoutManagerImpl extends Finder {
     for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
       const item = ordinaryItems[i]
       const sizeXY = item.pos.getCustomPos()
-      const foundPos = this.findBlank(sizeXY, options.baseline, options.auto)
+      const foundPos = this.findBlank(sizeXY, options)
       if (!foundPos) {
         isSuccess = false
         failed.push(item)
@@ -262,6 +267,8 @@ export abstract class LayoutManagerImpl extends Finder {
       })
     }
     return {
+      col: this.col,
+      row: this.row,
       isSuccess,
       successInfo: success,
       get successItems() {

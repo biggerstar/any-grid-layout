@@ -137,7 +137,7 @@ export abstract class Finder {
    * 之后2 X 1 开始，到 2 X 5
    * ......
    * */
-  public getCurrentMatrixSortItems(items: Item[] = []) {
+  public sortCurrentMatrixItems(items: Item[]) {
     const sortItems = []
     for (let y = 1; y <= this.row; y++) {
       for (let x = 1; x <= this.col; x++) {

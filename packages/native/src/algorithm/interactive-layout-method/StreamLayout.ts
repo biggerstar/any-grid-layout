@@ -37,7 +37,4 @@ export class StreamLayout extends Layout {
     })
   }
 
-  init(...args: any[]): AnalysisResult | void {
-    return undefined;
-  }
 }

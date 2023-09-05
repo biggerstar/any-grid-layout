@@ -23,21 +23,22 @@ import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemov
 import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {endMove_mousemove} from "@/events/other/endMove_mousemove";
+import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 
 export function allMousedown(ev) {
   // autoScrollPage_mousedown(ev)  // TODO
-
   /* cursor */
   cursor_mousedown(ev)
   /* compatible */
   compatible_touchstart_mousedown(ev)
+  /* startWork */
+  startWork_mousedown(ev)
   /* ItemResize */
   itemResize_mousedown(ev)
   /* close */
   itemClose_mousedown(ev)
   /* itemDrag */
   itemDrag_mousedown(ev)  // drag必须在后面，前面没有被其他操作方式(handleMethod)接管则默认是drag
-
 }
 
 export function allMousemove(ev) {

@@ -10,7 +10,6 @@ import {autoSetSizeAndMargin} from "@/algorithm/common";
  * */
 export class DefaultLayout extends Layout {
   public name = 'default'
-  public wait = 120
 
   public defaultDirection(name) {
     const {toItem, dragItem} = tempStore
@@ -68,36 +67,24 @@ export class DefaultLayout extends Layout {
     })
   }
 
-  public init() {
-    const manager = this.manager
-    const container = manager.container
-    const engine = container.engine
-    autoSetSizeAndMargin(container, true)
-    engine.reset()
-    const res = manager.analysis(engine.items)
-    res.patch()
-    this.layoutItems = res.successItems
-    return res
-  }
-
   public async layout(items: Item[]): Promise<boolean> {
-    const {toItem, dragItem} = tempStore
+    const {dragItem, toItem} = tempStore
     const manager = this.manager
     const container = manager.container
+    if (dragItem && !toItem) return
+    if (!this.allowLayout()) return
     return this.throttle(() => {
-      if (toItem) console.log(this.isAnimation(toItem))
-      if (toItem && this.isAnimation(toItem)) return;  // 检测是否在动画中，如果还在动画且完成距离较长，退出该次执行
       if (dragItem) this.patchDirection()
       autoSetSizeAndMargin(container, true)
       container.engine.reset()
       const baseLine = container.getConfig("baseLine")
       let res = this.manager.analysis(this.layoutItems, this.getModifyItems(), {
-        auto: true,
+        auto: this.hasAutoDirection(),
         baseline: baseLine
       })
       if (!res.isSuccess) return
-      // this.layoutItems = manager.getCurrentMatrixSortItems()
       res.patch()
+      this.layoutItems = manager.sortCurrentMatrixItems(this.layoutItems)
       return true
     })
   }

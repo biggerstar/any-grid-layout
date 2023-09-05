@@ -7,14 +7,12 @@ import {tempStore} from "@/events";
 export function endWork_mouseup(_) {
   const {
     fromItem,
-    moveItem,
+    dragItem,
     isDragging,
     isResizing,
     fromContainer,
     moveContainer,
   } = tempStore
-
-  const dragItem: Item | null = moveItem || fromItem
 
   //  清除Item限制操作的遮罩层
   const maskList = document.querySelectorAll('.grid-item-mask')

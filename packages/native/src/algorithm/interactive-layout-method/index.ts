@@ -2,5 +2,6 @@
 
 export * from './DefaultLayout'
 export * from './StaticLayout'
+export * from './SameSizeStaticLayout'
 export * from './StreamLayout'
 export * from './ExchangeLayout'

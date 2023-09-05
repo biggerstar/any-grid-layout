@@ -191,7 +191,16 @@ export type CustomEventOptions = {
   rowChange?(row, preRow, container): void,
 }
 
-export type MoveDirection = 'left' | 'right' | 'top' | 'bottom' | 'leftTop' | 'letBottom' | 'rightTop' | 'rightBottom'
+export type MoveDirection =
+  'blank'
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'leftTop'
+  | 'letBottom'
+  | 'rightTop'
+  | 'rightBottom'
 
 export type LayoutOptions = {
   [key: string]: any,
@@ -237,6 +246,8 @@ export type LayoutOptions = {
 }
 
 export type AnalysisResult = {
+  col: number
+  row: number
   /** 能否将指定item添加到目标位置 */
   isSuccess: boolean
   /** 允许添加的item信息 */

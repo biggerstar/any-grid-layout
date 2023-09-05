@@ -1,6 +1,6 @@
 import {parseItem, throttle} from "@/utils";
 import {tempStore} from "@/events";
-import {Container, Item} from "@/main";
+import {Container} from "@/main";
 
 
 export const startMove_mousemove: Function = throttle((ev) => {
@@ -14,8 +14,7 @@ export const startMove_mousemove: Function = throttle((ev) => {
     mousedownItemOffsetTop,
     fromContainer,
   } = tempStore
-  let toItem: Item | null = parseItem(ev)
-  if (toItem) tempStore.toItem = toItem
+  tempStore.toItem = parseItem(ev)
   if (!isDragging || !fromItem || !dragItem || !mousedownEvent || !isLeftMousedown || !fromContainer) return
   let container: Container = dragItem.container
   //-----------------------是否符合交换环境参数检测结束-----------------------//

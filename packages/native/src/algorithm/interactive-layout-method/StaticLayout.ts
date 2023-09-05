@@ -1,51 +1,43 @@
 import {Layout} from "@/algorithm/interface/Layout";
 import {Item} from "@/main";
+import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {tempStore} from "@/events";
-import {AnalysisResult} from "@/types";
 
 /**
- * 静态布局
+ * 纯静态布局
+ * 只能移动到容器空白处
+ * 使用该布局请尽量指定col和rol,否则在进行窗口大小resize之后将会打乱布局,如果指定了col或者row，那么Item将不受影响
  * */
 export class StaticLayout extends Layout {
   public name = 'static'
-  public wait = 10
+  public wait = 120
+  protected static = true
 
-  public defaultDirection(name) {
-    const {
-      dragItem,
-      gridX: x,
-      gridY: y,
-    } = tempStore
-    if (!dragItem) return
-    const manager = this.manager
-    manager.reset()
-    this.layoutItems.forEach((item) => {
-      if (item === dragItem) return  // 当前的dragItem另外判断
-      if (!manager.isBlank(item.pos)) return;
-      manager.mark(item.pos)
-    })
-    const toPos = {
-      w: dragItem.pos.w,
-      h: dragItem.pos.h,
-      x,
-      y
-    }
-    const hasDragPosBlank = manager.isBlank(toPos)
-    if (!hasDragPosBlank) return
-    manager.mark(toPos)
-    dragItem.pos.x = x
-    dragItem.pos.y = y
+  public blank() {
+    this.moveToBlank()
   }
 
   public async layout(items: Item[], options: any) {
-    if (!this.manager.container) return
+    const {dragItem} = tempStore
+    const manager = this.manager
+    const container = manager.container
     return this.throttle(() => {
-      this.patchDirection()
+      if (dragItem) {   //drag
+        this.patchDirection()
+      } else if (!dragItem) {  // resize window
+        autoSetSizeAndMargin(container, true)
+        container.engine.reset()
+        const baseLine = container.getConfig("baseLine")
+        const isAuto = this.hasAutoDirection()
+        const res = manager.analysis(this.layoutItems, null, {
+          baseLine,
+          auto: isAuto
+        })
+        if (!res.isSuccess) return
+        res.patch()
+        this.layoutItems = manager.sortCurrentMatrixItems(this.layoutItems)
+      }
       return true
     })
-  }
-
-  init(...args: any[]): AnalysisResult | void {
-    return undefined;
   }
 }

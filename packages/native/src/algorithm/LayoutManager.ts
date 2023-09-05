@@ -1,8 +1,8 @@
 import {LayoutManagerImpl} from "@/algorithm/interface";
-import {DefaultLayout} from "@/algorithm/interactive-layout-method";
+import {DefaultLayout, StaticLayout} from "@/algorithm/interactive-layout-method";
 import {Layout} from "@/algorithm/interface/Layout";
 import {Container} from "@/main";
-import {ExchangeLayout, StaticLayout, StreamLayout} from "@/algorithm";
+import {ExchangeLayout, SameSizeStaticLayout, StreamLayout} from "@/algorithm";
 
 /**
  * 布局算法名称和`实现类`的映射
@@ -11,6 +11,7 @@ const ALL_INTERACTIVE_LAYOUT_METHOD = {
   default: DefaultLayout,
   stream: StreamLayout,
   exchange: ExchangeLayout,
+  sameSizeStatic: SameSizeStaticLayout,
   static: StaticLayout,
 }
 

@@ -30,8 +30,7 @@ export class Engine {
     this.layoutManager = new LayoutManager(this.container)
     this.initLayoutInfo()
     this.mountAll()
-    const layoutMode = this.container.getConfig('layoutMode')
-    this.layoutManager.init(layoutMode)
+    this.layoutManager.init(this.container.getConfig('layoutMode'))
     this.initialized = true
   }
 

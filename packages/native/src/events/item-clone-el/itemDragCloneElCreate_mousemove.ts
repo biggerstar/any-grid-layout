@@ -8,15 +8,15 @@ import {tempStore} from "@/events";
 export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
   const {
     mousedownEvent,
-    fromItem,
-    moveItem,
+    dragItem,
     isDragging,
     cloneElement,
   } = tempStore
-  if (!mousedownEvent || !fromItem || !isDragging) return
-  let dragItem = moveItem || fromItem
-  dragItem.__temp__.dragging = true
+  if (!mousedownEvent || !dragItem || !isDragging) return
+  // dragItem.__temp__.dragging = true
   if (!cloneElement) {
+    const finallyRemoveEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
+    if (finallyRemoveEls.length) return;
     const sourceEl = dragItem.element
     const newNode = <HTMLElement>sourceEl.cloneNode(true)
     newNode.classList.add('grid-clone-el', 'grid-dragging-clone-el')

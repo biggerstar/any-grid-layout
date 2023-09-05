@@ -15,9 +15,6 @@ export class ExchangeLayout extends Layout {
   public options: Required<LayoutOptions>
   public name = 'exchange'
   public wait = 50
-  public init(...args): AnalysisResult | void {
-    return undefined;
-  }
 
   public defaultDirection(name) {
     const {toItem, dragItem} = this.options

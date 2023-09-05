@@ -204,6 +204,7 @@ export class Container {
       if (!data) {  // 未指定row自动设置
         if (!this.autoGrowRow || !this._mounted) data = containerH
         else data = smartColRowInfo.smartRow
+        // console.log(data, smartColRowInfo.smartRow);
         if (data < containerH) data = containerH
       }
       //-----------------------------Row限制确定---------------------------------//
@@ -217,7 +218,7 @@ export class Container {
 
   /** 将值设置到当前使用的配置信息中 */
   public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): this {
-     this.useLayout[name] = data
+    this.useLayout[name] = data
     return this
   }
 
@@ -253,12 +254,12 @@ export class Container {
         clearTimeout(nestingTimer)
         nestingTimer = null
       })
-      this.updateContainerStyleSize()
       this._observer_()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
       this.__store__.screenHeight = window.screen.height
       this._mounted = true
+      this.updateContainerStyleSize()  // 在 _mounted 之后
       this.eventManager._callback_('containerMounted', this)
       // if (typeof mCallback === 'function') mCallback.bind(this)(this)
     }
@@ -276,7 +277,7 @@ export class Container {
     this.contentElement.classList.add(this.className)
     setTimeout(() => {
       this.domImpl.updateStyle(defaultStyle.gridContainerTransition, this.contentElement)
-    }, 0)
+    }, 500)
   }
 
   /** 手动添加item渲染 */
@@ -348,7 +349,7 @@ export class Container {
    * 监听浏览器窗口resize
    * */
   public _observer_() {
-    let refuseFirstCallDebounceAndThrottle = 1  // 拒绝container.mount时第一次节流函数和防抖函数执行最终调用到updateLayout
+    let refuseFirstCallDebounceAndThrottle = 0  // 拒绝container.mount时第一次节流函数和防抖函数执行最终调用到updateLayout
     const layoutChangeFun = () => {
       if (refuseFirstCallDebounceAndThrottle++ < 2) return
       if (!this._mounted) return
@@ -357,7 +358,6 @@ export class Container {
       if (res === null || res === false) return
       this._trySwitchLayout()
       this.engine.updateLayout()
-      this.updateContainerStyleSize()
     }
     const observerResize = () => {
       layoutChangeFun()

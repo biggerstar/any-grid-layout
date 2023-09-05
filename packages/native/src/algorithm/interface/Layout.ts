@@ -2,6 +2,7 @@ import {LayoutManager} from "@/algorithm";
 import {Item} from "@/main";
 import {AnalysisResult, CustomItemPos, MoveDirection} from "@/types";
 import {tempStore} from "@/events";
+import {autoSetSizeAndMargin} from "@/algorithm/common";
 
 /**
  * 布局算法接口，实现真正的算法逻辑
@@ -25,6 +26,7 @@ export abstract class Layout {
    * 布局名称
    * */
   protected name: string = ''
+  protected static: boolean = false
 
   /**
    * 下次要使用的布局，所有的算法操作都操作该数组，最终框架会自动
@@ -67,8 +69,11 @@ export abstract class Layout {
 
   /**
    * 在某个item的基础上创建其要修改的pos信息
+   * @param onlyOneItemFunc dragItem覆盖目标只有一个的时候执行的函数，默认为null
+   * @param multipleItemFunc dragItem覆盖目标只有一个的时候执行的函数，默认为null
+   *
    * */
-  public patchDiffCoverItem(onlyOneItemFunc: Function | null, multipleItemFunc: Function): void {
+  public patchDiffCoverItem(onlyOneItemFunc: Function | null, multipleItemFunc: Function = null): void {
     const {dragItem, gridX: x, gridY: y} = tempStore
     if (!dragItem) return;
     let toItemList = this.manager.findCoverItemsFromPosition(this.layoutItems, {
@@ -111,8 +116,21 @@ export abstract class Layout {
    * 用于初次加载Item到容器时初始化，用于设置容器的大小或其他操作
    * @return {AnalysisResult | void} 返回结果，如果failed长度不为0，表明有item没添加成功则会抛出警告事件
    * */
-  public abstract init(...args: any[]): AnalysisResult | void
-
+  public init() {
+    const manager = this.manager
+    const container = manager.container
+    const engine = container.engine
+    autoSetSizeAndMargin(container, true)
+    engine.reset()
+    const baseLine = container.getConfig("baseLine")
+    const res = manager.analysis(engine.items, null, {
+      baseLine,
+      auto: this.hasAutoDirection(baseLine)
+    })
+    res.patch()
+    this.layoutItems = res.successItems
+    return res
+  }
 
   /**
    * 外部调用进行布局的入口，子类需要进行实现
@@ -135,7 +153,41 @@ export abstract class Layout {
   }
 
   public patchStyle() {
-    this.layoutItems.forEach((item) => item.updateItemLayout())
+    requestAnimationFrame(() => {
+      this.layoutItems.forEach((item) => item.updateItemLayout())
+    })
+  }
+
+  /**
+   * 判断当前container的baseline方向盒子是否能自动增长
+   * */
+  public hasAutoDirection() {
+    const baseLine = this.manager.container.getConfig("baseLine")
+    const container = this.manager.container
+    if (['top', 'bottom'].includes(baseLine) && container.autoGrowRow) return true
+    else if (['left', 'right'].includes(baseLine) && container.autoGrowCol) return true
+    return false
+  }
+
+  /**
+   * 检测是否允许本次布局，检测方位drag，resize window
+   * 目的：防止move事件太快造成item移动太过灵敏发生抖动
+   * 检测规则:
+   *      如果当前dragItem覆盖区域只有当前dragItem的源item，则忽略移动
+   *      如果dragItem移动区域下为空位置，忽略移动
+   * */
+  public allowLayout() {
+    const {toItem, dragItem, gridX, gridY} = tempStore
+    if (!dragItem) return true   // 不是drag时就是resize浏览器或者元素盒子窗口
+    if (!toItem || toItem === dragItem) {
+      const foundItems = this.manager.findCoverItemsFromPosition(this.layoutItems, {
+        ...dragItem?.pos,
+        x: gridX,
+        y: gridY
+      })
+      if (foundItems.length <= 1) return
+    }
+    return true
   }
 
   /**
@@ -144,13 +196,18 @@ export abstract class Layout {
   public patchDirection() {
     const {
       dragItem,
+      toItem,
       gridX: x,
       gridY: y
     } = tempStore
     if (!dragItem) return
     const X = x - dragItem.pos.x
     const Y = y - dragItem.pos.y
-    if (X !== 0 && Y !== 0) {
+    if (this.static) {
+      if (!toItem || dragItem === toItem) {
+        this.callDirectionHook('blank')
+      }
+    } else if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) this.callDirectionHook('rightBottom')
       else if (X < 0 && Y > 0) this.callDirectionHook('letBottom')
       else if (X < 0 && Y < 0) this.callDirectionHook('leftTop')
@@ -165,7 +222,7 @@ export abstract class Layout {
   }
 
   /**
-   * 检测是否正在动画中
+   * 检测是否正在动画中,少用，容易回流
    * */
   public isAnimation(item: Item) {
     return Math.abs(
@@ -174,8 +231,47 @@ export abstract class Layout {
     ) > 2
   }
 
+  /**
+   * 自动移动到当前鼠标位置的空白处，移动的前提是当前位置没有其他Item
+   * */
+  public moveToBlank() {
+    let {
+      dragItem,
+      relativeX: x,
+      relativeY: y,
+    } = tempStore
+    if (!dragItem || !x || !y) return
+    const manager = this.manager
+    const container = manager.container
+    container.engine.reset()
+    this.layoutItems.forEach((item) => {
+      if (item === dragItem) return  // 当前的dragItem另外判断
+      if (!manager.isBlank(item.pos)) return;
+      manager.mark(item.pos)
+    })
+    const maxItemX = Math.min(x, container.getConfig("col") - dragItem.pos.w + 1)
+    const maxItemY = Math.min(y, container.getConfig("row") - dragItem.pos.h + 1)
+    x = maxItemX > 0 ? maxItemX : 1  // left和top边界
+    y = maxItemY > 0 ? maxItemY : 1
+    const toPos = {
+      w: dragItem.pos.w,
+      h: dragItem.pos.h,
+      x,
+      y
+    }
+    console.log(x, y)
+    const hasDragPosBlank = manager.isBlank(toPos)
+    if (!hasDragPosBlank) return
+    manager.mark(toPos)
+    dragItem.pos.x = x
+    dragItem.pos.y = y
+  }
+
   /** 往任何方向移动都会执行 */
   public abstract anyDirection?(name: MoveDirection): void
+
+  /** 前往容器中空白处执行 */
+  public abstract blank?(): void
 
   public abstract left?(): void
 
