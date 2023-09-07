@@ -22,14 +22,22 @@ class TempStore {
     return this.handleMethod === 'autoScrollPage'
   }
 
+  get isFree() {
+    return this.handleMethod === void 0
+  }
+
+  isBlockResize: boolean
   //----------只读变量-----------//
   screenWidth: null | number = null  // 用户屏幕宽度
   screenHeight: null | number = null  // 用户屏幕高度
   //----------通用可写变量-----------//
   editItemNum: number = 0   // 当前处于编辑模式的Item个数
   fromContainer: Container | null = null    //  当前Item的初始来源
-  dragContainer: Container | null = null    //  当前Item拖动多次跨容器后的最新所处容器位置来源
   moveContainer: Container | null = null    //  当前正聚焦的容器
+  toContainer: Container | null = null    //  当前鼠标移动位置下是哪个容器，移动到容器外为null
+  get dragContainer(): Container | null {
+    return this.fromContainer || this.dragContainer
+  }    //  当前Item拖动多次跨容器后的最新所处容器位置来源
   currentContainer: Container | null = null  //  当前鼠标在哪个Container
   beforeContainer: Container | null = null  //  来自上一个的Container
   currentContainerArea: HTMLElement   //  当前鼠标在哪个Container容器域名
@@ -42,6 +50,10 @@ class TempStore {
     return this.moveItem || this.fromItem
   }
 
+  // resize的时候当前的宽
+  newResizeW: number
+  // resize的时候当前的高
+  newResizeH: number
   // 当前鼠标距离源容器的真实x栅格值
   relativeX: number
   // 当前鼠标距离源容器的真实y栅格值
@@ -66,7 +78,6 @@ class TempStore {
   offsetPageY: number | null = null
   scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态
   scrollReactionTimer: any = null   // 鼠标移动到容器边界自动滚动反应的定时器
-  isCoverRow: boolean = false   //  是否进行Cover覆盖完整容器操作
   //----------鼠标相关-----------//
   isLeftMousedown: boolean = false
   mouseDownElClassName: string | null = null

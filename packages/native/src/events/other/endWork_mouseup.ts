@@ -1,4 +1,3 @@
-import {Item} from "@/main";
 import {tempStore} from "@/events";
 
 /**
@@ -7,9 +6,6 @@ import {tempStore} from "@/events";
 export function endWork_mouseup(_) {
   const {
     fromItem,
-    dragItem,
-    isDragging,
-    isResizing,
     fromContainer,
     moveContainer,
   } = tempStore
@@ -36,7 +32,6 @@ export function endWork_mouseup(_) {
 
   //-------------------------更新所有相关操作的容器布局---------------------------//
   if (fromItem) {
-    fromItem.container.engine.updateLayout()
     // resize下操作有包含内嵌容器的外部Item
     // const resizeIncludeNestedContainer = fromItem.container
     // const childContainers = resizeIncludeNestedContainer.childContainer
@@ -46,19 +41,7 @@ export function endWork_mouseup(_) {
     //   }
     // })
   }
-  // if (fromItem && dragItem && dragItem.container !== fromItem.container) {
-  //   dragItem?.container.engine.updateLayout()
-  // }
 
-  //-----------------------------------事件---------------------------------//
-  if (dragItem) {
-    if (isDragging) {
-      dragItem.container.eventManager._callback_('itemMoved', dragItem.pos.x, dragItem.pos.y, dragItem)
-    }
-    if (isResizing) {
-      dragItem.container.eventManager._callback_('itemResized', dragItem.pos.w, dragItem.pos.h, dragItem)
-    }
-  }
 
   //-------------------------------重置相关缓存-------------------------------//
   if (fromItem) fromItem.__temp__.resizeLock = false
@@ -75,22 +58,24 @@ export function endWork_mouseup(_) {
     'offsetPageX',
     'offsetPageY',
     'isLeftMousedown',
-    'isCoverRow',
     'handleMethod',
     'mousedownEvent',
     'mousedownItemOffsetLeft',
     'mousedownItemOffsetTop',
     'mouseDownElClassName',
+    'isBlockResize',
     'gridX',
     'gridY',
     "relativeX",
     "relativeY",
-    'mouseDownElClassName',
-    'mouseDownElClassName',
+    "newResizeW",
+    "newResizeH",
   ] as (NonNullable<keyof typeof tempStore>)[]
   resetKeys.forEach((key) => delete tempStore[key])
   tempStore.exchangeItems = {
     new: null,
     old: null
   }
+  if (fromItem) fromItem.container.engine.updateLayout()
+
 }

@@ -32,17 +32,10 @@ export function autoSetSizeAndMargin(container, isSetConfig: boolean = false): {
     throw new Error('您必须指定:\nmargin，size，col，row\n其中一个才能生成布局')
   }
 //----------------------------------------------------//
-//   const smartInfo = computeSmartRowAndCol(container)
-//   if (!col && !margin[0] && !size[0]) col = smartInfo.smartCol
-//   if (!row || responsive) row = smartInfo.smartRow
-  // const nowCol = container.getConfig("col")
-  // if (!responsive && !col && nowCol && nowCol !== 1) col = nowCol // 静态直接使用指定的col值,不等于1是define getter默认值就是1
   const sizeColInfo = autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)
   margin[0] = sizeColInfo.margin
   size[0] = sizeColInfo.size
 
-  // const nowRow = container.getConfig("row")
-  // if (!responsive && !row && nowRow && nowRow !== 1) row = nowRow // 静态直接使用指定的row值,不等于1是define getter默认值就是1
   const sizeRowInfo = autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
   margin[1] = sizeRowInfo.margin
   size[1] = sizeRowInfo.size

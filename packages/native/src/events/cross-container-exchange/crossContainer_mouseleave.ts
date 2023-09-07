@@ -19,7 +19,6 @@ export function crossContainer_mouseleave(ev, container = null) {
       } else if (growContainer.platform === 'native') {
         growContainer.setConfig("row", curRow + 1)
       }
-      tempStore.isCoverRow = true
     }
     container.eventManager._callback_('leaveContainerArea', container, dragItem)
     // container._VueEvents.vueLeaveContainerArea(container, dragItem)

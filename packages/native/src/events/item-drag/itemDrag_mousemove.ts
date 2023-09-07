@@ -33,11 +33,13 @@ export const itemDrag_mousemove: Function = (ev) => {
       if (top > limitBottom) top = limitBottom
       // console.log(containerElOffset,left,top);
     }
-    if (!container)/* 移动到容器外 */ dragItem.container.engine.updateLayout()
     dragItem.domImpl.updateStyle({
       left: `${left}px`,
       top: `${top}px`
     }, cloneElement)  // 必须重新从tempStore获取当前克隆节点
+    if (dragItem) {
+      dragItem.container.bus.emit('itemMoving')
+    }
   }
 
   requestAnimationFrame(updateDragLocation)

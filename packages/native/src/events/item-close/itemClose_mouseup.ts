@@ -9,12 +9,8 @@ export function itemClose_mouseup(ev) {
   if (target.classList.contains('grid-item-close-btn')) {  // 必须鼠标按下在close元素域内，鼠标抬起也是该元素才允许关闭
     const evItem = parseItem(ev)
     if (evItem && evItem === fromItem) {  // 按下和抬起要同一个item才能关闭
-      const isClose = evItem.container.eventManager._callback_('itemClosing', evItem)
-      if (!(isClose === null || isClose === false)) {  // 返回false或者null移除关闭按钮
-        evItem.remove(true)
-        evItem.container.engine.updateLayout()
-        evItem.container.eventManager._callback_('itemClosed', evItem)
-      }
+      evItem.remove(true)
+      evItem.container.bus.emit('itemClosed')
     }
   }
 }

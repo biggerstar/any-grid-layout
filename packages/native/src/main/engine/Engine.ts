@@ -1,11 +1,9 @@
 import {Item} from "@/main/item/Item";
-import {LayoutManager} from "@/algorithm/LayoutManager";
 import {Container} from "@/main/container/Container";
 import {ContainerInstantiationOptions, CustomItem} from "@/types";
 
 export class Engine {
   public items = []
-  public layoutManager: LayoutManager
   private container: Container
   private readonly options: ContainerInstantiationOptions
   private initialized = false
@@ -27,10 +25,9 @@ export class Engine {
 
   public init() {
     if (this.initialized) return
-    this.layoutManager = new LayoutManager(this.container)
     this.initLayoutInfo()
     this.mountAll()
-    this.layoutManager.init(this.container.getConfig('layoutMode'))
+    this.container.bus.emit('init')
     this.initialized = true
   }
 
@@ -119,7 +116,7 @@ export class Engine {
 
   /** 清除重置布局矩阵 */
   public reset(): void {
-    this.layoutManager.reset(this.container.getConfig('col'), this.container.getConfig('row'))
+    this.container.layoutManager.reset(this.container.getConfig('col'), this.container.getConfig('row'))
   }
 
   /** 清除所有Items */
@@ -141,9 +138,10 @@ export class Engine {
    * 更新并渲染布局
    * */
   public updateLayout() {
-    const layoutMode = this.container.getConfig('layoutMode')
-    this.layoutManager.layout(layoutMode).then()
-    this.container.updateContainerStyleSize()
-    this._checkUpdated()
+    // this.container.bus.emit('updateLayout')
+    // const layoutMode = this.container.getConfig('layoutMode')
+    // this.container.layoutManager.layout(layoutMode).then()
+    // this.container.updateContainerStyleSize()
+    // this._checkUpdated()
   }
 }

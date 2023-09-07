@@ -91,9 +91,9 @@ export abstract class Finder {
     let minH = maxH  // Y轴最小活动宽度
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
-      const pos = item.pos
       if (!item.static) continue   // 响应式布局中只找限定static的Item空间
       if (itemPoint === item) continue
+      const pos = item.pos
       if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue   // 上和左在x,y点外的Item不考虑
       //  思路：右方向最大(maxW && minH) :上方向最大(minW && maxH)
       // if (pos.x === x && pos.y === y) continue
@@ -112,13 +112,13 @@ export abstract class Finder {
       if (pos.x >= x && pos.x - x < minW) {
         if (((y + maxH - 1) >= pos.y && (y + maxH - 1) <= (pos.y + pos.h - 1)
           || (pos.y + pos.h - 1) >= y && (pos.y + pos.h - 1) <= (y + maxH - 1))) {    // 横向计算X最小空白处
-          minW = pos.x - x
+          minW = pos.x - x || 1
         }
       }
       if (pos.y >= y && pos.y - y < minH) {
         if (((x + maxW - 1) >= pos.x && (x + maxW - 1) <= (pos.x + pos.w - 1)
           || (pos.x + pos.w - 1) >= x && (pos.x + pos.w - 1) <= (x + maxW - 1))) {  // 纵向计算Y空白处
-          minH = pos.y - y
+          minH = pos.y - y || 1
         }
       }
     }

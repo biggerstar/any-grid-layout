@@ -22,8 +22,8 @@ import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemove_mouseup";
 import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
-import {endMove_mousemove} from "@/events/other/endMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
+import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
 
 export function allMousedown(ev) {
   // autoScrollPage_mousedown(ev)  // TODO
@@ -52,15 +52,12 @@ export function allMousemove(ev) {
   autoScrollPage_mousemove(ev)
   /* crossContainer */
   crossContainer_mousemove(ev)
-  /* itemDrag */
-  itemDrag_mousemove(ev)
-  itemDragCloneElCreate_mousemove(ev)
   /* ItemResize */
   itemResize_mousemove(ev)
   itemResizeCloneElCreate_mousemove(ev)
-  //------------------------------
-  /* end move */
-  endMove_mousemove(ev)
+  /* itemDrag */
+  itemDrag_mousemove(ev)
+  itemDragCloneElCreate_mousemove(ev)
 }
 
 export function allMouseup(ev) {
@@ -70,12 +67,14 @@ export function allMouseup(ev) {
   itemCloneElRemove_mouseup(ev)
   /*  cursor */
   cursor_mouseup(ev)
-  /*  itemResize */
-  itemResize_mouseup(ev)
   /*  scrollPage */
   autoScrollPage_mouseup(ev)
+  /*  itemResize */
+  itemResize_mouseup(ev)
   /*  itemClose */
   itemClose_mouseup(ev)
+  /*  itemDrag */
+  itemDrag_mouseup(ev)
   /*  endWork */
   endWork_mouseup(ev)
 }

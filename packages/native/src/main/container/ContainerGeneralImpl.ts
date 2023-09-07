@@ -13,11 +13,6 @@ export class ContainerGeneralImpl {
    * */
   px?: number
 
-  /** responsive:  默认为static静态布局,值等于true为响应式布局
-   * @default false
-   * */
-  responsive?: boolean = false
-
   /**
    * default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
    * @default  default

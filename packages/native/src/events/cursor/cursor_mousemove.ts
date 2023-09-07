@@ -27,7 +27,7 @@ export const cursor_mousemove: Function = throttle((ev) => {
           if (overItem.static) {
             if (cursor.cursor !== 'drag-to-item-no-drop') cursor.dragToItemNoDrop()
           }
-        } else if (!overItem && container.getConfig('responsive')) {
+        } else if (!overItem) {
           // 拖动中的样式，这里只写的响应式，静态模式拖动中的逻辑在交换算法那里
           if (cursor.cursor !== 'mousedown') cursor.mousedown()
         }

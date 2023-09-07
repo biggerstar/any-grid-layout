@@ -13,7 +13,9 @@ import {EventCallBack} from "@/utils/EventCallBack";
 import {startGlobalEvent} from "@/events/listen";
 import {tempStore} from "@/events";
 import {computeSmartRowAndCol} from "@/algorithm/common";
-
+import Bus, {Emitter} from 'mitt'
+import {PluginManager} from "@/plugin/PluginManager";
+import {LayoutManager} from "@/algorithm";
 //---------------------------------------------------------------------------------------------//
 
 //---------------------------------------------------------------------------------------------//
@@ -62,6 +64,10 @@ export class Container {
    * 当前正在使用的布局，为layouts中的某一个适合当前屏幕的布局配置的地址引用
    * 该布局会信息会在切换布局的时候被修改，原因是为了同步当前最新布局保存到layouts中
    * */
+  public bus: Emitter<CustomEventOptions> = Bus()
+  public pluginManager: PluginManager
+  public layoutManager: LayoutManager
+  public eventManager: EventCallBack      // events通过封装构建的类实例
   public readonly layout: ContainerGeneralImpl = {} as any
   public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public classList: string[] = []
@@ -73,7 +79,6 @@ export class Container {
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
   public parent: Container   // 嵌套情况下上级Container
   public parentItem: Item
-  public eventManager: EventCallBack      // events通过封装构建的类实例
   private readonly domImpl: DomFunctionImpl
 
   //----------------vue 支持---------------------//
@@ -110,6 +115,8 @@ export class Container {
     merge(this, options)
     this._define()
     this.eventManager = new EventCallBack(<any>options.events)
+    this.pluginManager = new PluginManager(this)
+    this.layoutManager = new LayoutManager()
     this.engine = new Engine(options)
     this.engine.setContainer(this)
     this.domImpl = new DomFunctionImpl(this)
@@ -159,6 +166,10 @@ export class Container {
     })
   }
 
+  public use(plugin) {
+    this.pluginManager.use(plugin)
+  }
+
   /**
    * 是否是自动增长col方向的容器
    * */
@@ -191,7 +202,7 @@ export class Container {
       if (!data) { // 未指定col自动设置
         if (!this.autoGrowCol || !this._mounted) data = containerW
         else data = smartColRowInfo.smartCol
-        if (data < containerW) data = containerW
+        if (data < containerW) data = containerW   // 最低保留盒子的W
       }
       //-----------------------------Col限制确定---------------------------------//
       const curMinCol = this._getConfig('minCol')
@@ -205,7 +216,7 @@ export class Container {
         if (!this.autoGrowRow || !this._mounted) data = containerH
         else data = smartColRowInfo.smartRow
         // console.log(data, smartColRowInfo.smartRow);
-        if (data < containerH) data = containerH
+        if (data < containerH) data = containerH   // 最低保留盒子的H
       }
       //-----------------------------Row限制确定---------------------------------//
       const curMinRow = this._getConfig('minRow')
@@ -254,6 +265,7 @@ export class Container {
         clearTimeout(nestingTimer)
         nestingTimer = null
       })
+      this.engine.updateLayout() // TODO
       this._observer_()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
@@ -353,9 +365,9 @@ export class Container {
     const layoutChangeFun = () => {
       if (refuseFirstCallDebounceAndThrottle++ < 2) return
       if (!this._mounted) return
-      let useLayoutConfig /* 检测下一个配置，后面会通过px确定是否更换了配置 */ = this.useLayout
-      const res = this.eventManager._callback_('mountPointElementResizing', useLayoutConfig, this.element.clientWidth, this)
-      if (res === null || res === false) return
+      // const res = this.eventManager._callback_('containerResizing', useLayoutConfig, this.element.clientWidth, this)
+      // if (res === null || res === false) return
+      this.bus.emit('containerResizing')
       this._trySwitchLayout()
       this.engine.updateLayout()
     }
@@ -427,14 +439,24 @@ export class Container {
     return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
   }
 
-  /** 获取当前容器可视范围的col  */
+  /** 获取外容器可视范围的col  */
   public get containerW(): number {
     return Math.round(this.element.offsetWidth / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
   }
 
-  /** 获取当前容器可视范围的row */
+  /** 获取外容器可视范围的row */
   public get containerH(): number {
     return Math.round(this.element.offsetHeight / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+  }
+
+  /** 获取內容器可视范围的col  */
+  public get contentBoxW(): number {
+    return Math.round(this.contentElement.offsetWidth / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+  }
+
+  /** 获取内容器可视范围的row */
+  public get contentBoxH(): number {
+    return Math.round(this.contentElement.offsetHeight / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */

@@ -2,11 +2,11 @@ import {tempStore} from "@/events";
 
 export function itemResize_mouseup(_: Event) {
   const {isResizing, fromItem} = tempStore
-  if (!isResizing) return
-  if (!fromItem) return
+  if (!isResizing || !fromItem) return
   //----------------------------------------//
-  fromItem.__temp__.clientWidth = fromItem.nowWidth()
-  fromItem.__temp__.clientHeight = fromItem.nowHeight()
-  tempStore.isLeftMousedown = false
-  fromItem.domImpl.updateStyle(fromItem.genItemStyle())
+  const {__temp__, domImpl, container} = fromItem
+  __temp__.clientWidth = fromItem.nowWidth()
+  __temp__.clientHeight = fromItem.nowHeight()
+  domImpl.updateStyle(fromItem.genItemStyle())
+  container.bus.emit('itemResized')
 }

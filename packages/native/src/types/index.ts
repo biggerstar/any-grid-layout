@@ -93,6 +93,7 @@ export type ItemLimitType = {
 
 
 export type CustomEventOptions = {
+  [key: string]: Function
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
   error?(err: HandleErrorType): void,
@@ -189,6 +190,17 @@ export type CustomEventOptions = {
 
   /** row列数改变 */
   rowChange?(row, preRow, container): void,
+
+  init?: Function
+  dragToBlank?: Function
+  dragToRightBottom?: Function
+  dragToLetBottom?: Function
+  dragToLeftTop?: Function
+  dragToRightTop?: Function
+  dragToRight?: Function
+  dragToLeft?: Function
+  dragTobBottom?: Function
+  dragToTop?: Function
 }
 
 export type MoveDirection =

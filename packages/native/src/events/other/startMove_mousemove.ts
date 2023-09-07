@@ -1,4 +1,4 @@
-import {parseItem, throttle} from "@/utils";
+import {parseContainer, parseItem, throttle} from "@/utils";
 import {tempStore} from "@/events";
 import {Container} from "@/main";
 
@@ -15,6 +15,7 @@ export const startMove_mousemove: Function = throttle((ev) => {
     fromContainer,
   } = tempStore
   tempStore.toItem = parseItem(ev)
+  tempStore.toContainer = parseContainer(ev)
   if (!isDragging || !fromItem || !dragItem || !mousedownEvent || !isLeftMousedown || !fromContainer) return
   let container: Container = dragItem.container
   //-----------------------是否符合交换环境参数检测结束-----------------------//
@@ -31,7 +32,7 @@ export const startMove_mousemove: Function = throttle((ev) => {
   const relativeX = Math.round(offsetLeftPx / (container.getConfig('size')[0] + container.getConfig('margin')[0])) + 1
   const relativeY = Math.round(offsetTopPx / (container.getConfig('size')[1] + container.getConfig('margin')[1])) + 1
   const pxToGridLimitPosW = (x) => {
-    const containerW = container.containerW
+    const containerW = container.contentBoxW
     if (x + dragItem.pos.w > containerW) {  // right方向超出容器进行限制
       return containerW - dragItem.pos.w + 1
     } else {
@@ -39,7 +40,7 @@ export const startMove_mousemove: Function = throttle((ev) => {
     }
   }
   const pxToGridLimitPosH = (y) => {
-    const containerH = container.containerH
+    const containerH = container.contentBoxH
     if (y + dragItem.pos.h > containerH) { // bottom，同上
       return containerH - dragItem.pos.h + 1
     } else {
