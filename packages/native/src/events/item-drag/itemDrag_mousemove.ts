@@ -19,6 +19,7 @@ export const itemDrag_mousemove: Function = (ev) => {
     let left = ev.pageX - mousedownItemOffsetLeft
     let top = ev.pageY - mousedownItemOffsetTop
     if (!mousedownEvent || !fromItem || !isDragging || !cloneElement) return
+    tempStore.mousemoveDragEvent = ev
     let dragItem = moveItem || fromItem
     const container: Container | null = parseContainer(ev)
     if (!dragItem.dragOut && container) {   // 限制是否允许拖动到容器之外
@@ -38,7 +39,7 @@ export const itemDrag_mousemove: Function = (ev) => {
       top: `${top}px`
     }, cloneElement)  // 必须重新从tempStore获取当前克隆节点
     if (dragItem) {
-      dragItem.container.bus.emit('itemMoving')
+      dragItem.container.bus.emit('dragging')
     }
   }
 

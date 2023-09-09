@@ -1,7 +1,7 @@
 import {Container} from "@/main";
-import {Plugin} from "@/plugin/Plugin";
+import {Plugin} from "@/plugins/Plugin";
 import {isFunction, isObject} from 'is-what'
-import * as AllDefaultBehavior from "@/plugin/default-behavior";
+import * as AllDefaultBehavior from "@/plugins/default-behavior";
 import {EventMap} from './event-type'
 
 let DefaultBehavior = {}
@@ -23,25 +23,21 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof Plugin | string, ...args) {
-    const Event = EventMap[eventName] || EventMap['*']
+    const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]
-    const ev = new Event(eventName, {
+    const ev = new GEvent(eventName, {
       target: this.container,
       container: this.container,
       layoutManager: this.container.layoutManager,
-      default: (...args) => defaultActionFn(ev, ...args),   // 默认行为函数，执行该函数可执行默认行为
+      default: (...args) => isFunction(defaultActionFn) && defaultActionFn(ev, ...args),   // 默认行为函数，执行该函数可执行默认行为
     })
-    // console.log(eventName)
-    // console.log(ev);
     this.plugins.forEach((plugin) => {
       const callFunc: Function = plugin[eventName]
-      if (!isFunction(callFunc)) return
-      callFunc.call(plugin, ev, ...args)
+      if (isFunction(callFunc)) callFunc.call(plugin, ev, ...args)
     })
-    if (!ev.isPrevent && isFunction(defaultActionFn)) {
-      defaultActionFn.call(null, ev, ...args)
+    if (!ev.isPrevent && isFunction(ev.default)) {  // 默认行为函数在最后执行
+      (ev.default || defaultActionFn)?.call(null, ev, ...args)
     }
-    // console.log(eventName, '***')
   }
 
   /**

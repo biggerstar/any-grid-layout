@@ -1,11 +1,12 @@
 import container1 from "@/container/container1";
+import {ResponsiveLayout} from '@biggerstar/layout'
+// import  * as DD from '@biggerstar/layout'
+// console.log(DD);
+
 
 
 console.log(container1)
-
-
-container1.mount()
-
+// console.log(ResponsiveLayout)
 
 container1.use({
   error(ev) {
@@ -19,6 +20,9 @@ container1.use({
   }
 })
 
+// container1.use(ResponsiveLayout)
+
+
 // container.render((data, useLayout, containerElement) => {
 //   // console.log(data,useLayout);
 //   // container.mountItems(items)
@@ -27,6 +31,7 @@ container1.use({
 //     container.add(item)
 //   })
 // })
+container1.mount()
 
 
 // container1.mount()

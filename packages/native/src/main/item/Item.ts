@@ -288,9 +288,26 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  获取该Item 当前的宽度
+   * @return {number} px像素转栅格单位 w
    * */
-  public nowWidth = (w = null) => {
+  public pxToW = (pxNum: number) => {
+    if (this.margin[0] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (this.margin[0] + this.size[0]))
+  }
+
+  /**
+   * @return {number} px像素转栅格单位 h
+   * */
+  public pxToH = (pxNum: number) => {
+    if (this.margin[1] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (this.margin[1] + this.size[1]))
+  }
+
+  /**
+   * @param w 栅格单位
+   * @return {number}  获取该Item 当前的宽度
+   * */
+  public nowWidth = (w?: number) => {
     let marginWidth = 0
     const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
     if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
@@ -298,9 +315,10 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  获取该Item 当前的高度
+   * @param h 栅格单位
+   * @return {number}  获取该Item 当前的高度
    * */
-  public nowHeight = (h = null) => {
+  public nowHeight = (h?: number) => {
     let marginHeight = 0
     const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
     if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
@@ -308,7 +326,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return   根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
+   * @return  {number}  根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
    * */
   public minWidth() {
     let marginWidth = 0
@@ -318,7 +336,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
+   * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
    * */
   public minHeight = () => {
     let marginHeight = 0
@@ -328,7 +346,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
+   * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
   public maxWidth() {
     let marginWidth = 0
@@ -338,7 +356,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
+   * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
   public maxHeight = () => {
     let marginHeight = 0

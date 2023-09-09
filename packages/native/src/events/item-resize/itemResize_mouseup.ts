@@ -8,5 +8,5 @@ export function itemResize_mouseup(_: Event) {
   __temp__.clientWidth = fromItem.nowWidth()
   __temp__.clientHeight = fromItem.nowHeight()
   domImpl.updateStyle(fromItem.genItemStyle())
-  container.bus.emit('itemResized')
+  container.bus.emit('resized')
 }

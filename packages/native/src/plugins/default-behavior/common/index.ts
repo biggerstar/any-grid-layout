@@ -1,16 +1,16 @@
-import {ItemLayoutEvent} from "@/plugin/event-type/ItemLayoutEvent";
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {tempStore} from "@/events";
 import {throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
+import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 
 /**
  * 立即更新布局
  * @return {boolean} 布局是否更新成功过
  * */
-export const directUpdateLayout = (ev: ItemLayoutEvent):boolean => {
+export const directUpdateLayout = (ev: ItemDragEvent): boolean => {
   const {container, items, toContainer} = ev
-  if (toContainer && !ev.allowLayout()) return
+  if (toContainer && !ev.allowLayout?.()) return
   const {layoutManager: manager, engine} = container
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
@@ -35,7 +35,7 @@ export const updateLayout: Function = throttle(directUpdateLayout, 66)
 /**
  * 节流更新drag到十字线方向的布局
  * */
-export const dragMoveToCrossHair: Function = throttle((ev: ItemLayoutEvent, callback: Function) => {
+export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
   const {dragItem, gridX: x, gridY: y} = tempStore
   if (!dragItem) return
   ev.addModifyItems(dragItem, {x, y})
@@ -51,7 +51,7 @@ export const dragMoveToCrossHair: Function = throttle((ev: ItemLayoutEvent, call
 /**
  * 节流更新drag到对角方向的布局
  * */
-export const dragMoveToDiagonal: Function = throttle((ev: ItemLayoutEvent) => {
+export const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   const {toItem, dragItem} = tempStore
   const {layoutManager, items} = ev
   if (!toItem || !dragItem) return

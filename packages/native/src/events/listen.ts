@@ -53,11 +53,11 @@ export function allMousemove(ev) {
   /* crossContainer */
   crossContainer_mousemove(ev)
   /* ItemResize */
+  itemResizeCloneElCreate_mousemove(ev)  //  需在itemResize_mousemove前面
   itemResize_mousemove(ev)
-  itemResizeCloneElCreate_mousemove(ev)
   /* itemDrag */
+  itemDragCloneElCreate_mousemove(ev)  // 同resize
   itemDrag_mousemove(ev)
-  itemDragCloneElCreate_mousemove(ev)
 }
 
 export function allMouseup(ev) {

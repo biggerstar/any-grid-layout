@@ -18,7 +18,7 @@ export const defaultStyle: DefaultStyle = {
   },
   gridContainer: {   // contentElement初始化使用的默认样式
     boxSizing: 'border-box',
-    margin:'0 0',
+    margin:'0 auto',
     height: 'auto',
     width: '100%',
     position: 'relative',

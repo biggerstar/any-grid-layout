@@ -1,0 +1,46 @@
+import {BaseEvent} from './BaseEvent'
+import {CustomEventOptions} from "@/types";
+import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
+import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
+import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+
+type EventMapType = Record<keyof CustomEventOptions, any> & Record<any, any>
+export const EventMap: EventMapType = {
+  '*': BaseEvent,
+  //--------------other-------------------
+  init: ItemLayoutEvent,
+  updateLayout: ItemLayoutEvent,
+  itemSizeChange: BaseEvent,
+  //------------container-outer-move------------
+  dragOuterLeft: ItemDragEvent,
+  dragOuterRight: ItemDragEvent,
+  dragOuterTop: ItemDragEvent,
+  dragOuterBottom: ItemDragEvent,
+  //--------------drag-------------------
+  dragging: ItemDragEvent,
+  dragend: ItemDragEvent,
+  dragToBlank: ItemDragEvent,
+  dragToTop: ItemDragEvent,
+  dragToBottom: ItemDragEvent,
+  dragToLeft: ItemDragEvent,
+  dragToRight: ItemDragEvent,
+  dragToRightBottom: ItemDragEvent,
+  dragToLetBottom: ItemDragEvent,
+  dragToLeftTop: ItemDragEvent,
+  dragToRightTop: ItemDragEvent,
+  //--------------resize-----------------
+  containerResizing: ItemLayoutEvent,
+  resizing: ItemResizeEvent,
+  resized: ItemResizeEvent,
+  resizeToTop: ItemResizeEvent,
+  resizeToRight: ItemResizeEvent,
+  resizeToBottom: ItemResizeEvent,
+  resizeToLeft: ItemResizeEvent,
+  resizeOuterTop: ItemResizeEvent,
+  resizeOuterRight: ItemResizeEvent,
+  resizeOuterBottom: ItemResizeEvent,
+  resizeOuterLeft: ItemResizeEvent,
+  //--------------close------------------
+  closing: ItemLayoutEvent,
+  closed: ItemLayoutEvent,
+}

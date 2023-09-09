@@ -1,73 +1,11 @@
-import {BaseEvent} from "@/plugin/event-type/BaseEvent";
+import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {tempStore} from "@/events";
+import {isFunction} from "is-what";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
-import {createModifyPosInfo} from "@/algorithm/common/tool";
-import {getMovableRange} from "@/utils";
+import {getMovableRange, spiralTraversal} from "@/utils";
 
-export class ItemLayoutEvent extends BaseEvent {
-  constructor(...args) {
-    super(...args);
-    this.items = this.container.engine.items
-  }
-
-  /**
-   * 是否是静态布局  TODO 后续可能更改
-   * */
-  public static: boolean = false
-  /**
-   * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
-   * 注意：列表中的成员必须是已经挂载在的引用
-   * */
-  public items: Item[]
-
-  /**
-   * 两个item的尺寸是否相等
-   * */
-  public equalSize(item1: Item, item2: Item) {
-    return (item1.pos.w === item2.pos.w) && (item1.pos.h === item2.pos.h)
-  }
-
-  /**
-   * 派发Items的样式更新
-   * */
-  public patchStyle(items?: Item[]) {
-    requestAnimationFrame(() => (items || this.items).forEach((item) => item.updateItemLayout()))
-  }
-
-  /**
-   * 下次要修改的Item
-   * */
-  private _modifyItems: Array<{ item: Item, pos: CustomItemPos }> = []
-
-  /**
-   * 获取要修改的Items并清空当前列表,所有要修改的Item都添加到这里来，不要修改item本身的pos，后面检测能添加的时候会自动修改
-   * */
-  public addModifyItems(item: Item, pos: Partial<CustomItemPos> = {}) {
-    const info: { item: Item, pos: CustomItemPos } = createModifyPosInfo(item, pos)
-    this._modifyItems.push(info)
-  }
-
-  /**
-   * 获取要修改的Items并清空当前列表
-   * */
-  public getModifyItems() {
-    const _items = this._modifyItems
-    this._modifyItems = []
-    return _items
-  }
-
-  /**
-   * 判断当前container的baseline方向盒子是否能自动增长
-   * */
-  public hasAutoDirection() {
-    const container = this.container
-    const baseLine = container.getConfig("baseLine")
-    if (['top', 'bottom'].includes(baseLine) && container.autoGrowRow) return true
-    else if (['left', 'right'].includes(baseLine) && container.autoGrowCol) return true
-    return false
-  }
-
+export class ItemDragEvent extends ItemLayoutEvent {
   /**
    * 在某个item的基础上创建其要修改的pos信息
    * @param oneItemFunc dragItem覆盖目标只需要操作一个的时候执行的函数，如果存在多个取第一个，默认为null
@@ -85,10 +23,10 @@ export class ItemLayoutEvent extends BaseEvent {
     })
     if (!toItemList.length) return
     toItemList = toItemList.filter(item => item !== dragItem)
-    if (toItemList.length === 1 && typeof oneItemFunc === 'function') {
-      oneItemFunc(toItemList[0])
+    if (toItemList.length === 1 && isFunction(oneItemFunc)) {
+      (oneItemFunc as Function)(toItemList[0])
     } else {
-      if (typeof multipleItemFunc === 'function') {
+      if (isFunction(multipleItemFunc)) {
         toItemList.forEach((item) => multipleItemFunc(item))
       }
     }
@@ -101,7 +39,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * @param item？ 当前要移动的item
    * @param pos  当前移动到新位置的pos
    * */
-  public tryMoveToBlank(item?: Item, pos?: Pick<CustomItemPos, 'x' | 'y' | 'w' | 'h'>): boolean {
+  public tryMoveToBlank(item?: Item, pos?: Partial<Pick<CustomItemPos, 'x' | 'y'>>): boolean {
     let {
       dragItem,
       relativeX,
@@ -109,11 +47,16 @@ export class ItemLayoutEvent extends BaseEvent {
     } = tempStore
     const targetItem = item || dragItem
     if (!targetItem) return false
-    const targetPos = pos || {
-      ...targetItem.pos,
-      x: relativeX,
-      y: relativeY,
-    }
+    const targetPos = pos
+      ? {
+        ...targetItem.pos,
+        ...pos
+      }
+      : {
+        ...targetItem.pos,
+        x: relativeX,
+        y: relativeY,
+      }
     const securityPos = getMovableRange(targetPos)
     //-------------------------------------
     const container = this.container
@@ -131,11 +74,68 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
+   * 尝试移动到附近有空白位置的地方
+   * @param options
+   * @param options.radius  拓展的半径倍数
+   *                        最终range.w的计算方式: 扩展的直径(radius * 2 ) + 1(当前x,y原点),合并后为dragItem.pos.w * (radius * 2) + 1
+   * */
+  public tryMoveToNearestBlank({radius = 1} = {}): boolean {
+    const {dragItem, gridX, gridY} = tempStore
+    if (!dragItem) return false
+    const manager = this.layoutManager
+    const rangeMinX = gridX - dragItem.pos.w * radius
+    const rangeMinY = gridY - dragItem.pos.h * radius
+    const range = {  // 当前item位置扩大两倍宽高的矩形范围
+      x: rangeMinX < 1 ? 1 : rangeMinX,
+      y: rangeMinY < 1 ? 1 : rangeMinY,
+      w: dragItem.pos.w * radius * 2 + 1,
+      h: dragItem.pos.h * radius * 2 + 1,
+    }
+    const allBlankRange = []
+    const matrix = new Array(range.h).fill(new Array(range.w).fill(0))
+    manager.unmark(dragItem.pos)   // 先释放dragItem.pos位置
+    spiralTraversal(matrix, (row, col) => {
+      const targetPos = {
+        x: range.x + col,
+        y: range.y + row,
+        w: dragItem.pos.w,
+        h: dragItem.pos.h,
+      }
+      const isBlank = manager.isBlank(targetPos)
+      if (isBlank) {
+        allBlankRange.push(targetPos)
+      }
+    })
+    allBlankRange.push(dragItem.pos)
+    let minimumArea = Infinity
+    let finallyPos = dragItem.pos  // 如果没找到则不变
+    allBlankRange.forEach(range => {
+      const W = Math.abs(gridX - range.x) + 1
+      const H = Math.abs(gridY - range.y) + 1
+      const area = W * H  // 求最小面积
+      if (area <= minimumArea) { // 最后一个是dragItem，保证前面所有计算后的最小面积等于当前dragItem面积，此时不会进行改变位置
+        minimumArea = area
+        finallyPos = range
+      }
+    })
+    if (!isFinite(minimumArea)) {
+      manager.mark(dragItem.pos) // 如果失败，dragItem.pos位置标记回去
+      return false
+    }
+    if (allBlankRange.length) {
+      this.tryMoveToBlank(dragItem, finallyPos)
+      manager.mark(finallyPos)  // 如果成功，标记新的pos位置
+    }
+    return true
+  }
+
+  /**
    * 检测是否允许本次布局，检测方位drag，resize window
    * 目的：防止move事件太快造成item移动太过灵敏发生抖动
    * 检测规则:
    *      如果当前dragItem覆盖区域只有当前dragItem的源item，则忽略移动
    *      如果dragItem移动区域下为空位置，忽略移动
+   * 这是一个骚操作，建议不要使用
    * */
   public allowLayout() {
     const container = this.container
@@ -173,11 +173,11 @@ export class ItemLayoutEvent extends BaseEvent {
     // console.log(x, y);
     if (!toContainer && dragItem) {
       if (X !== 0) {
-        if (X > 0) bus.emit('dragOutsizeRight')
-        if (X < 0) bus.emit('dragOutsizeLeft')
+        if (X > 0) bus.emit('dragOuterRight')
+        if (X < 0) bus.emit('dragOuterLeft')
       } else if (Y !== 0) {
-        if (Y > 0) bus.emit('dragOutsizeBottom')
-        if (Y < 0) bus.emit('dragOutsizeTop')
+        if (Y > 0) bus.emit('dragOuterBottom')
+        if (Y < 0) bus.emit('dragOuterTop')
       }
     } else if (toContainer && !toItem) {
       bus.emit('dragToBlank')

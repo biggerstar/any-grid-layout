@@ -6,5 +6,5 @@ export const itemResize_mousemove: Function = throttle((ev: MouseEvent) => {
   tempStore.mousemoveResizeEvent = ev
   if (!fromItem || !isResizing || !isLeftMousedown) return
   const {bus} = fromItem.container
-  bus.emit('itemResizing')
+  bus.emit('resizing')
 }, 15)

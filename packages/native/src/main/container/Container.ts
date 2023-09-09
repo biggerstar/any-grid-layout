@@ -14,7 +14,7 @@ import {startGlobalEvent} from "@/events/listen";
 import {tempStore} from "@/events";
 import {computeSmartRowAndCol} from "@/algorithm/common";
 import Bus, {Emitter} from 'mitt'
-import {PluginManager} from "@/plugin/PluginManager";
+import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 //---------------------------------------------------------------------------------------------//
 
@@ -441,22 +441,22 @@ export class Container {
 
   /** 获取外容器可视范围的col  */
   public get containerW(): number {
-    return Math.round(this.element.offsetWidth / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    return Math.round(this.element.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
   }
 
   /** 获取外容器可视范围的row */
   public get containerH(): number {
-    return Math.round(this.element.offsetHeight / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    return Math.round(this.element.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 获取內容器可视范围的col  */
   public get contentBoxW(): number {
-    return Math.round(this.contentElement.offsetWidth / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    return Math.round(this.contentElement.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
   }
 
   /** 获取内容器可视范围的row */
   public get contentBoxH(): number {
-    return Math.round(this.contentElement.offsetHeight / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    return Math.round(this.contentElement.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */

@@ -1,5 +1,7 @@
-import {ItemLayoutEvent} from "@/plugin/event-type/ItemLayoutEvent";
+import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {tempStore} from "@/events";
+import {Item} from "@/main";
+import {CustomItemPos} from "@/types";
 
 type UpdateLimitSize = {
   width?: number | string,
@@ -22,8 +24,6 @@ function setGlobalVarResizeSize(size: { w?: number, h?: number } = {}) {
 export class ItemResizeEvent extends ItemLayoutEvent {
   public w: number // 当前的占用网格的宽
   public h: number // 当前的占用网格的宽
-  public mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
-  public mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
   public itemWidth: number // 当前item元素元素的高
   public itemHeight: number // 当前item元素元素的高
   public cloneElWidth: number // 当前clone元素的高
@@ -42,21 +42,17 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       cloneElement,
       mousemoveResizeEvent: resizeEv,
     } = tempStore
-    if (!isResizing || !isLeftMousedown || !cloneElement) return
+    if (!isResizing || !isLeftMousedown) return
     if (!fromItem || !resizeEv || !isLeftMousedown) return
-    const {left, top} = fromItem.element.getBoundingClientRect()
-    const mousePointX = resizeEv.clientX - left
-    const mousePointY = resizeEv.clientY - top
-    const curW = Math.ceil(mousePointX / (fromItem.size[0] + fromItem.margin[0])) // 这里非精确计算，差了多col时一个margin的距离，影响不大
-    const curH = Math.ceil(mousePointY / (fromItem.size[1] + fromItem.margin[1]))
+
+    const curW = fromItem.pxToW(this.mousePointX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
+    const curH = fromItem.pxToH(this.mousePointY)
     const {left: itemRight, top: itemTop} = fromItem.element.getBoundingClientRect()
     const {right: containerRight, bottom: containerBottom} = this.container.contentElement.getBoundingClientRect()
-    const {width: cloneElWidth, height: cloneElHeight} = cloneElement.getBoundingClientRect()
+    const {width: cloneElWidth, height: cloneElHeight} = (cloneElement || fromItem.element).getBoundingClientRect()
     //-------------------------------------------------------------------------------------//
     this.w = curW < 1 ? 1 : curW
     this.h = curH < 1 ? 1 : curH
-    this.mousePointX = mousePointX
-    this.mousePointY = mousePointY
     this.cloneElWidth = cloneElWidth
     this.cloneElHeight = cloneElHeight
     this.itemWidth = fromItem.nowWidth()
@@ -108,6 +104,21 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     return isFinite(spaceBottom) ? spaceBottom : this.offsetBottom
   }
 
+  get spaceW() {
+    const {fromItem} = tempStore
+    if (!fromItem) return
+    return fromItem.pxToW(this.spaceRight)
+  }
+
+  get spaceH() {
+    const {fromItem} = tempStore
+    if (!fromItem) return
+    return fromItem.pxToH(this.spaceBottom)
+  }
+
+  /**
+   * 派发resize
+   * */
   public patchResizeDirection() {
     let {
       fromItem,
@@ -117,29 +128,58 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     const bus = this.container.bus
 
     if (this.mousePointX > this.itemWidth) {
-      bus.emit('resizeToRight')   // resizeOutsizeRight 的同时 resizeToRight也会触发
-      if (this.mousePointX > this.offsetRight) bus.emit('resizeOutsizeRight')
+      bus.emit('resizeToRight')   // resizeOuterRight 的同时 resizeToRight也会触发
+      if (this.mousePointX > this.offsetRight) bus.emit('resizeOuterRight')
     }
     if (this.mousePointX < this.itemWidth) {
       bus.emit('resizeToLeft')
-      if (this.mousePointX < 0 && Math.abs(this.mousePointX) > this.offsetLeft) bus.emit('resizeOutsizeLeft')
+      if (this.mousePointX < 0 && Math.abs(this.mousePointX) > this.offsetLeft) bus.emit('resizeOuterLeft')
     }
     if (this.mousePointY > this.itemHeight) {
       bus.emit('resizeToBottom')
-      if (this.mousePointY > this.offsetBottom) bus.emit('resizeOutsizeBottom')
+      if (this.mousePointY > this.offsetBottom) bus.emit('resizeOuterBottom')
     }
     if (this.mousePointY < this.itemHeight) {
       bus.emit('resizeToTop')
-      if (this.mousePointY < 0 && Math.abs(this.mousePointY) > this.offsetTop) bus.emit('resizeOutsizeTop')
+      if (this.mousePointY < 0 && Math.abs(this.mousePointY) > this.offsetTop) bus.emit('resizeOuterTop')
     }
   }
+
+  /**
+   * 尝试更新当前Item的大小
+   * 其他Item静止,只会更新一个Item
+   * 如果不传入任何参数，则使用dragItem 或 relativeX，relativeY生成的pos
+   * @param item？ 当前要移动的item
+   * @param pos  当前移动到新位置的pos
+   * */
+  public tryChangeSize(item?: Item, pos?: Partial<Pick<CustomItemPos, 'w' | 'h'>>): boolean {
+    let {
+      fromItem,
+    } = tempStore
+    const targetItem = item || fromItem
+    if (!targetItem) return false
+    const targetPos = pos
+      ? {
+        ...targetItem.pos,
+        ...pos
+      }
+      : {
+        ...targetItem.pos,
+        w: Math.min(this.w, this.spaceW),
+        h: Math.min(this.h, this.spaceH),
+      }
+    //-------------------------------------
+    const container = this.container
+    const manager = container.layoutManager
+    const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
+    if (!isBlank) {
+      manager.mark(targetItem.pos)  // 如果失败，标记回去
+      return false
+    }
+    manager.mark(targetPos)
+    targetItem.pos.w = targetPos.w
+    targetItem.pos.h = targetPos.h
+    targetItem.updateItemLayout()
+    return true
+  }
 }
-
-
-
-
-
-
-
-
-

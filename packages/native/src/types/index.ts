@@ -280,4 +280,5 @@ export type AnalysisResult = {
   patch: (handler?: (item: Item) => void) => void
 }
 
+export type BasePosType = 'x' | 'y' | 'w' | 'h'
 export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'
