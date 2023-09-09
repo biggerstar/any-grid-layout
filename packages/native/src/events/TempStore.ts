@@ -26,7 +26,6 @@ class TempStore {
     return this.handleMethod === void 0
   }
 
-  isBlockResize: boolean
   //----------只读变量-----------//
   screenWidth: null | number = null  // 用户屏幕宽度
   screenHeight: null | number = null  // 用户屏幕高度
@@ -72,6 +71,7 @@ class TempStore {
   }
   cloneElement: HTMLElement | null      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
   mousedownEvent: MouseEvent | null = null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
+  mousemoveResizeEvent: MouseEvent | null = null   //  鼠标resize拖动期间实时更新触发的事件对象
   mousedownItemOffsetLeft: number | null = null  // 鼠标点击某个Item的时候距离该Item左边界距离
   mousedownItemOffsetTop: number | null = null  // 同上
   offsetPageX: number | null = null

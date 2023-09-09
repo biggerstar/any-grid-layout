@@ -3,12 +3,12 @@ import {tempStore} from "@/events";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {createModifyPosInfo} from "@/algorithm/common/tool";
+import {getMovableRange} from "@/utils";
 
 export class ItemLayoutEvent extends BaseEvent {
   constructor(...args) {
     super(...args);
     this.items = this.container.engine.items
-
   }
 
   /**
@@ -61,9 +61,10 @@ export class ItemLayoutEvent extends BaseEvent {
    * 判断当前container的baseline方向盒子是否能自动增长
    * */
   public hasAutoDirection() {
-    const baseLine = this.container.getConfig("baseLine")
-    if (['top', 'bottom'].includes(baseLine) && this.container.autoGrowRow) return true
-    else if (['left', 'right'].includes(baseLine) && this.container.autoGrowCol) return true
+    const container = this.container
+    const baseLine = container.getConfig("baseLine")
+    if (['top', 'bottom'].includes(baseLine) && container.autoGrowRow) return true
+    else if (['left', 'right'].includes(baseLine) && container.autoGrowCol) return true
     return false
   }
 
@@ -94,39 +95,39 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 移动到当前鼠标位置的空白处，移动的前提是当前位置没有其他Item
+   * 其他Item静止，快速更新拖动Item到当前鼠标合适空白位置上
+   * 只会更新一个Item
+   * 如果不传入任何参数，则使用dragItem 或 relativeX，relativeY生成的pos
+   * @param item？ 当前要移动的item
+   * @param pos  当前移动到新位置的pos
    * */
-  public moveToBlank(layoutItems: Item[]) {
+  public tryMoveToBlank(item?: Item, pos?: Pick<CustomItemPos, 'x' | 'y' | 'w' | 'h'>): boolean {
     let {
       dragItem,
-      relativeX: x,
-      relativeY: y,
+      relativeX,
+      relativeY,
     } = tempStore
-    if (!dragItem || !x || !y) return
+    const targetItem = item || dragItem
+    if (!targetItem) return false
+    const targetPos = pos || {
+      ...targetItem.pos,
+      x: relativeX,
+      y: relativeY,
+    }
+    const securityPos = getMovableRange(targetPos)
+    //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
-    container.engine.reset()
-    layoutItems.forEach((item) => {
-      if (item === dragItem) return  // 当前的dragItem另外判断
-      if (!manager.isBlank(item.pos)) return;
-      manager.mark(item.pos)
-    })
-    const maxItemX = Math.min(x, container.getConfig("col") - dragItem.pos.w + 1)
-    const maxItemY = Math.min(y, container.getConfig("row") - dragItem.pos.h + 1)
-    x = maxItemX > 0 ? maxItemX : 1  // left和top边界
-    y = maxItemY > 0 ? maxItemY : 1
-    const toPos = {
-      w: dragItem.pos.w,
-      h: dragItem.pos.h,
-      x,
-      y
+    const isBlank = manager.unmark(targetItem.pos).isBlank(securityPos)
+    if (!isBlank) {
+      manager.mark(targetItem.pos)  // 如果失败，标记回去
+      return false
     }
-    // console.log(x, y)
-    const hasDragPosBlank = manager.isBlank(toPos)
-    if (!hasDragPosBlank) return
-    manager.mark(toPos)
-    dragItem.pos.x = x
-    dragItem.pos.y = y
+    manager.mark(securityPos)
+    targetItem.pos.x = securityPos.x
+    targetItem.pos.y = securityPos.y
+    targetItem.updateItemLayout()
+    return true
   }
 
   /**
@@ -160,8 +161,8 @@ export class ItemLayoutEvent extends BaseEvent {
     let {
       dragItem,
       toItem,
-      gridX: x,
-      gridY: y,
+      relativeX: x,
+      relativeY: y,
       toContainer
     } = tempStore
     if (!dragItem) return
@@ -169,6 +170,7 @@ export class ItemLayoutEvent extends BaseEvent {
     const X = x - dragItem.pos.x
     const Y = y - dragItem.pos.y
     // console.log(X,Y);
+    // console.log(x, y);
     if (!toContainer && dragItem) {
       if (X !== 0) {
         if (X > 0) bus.emit('dragOutsizeRight')
@@ -177,8 +179,8 @@ export class ItemLayoutEvent extends BaseEvent {
         if (Y > 0) bus.emit('dragOutsizeBottom')
         if (Y < 0) bus.emit('dragOutsizeTop')
       }
-    } else if (this.static) {
-      if (!toItem || dragItem === toItem) bus.emit('dragToBlank')
+    } else if (toContainer && !toItem) {
+      bus.emit('dragToBlank')
     } else if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLetBottom')

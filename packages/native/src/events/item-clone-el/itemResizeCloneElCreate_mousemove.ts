@@ -17,7 +17,10 @@ export const itemResizeCloneElCreate_mousemove: Function = throttle(() => {
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
   newNode.classList.add('grid-clone-el', 'grid-resizing-clone-el')
   fromItem.domImpl.addClass('grid-resizing-source-el')
-  fromItem.domImpl.updateStyle({transition: 'none',}, newNode)
+  fromItem.domImpl.updateStyle({
+    transition: 'none',
+    pointerEvents:'none'
+  }, newNode)
   tempStore.cloneElement = newNode
   fromContainer.contentElement.appendChild(newNode)
 }, 36)

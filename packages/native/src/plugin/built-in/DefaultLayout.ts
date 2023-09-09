@@ -1,113 +1,249 @@
-import {Layout} from "@/algorithm/interface/Layout";
-import {MoveDirection} from "@/types";
-import {tempStore} from "@/events";
 import {autoSetSizeAndMargin} from "@/algorithm/common";
+import {tempStore} from "@/events";
+import {ItemLayoutEvent} from "@/plugin/event-type/ItemLayoutEvent";
+import {definePlugin} from "@/plugin/global";
+import {throttle} from "@/utils";
+import {isFunction, isObject} from "is-what";
 
 /**
- * 默认布局
- * 优点: 通过一系列优化，能支持在固定行宽的情况下基本能移动到所有位置，体验感是最好的
+ * 立即更新布局
  * */
-export class DefaultLayout extends Layout {
-  public name = 'default'
+const directUpdateLayout = (ev: ItemLayoutEvent) => {
+  const {container, items, toContainer} = ev
+  if (toContainer && !ev.allowLayout()) return
+  const {layoutManager: manager, engine} = container
+  autoSetSizeAndMargin(container, true)
+  //-------------------------------------------------------------//
+  engine.reset()
+  let res = manager.analysis(items, ev.getModifyItems(), {
+    baseline: container.getConfig("baseLine"),
+    auto: ev.hasAutoDirection()
+  })
+  // const {newResizeW,newResizeH} = tempStore
+  // console.log( {newResizeW,newResizeH},res.isSuccess)
+  // console.log(res.isSuccess)
+  tempStore.isBlockResize = !res.isSuccess
+  if (!res.isSuccess) return
+  res.patch()
+  ev.patchStyle()
+  engine.items = manager.sortCurrentMatrixItems(ev.items)
+  container.updateContainerStyleSize()
+}
 
-  public defaultDirection(name) {
-    const {toItem, dragItem} = tempStore
-    if (!toItem || !dragItem) return
-    this.manager.exchange(this.layoutItems, dragItem, toItem)
-  }
+/**
+ * 节流更新布局的函数
+ * */
+const updateLayout: Function = throttle(directUpdateLayout, 66)
 
-  public anyDirection(name: MoveDirection) {
-    const {dragItem, gridX: x, gridY: y} = tempStore
-    if (!dragItem) return
-    this.addModifyItems(this.createModifyPosInfo(dragItem, {
-      x,
-      y
-    }))
-  }
-
-  public top() {
-    const {dragItem} = tempStore
-    if (!dragItem) return
-    this.patchDiffCoverItem(null, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        y: item.pos.y + dragItem.pos.h
-      }))
+/**
+ * 节流更新drag到十字线方向的布局
+ * */
+const dragMoveToCrossHair: Function = throttle((ev: ItemLayoutEvent, callback: Function) => {
+  const {dragItem, gridX: x, gridY: y} = tempStore
+  if (!dragItem) return
+  ev.addModifyItems(dragItem, {x, y})
+  if (isFunction(callback)) {
+    ev.findDiffCoverItem(null, (item) => {
+      const changePos = callback(item)
+      if (changePos && isObject(changePos)) ev.addModifyItems(item, callback(item))
     })
   }
+  updateLayout(ev)
+}, 66)
 
-  public bottom() {
-    const {dragItem} = tempStore
-    if (!dragItem) return
-    this.patchDiffCoverItem(null, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        y: item.pos.y - dragItem.pos.h
-      }))
+/**
+ * 节流更新drag到对角方向的布局
+ * */
+const dragMoveToDiagonal: Function = throttle((ev: ItemLayoutEvent) => {
+  const {toItem, dragItem} = tempStore
+  const {layoutManager, items} = ev
+  if (!toItem || !dragItem) return
+  layoutManager.move(items, dragItem, toItem)
+  updateLayout(ev)
+}, 200)
+
+// const containerOutsizeMoving: Function = throttle((ev: ItemLayoutEvent, callback: (item: Item) => void) => {
+//   const {dragItem} = tempStore
+//   if (!dragItem) return
+//   ev.findDiffCoverItem((item) => {
+//     if (isFunction(callback)) callback(item)
+//     ev.addModifyItems(dragItem)
+//     ev.addModifyItems(item)
+//     updateLayout(ev)
+//   })
+// }, 100)
+
+
+/**
+ * 内置默认布局，外面没有阻止默认行为的时候执行的函数
+ * */
+export const DefaultLayout = definePlugin({
+  /**
+   * 用于作为主布局算法时，「初次加载」Item到容器时初始化，用于设置容器的大小或其他操作
+   * 内置已经实现，支持用户阻止init默认行为自行实现
+   * @return {AnalysisResult | void} 返回结果，如果failed长度不为0，表明有item没添加成功则会抛出警告事件
+   * */
+  init(ev: ItemLayoutEvent) {
+    console.log(111111111111111111)
+    const {container} = ev
+    const {layoutManager: manager, eventManager, engine} = container
+    autoSetSizeAndMargin(container, true)
+    engine.reset()
+    const res = manager.analysis(engine.items, null, {
+      baseLine: container.getConfig("baseLine"),
+      auto: ev.hasAutoDirection()
     })
-  }
+    res.patch()
+    engine.items = res.successItems
+    engine.items.forEach(item => item.mount())
+    ev.patchStyle(res.successItems)
+    if (!res.isSuccess) {
+      eventManager._error_(
+        'ContainerOverflowError',
+        "容器溢出或者Item重叠，只有item明确指定了x,y或者容器col,row情况下会出现此错误"
+        , res
+      )
+    }
+  },
 
-
-  public right() {
-    const {dragItem} = tempStore
+  /**
+   * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * */
+  dragOutsizeLeft(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
     if (!dragItem) return
-    this.patchDiffCoverItem(null, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        x: item.pos.x - dragItem.pos.w
-      }))
-    })
-  }
+    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x + dragItem.pos.w}) : null)
+  },
 
-  public left() {
-    const {dragItem} = tempStore
+  /**
+   * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * */
+  dragOutsizeRight(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
     if (!dragItem) return
-    this.patchDiffCoverItem(null, (item) => {
-      this.addModifyItems(this.createModifyPosInfo(item, {
-        x: item.pos.x + dragItem.pos.w
-      }))
-    })
-  }
+    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x - dragItem.pos.w}) : null)
+  },
 
-  public async resizing() {
+  /**
+   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * */
+  dragOutsizeTop(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y + dragItem.pos.h}) : null)
+  },
+
+  /**
+   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * */
+  dragOutsizeBottom(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - dragItem.pos.h}) : null)
+  },
+
+  itemMoving(ev: ItemLayoutEvent) {
+    if (!tempStore.dragItem) return
+    ev.patchDragDirection()
+  },
+
+  itemMoved(ev: ItemLayoutEvent) {
+    directUpdateLayout(ev)
+  },
+  dragToBlank(ev: ItemLayoutEvent) {
+    const {dragItem, gridX, gridY} = tempStore
+    if (!dragItem) return
+    if (gridX === dragItem.pos.x && gridY === dragItem.pos.y) return;
+    ev.moveToBlank(ev.items)
+    updateLayout(ev)
+  },
+
+  dragToLeftTop(ev: ItemLayoutEvent) {
+    dragMoveToDiagonal(ev)
+  },
+
+  dragToLetBottom(ev: ItemLayoutEvent) {
+    dragMoveToDiagonal(ev)
+  },
+
+  dragToRightTop(ev: ItemLayoutEvent) {
+    dragMoveToDiagonal(ev)
+  },
+
+  dragToRightBottom(ev: ItemLayoutEvent) {
+    dragMoveToDiagonal(ev)
+  },
+
+  dragToTop(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem || !toItem) return
+    let call = !(dragItem.pos.y - toItem.pos.y > toItem.pos.h)
+      ? (item) => ({y: item.pos.y + dragItem.pos.h})
+      : null
+    dragMoveToCrossHair(ev, call)
+  },
+
+  dragToBottom(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem || !toItem) return
+    let call = !(toItem.pos.y - dragItem.pos.y > dragItem.pos.h)
+      ? (item) => ({y: item.pos.y - dragItem.pos.h})
+      : null
+    dragMoveToCrossHair(ev, call)
+  },
+
+  dragToLeft(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem || !toItem) return
+    let call = !(dragItem.pos.x - toItem.pos.x > toItem.pos.w)
+      ? (item) => ({x: item.pos.x + dragItem.pos.w})
+      : null
+    dragMoveToCrossHair(ev, call)
+  },
+
+  dragToRight(ev: ItemLayoutEvent) {
+    const {dragItem, toItem} = tempStore
+    if (!dragItem || !toItem) return
+    let call = !(toItem.pos.x - dragItem.pos.x > dragItem.pos.w)
+      ? (item) => ({x: item.pos.x - dragItem.pos.w})
+      : null
+    dragMoveToCrossHair(ev, call)
+  },
+
+  containerResizing(ev: ItemLayoutEvent) {
+    updateLayout(ev)
+  },
+
+  itemResizing(ev: ItemLayoutEvent) {
     const {fromItem, newResizeW, newResizeH} = tempStore
     if (!fromItem) return
-    console.log(newResizeW, newResizeH)
-    this.addModifyItems(this.createModifyPosInfo(fromItem, {
+    ev.addModifyItems(fromItem, {
       w: newResizeW,
       h: newResizeH,
-    }))
-    return true
-  }
-
-  public async dragging() {
-    const {dragItem, toItem} = tempStore
-    if (dragItem && !toItem) return
-    if (!this.allowLayout()) return
-    const manager = this.manager
-    const container = manager.container
-    this.patchDirection()
-    autoSetSizeAndMargin(container, true)
-    //-------------------------------------------------------------//
-    container.engine.reset()
-    const baseLine = container.getConfig("baseLine")
-    let res = this.manager.analysis(this.layoutItems, this.getModifyItems(), {
-      auto: this.hasAutoDirection(),
-      baseline: baseLine
     })
-    if (!res.isSuccess) return
+    directUpdateLayout(ev)
+  },
 
-    res.patch()
-    this.layoutItems = manager.sortCurrentMatrixItems(this.layoutItems)
+  itemResized(ev: ItemLayoutEvent) {
+    directUpdateLayout(ev)
+  },
 
-    return true
+  itemClosing(_: ItemLayoutEvent) {
+    const {fromItem, toItem} = tempStore
+    if (toItem && toItem === fromItem) {  // 按下和抬起要同一个item才能关闭
+      toItem.remove(true)
+      toItem.container.bus.emit('itemClosed')
+    }
+  },
+
+  itemClosed(ev: ItemLayoutEvent) {
+    directUpdateLayout(ev)
+  },
+  /**
+   * @param ev 如果没有传入customEv的时候默认使用的事件对象
+   * @param customEv 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
+   * */
+  updateLayout(ev: ItemLayoutEvent, customEv: ItemLayoutEvent) {
+    directUpdateLayout(ev || customEv)
   }
-
-  public async layout(): Promise<boolean> {
-    const {dragItem, toItem, isDragging, isResizing, newResizeW, newResizeH} = tempStore
-    const manager = this.manager
-    const container = manager.container
-    return this.throttle(() => {
-      autoSetSizeAndMargin(container, true)
-
-      return true
-    })
-  }
-}
+})

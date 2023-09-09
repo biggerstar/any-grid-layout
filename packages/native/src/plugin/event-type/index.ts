@@ -1,6 +1,7 @@
 import {BaseEvent} from './BaseEvent'
 import {CustomEventOptions} from "@/types";
 import {ItemLayoutEvent} from "@/plugin/event-type/ItemLayoutEvent";
+import {ItemResizeEvent} from "@/plugin/event-type/ItemResizeEvent";
 
 type EventMapType = Record<keyof CustomEventOptions, any> & Record<any, any>
 export const EventMap: EventMapType = {
@@ -27,8 +28,16 @@ export const EventMap: EventMapType = {
   dragToRightTop: ItemLayoutEvent,
   //--------------resize-----------------
   containerResizing: ItemLayoutEvent,
-  itemResizing: ItemLayoutEvent,
-  itemResized: ItemLayoutEvent,
+  itemResizing: ItemResizeEvent,
+  itemResized: ItemResizeEvent,
+  resizeToTop: ItemResizeEvent,
+  resizeToRight: ItemResizeEvent,
+  resizeToBottom: ItemResizeEvent,
+  resizeToLeft: ItemResizeEvent,
+  resizeOutsizeTop: ItemResizeEvent,
+  resizeOutsizeRight: ItemResizeEvent,
+  resizeOutsizeBottom: ItemResizeEvent,
+  resizeOutsizeLeft: ItemResizeEvent,
   //--------------close------------------
   itemClosing: ItemLayoutEvent,
   itemClosed: ItemLayoutEvent,

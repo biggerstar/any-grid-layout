@@ -16,28 +16,30 @@ export class PluginManager {
 
   constructor(container) {
     this.container = container
-    container.bus.on('*', (eventName) => this.call(<string>eventName))
+    container.bus.on('*', (eventName, ...args) => this.call(<string>eventName, ...args))
   }
 
   /**
    * 调用当前插件列表中的插件回调函数
    * */
-  public call(eventName: keyof Plugin | string) {
+  public call(eventName: keyof Plugin | string, ...args) {
     const Event = EventMap[eventName] || EventMap['*']
+    const defaultActionFn: Function = DefaultBehavior[eventName]
     const ev = new Event(eventName, {
       target: this.container,
       container: this.container,
       layoutManager: this.container.layoutManager,
+      default: (...args) => defaultActionFn(ev, ...args),   // 默认行为函数，执行该函数可执行默认行为
     })
     // console.log(eventName)
     // console.log(ev);
     this.plugins.forEach((plugin) => {
       const callFunc: Function = plugin[eventName]
       if (!isFunction(callFunc)) return
-      callFunc.call(plugin, ev)
+      callFunc.call(plugin, ev, ...args)
     })
-    if (!ev.isPrevent && isFunction(DefaultBehavior[eventName])) {
-      DefaultBehavior[eventName].call(null, ev)
+    if (!ev.isPrevent && isFunction(defaultActionFn)) {
+      defaultActionFn.call(null, ev, ...args)
     }
     // console.log(eventName, '***')
   }

@@ -166,7 +166,7 @@ export class Container {
     })
   }
 
-  public use(plugin) {
+  public use(plugin:Record<keyof CustomEventOptions, any>) {
     this.pluginManager.use(plugin)
   }
 

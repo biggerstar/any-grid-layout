@@ -7,6 +7,5 @@ export function itemClose_mousedown(ev) {
   const downTagClassName = ev.target.className
   if (downTagClassName.includes('grid-item-close-btn')) {   //   用于点击close按钮
     tempStore.handleMethod = 'close'
-    fromItem.container.bus.emit('itemClosing')
   }
 }

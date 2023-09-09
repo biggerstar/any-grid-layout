@@ -196,11 +196,11 @@ export class LayoutManager extends Finder {
           y: curRow + 1,
         }
         if (['left', 'right'].includes(baseline) && auto) {
-          const offset = this.col - curCol - w
+          const offset = this.col - curCol - w - 1
           if (offset < 0) this.addCol(Math.abs(offset))
         }
         if (['top', 'bottom'].includes(baseline) && auto) {
-          const offset = this.row - curRow - h
+          const offset = this.row - curRow - h - 1
           if (offset < 0) this.addRow(Math.abs(offset))
         }
         if (this.isBlank(tryPos)) return resPos = tryPos
@@ -229,6 +229,11 @@ export class LayoutManager extends Finder {
       endRow: y + h,
     })
     return isBlank
+  }
+
+  public unmark(pos: CustomItemPos):this {
+    this.mark(pos, this.place)
+    return this
   }
 
   /**
@@ -325,20 +330,22 @@ export class LayoutManager extends Finder {
 
   /**
    * 在矩阵中标记该pos占位
+   * @param pos 标记区域
+   * @param markSymbol 标记符号
    * @return {CustomItemPos} 传入的pos原样返回
    * */
-  public mark(pos: CustomItemPos | ItemPos): CustomItemPos {
+  public mark(pos: CustomItemPos | ItemPos, markSymbol?: typeof this.place | typeof this.placed): this {
     const {w, h, x, y} = this.toLayoutPos(pos)
     this.each((curRow, curCol) => {
       // console.log(curRow, curCol,this._layoutMatrix[curRow][curCol])
-      this._layoutMatrix[curRow][curCol] = this.placed
+      this._layoutMatrix[curRow][curCol] = markSymbol !== void 0 ? markSymbol : this.placed
     }, {
       startCol: x,
       startRow: y,
       endCol: x + w,
       endRow: y + h,
     })
-    return pos
+    return this
   }
 
   /**

@@ -63,8 +63,6 @@ export function allMousemove(ev) {
 export function allMouseup(ev) {
   /* compatible */
   compatible_touchend_mouseup(ev)
-  /* remove clone */
-  itemCloneElRemove_mouseup(ev)
   /*  cursor */
   cursor_mouseup(ev)
   /*  scrollPage */
@@ -75,6 +73,8 @@ export function allMouseup(ev) {
   itemClose_mouseup(ev)
   /*  itemDrag */
   itemDrag_mouseup(ev)
+  /* remove clone */
+  itemCloneElRemove_mouseup(ev)   // 必须在倒数，保证item.pos更新到最终位置后clone恢复动画才能正确回归
   /*  endWork */
   endWork_mouseup(ev)
 }

@@ -312,7 +312,7 @@ export class Item extends ItemGeneralImpl {
    * */
   public minWidth() {
     let marginWidth = 0
-    if (this.pos.minW === Infinity) return Infinity
+    if (this.pos.minW === Infinity) return Infinity  // TODO 已经在pos限制，去除Infinity
     if (this.pos.minW > 1) marginWidth = (this.pos.minW - 1) * this.margin[0]
     return (this.pos.minW * this.size[0]) + marginWidth
   }

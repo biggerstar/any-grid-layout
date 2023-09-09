@@ -39,14 +39,15 @@ export abstract class Finder {
    *
    *  @param items 在该Items列表中查找
    *  @param pos  x坐标
-   *
+   *  @param excludes  排除列表
    *  @return {Item[]}
    * */
-  public findCoverItemsFromPosition(items, pos: CustomItemPos): Item[] {
+  public findCoverItemsFromPosition(items, pos: CustomItemPos, excludes = []): Item[] {
     const {x, y, w, h} = pos
     const resItemList = []
     for (let i = 0; i < items.length; i++) {
       let item = items[i]
+      if (excludes.includes(item)) continue
       //------------------------要找的域----------------------------//
       const xBoundaryStart = x       // 左边界
       const yBoundaryStart = y       // 上边界
