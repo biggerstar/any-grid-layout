@@ -1,8 +1,8 @@
 import {Container} from "@/main";
-import {Plugin} from "@/plugins/Plugin";
 import {isFunction, isObject} from 'is-what'
 import * as AllDefaultBehavior from "@/plugins/default-behavior";
 import {EventMap} from './event-type'
+import {CustomEventOptions} from "@/types";
 
 let DefaultBehavior = {}
 for (const name in AllDefaultBehavior) {
@@ -22,7 +22,7 @@ export class PluginManager {
   /**
    * 调用当前插件列表中的插件回调函数
    * */
-  public call(eventName: keyof Plugin | string, ...args) {
+  public call(eventName: keyof CustomEventOptions | string, ...args) {
     const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]
     const ev = new GEvent(eventName, {
@@ -46,7 +46,7 @@ export class PluginManager {
    * layoutPlugin 接收的是 Layout的实现类的实例
    * 请注意:如果是布局算法，算法名称是必须的，如果指定了算法名称后，你可以在外部container的layoutMode配置中指定使用该算法
    * */
-  public use(plugin: Plugin) {
+  public use(plugin: CustomEventOptions) {
     if (isObject(plugin)) this.plugins.push(plugin)
   }
 }

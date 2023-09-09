@@ -1,5 +1,10 @@
-import {BaseEvent} from './BaseEvent'
+export * from './BaseEvent'
+export * from './ItemDragEvent'
+export * from './ItemResizeEvent'
+export * from './ItemLayoutEvent'
+
 import {CustomEventOptions} from "@/types";
+import {BaseEvent} from "@/plugins/event-type/BaseEvent";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";

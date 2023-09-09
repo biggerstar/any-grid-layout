@@ -3,6 +3,10 @@ import {Item} from "@/main/item/Item";
 import {Container} from "@/main/container/Container";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
+import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
+import {BaseEvent} from "@/plugins/event-type/BaseEvent";
+import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 
 export type HandleErrorType = {
   type: 'error' | 'warn',
@@ -120,31 +124,6 @@ export type CustomEventOptions = {
   /** Item添加成功事件 */
   addItemSuccess?(item: Item): void,
 
-  /** item关闭前事件,返回null或者false将会阻止关闭该Item */
-  itemClosing?(item: Item): void,
-
-  /** item关闭后事件 */
-  itemClosed?(item: Item): void,
-
-  /**
-   * item每次大小被改变时
-   * */
-  itemResizing?(w: number, h: number, item: Item): void,
-
-  /**
-   * item鼠标抬起后在容器中的最终大小
-   * */
-  itemResized?(w: number, h: number, item: Item): void,
-
-  /**
-   * item拖动时在容器内所属位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
-   * */
-  itemMoving?(nowX: number, nowY: number, item: Item): void,
-
-  /**
-   * item拖动结束时在容器内最终位置的nowX和nowY，如果鼠标在容器外,则nowX和nowY是容器边缘最大最小值,不会是超过或者是负数
-   * */
-  itemMoved?(nowX: number, nowY: number, item: Item): void,
 
   /** item位置变化时响应的事件,只有位置变化才触发 */
   itemMovePositionChange?(oldX: number, oldY: number, newX: number, newY: number): void
@@ -191,16 +170,43 @@ export type CustomEventOptions = {
   /** row列数改变 */
   rowChange?(row, preRow, container): void,
 
-  init?: Function
-  dragToBlank?: Function
-  dragToRightBottom?: Function
-  dragToLetBottom?: Function
-  dragToLeftTop?: Function
-  dragToRightTop?: Function
-  dragToRight?: Function
-  dragToLeft?: Function
-  dragTobBottom?: Function
-  dragToTop?: Function
+
+  //--------------other-------------------
+  init?(ev: ItemLayoutEvent): void,
+  updateLayout?(ev: ItemLayoutEvent): void,
+  itemSizeChange?(ev: BaseEvent): void,
+  //------------container-outer-move------------
+  dragOuterLeft?(ev: ItemDragEvent): void,
+  dragOuterRight?(ev: ItemDragEvent): void,
+  dragOuterTop?(ev: ItemDragEvent): void,
+  dragOuterBottom?(ev: ItemDragEvent): void,
+  //--------------drag-------------------
+  dragging?(ev: ItemDragEvent): void,
+  dragend?(ev: ItemDragEvent): void,
+  dragToBlank?(ev: ItemDragEvent): void,
+  dragToTop?(ev: ItemDragEvent): void,
+  dragToBottom?(ev: ItemDragEvent): void,
+  dragToLeft?(ev: ItemDragEvent): void,
+  dragToRight?(ev: ItemDragEvent): void,
+  dragToRightBottom?(ev: ItemDragEvent): void,
+  dragToLetBottom?(ev: ItemDragEvent): void,
+  dragToLeftTop?(ev: ItemDragEvent): void,
+  dragToRightTop?(ev: ItemDragEvent): void,
+  //--------------resize-----------------
+  containerResizing?(ev: ItemLayoutEvent): void,
+  resizing?(ev: ItemResizeEvent): void,
+  resized?(ev: ItemResizeEvent): void,
+  resizeToTop?(ev: ItemResizeEvent): void,
+  resizeToRight?(ev: ItemResizeEvent): void,
+  resizeToBottom?(ev: ItemResizeEvent): void,
+  resizeToLeft?(ev: ItemResizeEvent): void,
+  resizeOuterTop?(ev: ItemResizeEvent): void,
+  resizeOuterRight?(ev: ItemResizeEvent): void,
+  resizeOuterBottom?(ev: ItemResizeEvent): void,
+  resizeOuterLeft?(ev: ItemResizeEvent): void,
+  //--------------close------------------
+  closing?(ev: ItemLayoutEvent): void,
+  closed?(ev: ItemLayoutEvent): void,
 }
 
 export type MoveDirection =

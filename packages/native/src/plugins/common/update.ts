@@ -3,6 +3,7 @@ import {tempStore} from "@/events";
 import {throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 
 /**
  * 立即更新布局
@@ -57,4 +58,25 @@ export const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   if (!toItem || !dragItem) return
   layoutManager.move(items, dragItem, toItem)
   updateLayout(ev)
+}, 200)
+
+/**
+ * 节流后的patchDragDirection
+ * */
+export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
+  ev.patchDragDirection()
+}, 80)
+
+/**
+ * 节流后的patchResizeNewSize
+ * */
+export const patchResizeNewSize: Function = throttle((ev: ItemResizeEvent) => {
+  const {fromItem} = tempStore
+  if (!fromItem) return
+  if (fromItem.pos.w !== ev.w || fromItem.pos.h !== ev.h) {
+    const isSuccess = ev.tryChangeSize()
+    if (isSuccess) {
+      fromItem.container.bus.emit('itemSizeChange')
+    }
+  }
 }, 200)

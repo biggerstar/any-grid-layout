@@ -1,5 +1,5 @@
 import container1 from "@/container/container1";
-import {ResponsiveLayout} from '@biggerstar/layout'
+import {ItemResizeEvent, ResponsiveLayout} from '@biggerstar/layout'
 // import  * as DD from '@biggerstar/layout'
 // console.log(DD);
 
@@ -9,18 +9,12 @@ console.log(container1)
 // console.log(ResponsiveLayout)
 
 container1.use({
-  error(ev) {
-    // console.log(ev.prevent());
-    // console.log(111111111111111111)
-    // container1.bus.emit('updateLayout',ev)
-  },
-  itemResizing(ev) {
-    // ev.prevent()
-    // console.log(111111111111111111)
+  resizing(ev: ItemResizeEvent) {
+
   }
 })
 
-// container1.use(ResponsiveLayout)
+container1.use(ResponsiveLayout)
 
 
 // container.render((data, useLayout, containerElement) => {

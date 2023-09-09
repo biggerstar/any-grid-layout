@@ -4,31 +4,11 @@ import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {tempStore} from "@/events";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {definePlugin} from "@/plugins/global";
-import {directUpdateLayout} from "@/plugins/default-behavior/common";
+import {directUpdateLayout, patchDragDirection, patchResizeNewSize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
-import {throttle, updateStyle} from "@/utils";
+import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 
-/**
- * 节流后的patchDragDirection
- * */
-export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
-  ev.patchDragDirection()
-}, 80)
-
-/**
- * 节流后的patchResizeNewSize
- * */
-export const patchResizeNewSize: Function = throttle((ev: ItemResizeEvent) => {
-  const {fromItem} = tempStore
-  if (!fromItem) return
-  if (fromItem.pos.w !== ev.w || fromItem.pos.h !== ev.h) {
-    const isSuccess = ev.tryChangeSize()
-    if (isSuccess) {
-      fromItem.container.bus.emit('itemSizeChange')
-    }
-  }
-}, 200)
 
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
@@ -41,7 +21,7 @@ export const DefaultLayoutBehavior = definePlugin({
    * */
   init(ev: ItemDragEvent) {
     const {container} = ev
-    const {layoutManager: manager, eventManager, engine} = container
+    const {layoutManager: manager, engine} = container
     autoSetSizeAndMargin(container, true)
     engine.reset()
     const res = manager.analysis(engine.items, null, {

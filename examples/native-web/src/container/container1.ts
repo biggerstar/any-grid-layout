@@ -13,7 +13,7 @@ const container1 = new Container({
       resize: true,
       close: true,
     }),
-    col: 5,
+    // col: 5,
     // row: 8,
     // ratioCol: 0.2,
     // ratioRow: 0.2,

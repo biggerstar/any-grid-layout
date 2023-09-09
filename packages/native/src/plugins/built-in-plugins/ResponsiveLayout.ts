@@ -6,13 +6,15 @@ import {definePlugin} from "@/plugins/global";
 import {throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
+import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 
 /**
  * 立即更新布局
  * */
-const directUpdateLayout = (ev: ItemDragEvent) => {
+const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent) => {
   const {container, items, toContainer} = ev
-  if (toContainer && !ev.allowLayout()) return
+  if (toContainer && !ev['allowLayout']?.()) return
   const {layoutManager: manager, engine} = container
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
@@ -21,9 +23,6 @@ const directUpdateLayout = (ev: ItemDragEvent) => {
     baseline: container.getConfig("baseLine"),
     auto: ev.hasAutoDirection()
   })
-  // const {newResizeW,newResizeH} = tempStore
-  // console.log( {newResizeW,newResizeH},res.isSuccess)
-  // console.log(res.isSuccess)
   if (!res.isSuccess) return
   res.patch()
   ev.patchStyle()
@@ -37,7 +36,7 @@ const directUpdateLayout = (ev: ItemDragEvent) => {
 const updateLayout: Function = throttle(directUpdateLayout, 66)
 
 /**
- * 节流更新drag到十字线方向的布局
+ * 节流更新drag到 +十字线+ 方向的布局
  * */
 const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
   const {dragItem, gridX: x, gridY: y} = tempStore
@@ -54,7 +53,7 @@ const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Fun
 }, 66)
 
 /**
- * 节流更新drag到对角方向的布局
+ * 节流更新drag到 「对角」 方向的布局
  * */
 const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   const {toItem, dragItem} = tempStore
@@ -65,22 +64,27 @@ const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   updateLayout(ev)
 }, 200)
 
-// const containerOuterMoving: Function = throttle((ev: ItemDragEvent, callback: (item: Item) => void) => {
-//   const {dragItem} = tempStore
-//   if (!dragItem) return
-//   ev.findDiffCoverItem((item) => {
-//     if (isFunction(callback)) callback(item)
-//     ev.addModifyItems(dragItem)
-//     ev.addModifyItems(item)
-//     updateLayout(ev)
-//   })
-// }, 100)
-
+const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
+  const {fromItem} = tempStore
+  if (!fromItem) return
+  ev.addModifyItems(fromItem, {
+    w: ev.w,
+    h: ev.h,
+  })
+  directUpdateLayout(ev)
+}
 
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数
  * */
 export const ResponsiveLayout = definePlugin({
+  /**
+   * 拖动结束
+   * */
+  dragend(ev: ItemDragEvent) {
+    directUpdateLayout(ev)
+  },
+
   /**
    * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
@@ -115,21 +119,6 @@ export const ResponsiveLayout = definePlugin({
     const {dragItem, toItem} = tempStore
     if (!dragItem) return
     dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - dragItem.pos.h}) : null)
-  },
-
-  dragging(_: ItemDragEvent) {
-  },
-
-  dragend(ev: ItemDragEvent) {
-    directUpdateLayout(ev)
-  },
-  dragToBlank(ev: ItemDragEvent) {
-    const {dragItem, gridX, gridY} = tempStore
-    if (!dragItem) return
-    ev.prevent()
-    if (gridX === dragItem.pos.x && gridY === dragItem.pos.y) return;
-    ev.tryMoveToBlank()
-    updateLayout(ev)
   },
 
   dragToLeftTop(ev: ItemDragEvent) {
@@ -184,34 +173,44 @@ export const ResponsiveLayout = definePlugin({
     dragMoveToCrossHair(ev, call)
   },
 
-  resizing(ev: ItemDragEvent) {
-    ev.prevent()
-    const {fromItem, newResizeW, newResizeH} = tempStore
-    if (!fromItem) return
-    ev.addModifyItems(fromItem, {
-      w: newResizeW,
-      h: newResizeH,
-    })
+  /*------------------------------------------------------------------*/
+  resized(ev: ItemResizeEvent) {
     directUpdateLayout(ev)
   },
 
-  resized(ev: ItemDragEvent) {
+  resizeOuterTop(_: ItemResizeEvent) {
+  },
+
+  resizeOuterRight(_: ItemResizeEvent) {
+  },
+
+  resizeOuterBottom(_: ItemResizeEvent) {
+  },
+
+  resizeOuterLeft(_: ItemResizeEvent) {
+  },
+
+  resizeToTop(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
+  },
+
+  resizeToBottom(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
+  },
+
+  resizeToLeft(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
+  },
+
+  resizeToRight(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
+  },
+
+  closed(ev: ItemLayoutEvent) {
     directUpdateLayout(ev)
   },
 
-  closed(ev: ItemDragEvent) {
-    directUpdateLayout(ev)
-  },
-
-  containerResizing(ev: ItemDragEvent) {
+  containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)
   },
-
-  /**
-   * @param ev 如果没有传入customEv的时候默认使用的事件对象
-   * @param customEv 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
-   * */
-  updateLayout(ev: ItemDragEvent, customEv: ItemDragEvent) {
-    directUpdateLayout(ev || customEv)
-  }
 })

@@ -3,20 +3,6 @@ import {tempStore} from "@/events";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 
-type UpdateLimitSize = {
-  width?: number | string,
-  height?: number | string,
-  minWidth?: number | string,
-  maxWidth?: number | string,
-  minHeight?: number | string,
-  maxHeight?: number | string,
-}
-
-function setGlobalVarResizeSize(size: { w?: number, h?: number } = {}) {
-  if (size.w) tempStore.newResizeW = size.w
-  if (size.h) tempStore.newResizeH = size.h
-}
-
 /**
  * Item resize事件对象
  * 请注意，如果想实现Limit限制，请尽量使用maxWidth,minHeight...等限制样式
@@ -66,7 +52,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   /**
    * 距离right方向上最近的可调整距离(包含item的width)
    * */
-  get spaceRight() {
+  get spaceRight(): number {
     const {fromItem} = tempStore
     if (!fromItem) return
     const manager = this.layoutManager
@@ -86,7 +72,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   /**
    * 距离bottom方向上最近的最大可调整距离(包含item的height)
    * */
-  get spaceBottom() {
+  get spaceBottom(): number {
     const {fromItem} = tempStore
     if (!fromItem) return
     const manager = this.layoutManager
@@ -104,13 +90,13 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     return isFinite(spaceBottom) ? spaceBottom : this.offsetBottom
   }
 
-  get spaceW() {
+  get spaceW(): number {
     const {fromItem} = tempStore
     if (!fromItem) return
     return fromItem.pxToW(this.spaceRight)
   }
 
-  get spaceH() {
+  get spaceH(): number {
     const {fromItem} = tempStore
     if (!fromItem) return
     return fromItem.pxToH(this.spaceBottom)
