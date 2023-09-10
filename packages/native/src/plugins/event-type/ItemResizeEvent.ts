@@ -19,6 +19,30 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   public offsetRight: number // 当前item左上角的点和container right边界距离
   public offsetBottom: number // 当前item左上角的点和container bottom边界距离
 
+  /**
+   * 限制在网格内的fromItem，当前安全resize不会溢出容器的宽
+   * */
+  public get gridW(): number {
+    const {fromItem} = tempStore
+    if (!fromItem) return
+    let curW = fromItem.pxToW(this.mousePointX) * Math.sign(this.mousePointX)
+    if (curW < 0) curW = 1
+    const maxW = fromItem.container.getConfig("col") - fromItem.pos.x + 1
+    return curW > maxW ? maxW : curW
+  }
+
+  /**
+   * 限制在网格内的fromItem，当前安全resize不会溢出容器的高
+   * */
+  public get gridH(): number {
+    const {fromItem} = tempStore
+    if (!fromItem) return
+    let curH = fromItem.pxToH(this.mousePointY) * Math.sign(this.mousePointY)
+    if (curH < 0) curH = 1
+    const maxH = fromItem.container.getConfig("row") - fromItem.pos.y + 1
+    return curH > maxH ? maxH : curH
+  }
+
   constructor(...args) {
     super(...args);
     const {

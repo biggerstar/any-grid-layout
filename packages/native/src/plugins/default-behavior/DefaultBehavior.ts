@@ -49,6 +49,16 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   /**
+   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * */
+  dragging(ev: ItemDragEvent) {
+    patchDragDirection(ev)
+  },
+
+  dragend(_: ItemDragEvent) {
+  },
+
+  /**
    * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragOuterLeft(ev: ItemDragEvent) {
@@ -74,16 +84,6 @@ export const DefaultLayoutBehavior = definePlugin({
    * */
   dragOuterBottom(ev: ItemDragEvent) {
     ev.tryMoveToNearestBlank()
-  },
-
-  /**
-   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
-   * */
-  dragging(ev: ItemDragEvent) {
-    patchDragDirection(ev)
-  },
-
-  dragend(_: ItemDragEvent) {
   },
 
   /**

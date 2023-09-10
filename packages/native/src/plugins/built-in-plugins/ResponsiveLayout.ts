@@ -64,20 +64,27 @@ const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   updateLayout(ev)
 }, 200)
 
+/**
+ * 更新最新resize后的尺寸
+ * */
 const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
   const {fromItem} = tempStore
   if (!fromItem) return
   ev.addModifyItems(fromItem, {
-    w: ev.w,
-    h: ev.h,
+    w: ev.gridW,
+    h: ev.gridH,
   })
   directUpdateLayout(ev)
 }
 
+/*------------------------------------------------------------------------------------------*/
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数
  * */
 export const ResponsiveLayout = definePlugin({
+  containerResizing(ev: ItemLayoutEvent) {
+    updateLayout(ev)
+  },
   /**
    * 拖动结束
    * */
@@ -178,16 +185,20 @@ export const ResponsiveLayout = definePlugin({
     directUpdateLayout(ev)
   },
 
-  resizeOuterTop(_: ItemResizeEvent) {
+  resizeOuterTop(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterRight(_: ItemResizeEvent) {
+  resizeOuterRight(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterBottom(_: ItemResizeEvent) {
+  resizeOuterBottom(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterLeft(_: ItemResizeEvent) {
+  resizeOuterLeft(ev: ItemResizeEvent) {
+    updateResponsiveResizeLayout(ev)
   },
 
   resizeToTop(ev: ItemResizeEvent) {
@@ -210,7 +221,4 @@ export const ResponsiveLayout = definePlugin({
     directUpdateLayout(ev)
   },
 
-  containerResizing(ev: ItemLayoutEvent) {
-    updateLayout(ev)
-  },
 })

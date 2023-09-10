@@ -10,7 +10,9 @@ console.log(container1)
 
 container1.use({
   resizing(ev: ItemResizeEvent) {
-
+    // console.log(111111111111111111)
+  },
+  resizeOuterBottom(ev: ItemResizeEvent) {
   }
 })
 

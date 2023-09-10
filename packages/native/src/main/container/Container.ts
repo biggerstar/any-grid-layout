@@ -166,8 +166,9 @@ export class Container {
     })
   }
 
-  public use(plugin:CustomEventOptions) {
+  public use(plugin: CustomEventOptions): this {
     this.pluginManager.use(plugin)
+    return this
   }
 
   /**
@@ -199,21 +200,23 @@ export class Container {
     //-------------------如果不是动态的col，则以当前containerW为准------------------//
     if (name === 'col') {
       const containerW = this.containerW
+      const autoGrowCol = this.autoGrowCol
       if (!data) { // 未指定col自动设置
-        if (!this.autoGrowCol || !this._mounted) data = containerW
+        if (!autoGrowCol || !this._mounted) data = containerW
         else data = smartColRowInfo.smartCol
         if (data < containerW) data = containerW   // 最低保留盒子的W
       }
       //-----------------------------Col限制确定---------------------------------//
       const curMinCol = this._getConfig('minCol')
       if (curMinCol && data < curMinCol) data = curMinCol
-      if (data < smartColRowInfo.maxItemW) data = smartColRowInfo.maxItemW
+      if (data < smartColRowInfo.maxItemW && autoGrowCol) data = smartColRowInfo.maxItemW
     }
     //-------------------如果不是动态的row，则以当前containerH为准------------------//
     if (name === 'row') {
       const containerH = this.containerH
+      const autoGrowRow = this.autoGrowRow
       if (!data) {  // 未指定row自动设置
-        if (!this.autoGrowRow || !this._mounted) data = containerH
+        if (!autoGrowRow || !this._mounted) data = containerH
         else data = smartColRowInfo.smartRow
         // console.log(data, smartColRowInfo.smartRow);
         if (data < containerH) data = containerH   // 最低保留盒子的H
@@ -221,7 +224,7 @@ export class Container {
       //-----------------------------Row限制确定---------------------------------//
       const curMinRow = this._getConfig('minRow')
       if (curMinRow && data < curMinRow) data = curMinRow
-      if (data < smartColRowInfo.maxItemH) data = smartColRowInfo.maxItemH
+      if (data < smartColRowInfo.maxItemH && autoGrowRow) data = smartColRowInfo.maxItemH
       // console.log('data', data, 'containerH', containerH)
     }
     return data
