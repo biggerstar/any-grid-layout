@@ -1,38 +1,44 @@
 import container1 from "@/container/container1";
-import {ItemResizeEvent, ResponsiveLayout} from '@biggerstar/layout'
-// import  * as DD from '@biggerstar/layout'
-// console.log(DD);
-
-
+import {
+  ItemDragEvent,
+  ItemResizeEvent,
+  ResponsiveLayoutPlugin,
+  StreamLayoutPlugin,
+  ThrowMessageEvent,
+} from '@biggerstar/layout'
+import container2 from "@/container/container2";
 
 console.log(container1)
-// console.log(ResponsiveLayout)
+console.log(container2)
+
 
 container1.use({
   resizing(ev: ItemResizeEvent) {
     // console.log(111111111111111111)
   },
-  resizeOuterBottom(ev: ItemResizeEvent) {
+  dragging(ev: ItemDragEvent) {
+    console.log('container1',22222222222222)
+  }
+}).use(ResponsiveLayoutPlugin)
+
+container2.use({
+  resizing(ev: ItemResizeEvent) {
+    // console.log(111111111111111111)
+  },
+  dragging(ev: ItemDragEvent) {
+    console.log('container2',222222222222)
   }
 })
 
-container1.use(ResponsiveLayout)
 
-
-// container.render((data, useLayout, containerElement) => {
-//   // console.log(data,useLayout);
-//   // container.mountItems(items)
-//   console.log(containerElement);
-//   data.forEach((item) => {
-//     container.add(item)
-//   })
-// })
 container1.mount()
-
-
-// container1.mount()
-// container2.mount()
+container2.mount()
 // container3.mount()
+
+
+
+
+
 
 
 // setTimeout(()=>{

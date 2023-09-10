@@ -13,12 +13,6 @@ export class ContainerGeneralImpl {
    * */
   px?: number
 
-  /**
-   * default(上下左右交换) || exchange(两两交换) || stream(左部压缩排列)
-   * @default  default
-   * */
-  layoutMode?: 'default' | 'exchange' | 'stream' | 'static' | 'sameSizeStatic' = 'default'
-
   /** 当前布局使用的数据*/
   items?: CustomItems = []
 

@@ -7,7 +7,6 @@ const container2 = new Container({
     ratioCol: 0.1,
     // ratioRow: 0.1,
     layoutMode: 'static',
-    responsive: false
   },
   layouts: [
     // {
@@ -36,7 +35,7 @@ const container2 = new Container({
     {
       px: 900,
       // col: 9,
-      row: 8,
+      // row: 1,
       margin: [10, 10],
       size: [60, 80],
       items: fillItemLayoutList(layoutData11, {
@@ -64,28 +63,6 @@ const container2 = new Container({
     //   // minCol: 3,
     // },
   ],
-  events: {
-    error(err) {
-      // console.log(err);
-      // err.from.remove()
-    },
-    itemMounted(item: Item) {
-      item.itemContentElement.innerHTML = item.i.toString()
-      item.domImpl.updateStyle({
-        fontSize: `${<number>item.size[0] / 2}px`,
-        fontWeight: '800',
-        color: '#6b798e'
-      }, item.itemContentElement)
-
-    },
-    itemMove(item, nowX, nowY) {
-      // console.log(nowX,nowY);
-
-    },
-    itemMoved(item, nowX, nowY) {
-      // console.log(nowX,nowY);
-    },
-  },
 })
 
 export default container2

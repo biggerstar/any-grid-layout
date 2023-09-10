@@ -58,7 +58,6 @@ export function doCrossContainerItemExchange(container: Container, itemPositionM
       container.add(newItem)
       dragItem.unmount()  // 先成功移除原来容器中Item后再在新容器新添加Item，移除不成功不添加
       dragItem.remove()
-      dragItem.container.engine.updateLayout()
       newItem.mount()
       // dragItem.element.style.backgroundColor = 'red'
       tempStore.moveItem = newItem

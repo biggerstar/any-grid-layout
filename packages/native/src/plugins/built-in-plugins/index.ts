@@ -1,1 +1,2 @@
-export * from './ResponsiveLayout'
+export * from './ResponsiveLayoutPlugin'
+export * from './StreamLayoutPlugin'

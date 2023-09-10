@@ -176,7 +176,7 @@ export class Container {
    * */
   public get autoGrowCol() {
     const baseline = this.getConfig("baseLine")
-    return !this.layout.col && (baseline === 'left' || baseline === 'right')
+    return !this._getConfig('col') && (baseline === 'left' || baseline === 'right')
   }
 
   /**
@@ -184,7 +184,7 @@ export class Container {
    * */
   public get autoGrowRow() {
     const baseline = this.getConfig("baseLine")
-    return !this.layout.row && (baseline === 'top' || baseline === 'bottom')
+    return !this._getConfig('row') && (baseline === 'top' || baseline === 'bottom')
   }
 
   private _getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
@@ -202,7 +202,8 @@ export class Container {
       const containerW = this.containerW
       const autoGrowCol = this.autoGrowCol
       if (!data) { // 未指定col自动设置
-        if (!autoGrowCol || !this._mounted) data = containerW
+        if (!this._mounted) data = Math.max(smartColRowInfo.smartCol, containerW)
+        else if (!autoGrowCol) data = containerW
         else data = smartColRowInfo.smartCol
         if (data < containerW) data = containerW   // 最低保留盒子的W
       }
@@ -216,11 +217,13 @@ export class Container {
       const containerH = this.containerH
       const autoGrowRow = this.autoGrowRow
       if (!data) {  // 未指定row自动设置
-        if (!autoGrowRow || !this._mounted) data = containerH
+        if (!this._mounted) data = Math.max(smartColRowInfo.smartRow, containerH)
+        else if (!autoGrowRow) data = containerH
         else data = smartColRowInfo.smartRow
         // console.log(data, smartColRowInfo.smartRow);
         if (data < containerH) data = containerH   // 最低保留盒子的H
       }
+      // console.log(data,smartColRowInfo.smartRow);
       //-----------------------------Row限制确定---------------------------------//
       const curMinRow = this._getConfig('minRow')
       if (curMinRow && data < curMinRow) data = curMinRow
@@ -268,7 +271,6 @@ export class Container {
         clearTimeout(nestingTimer)
         nestingTimer = null
       })
-      this.engine.updateLayout() // TODO
       this._observer_()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this.__store__.screenWidth = window.screen.width
@@ -305,7 +307,6 @@ export class Container {
         renderCallback(this.layout.items || [], this.layout, this.element)
       }
       if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
-      this.updateLayout(true)
     })
   }
 
@@ -329,12 +330,6 @@ export class Container {
     this.engine.items.forEach((item) => {
       if (removeItem === item) item.remove()
     })
-  }
-
-  /** 以现有所有的Item pos信息更新Container中的全部Item布局，可以用于对某个单Item做修改后重新规划更新布局  */
-  public updateLayout(items = null, ignoreList = []) {
-    // TODO  优化
-    this.engine.updateLayout()
   }
 
   /** 移除对容器的resize监听  */
@@ -364,7 +359,7 @@ export class Container {
    * 监听浏览器窗口resize
    * */
   public _observer_() {
-    let refuseFirstCallDebounceAndThrottle = 0  // 拒绝container.mount时第一次节流函数和防抖函数执行最终调用到updateLayout
+    let refuseFirstCallDebounceAndThrottle = 0  // 拒绝container.mount时第一次节流函数和防抖函数执行
     const layoutChangeFun = () => {
       if (refuseFirstCallDebounceAndThrottle++ < 2) return
       if (!this._mounted) return
@@ -372,7 +367,6 @@ export class Container {
       // if (res === null || res === false) return
       this.bus.emit('containerResizing')
       this._trySwitchLayout()
-      this.engine.updateLayout()
     }
     const observerResize = () => {
       layoutChangeFun()

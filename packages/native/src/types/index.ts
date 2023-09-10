@@ -7,6 +7,7 @@ import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {BaseEvent} from "@/plugins/event-type/BaseEvent";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
+import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
 
 export type HandleErrorType = {
   type: 'error' | 'warn',
@@ -63,10 +64,10 @@ export type ContainerInstantiationOptions = {
    * */
   platform?: 'native' | 'vue'
 
-  /**
-   * 当前的事件钩子
-   * */
-  events?: CustomEventOptions,
+  // /**
+  //  * 当前的事件钩子
+  //  * */
+  // events?: CustomEventOptions,
 
   /**
    * 当前的布局配置，可以是一个配置对象或者配置对象数组
@@ -100,11 +101,11 @@ export type CustomEventOptions = {
   [key: string]: Function
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
-  error?(err: HandleErrorType): void,
+  error?(ev: ThrowMessageEvent): void,
 
   /** 所有非阻断式警告都能在这里接受处理,如果未设定该函数取接受异常将直接将警告抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用抛出warn */
-  warn?(err: HandleErrorType): void,
+  warn?(ev: ThrowMessageEvent): void,
 
   /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
   updated?(): void

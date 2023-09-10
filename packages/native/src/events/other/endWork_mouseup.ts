@@ -30,19 +30,6 @@ export function endWork_mouseup(_) {
     }
   }
 
-  //-------------------------更新所有相关操作的容器布局---------------------------//
-  if (fromItem) {
-    // resize下操作有包含内嵌容器的外部Item
-    // const resizeIncludeNestedContainer = fromItem.container
-    // const childContainers = resizeIncludeNestedContainer.childContainer
-    // childContainers.forEach((info) => {
-    //   if (info['nestingItem'] === fromItem) {
-    //     info['container'].engine.updateLayout()   // 更新内部内嵌的Item
-    //   }
-    // })
-  }
-
-
   //-------------------------------重置相关缓存-------------------------------//
   if (fromItem) fromItem.__temp__.resizeLock = false
   const resetKeys = [
@@ -76,6 +63,4 @@ export function endWork_mouseup(_) {
     new: null,
     old: null
   }
-  if (fromItem) fromItem.container.engine.updateLayout()
-
 }

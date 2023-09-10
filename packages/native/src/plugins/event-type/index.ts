@@ -2,12 +2,14 @@ export * from './BaseEvent'
 export * from './ItemDragEvent'
 export * from './ItemResizeEvent'
 export * from './ItemLayoutEvent'
+export * from './ThrowMessageEvent'
 
 import {CustomEventOptions} from "@/types";
 import {BaseEvent} from "@/plugins/event-type/BaseEvent";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
 
 type EventMapType = Record<keyof CustomEventOptions, any> & Record<any, any>
 export const EventMap: EventMapType = {
@@ -48,4 +50,7 @@ export const EventMap: EventMapType = {
   //--------------close------------------
   closing: ItemLayoutEvent,
   closed: ItemLayoutEvent,
+  //-------------throw-message-----------
+  error:ThrowMessageEvent,
+  warn:ThrowMessageEvent,
 }

@@ -35,9 +35,9 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!res.isSuccess) {
       console.log(res.failedItems)
       container.bus.emit('error', <any>{
-        name: 'ContainerOverflowError',
-        msg: "容器溢出或者Item重叠，只有item明确指定了x,y或者容器col,row情况下会出现此错误",
-        data: res
+        type: 'ContainerOverflowError',
+        message: "容器溢出或者Item重叠，您设置了固定的col或row且在首次挂载的时候才会出现该错误",
+        from: res
       })
     }
   },

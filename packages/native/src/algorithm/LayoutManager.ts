@@ -57,7 +57,7 @@ export class LayoutManager extends Finder {
    * @param {Item} fromItem 要移动的item
    * @param {Number} toItem 目标item位置，fromItem插入toItem位置，而fromItem与其后续成员都将索引加1
    * */
-  public move(items: Item[], fromItem: Item, toItem: Item | null) {
+  public move(items: Item[], fromItem: Item, toItem: Item) {
     if (!fromItem || !toItem) return
     let fromIndex = items.findIndex((v) => fromItem === v)
     let toIndex = items.findIndex((v) => toItem === v)
@@ -69,7 +69,7 @@ export class LayoutManager extends Finder {
   /**
    * 交换在items中两个Item的位置
    * */
-  public exchange(items: Item[], fromItem: Item, toItem: Item | null) {
+  public exchange(items: Item[], fromItem: Item, toItem: Item) {
     if (!fromItem || !toItem) return
     const indexA = items.findIndex((item) => fromItem === item)
     const indexB = items.findIndex((item) => toItem === item)
@@ -231,7 +231,7 @@ export class LayoutManager extends Finder {
     return isBlank
   }
 
-  public unmark(pos: CustomItemPos):this {
+  public unmark(pos: CustomItemPos): this {
     this.mark(pos, this.place)
     return this
   }

@@ -134,14 +134,4 @@ export class Engine {
     }
   }
 
-  /**
-   * 更新并渲染布局
-   * */
-  public updateLayout() {
-    // this.container.bus.emit('updateLayout')
-    // const layoutMode = this.container.getConfig('layoutMode')
-    // this.container.layoutManager.layout(layoutMode).then()
-    // this.container.updateContainerStyleSize()
-    // this._checkUpdated()
-  }
 }
