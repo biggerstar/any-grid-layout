@@ -6,7 +6,6 @@ const container2 = new Container({
   global: {
     ratioCol: 0.1,
     // ratioRow: 0.1,
-    layoutMode: 'static',
   },
   layouts: [
     // {
@@ -38,10 +37,12 @@ const container2 = new Container({
       // row: 1,
       margin: [10, 10],
       size: [60, 80],
+      exchange:true,
       items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,
+        exchange:true,
         pos: {
           // minH:2,
           // maxH:1,

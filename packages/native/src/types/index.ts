@@ -8,34 +8,42 @@ import {BaseEvent} from "@/plugins/event-type/BaseEvent";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
-
-export type HandleErrorType = {
-  type: 'error' | 'warn',
-  name: string,
-  msg: string,
-  /** 来自哪个数据或者实例 Container or Item */
-  from: any
-}
-
-
-// export type CustomItemField = 'el' | 'name' | 'type' | 'follow' | 'dragOut'
-//   | 'resizeOut' | 'className' | 'dragIgnoreEls' | 'dragAllowEls' | 'transition'
-//   | 'draggable' | 'resize' | 'close' | 'static' | 'exchange' | 'pos'
-
-// export type ItemLayoutOption =
-//   Omit<ItemGeneralImpl, 'pos'>
-//   & { pos: Partial<CustomItemPos> }
-//   & { [key: string]: any }
+import {CrossContainerExchangeEvent} from "@/plugins";
+import {CustomItemPos} from "../../dist";
 
 export type CustomItemPos = ItemPosGeneralImpl
-
 export type CustomItem = ItemGeneralImpl
 export type CustomItems = ItemGeneralImpl[]
+
+export type BasePosType = 'x' | 'y' | 'w' | 'h'
+export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'
+export type MarginOrSizeDesc = [number | null, number | null]
 
 /** Container 实例化配置选项 */
 export type CustomLayoutsOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
 export type CustomLayoutsOption = ContainerGeneralImpl
 
+export type ItemTransition = ItemTransitionObject | number | boolean
+
+export type ItemTransitionObject = {
+  time: number,
+  field: 'top,left,width,height'
+}
+
+export type ItemLimitType = {
+  maxW?: number,
+  maxH?: number,
+  minW?: number,
+  minH?: number
+}
+
+export type EventBusType = Record<keyof CustomEventOptions, any> & {
+  error: {
+    type: string,
+    message: string,
+    from: any,
+  }
+}
 /** Container 实例化配置选项 */
 export type ContainerInstantiationOptions = {
   [key: string]: any
@@ -80,23 +88,6 @@ export type ContainerInstantiationOptions = {
   global?: CustomLayoutsOption,
 }
 
-export type ItemTransition = ItemTransitionObject | number | boolean
-
-export type ItemTransitionObject = {
-  time: number,
-  field: 'top,left,width,height'
-}
-
-export type MarginOrSizeDesc = [number | null, number | null]
-
-export type ItemLimitType = {
-  maxW?: number,
-  maxH?: number,
-  minW?: number,
-  minH?: number
-}
-
-
 export type CustomEventOptions = {
   [key: string]: Function
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
@@ -108,22 +99,22 @@ export type CustomEventOptions = {
   warn?(ev: ThrowMessageEvent): void,
 
   /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
-  updated?(): void
+  updated?(ev:BaseEvent): void
 
   /** Container成功挂载事件 */
-  containerMounted?(container: Container): void,
+  containerMounted?(ev: BaseEvent): void,
 
   /** Container成功卸载事件 */
-  containerUnmounted?(container: Container): void,
+  containerUnmounted?(ev: BaseEvent): void,
 
   /** Item成功挂载事件 */
-  itemMounted?(item: Item): void,
+  itemMounted?(ev: BaseEvent): void,
 
   /** Item成功卸载事件 */
-  itemUnmounted?(item: Item): void,
+  itemUnmounted?(ev: BaseEvent): void,
 
   /** Item添加成功事件 */
-  addItemSuccess?(item: Item): void,
+  addItemSuccess?(ev: BaseEvent): void,
 
 
   /** item位置变化时响应的事件,只有位置变化才触发 */
@@ -173,8 +164,28 @@ export type CustomEventOptions = {
 
 
   //--------------other-------------------
+  /**
+   * @default 初始化载入item成员并挂载
+   * */
   init?(ev: ItemLayoutEvent): void,
+
+  /**
+   * 发起一次更新，内置默认事件无任何行为，由当前使用的插件自行实现更新逻辑
+   * @default 无
+   * */
   updateLayout?(ev: ItemLayoutEvent): void,
+
+  /**
+   * 跨容器移动成员时的源容器
+   * @default 无
+   * */
+  crossSource?(ev: CrossContainerExchangeEvent): void,
+
+  /**
+   * 跨容器移动成员时的目标容器
+   * @default 无
+   * */
+  crossTarget?(ev: CrossContainerExchangeEvent): void,
   itemSizeChange?(ev: BaseEvent): void,
   //------------container-outer-move------------
   dragOuterLeft?(ev: ItemDragEvent): void,
@@ -210,60 +221,6 @@ export type CustomEventOptions = {
   closed?(ev: ItemLayoutEvent): void,
 }
 
-export type MoveDirection =
-  'blank'
-  | 'left'
-  | 'right'
-  | 'top'
-  | 'bottom'
-  | 'leftTop'
-  | 'letBottom'
-  | 'rightTop'
-  | 'rightBottom'
-
-export type LayoutOptions = {
-  [key: string]: any,
-  /**
-   * 当前正在操作拖动的item
-   * */
-  dragItem?: Item,
-
-  /**
-   * 当前鼠标坐标下的某一个item
-   * toItem 为null则是空白处
-   * */
-  toItem?: Item | null,
-  /**
-   * item的左上角X坐标，endX 是x坐标加上w - 1 ，最大位置被限制在容器里
-   * */
-  x?: number,
-
-  /**
-   * item的左上角Y坐标，endY 是x坐标加上y - 1 ，最大位置被限制在容器里
-   * */
-  y?: number,
-
-  /**
-   * 当前鼠标拖动的Item左上角相对于容器的真实位置，可获取到拖动到容器外的相对位置
-   * */
-  relativeX?: number,
-
-  /**
-   * 当前鼠标拖动的Item左上角相对于容器的真实位置，可获取到拖动到容器外的相对位置
-   * */
-  relativeY?: number,
-
-  /**
-   * 本次事件响应鼠标移动的距离，响应时间间隔是浏览器对mousemove的间隔
-   * */
-  distance?: number,
-
-  /**
-   * 本次鼠标移动的速度，距离/时间，响应时间间隔是浏览器对mousemove的间隔
-   * */
-  speed?: number
-}
-
 export type AnalysisResult = {
   col: number
   row: number
@@ -286,6 +243,3 @@ export type AnalysisResult = {
    * */
   patch: (handler?: (item: Item) => void) => void
 }
-
-export type BasePosType = 'x' | 'y' | 'w' | 'h'
-export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'

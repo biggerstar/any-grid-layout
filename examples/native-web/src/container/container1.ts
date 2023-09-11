@@ -6,20 +6,19 @@ const container1 = new Container({
   // el: document.getElementById('container1'),
   global: {
     responsive: true,
-    layoutMode: 'default',
     dragOut: true,
     exchange: true,
     // ratioCol: 0.2,
     from1: '来自global',
   },
   layouts: {
-    responsive: false,
-    layoutMode: 'default',
     from: '来自layout',
+    exchange:true,
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,
       close: true,
+      exchange:true
     }),
     // col: 5,
     // row: 2,
@@ -31,7 +30,6 @@ const container1 = new Container({
     // sizeWidth:200,
     // minCol: 5,
     // minRow: 10,
-    exchange: true,
     // sizeWidth: 50,
     // sizeHeight: 80,
     // marginX: 30,

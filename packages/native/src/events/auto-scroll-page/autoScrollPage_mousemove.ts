@@ -12,12 +12,13 @@ export const autoScrollPage_mousemove: Function = throttle((ev) => {
     isLeftMousedown,
     dragItem,
     fromItem,
+    toContainer,
     scrollReactionStatic,
     slidePageOffsetInfo
   } = tempStore
 
   if (!isScrollPage || !fromItem || !dragItem || !mousedownEvent || !isLeftMousedown) return
-  const container: Container | null = parseContainer(ev)
+  const container: Container | null = toContainer
   if (!container) return
   if (!container || !container.getConfig('autoScrollPage')) return
   //------------------------------------------------------------------------------------------------
@@ -27,7 +28,8 @@ export const autoScrollPage_mousemove: Function = throttle((ev) => {
   const scrollSpeedX = container.getConfig('scrollSpeedX') ? container.getConfig('scrollSpeedX') : Math.round(scrollContainerBoxElRect.width / 20)
   const scrollSpeedY = container.getConfig('scrollSpeedY') ? container.getConfig('scrollSpeedY') : Math.round(scrollContainerBoxElRect.height / 20)
   const scroll = (direction, scrollOffset) => {
-    const isScroll = dragItem.container.eventManager._callback_('autoScroll', direction, scrollOffset, dragItem.container)
+    return; // TODO 设计成默认事件
+    const isScroll = dragItem.container.bus.emit('autoScroll')
     if (isScroll === false || isScroll === null) return
     if (typeof isScroll === 'object') {   //按照返回的最新方向和距离进行滚动，这里类型限制不严谨，但是吧开发者自己控制不管那么多了
       if (typeof isScroll.offset === 'number') scrollOffset = isScroll.offset

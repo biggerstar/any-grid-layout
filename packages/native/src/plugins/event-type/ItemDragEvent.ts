@@ -13,13 +13,13 @@ export class ItemDragEvent extends ItemLayoutEvent {
    *
    * */
   public findDiffCoverItem(oneItemFunc: Function | null, multipleItemFunc: Function = null): void {
-    const {dragItem, gridX: x, gridY: y} = tempStore
+    const {dragItem} = tempStore
     if (!dragItem) return
     // console.log(x,y);
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, {
       ...dragItem.pos,
-      x,
-      y
+      x: this.gridX,
+      y: this.gridY
     })
     if (!toItemList.length) return
     toItemList = toItemList.filter(item => item !== dragItem)
@@ -40,11 +40,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * @param pos  当前移动到新位置的pos
    * */
   public tryMoveToBlank(item?: Item, pos?: Partial<Pick<CustomItemPos, 'x' | 'y'>>): boolean {
-    let {
-      dragItem,
-      relativeX,
-      relativeY,
-    } = tempStore
+    let {dragItem} = tempStore
     const targetItem = item || dragItem
     if (!targetItem) return false
     const targetPos = pos
@@ -54,8 +50,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: relativeX,
-        y: relativeY,
+        x: this.relativeX,
+        y: this.relativeY,
       }
     const securityPos = getMovableRange(targetPos)
     //-------------------------------------
@@ -80,11 +76,11 @@ export class ItemDragEvent extends ItemLayoutEvent {
    *                        最终range.w的计算方式: 扩展的直径(radius * 2 ) + 1(当前x,y原点),合并后为dragItem.pos.w * (radius * 2) + 1
    * */
   public tryMoveToNearestBlank({radius = 1} = {}): boolean {
-    const {dragItem, gridX, gridY} = tempStore
+    const {dragItem} = tempStore
     if (!dragItem) return false
     const manager = this.layoutManager
-    const rangeMinX = gridX - dragItem.pos.w * radius
-    const rangeMinY = gridY - dragItem.pos.h * radius
+    const rangeMinX = this.gridX - dragItem.pos.w * radius
+    const rangeMinY = this.gridY - dragItem.pos.h * radius
     const range = {  // 当前item位置扩大两倍宽高的矩形范围
       x: rangeMinX < 1 ? 1 : rangeMinX,
       y: rangeMinY < 1 ? 1 : rangeMinY,
@@ -110,8 +106,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     let minimumArea = Infinity
     let finallyPos = dragItem.pos  // 如果没找到则不变
     allBlankRange.forEach(range => {
-      const W = Math.abs(gridX - range.x) + 1
-      const H = Math.abs(gridY - range.y) + 1
+      const W = Math.abs(this.gridX - range.x) + 1
+      const H = Math.abs(this.gridY - range.y) + 1
       const area = W * H  // 求最小面积
       if (area <= minimumArea) { // 最后一个是dragItem，保证前面所有计算后的最小面积等于当前dragItem面积，此时不会进行改变位置
         minimumArea = area
@@ -139,14 +135,14 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * */
   public allowLayout() {
     const container = this.container
-    const {toItem, dragItem, isDragging, gridX, gridY} = tempStore
+    const {toItem, dragItem, isDragging} = tempStore
     if (!dragItem) return true   // 不是drag时就是resize浏览器或者元素盒子窗口
     if (isDragging) {
       if (!toItem || toItem === dragItem) {
         const foundItems = container.layoutManager.findCoverItemsFromPosition(container.engine.items, {
           ...dragItem?.pos,
-          x: gridX,
-          y: gridY
+          x: this.gridX,
+          y: this.gridY
         })
         if (foundItems.length <= 1) return
       }
@@ -161,14 +157,12 @@ export class ItemDragEvent extends ItemLayoutEvent {
     let {
       dragItem,
       toItem,
-      relativeX: x,
-      relativeY: y,
       toContainer
     } = tempStore
     if (!dragItem) return
     const bus = this.container.bus
-    const X = x - dragItem.pos.x
-    const Y = y - dragItem.pos.y
+    const X = this.relativeX - dragItem.pos.x
+    const Y = this.relativeY - dragItem.pos.y
     // console.log(X,Y);
     // console.log(x, y);
     if (!toContainer && dragItem) {

@@ -2,3 +2,4 @@
 
 export * from './DefaultLayoutBehavior'
 export * from './ThrowMessageBehavior'
+export * from './CrossContainerExchangeBehavior'

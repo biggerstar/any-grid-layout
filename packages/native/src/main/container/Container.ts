@@ -6,10 +6,9 @@ import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerInstantiationOptions, CustomEventOptions, CustomItem} from "@/types";
+import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {Engine} from "@/main";
-import {EventCallBack} from "@/utils/EventCallBack";
 import {startGlobalEvent} from "@/events/listen";
 import {tempStore} from "@/events";
 import {computeSmartRowAndCol} from "@/algorithm/common";
@@ -64,10 +63,9 @@ export class Container {
    * 当前正在使用的布局，为layouts中的某一个适合当前屏幕的布局配置的地址引用
    * 该布局会信息会在切换布局的时候被修改，原因是为了同步当前最新布局保存到layouts中
    * */
-  public bus: Emitter<CustomEventOptions> = Bus()
+  public bus: Emitter<EventBusType> = Bus()
   public pluginManager: PluginManager
   public layoutManager: LayoutManager
-  public eventManager: EventCallBack      // events通过封装构建的类实例
   public readonly layout: ContainerGeneralImpl = {} as any
   public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public classList: string[] = []
@@ -104,7 +102,6 @@ export class Container {
     offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
     exchangeLockX: false,  // 锁定Item是否可以横向移动
     exchangeLockY: false, // 锁定Item是否可以纵向向移动
-    beforeContainerSizeInfo: null,
     observer: null,
     nestingFirstMounted: false // 嵌套模式下第一次是否挂载，决定是否执行render函数
     //----------可写变量-----------//
@@ -114,7 +111,6 @@ export class Container {
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
     merge(this, options)
     this._define()
-    this.eventManager = new EventCallBack(<any>options.events)
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
     this.engine = new Engine(options)
@@ -273,11 +269,9 @@ export class Container {
       })
       this._observer_()
       this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
-      this.__store__.screenWidth = window.screen.width
-      this.__store__.screenHeight = window.screen.height
       this._mounted = true
       this.updateContainerStyleSize()  // 在 _mounted 之后
-      this.eventManager._callback_('containerMounted', this)
+      this.bus.emit('containerMounted')
       // if (typeof mCallback === 'function') mCallback.bind(this)(this)
     }
     if (this.platform === 'vue') _mountedFun()
@@ -318,7 +312,7 @@ export class Container {
     this.engine.unmount(isForce)
     this._mounted = false
     this._disconnect_()
-    this.eventManager._callback_('containerUnmounted', this)
+    this.bus.emit('containerUnmounted')
   }
 
   /** 将item成员从Container中全部移除，之后重新渲染  */
@@ -350,7 +344,7 @@ export class Container {
       this.engine.clear();
       (useLayout.items as Item[]).forEach((item) => this.add(item))
     }
-    this.eventManager._callback_('useLayoutChange', this.useLayout, this.element.clientWidth, this)
+    // this.bus.emit('useLayoutChange')
     const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
     if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
   }
@@ -363,8 +357,6 @@ export class Container {
     const layoutChangeFun = () => {
       if (refuseFirstCallDebounceAndThrottle++ < 2) return
       if (!this._mounted) return
-      // const res = this.eventManager._callback_('containerResizing', useLayoutConfig, this.element.clientWidth, this)
-      // if (res === null || res === false) return
       this.bus.emit('containerResizing')
       this._trySwitchLayout()
     }

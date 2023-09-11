@@ -1,6 +1,7 @@
 import {Container} from "@/main";
 import {CustomEventOptions} from "@/types";
 import {LayoutManager} from "@/algorithm";
+import {tempStore} from "@/events";
 
 export class BaseEvent {
   public name: keyof CustomEventOptions
@@ -12,7 +13,7 @@ export class BaseEvent {
 
   public container: Container
   public layoutManager: LayoutManager
-  public target: Container
+  public target: Container | null = null
   public isPrevent: boolean = false
 
   prevent() {

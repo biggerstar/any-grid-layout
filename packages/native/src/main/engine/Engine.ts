@@ -71,7 +71,7 @@ export class Engine {
       hashContent = hashContent + pos.posHash + (pos.w || pos.tempW) + (pos.h || pos.tempH) + pos.x + pos.y + ';'
     })
     if (this.__temp__.previousHash !== hashContent) {
-      this.container.eventManager._callback_('updated', this.container)
+      this.container.bus.emit('updated')
       this.__temp__.previousHash = hashContent
     }
   }
@@ -101,6 +101,7 @@ export class Engine {
     const container = this.container
     const item = new Item(itemOptions)
     this.items.push(item)
+    item.customOptions = itemOptions
     item.container = container
     item.parentElement = container.contentElement
     item.i = this.items.length

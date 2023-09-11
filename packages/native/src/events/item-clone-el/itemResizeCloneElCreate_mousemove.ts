@@ -11,9 +11,10 @@ export const itemResizeCloneElCreate_mousemove: Function = throttle(() => {
     fromItem,
     isResizing,
     cloneElement,
+    isLeftMousedown,
     fromContainer,
   } = tempStore
-  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
+  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing || !isLeftMousedown) return
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
   newNode.classList.add('grid-clone-el', 'grid-resizing-clone-el')
   fromItem.domImpl.addClass('grid-resizing-source-el')

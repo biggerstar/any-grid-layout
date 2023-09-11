@@ -6,6 +6,7 @@ import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins";
 import {isAnimation} from "@/algorithm/common/tool";
+import {Item} from "@/main";
 
 /**
  * 节流后的patchDragDirection
@@ -61,10 +62,10 @@ export const updateLayout: Function = throttle(directUpdateLayout, 66)
  * 节流更新drag到 +十字线+ 方向的布局
  * */
 export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
-  const {dragItem, gridX: x, gridY: y} = tempStore
+  const {dragItem} = tempStore
   if (!dragItem) return
   ev.prevent()
-  ev.addModifyItems(dragItem, {x, y})
+  ev.addModifyItems(dragItem, {x: ev.gridX, y: ev.gridY})
   if (isFunction(callback)) {
     ev.findDiffCoverItem(null, (item) => {
       const changePos = callback(item)
@@ -110,3 +111,4 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
   manager.move(ev.items, dragItem, toItem)
   directUpdateLayout(ev, {sort: false})
 }, 80)
+

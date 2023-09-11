@@ -4,15 +4,13 @@ import {CustomItemPos} from "@/types";
 import {createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/events";
 
-let old = 0
-
 export class ItemLayoutEvent extends BaseEvent {
   public mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
   public mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
-  public gridX: number   // 被限制在网格内的当前鼠标位置
-  public gridY: number   // 同上
-  public relativeX: number  // 相对当前container左上角的位置，不会被容器最大col或row限制，可能是负数
-  public relativeY: number
+  public relativeX: number // 当前鼠标距离源容器的真实x栅格值
+  public relativeY: number   // 当前鼠标距离源容器的真实y栅格值
+  public gridX: number  // 当前鼠标距离源容器且被限制在容器内位置的X值
+  public gridY: number  // 当前鼠标距离源容器且被限制在容器内位置的Y值
 
   /**
    * 是否是静态布局  TODO 后续可能更改
@@ -26,26 +24,29 @@ export class ItemLayoutEvent extends BaseEvent {
 
   constructor(...args) {
     super(...args);
+    this.items = this.container.engine.items
+    //--------------------------------------//
     const {
       dragItem,
-      mousemoveResizeEvent,
-      mousemoveDragEvent,
-      gridX,
-      gridY,
-      relativeX,
-      relativeY,
+      mousedownEvent,
+      mousemoveEvent,
+      fromContainer,
     } = tempStore
-    this.items = this.container.engine.items
-    if(dragItem){
-      const curEv = mousemoveResizeEvent || mousemoveDragEvent as MouseEvent
-      const {left, top} = dragItem.element.getBoundingClientRect()
-      this.mousePointX = curEv.clientX - left
-      this.mousePointY = curEv.clientY - top
-      this.gridX = gridX
-      this.gridY = gridY
-      this.relativeX = relativeX
-      this.relativeY = relativeY
-    }
+    if (!dragItem || !mousedownEvent || !fromContainer || !mousemoveEvent) return
+    const {left, top} = dragItem.element.getBoundingClientRect()
+    this.mousePointX = mousemoveEvent.clientX - left
+    this.mousePointY = mousemoveEvent.clientY - top
+    const {left: containerLeft, top: containerTop} = dragItem.container.contentElement.getBoundingClientRect()
+    const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
+    const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
+    this.relativeX = dragItem.pxToW(relativeLeftTopX4Container) * Math.sign(relativeLeftTopX4Container)
+    this.relativeY = dragItem.pxToH(relativeLeftTopY4Container) * Math.sign(relativeLeftTopY4Container)
+    const contentBoxW = dragItem.container.contentBoxW
+    const contentBoxH = dragItem.container.contentBoxH
+    this.gridX = this.relativeX < 1 ? 1 : (this.relativeX > contentBoxW ? contentBoxW : this.relativeX)
+    this.gridY = this.relativeY < 1 ? 1 : (this.relativeY > contentBoxH ? contentBoxH : this.relativeY)
+    // console.log(this.mousePointX, this.mousePointY)
+    // console.log(this.relativeX, this.relativeY, this.gridX, this.gridY)
   }
 
   /**

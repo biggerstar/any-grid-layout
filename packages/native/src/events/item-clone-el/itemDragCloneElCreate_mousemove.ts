@@ -11,8 +11,9 @@ export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
     dragItem,
     isDragging,
     cloneElement,
+    isLeftMousedown,
   } = tempStore
-  if (!mousedownEvent || !dragItem || !isDragging) return
+  if (!mousedownEvent || !dragItem || !isDragging || !isLeftMousedown) return
   // dragItem.__temp__.dragging = true
   if (!cloneElement) {
     const finallyRemoveEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')

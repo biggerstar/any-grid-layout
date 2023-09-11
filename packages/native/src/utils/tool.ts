@@ -1,7 +1,9 @@
 import {CustomItem, CustomItems} from "@/types";
 import {Container, Item} from "@/main";
 
-/** 节流 */
+/**
+ * 节流
+ * */
 export function throttle(func: Function, wait: number = 350): Function {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self, args;
   let old = 0;
@@ -16,7 +18,9 @@ export function throttle(func: Function, wait: number = 350): Function {  // 全
   }
 }
 
-/** 防抖 */
+/**
+ * 防抖
+ * */
 export function debounce(fn: Function, delay: number = 500) {
   let timer = null;
   return function () {
@@ -30,7 +34,9 @@ export function debounce(fn: Function, delay: number = 500) {
   }
 }
 
-/** 深度克隆对象  */
+/**
+ * 深度克隆对象
+ * */
 export const cloneDeep = (obj: Record<any, any>) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
   let objClone = Array.isArray(obj) ? [] : {};
   if (obj && typeof obj === "object") {
@@ -47,7 +53,9 @@ export const cloneDeep = (obj: Record<any, any>) => {  // 使用lodash.cloneDeep
   return objClone;
 }
 
-/** 深度合并对象  */
+/**
+ * 深度合并对象
+ * */
 function mergeDeep(target, source) {
   if (typeof target !== 'object' || typeof source !== 'object') return source
   for (const key in source) {  // 判断属性是否是源对象自身的属性（非继承）
@@ -98,14 +106,17 @@ export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: numbe
 }
 
 
-/** 驼峰转短横线  */
+/**
+ * 驼峰转短横线
+ * */
 export function getKebabCase(str: string) {
   return str.replace(/[A-Z]/g, function (i) {
     return '-' + i.toLowerCase();
   })
 }
 
-/** 从一个新的对象合并到另一个原有对象中且 [ 只合并原有存在对象中的值 ],参数位置和Object.assign一样
+/**
+ * 从一个新的对象合并到另一个原有对象中且 [ 只合并原有存在对象中的值 ],参数位置和Object.assign一样
  * 和 Object.assign不同的是该方法不会复制两者不同属性到to对象中, 会直接影响到原对象
  * @param {Object} to 接受者
  * @param {Object} from 提供者
@@ -126,7 +137,9 @@ export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
   return clone ? cloneData : to
 }
 
-/**  用于将target Element在原型链中对象中往root方向最新的的Path链解析出来 */
+/**
+ * 用于将target Element在原型链中对象中往root方向最新的的Path链解析出来
+ * */
 const genPrototypeToRootPath = (target, touchEvent) => {
   const path = []
   if (touchEvent.touchTarget) target = touchEvent.touchTarget
@@ -147,7 +160,9 @@ const genPrototypeToRootPath = (target, touchEvent) => {
   return path
 }
 
-/**  用于将在原型链中对象中往root方向最新的的Container解析出来 */
+/**
+ * [parentNode方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
+ * */
 export const parseContainerFromPrototypeChain = (target) => {
   let container
   if (target instanceof Element) {
@@ -163,7 +178,9 @@ export const parseContainerFromPrototypeChain = (target) => {
   return container
 }
 
-/**  用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container*/
+/**
+ * [path方式] 用于将domEvent对象中往root方向最新的的Container解析出来，reverse是最远的靠近root的Container
+ * */
 export const parseContainer = (ev, reverse = false): Container | null => {
   let container = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
@@ -182,11 +199,12 @@ export const parseContainer = (ev, reverse = false): Container | null => {
       }
     }
   }
-  // console.log(container);
   return container
 }
 
-/**  用于将domEvent对象中往root方向最新的的containerAreaElement解析出来，reverse是最远的靠近root的containerAreaElement*/
+/**
+ * 用于将domEvent对象中往root方向最新的的containerAreaElement解析出来，reverse是最远的靠近root的containerAreaElement
+ * */
 export const parseContainerAreaElement = (ev, reverse = false): HTMLElement | null => {
   let containerAreaElement = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
@@ -209,7 +227,9 @@ export const parseContainerAreaElement = (ev, reverse = false): HTMLElement | nu
 
 }
 
-/** 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item */
+/**
+ * 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item
+ * */
 export const parseItem = (ev, reverse = false): Item | null => {
   let item = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的

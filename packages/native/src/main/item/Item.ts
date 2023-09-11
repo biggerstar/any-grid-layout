@@ -36,6 +36,7 @@ export class Item extends ItemGeneralImpl {
   //----------------vue专用---------------------//
   public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
+  public customOptions: ItemGeneralImpl
   public readonly _default: ItemGeneralImpl
   private _mounted: boolean = false
   private _resizeTabEl?: HTMLElement
@@ -52,7 +53,6 @@ export class Item extends ItemGeneralImpl {
     maskEl: null,
     height: 0,
     width: 0,
-    resizeLock: false,
     dragging: false,
     clientWidth: 0,
     clientHeight: 0,
@@ -174,7 +174,7 @@ export class Item extends ItemGeneralImpl {
       this.element['_gridItem_'] = this
       this.element['_isGridItem_'] = true
       this._mounted = true
-      this.container.eventManager._callback_('itemMounted', this)
+      this.container.bus.emit('itemMounted')
     }
     if (this.container.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)
@@ -195,9 +195,13 @@ export class Item extends ItemGeneralImpl {
         this._handleResize(false)
         this._closeBtn(false)
         this.container.contentElement.removeChild(this.element)
-        this.container.eventManager._callback_('itemUnmounted', this)
+        this.container.bus.emit('itemUnmounted')
       } else {
-        this.container.eventManager._error_('ItemAlreadyRemove', '该Item对应的element未在文档中挂载，可能已经被移除', <any>this)
+        this.container.bus.emit('error', {
+          type: 'ItemAlreadyRemove',
+          message: '该Item对应的element未在文档中挂载，可能已经被移除',
+          from: this
+        })
       }
     })
     if (isForce) this.remove()

@@ -27,15 +27,3 @@ export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>) {
     }
   }
 }
-
-// this.manager = manager
-// let old = 0;
-// this.throttle = (func) => {
-//   let now = new Date().valueOf();
-//   let res
-//   if (now - old > this.wait) {
-//     res = func.apply(<object>this);
-//     old = now;
-//   }
-//   return res
-// }

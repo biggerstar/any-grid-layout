@@ -50,7 +50,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       isLeftMousedown,
       fromItem,
       cloneElement,
-      mousemoveResizeEvent: resizeEv,
+      mousemoveEvent: resizeEv,
     } = tempStore
     if (!isResizing || !isLeftMousedown) return
     if (!fromItem || !resizeEv || !isLeftMousedown) return
@@ -132,7 +132,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   public patchResizeDirection() {
     let {
       fromItem,
-      mousemoveResizeEvent: resizeEv,
+      mousemoveEvent: resizeEv,
     } = tempStore
     if (!fromItem || !resizeEv) return
     const bus = this.container.bus

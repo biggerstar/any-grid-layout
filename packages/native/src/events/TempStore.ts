@@ -26,21 +26,14 @@ class TempStore {
     return this.handleMethod === void 0
   }
 
-  //----------只读变量-----------//
-  screenWidth: null | number = null  // 用户屏幕宽度
-  screenHeight: null | number = null  // 用户屏幕高度
   //----------通用可写变量-----------//
   editItemNum: number = 0   // 当前处于编辑模式的Item个数
   fromContainer: Container | null = null    //  当前Item的初始来源
-  moveContainer: Container | null = null    //  当前正聚焦的容器
   toContainer: Container | null = null    //  当前鼠标移动位置下是哪个容器，移动到容器外为null
   get dragContainer(): Container | null {
     return this.fromContainer || this.dragContainer
   }    //  当前Item拖动多次跨容器后的最新所处容器位置来源
-  currentContainer: Container | null = null  //  当前鼠标在哪个Container
-  beforeContainer: Container | null = null  //  来自上一个的Container
-  currentContainerArea: HTMLElement   //  当前鼠标在哪个Container容器域名
-  beforeContainerArea: HTMLElement   //  来自上一个的Container容器域名
+  toContainerArea: HTMLElement | null
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
@@ -49,30 +42,9 @@ class TempStore {
     return this.moveItem || this.fromItem
   }
 
-  // resize的时候当前的宽
-  newResizeW: number
-  // resize的时候当前的高
-  newResizeH: number
-  // 当前鼠标距离源容器的真实x栅格值
-  relativeX: number
-  // 当前鼠标距离源容器的真实y栅格值
-  relativeY: number
-  // 当前鼠标距离源容器且被限制在容器内位置的X值
-  gridX: number
-  // 当前鼠标距离源容器且被限制在容器内位置的Y值
-  gridY: number
-
-  exchangeItems: {
-    old: Item | null
-    new: Item | null
-  } = { /* 跨容器时保存对应的新老Item */
-    old: null,
-    new: null
-  }
   cloneElement: HTMLElement | null      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
   mousedownEvent: MouseEvent | null = null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
-  mousemoveResizeEvent: MouseEvent | null = null   //  鼠标resize拖动期间实时更新触发的事件对象
-  mousemoveDragEvent: MouseEvent | null = null   //  鼠标resize拖动期间实时更新触发的事件对象
+  mousemoveEvent: MouseEvent | null = null   //  鼠标resize | drag期间实时更新触发的事件对象
   mousedownItemOffsetLeft: number | null = null  // 鼠标点击某个Item的时候距离该Item左边界距离
   mousedownItemOffsetTop: number | null = null  // 同上
   offsetPageX: number | null = null
@@ -81,12 +53,6 @@ class TempStore {
   scrollReactionTimer: any = null   // 鼠标移动到容器边界自动滚动反应的定时器
   //----------鼠标相关-----------//
   isLeftMousedown: boolean = false
-  mouseDownElClassName: string | null = null
-  mouseSpeed = {
-    timestamp: 0,
-    endX: 0,
-    endY: 0
-  }
   slidePageOffsetInfo = {
     offsetTop: 0,
     offsetLeft: 0,
@@ -97,8 +63,6 @@ class TempStore {
   deviceEventMode: 'mouse' | 'touch' = 'mouse'   //   mouse || touch
   allowTouchMoveItem: boolean = false   // 是否允许触屏下拖动Item
   timeOutEvent: any = null
-  //----------网页元素-----------//
-  nestingMountPointList: any[] = []  // 网页挂载点
 }
 
 export const tempStore: TempStore = new TempStore()

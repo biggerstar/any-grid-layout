@@ -28,7 +28,6 @@ export class PluginManager {
     const defaultActionFn: Function = DefaultBehavior[eventName]
     const ev = new GEvent(eventName, {
       args,
-      target: this.container,
       container: this.container,
       layoutManager: this.container.layoutManager,
       default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
@@ -38,7 +37,7 @@ export class PluginManager {
       if (isFunction(callFunc)) callFunc.call(plugin, ev, ...args)
     })
     if (!ev.isPrevent && isFunction(ev.default)) {  // 默认行为函数在最后执行
-      (ev.default || defaultActionFn)?.call(null, ev, ...args)
+      (ev.default || defaultActionFn)?.call(null, ev, ...args)  // 内置的插件没有this
     }
   }
 
@@ -49,4 +48,3 @@ export class PluginManager {
     if (isObject(plugin)) this.plugins.push(plugin)
   }
 }
-
