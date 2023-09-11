@@ -33,7 +33,12 @@ export function debounce(fn: Function, delay: number = 500) {
     }, delay)
   }
 }
-
+/**
+ * 转首字母大写
+ * */
+export function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 /**
  * 深度克隆对象
  * */

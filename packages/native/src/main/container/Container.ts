@@ -68,7 +68,6 @@ export class Container {
   public layoutManager: LayoutManager
   public readonly layout: ContainerGeneralImpl = {} as any
   public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  public classList: string[] = []
   public attr: any = []
   public engine: Engine
   public isNesting: boolean = false    // 该Container自身是否[被]嵌套
@@ -258,7 +257,6 @@ export class Container {
         this.domImpl.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
       }
       this.attr = Array.from(this.element.attributes)
-      this.classList = Array.from(this.element.classList)
       //-----------------容器布局信息初始化与检测--------------------//
       this.engine.init()
       //-------------------------其他操作--------------------------//
@@ -375,7 +373,7 @@ export class Container {
    * @param { CustomItem} itemOptions
    * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
    * */
-  public add(itemOptions: CustomItem): Item | null {
+  public add(itemOptions: CustomItem): Item {
     this.layout.items.push(itemOptions)
     return this.engine.addItem(itemOptions)
   }
@@ -430,22 +428,22 @@ export class Container {
 
   /** 获取外容器可视范围的col  */
   public get containerW(): number {
-    return Math.round(this.element.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    return Math.floor(this.element.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
   }
 
   /** 获取外容器可视范围的row */
   public get containerH(): number {
-    return Math.round(this.element.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    return Math.floor(this.element.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 获取內容器可视范围的col  */
   public get contentBoxW(): number {
-    return Math.round(this.contentElement.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    return Math.ceil(this.contentElement.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0]))
   }
 
   /** 获取内容器可视范围的row */
   public get contentBoxH(): number {
-    return Math.round(this.contentElement.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    return Math.ceil(this.contentElement.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1]))
   }
 
   /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */

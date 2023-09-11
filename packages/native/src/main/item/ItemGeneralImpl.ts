@@ -6,9 +6,9 @@ import {CustomItemPos, ItemTransition} from "@/types";
  * */
 export class ItemGeneralImpl {
   /**
-   * 和Container不同的是，这里只能是原生的Element而不用id或者class，因为已经拿到Element传进来，没必要画蛇添足
+   * 可以传入class或者element元素，如果有目标元素会自动载入到到item中
    *  */
-  el?: string | HTMLElement = ''
+  el?: HTMLElement | Node | string
 
   /**
    * 开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item

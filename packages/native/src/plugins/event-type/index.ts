@@ -57,6 +57,7 @@ export const EventMap: EventMapType = {
   error:ThrowMessageEvent,
   warn:ThrowMessageEvent,
   //-------------cross-container-exchange-----------
+  cross:CrossContainerExchangeEvent,
   crossSource:CrossContainerExchangeEvent,
   crossTarget:CrossContainerExchangeEvent,
 }

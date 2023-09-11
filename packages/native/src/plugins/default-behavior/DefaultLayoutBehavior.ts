@@ -4,7 +4,7 @@ import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {tempStore} from "@/events";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {definePlugin} from "@/plugins/global";
-import {directUpdateLayout, patchDragDirection, patchResizeNewSize} from "@/plugins/common";
+import {patchDragDirection, patchResizeNewSize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
@@ -52,6 +52,8 @@ export const DefaultLayoutBehavior = definePlugin({
    * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragging(ev: ItemDragEvent) {
+    const {fromContainer, toContainer} = tempStore
+    if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
     patchDragDirection(ev)
   },
 
@@ -211,8 +213,8 @@ export const DefaultLayoutBehavior = definePlugin({
   closing(ev: ItemLayoutEvent) {
     const {fromItem, toItem} = tempStore
     if (toItem && toItem === fromItem) {  // 按下和抬起要同一个item才能关闭
-      toItem.remove(true)
-      ev.layoutManager.unmark(fromItem.pos)
+      toItem.unmount(true)
+      // ev.layoutManager.unmark(fromItem.pos)
       toItem.container.bus.emit('closed')
     }
   },
@@ -222,11 +224,11 @@ export const DefaultLayoutBehavior = definePlugin({
 
   /**
    * 自动执行响应式布局贴近网格
+   * 布局算法自行实现更新逻辑
    * @param ev 如果没有传入customEv的时候默认使用的事件对象
    * ev.event 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
    * */
   updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
-    directUpdateLayout(<any>ev['event'] || ev)
   }
 })
 

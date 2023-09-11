@@ -9,6 +9,7 @@ export function autoSetSizeAndMargin(container, isSetConfig: boolean = false): {
   size: MarginOrSizeDesc,
 } {
   const {clientWidth: containerWidth, clientHeight: containerHeight} = container.element || {}
+  // console.log(containerWidth,containerHeight)
   if (containerWidth === 0) throw new Error("请为Container设置一个宽高")
   const curLayout = container.layout
   let {

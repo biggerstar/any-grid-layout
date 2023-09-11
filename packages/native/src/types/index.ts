@@ -182,6 +182,12 @@ export type CustomEventOptions = {
   updateLayout?(ev: ItemLayoutEvent): void,
 
   /**
+   * 内置，跨容器移动成员时的派发函数
+   * @default 无
+   * */
+  cross?(ev: CrossContainerExchangeEvent): void;
+
+  /**
    * 跨容器移动成员时的源容器
    * @default 无
    * */

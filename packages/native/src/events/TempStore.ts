@@ -34,7 +34,7 @@ class TempStore {
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
-  gridItemContent:HTMLElement | null  // 跨容器item的元素
+  newItem: Item | null    // 跨容器时创建在目标容器且未挂载的Item
   cloneElement: HTMLElement | null      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
   mousedownEvent: MouseEvent | null = null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
   mousemoveEvent: MouseEvent | null = null   //  鼠标resize | drag期间实时更新触发的事件对象

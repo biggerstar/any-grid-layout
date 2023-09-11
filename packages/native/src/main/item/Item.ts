@@ -6,7 +6,7 @@ import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
-import {tempStore} from "@/events";
+import {isString} from "is-what";
 
 //---------------------------------------------------------------------------------------------//
 
@@ -28,7 +28,7 @@ export class Item extends ItemGeneralImpl {
   public edit: boolean  // 该Item是否正在被编辑(只读)
   public nested: boolean = false
   public parentElement: HTMLElement
-  public itemContentElement: HTMLElement
+  public contentElement: HTMLElement
   public readonly domImpl: DomFunctionImpl
   /** 运行时pos */
   public pos: ItemPos
@@ -81,6 +81,7 @@ export class Item extends ItemGeneralImpl {
   //----------------------------------------------------------
   constructor(itemOption: CustomItem) {
     super()
+    if (itemOption instanceof Item) return itemOption
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
     this.domImpl = new DomFunctionImpl(this)
     this._default = new ItemGeneralImpl()
@@ -152,10 +153,15 @@ export class Item extends ItemGeneralImpl {
     const _mountedFun = () => {
       if (this._mounted) return
       if (this.container.platform === 'native') {
-        if (!this.element) this.element = document.createElement(this.tagName)
-        this.itemContentElement = document.createElement("div")
-        this.itemContentElement.classList.add('grid-item-content')
-        this.element.appendChild(this.itemContentElement)
+        this.element = document.createElement(this.tagName)
+        if (isString(this.el)) {
+          this.contentElement = <HTMLElement>document.querySelector(this.el)
+        } else if (this.el) {
+          this.contentElement = this.el.isConnected ? <HTMLElement>document.adoptNode(this.el) : <HTMLElement>this.el
+        }
+        if (!this.contentElement) this.contentElement = document.createElement("div")
+        this.contentElement.classList.add('grid-item-content')
+        this.element.appendChild(this.contentElement)
         this.container.contentElement.appendChild(this.element)
       }
       this.attr = <any>Array.from(this.element.attributes)
@@ -166,7 +172,6 @@ export class Item extends ItemGeneralImpl {
       //--------------开启编辑和动画------------------
       this._handleResize(this.resize)
       this._closeBtn(this.close)
-      this._edit(this.edit)
       this.animation(this.transition)
       //--------------------------------------------
       this.__temp__.w = this.pos.w
@@ -178,8 +183,7 @@ export class Item extends ItemGeneralImpl {
         target: this
       })
     }
-    if (this.container.platform === 'vue') _mountedFun()
-    else Sync.run(_mountedFun)
+    _mountedFun()
   }
 
 
@@ -188,58 +192,27 @@ export class Item extends ItemGeneralImpl {
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
   public unmount(isForce = false) {
-    Sync.run(() => {
-      if (this._mounted) {
-        if (this.__temp__.editNumUsing) {
-          this.__temp__.editNumUsing = false
-          tempStore.editItemNum--   // 卸载时占用了editNum 进行释放
-        }
-        this._handleResize(false)
-        this._closeBtn(false)
-        this.container.contentElement.removeChild(this.element)
-        this.container.bus.emit('itemUnmounted')
-      } else {
-        this.container.bus.emit('error', {
-          type: 'ItemAlreadyRemove',
-          message: '该Item对应的element未在文档中挂载，可能已经被移除',
-          from: this
-        })
-      }
-    })
-    if (isForce) this.remove()
-    this._mounted = false
-  }
-
-  /**
-   *  将自己从Items列表中移除
-   * @param {Boolean}  force  是否强力删除Dom节点，true为删除引用，false为不删除引用只删除Item占位
-   * */
-  public remove(force = false) {
-    this.container.engine.remove(this)
-    if (force) {
-      this.unmount()
+    if (this._mounted) {
+      const container = this.container
+      container.contentElement.removeChild(this.element)
+      this.remove()
+      container.layoutManager.unmark(this.pos)
+      container.bus.emit('itemUnmounted')
+      this._mounted = false
+    } else {
+      this.container.bus.emit('error', {
+        type: 'ItemAlreadyRemove',
+        message: '该Item对应的element未在文档中挂载，可能已经被移除',
+        from: this
+      })
     }
   }
 
   /**
-   * 为该Item开启编辑模式,这里代码和Container重复是因为可能单独开Item编辑模式
-   * @param {Boolean}  isEdit    是否开启编辑模式
+   * 将自身在item列表中移除，不会移除dom元素
    * */
-  private _edit(isEdit = false) {
-    return
-    // if (this.edit) {
-    //   if (!this.__temp__.editNumUsing) {
-    //     // EditEvent.startEvent(null, this)
-    //     this.__temp__.editNumUsing = true
-    //     tempStore.editItemNum++   // 未占用editNum 进行占用
-    //   }
-    // } else if (!this.edit) {
-    //   if (this.__temp__.editNumUsing) {
-    //     // EditEvent.removeEvent(null, this)
-    //     tempStore.editItemNum--   // 占用了editNum 进行释放
-    //     this.__temp__.editNumUsing = false
-    //   }
-    // }
+  public remove() {
+    this.container.engine.remove(this)
   }
 
   /**

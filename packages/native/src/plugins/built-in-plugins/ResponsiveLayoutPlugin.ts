@@ -12,12 +12,18 @@ import {
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
+import {CrossContainerExchangeEvent} from "@/plugins";
 
 /*------------------------------------------------------------------------------------------*/
 /**
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
+  cross(ev: CrossContainerExchangeEvent) {
+    const {toContainer, fromItem} = tempStore
+    if (!toContainer || !fromItem) return
+    ev.rule = null
+  },
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)
   },
@@ -156,4 +162,8 @@ export const ResponsiveLayoutPlugin = definePlugin({
   closed(ev: ItemLayoutEvent) {
     directUpdateLayout(ev)
   },
+
+  updateLayout(ev: ItemLayoutEvent) {
+    directUpdateLayout(<any>ev['event'] || ev)
+  }
 })

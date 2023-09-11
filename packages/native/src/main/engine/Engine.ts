@@ -100,6 +100,7 @@ export class Engine {
   public addItem(itemOptions: CustomItem): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const container = this.container
     const item = new Item(itemOptions)
+    // console.log(item === itemOptions)
     this.items.push(item)
     item.customOptions = itemOptions
     item.container = container

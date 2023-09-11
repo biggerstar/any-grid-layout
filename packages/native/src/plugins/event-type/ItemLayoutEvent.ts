@@ -1,7 +1,7 @@
 import {BaseEvent} from "@/plugins/event-type/BaseEvent";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
-import {createModifyPosInfo} from "@/algorithm/common/tool";
+import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/events";
 
 export class ItemLayoutEvent extends BaseEvent {
@@ -25,28 +25,13 @@ export class ItemLayoutEvent extends BaseEvent {
   constructor(options) {
     super(options);
     this.items = this.container.engine.items
+    const {fromItem, mousemoveEvent} = tempStore
+    if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
-    const {
-      fromItem,
-      mousedownEvent,
-      mousemoveEvent,
-      fromContainer,
-    } = tempStore
-    if (!fromItem || !mousedownEvent || !fromContainer || !mousemoveEvent) return
     const {left, top} = fromItem.element.getBoundingClientRect()
     this.mousePointX = mousemoveEvent.clientX - left
     this.mousePointY = mousemoveEvent.clientY - top
-    const {left: containerLeft, top: containerTop} = fromItem.container.contentElement.getBoundingClientRect()
-    const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
-    const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
-    this.relativeX = fromItem.pxToW(relativeLeftTopX4Container) * Math.sign(relativeLeftTopX4Container)
-    this.relativeY = fromItem.pxToH(relativeLeftTopY4Container) * Math.sign(relativeLeftTopY4Container)
-    const contentBoxW = fromItem.container.contentBoxW
-    const contentBoxH = fromItem.container.contentBoxH
-    this.gridX = this.relativeX < 1 ? 1 : (this.relativeX > contentBoxW ? contentBoxW : this.relativeX)
-    this.gridY = this.relativeY < 1 ? 1 : (this.relativeY > contentBoxH ? contentBoxH : this.relativeY)
-    // console.log(this.mousePointX, this.mousePointY)
-    // console.log(this.relativeX, this.relativeY, this.gridX, this.gridY)
+    Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))
   }
 
   /**

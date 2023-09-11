@@ -1,5 +1,5 @@
 import container1 from "@/container/container1";
-import {BaseEvent, ItemDragEvent, ItemResizeEvent, ResponsiveLayoutPlugin,} from '@biggerstar/layout'
+import {BaseEvent, ItemDragEvent, ItemResizeEvent, ResponsiveLayoutPlugin, ThrowMessageEvent,} from '@biggerstar/layout'
 import container2 from "@/container/container2";
 
 console.log(container1)
@@ -8,12 +8,13 @@ console.log(container2)
 function insertItemContent(ev: BaseEvent) {
   const item = ev.target
   if (!item) return
-  item.itemContentElement.innerHTML = item.i.toString()
+  if (item.contentElement.innerHTML) return
+  item.contentElement.innerHTML = item.i.toString()
   item.domImpl.updateStyle({
     fontSize: `${Math.max(30, <number>item.size[0] / 4)}px`,
     fontWeight: '800',
     color: '#6b798e'
-  }, item.itemContentElement)
+  }, item.contentElement)
 }
 
 container1
@@ -31,6 +32,9 @@ container1
   .use(ResponsiveLayoutPlugin)
 
 container2.use({
+  error(ev: ThrowMessageEvent) {
+    console.log(ev.message)
+  },
   resizing(ev: ItemResizeEvent) {
     // console.log(111111111111111111)
   },

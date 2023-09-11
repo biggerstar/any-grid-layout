@@ -5,6 +5,8 @@ import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {directUpdateLayout, moveToIndexForItems, updateLayout, updateResponsiveResizeLayout} from "@/plugins/common";
+import {CrossContainerExchangeEvent} from "@/plugins";
+import {tempStore} from "@/events";
 
 /*------------------------------------------------------------------------------------------*/
 /**
@@ -17,6 +19,11 @@ import {directUpdateLayout, moveToIndexForItems, updateLayout, updateResponsiveR
  *      3.不要使用static item
  * */
 export const StreamLayoutPlugin = definePlugin({
+  cross(ev: CrossContainerExchangeEvent) {
+    const {toContainer, fromItem} = tempStore
+    if (!toContainer || !fromItem) return
+    ev.rule = null
+  },
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)
   },
