@@ -32,36 +32,36 @@ export const ResponsiveLayoutPlugin = definePlugin({
    * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragOuterLeft(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x + dragItem.pos.w}) : null)
+    const {fromItem, toItem} = tempStore
+    if (!fromItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x + fromItem.pos.w}) : null)
   },
 
   /**
    * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragOuterRight(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x - dragItem.pos.w}) : null)
+    const {fromItem, toItem} = tempStore
+    if (!fromItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x - fromItem.pos.w}) : null)
   },
 
   /**
    * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragOuterTop(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y + dragItem.pos.h}) : null)
+    const {fromItem, toItem} = tempStore
+    if (!fromItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y + fromItem.pos.h}) : null)
   },
 
   /**
    * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragOuterBottom(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - dragItem.pos.h}) : null)
+    const {fromItem, toItem} = tempStore
+    if (!fromItem) return
+    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - fromItem.pos.h}) : null)
   },
 
   dragToLeftTop(ev: ItemDragEvent) {
@@ -81,37 +81,37 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   dragToTop(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem || !toItem) return
-    let call = !(dragItem.pos.y - toItem.pos.y > toItem.pos.h)
-      ? (item) => ({y: item.pos.y + dragItem.pos.h})
+    const {fromItem, toItem} = tempStore
+    if (!fromItem || !toItem) return
+    let call = !(fromItem.pos.y - toItem.pos.y > toItem.pos.h)
+      ? (item) => ({y: item.pos.y + fromItem.pos.h})
       : null
     dragMoveToCrossHair(ev, call)
   },
 
   dragToBottom(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem || !toItem) return
-    let call = !(toItem.pos.y - dragItem.pos.y > dragItem.pos.h)
-      ? (item) => ({y: item.pos.y - dragItem.pos.h})
+    const {fromItem, toItem} = tempStore
+    if (!fromItem || !toItem) return
+    let call = !(toItem.pos.y - fromItem.pos.y > fromItem.pos.h)
+      ? (item) => ({y: item.pos.y - fromItem.pos.h})
       : null
     dragMoveToCrossHair(ev, call)
   },
 
   dragToLeft(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem || !toItem) return
-    let call = !(dragItem.pos.x - toItem.pos.x > toItem.pos.w)
-      ? (item) => ({x: item.pos.x + dragItem.pos.w})
+    const {fromItem, toItem} = tempStore
+    if (!fromItem || !toItem) return
+    let call = !(fromItem.pos.x - toItem.pos.x > toItem.pos.w)
+      ? (item) => ({x: item.pos.x + fromItem.pos.w})
       : null
     dragMoveToCrossHair(ev, call)
   },
 
   dragToRight(ev: ItemDragEvent) {
-    const {dragItem, toItem} = tempStore
-    if (!dragItem || !toItem) return
-    let call = !(toItem.pos.x - dragItem.pos.x > dragItem.pos.w)
-      ? (item) => ({x: item.pos.x - dragItem.pos.w})
+    const {fromItem, toItem} = tempStore
+    if (!fromItem || !toItem) return
+    let call = !(toItem.pos.x - fromItem.pos.x > fromItem.pos.w)
+      ? (item) => ({x: item.pos.x - fromItem.pos.w})
       : null
     dragMoveToCrossHair(ev, call)
   },

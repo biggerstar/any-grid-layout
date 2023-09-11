@@ -6,8 +6,8 @@ export class CrossContainerExchangeEvent extends BaseEvent {
   fromContainer: Container
   toContainer: Container
 
-  constructor(...args) {
-    super(...args);
+  constructor(options) {
+    super(options);
     const {fromContainer, toContainer} = tempStore
     this.fromContainer = <Container>fromContainer
     this.toContainer = <Container>toContainer

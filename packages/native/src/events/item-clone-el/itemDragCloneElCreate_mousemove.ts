@@ -8,22 +8,22 @@ import {tempStore} from "@/events";
 export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
   const {
     mousedownEvent,
-    dragItem,
+    fromItem,
     isDragging,
     cloneElement,
     isLeftMousedown,
   } = tempStore
-  if (!mousedownEvent || !dragItem || !isDragging || !isLeftMousedown) return
-  // dragItem.__temp__.dragging = true
+  if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
+  // fromItem.__temp__.dragging = true
   if (!cloneElement) {
     const finallyRemoveEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
     if (finallyRemoveEls.length) return;
-    const sourceEl = dragItem.element
+    const sourceEl = fromItem.element
     const newNode = <HTMLElement>sourceEl.cloneNode(true)
     newNode.classList.add('grid-clone-el', 'grid-dragging-clone-el')
-    dragItem.domImpl.addClass('grid-dragging-source-el')
+    fromItem.domImpl.addClass('grid-dragging-source-el')
     const {left, top} = sourceEl.getBoundingClientRect()
-    dragItem.domImpl.updateStyle({
+    fromItem.domImpl.updateStyle({
       pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
       transitionProperty: 'none',
       transitionDuration: 'none',

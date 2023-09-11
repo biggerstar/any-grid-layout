@@ -158,7 +158,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   /**
    * 尝试更新当前Item的大小
    * 其他Item静止,只会更新一个Item
-   * 如果不传入任何参数，则使用dragItem 或 relativeX，relativeY生成的pos
+   * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
    * @param item？ 当前要移动的item
    * @param pos  当前移动到新位置的pos
    * */

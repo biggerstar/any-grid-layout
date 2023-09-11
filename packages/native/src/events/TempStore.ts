@@ -4,7 +4,7 @@
 import {Container, Item} from "@/main";
 
 class TempStore {
-  handleMethod: 'drag' | 'resize' | 'close' | 'autoScrollPage' | undefined
+  handleMethod: 'drag' | 'resize' | 'close' | 'autoScrollPage' | null
 
   get isDragging(): boolean {
     return this.handleMethod === 'drag'
@@ -30,18 +30,11 @@ class TempStore {
   editItemNum: number = 0   // 当前处于编辑模式的Item个数
   fromContainer: Container | null = null    //  当前Item的初始来源
   toContainer: Container | null = null    //  当前鼠标移动位置下是哪个容器，移动到容器外为null
-  get dragContainer(): Container | null {
-    return this.fromContainer || this.dragContainer
-  }    //  当前Item拖动多次跨容器后的最新所处容器位置来源
   toContainerArea: HTMLElement | null
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
-  // 当前拖动的Item，跨容器会发生删除重建，此时能使用moveItem获取最新Item
-  get dragItem(): Item | null {
-    return this.moveItem || this.fromItem
-  }
-
+  gridItemContent:HTMLElement | null  // 跨容器item的元素
   cloneElement: HTMLElement | null      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
   mousedownEvent: MouseEvent | null = null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
   mousemoveEvent: MouseEvent | null = null   //  鼠标resize | drag期间实时更新触发的事件对象
@@ -49,19 +42,12 @@ class TempStore {
   mousedownItemOffsetTop: number | null = null  // 同上
   offsetPageX: number | null = null
   offsetPageY: number | null = null
-  scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态
   scrollReactionTimer: any = null   // 鼠标移动到容器边界自动滚动反应的定时器
-  //----------鼠标相关-----------//
   isLeftMousedown: boolean = false
-  slidePageOffsetInfo = {
-    offsetTop: 0,
-    offsetLeft: 0,
-    newestPageX: 0,
-    newestPageY: 0,
-  }
-  //----------触屏相关-----------//
-  deviceEventMode: 'mouse' | 'touch' = 'mouse'   //   mouse || touch
+  //----------------------------------------------------------
   allowTouchMoveItem: boolean = false   // 是否允许触屏下拖动Item
+  scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态
+  deviceEventMode: 'mouse' | 'touch' = 'mouse'   //   mouse || touch
   timeOutEvent: any = null
 }
 

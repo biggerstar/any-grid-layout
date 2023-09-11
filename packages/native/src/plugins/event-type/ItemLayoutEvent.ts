@@ -22,37 +22,31 @@ export class ItemLayoutEvent extends BaseEvent {
    * */
   public items: Item[]
 
-  constructor(...args) {
-    super(...args);
+  constructor(options) {
+    super(options);
     this.items = this.container.engine.items
     //--------------------------------------//
     const {
-      dragItem,
+      fromItem,
       mousedownEvent,
       mousemoveEvent,
       fromContainer,
     } = tempStore
-    if (!dragItem || !mousedownEvent || !fromContainer || !mousemoveEvent) return
-    const {left, top} = dragItem.element.getBoundingClientRect()
+    if (!fromItem || !mousedownEvent || !fromContainer || !mousemoveEvent) return
+    const {left, top} = fromItem.element.getBoundingClientRect()
     this.mousePointX = mousemoveEvent.clientX - left
     this.mousePointY = mousemoveEvent.clientY - top
-    const {left: containerLeft, top: containerTop} = dragItem.container.contentElement.getBoundingClientRect()
+    const {left: containerLeft, top: containerTop} = fromItem.container.contentElement.getBoundingClientRect()
     const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
     const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
-    this.relativeX = dragItem.pxToW(relativeLeftTopX4Container) * Math.sign(relativeLeftTopX4Container)
-    this.relativeY = dragItem.pxToH(relativeLeftTopY4Container) * Math.sign(relativeLeftTopY4Container)
-    const contentBoxW = dragItem.container.contentBoxW
-    const contentBoxH = dragItem.container.contentBoxH
+    this.relativeX = fromItem.pxToW(relativeLeftTopX4Container) * Math.sign(relativeLeftTopX4Container)
+    this.relativeY = fromItem.pxToH(relativeLeftTopY4Container) * Math.sign(relativeLeftTopY4Container)
+    const contentBoxW = fromItem.container.contentBoxW
+    const contentBoxH = fromItem.container.contentBoxH
     this.gridX = this.relativeX < 1 ? 1 : (this.relativeX > contentBoxW ? contentBoxW : this.relativeX)
     this.gridY = this.relativeY < 1 ? 1 : (this.relativeY > contentBoxH ? contentBoxH : this.relativeY)
     // console.log(this.mousePointX, this.mousePointY)
     // console.log(this.relativeX, this.relativeY, this.gridX, this.gridY)
-  }
-
-  /**
-   * 该事件的默认执行执行函数，在实例化的时候会被管理器赋予执行逻辑函数，开发者也可以通过外部替换该函数更改默认行为，或者通过prevent函数阻止默认行为
-   * */
-  public default() {
   }
 
   /**

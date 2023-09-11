@@ -6,21 +6,21 @@ import {tempStore} from "@/events";
 export const itemDrag_mousemove: Function = (ev) => {
   function updateDragLocation() {
     const {
-      dragItem,
+      fromItem,
       isDragging,
       mousedownItemOffsetLeft,
       mousedownItemOffsetTop,
       isLeftMousedown,
       cloneElement,
     } = tempStore
-    if (!dragItem || !isDragging || !cloneElement || !isLeftMousedown) return
+    if (!fromItem || !isDragging || !cloneElement || !isLeftMousedown) return
     let left = ev.pageX - mousedownItemOffsetLeft
     let top = ev.pageY - mousedownItemOffsetTop
-    dragItem.domImpl.updateStyle({
+    fromItem.domImpl.updateStyle({
       left: `${left}px`,
       top: `${top}px`
     }, cloneElement)  // 必须重新从tempStore获取当前克隆节点
-    dragItem.container.bus.emit('dragging')
+    fromItem.container.bus.emit('dragging')
   }
 
   requestAnimationFrame(updateDragLocation)

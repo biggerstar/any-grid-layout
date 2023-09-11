@@ -37,13 +37,6 @@ export type ItemLimitType = {
   minH?: number
 }
 
-export type EventBusType = Record<keyof CustomEventOptions, any> & {
-  error: {
-    type: string,
-    message: string,
-    from: any,
-  }
-}
 /** Container 实例化配置选项 */
 export type ContainerInstantiationOptions = {
   [key: string]: any
@@ -88,6 +81,19 @@ export type ContainerInstantiationOptions = {
   global?: CustomLayoutsOption,
 }
 
+export type BaseEmitData = {
+  [key: string | symbol]: any
+  target?: Item
+}
+
+export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
+  error: {
+    type: string,
+    message: string,
+    from: any,
+  }
+}
+
 export type CustomEventOptions = {
   [key: string]: Function
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
@@ -99,7 +105,7 @@ export type CustomEventOptions = {
   warn?(ev: ThrowMessageEvent): void,
 
   /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
-  updated?(ev:BaseEvent): void
+  updated?(ev: BaseEvent): void
 
   /** Container成功挂载事件 */
   containerMounted?(ev: BaseEvent): void,

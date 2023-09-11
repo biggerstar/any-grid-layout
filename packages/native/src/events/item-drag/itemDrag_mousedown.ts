@@ -5,7 +5,7 @@ import {tempStore} from "@/events";
  * */
 export function itemDrag_mousedown(ev) {
   const {handleMethod, fromContainer, fromItem} = tempStore
-  if (handleMethod) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成dragItem不一致问题
+  if (handleMethod) return  // 修复可能鼠标左键按住ItemAA，鼠标右键再次点击触发ItemB造成fromItem不一致问题
   if (!fromContainer || !fromItem) return
   if (!fromItem.draggable || fromItem.static) return  // 如果pos中是要求static则取消该Item的drag
   tempStore.handleMethod = 'drag'

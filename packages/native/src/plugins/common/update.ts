@@ -62,10 +62,10 @@ export const updateLayout: Function = throttle(directUpdateLayout, 66)
  * 节流更新drag到 +十字线+ 方向的布局
  * */
 export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
-  const {dragItem} = tempStore
-  if (!dragItem) return
+  const {fromItem} = tempStore
+  if (!fromItem) return
   ev.prevent()
-  ev.addModifyItems(dragItem, {x: ev.gridX, y: ev.gridY})
+  ev.addModifyItems(fromItem, {x: ev.gridX, y: ev.gridY})
   if (isFunction(callback)) {
     ev.findDiffCoverItem(null, (item) => {
       const changePos = callback(item)
@@ -79,11 +79,11 @@ export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callba
  * 节流更新drag到 「对角」 方向的布局
  * */
 export const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
-  const {toItem, dragItem} = tempStore
+  const {toItem, fromItem} = tempStore
   const {layoutManager, items} = ev
-  if (!toItem || !dragItem) return
+  if (!toItem || !fromItem) return
   ev.prevent()
-  layoutManager.move(items, dragItem, toItem)
+  layoutManager.move(items, fromItem, toItem)
   directUpdateLayout(ev)
 }, 200)
 
@@ -104,11 +104,11 @@ export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
  * 拖动Item到Items列表中的toItem的索引位置
  * */
 export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
-  const {dragItem, toItem} = tempStore
-  if (!dragItem || !toItem) return
-  if (isAnimation(dragItem)) return;
+  const {fromItem, toItem} = tempStore
+  if (!fromItem || !toItem) return
+  if (isAnimation(fromItem)) return;
   const manager = ev.layoutManager
-  manager.move(ev.items, dragItem, toItem)
+  manager.move(ev.items, fromItem, toItem)
   directUpdateLayout(ev, {sort: false})
 }, 80)
 

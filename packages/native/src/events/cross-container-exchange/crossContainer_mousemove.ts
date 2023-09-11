@@ -9,15 +9,16 @@ export const crossContainer_mousemove: Function = throttle((ev) => {
     isLeftMousedown,
     fromContainer,
     toContainer,
-    dragItem,
+    fromItem,
     toContainerArea,
+    isDragging
   } = tempStore
-  if (!dragItem || !isLeftMousedown || !toContainerArea || !toContainer || !fromContainer) return
+  if (!isDragging ||!fromItem || !isLeftMousedown || !toContainerArea || !toContainer || !fromContainer) return
   if (fromContainer === toContainer) return
-  if (!dragItem.exchange   /* 要求item和容器都允许交换才能继续 */
+  if (!fromItem.exchange   /* 要求item和容器都允许交换才能继续 */
     || (
       !toContainer.getConfig('exchange')
-      || !dragItem.container.getConfig('exchange')
+      || !fromItem.container.getConfig('exchange')
       // || !toItem.container.getConfig('exchange')
     )
   ) return

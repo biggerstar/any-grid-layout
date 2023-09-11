@@ -174,7 +174,9 @@ export class Item extends ItemGeneralImpl {
       this.element['_gridItem_'] = this
       this.element['_isGridItem_'] = true
       this._mounted = true
-      this.container.bus.emit('itemMounted')
+      this.container.bus.emit('itemMounted', {
+        target: this
+      })
     }
     if (this.container.platform === 'vue') _mountedFun()
     else Sync.run(_mountedFun)

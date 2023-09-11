@@ -100,8 +100,8 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   dragToLetBottom(ev: ItemDragEvent) {
-    const {dragItem} = tempStore
-    if (!dragItem) return
+    const {fromItem} = tempStore
+    if (!fromItem) return
     // console.log('dragToLetBottom')
     ev.tryMoveToNearestBlank()
 
@@ -223,11 +223,17 @@ export const DefaultLayoutBehavior = definePlugin({
   /**
    * 自动执行响应式布局贴近网格
    * @param ev 如果没有传入customEv的时候默认使用的事件对象
-   * @param customEv 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
+   * ev.event 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
    * */
-  updateLayout(ev: ItemDragEvent | ItemResizeEvent, customEv: ItemDragEvent | ItemResizeEvent) {
-    directUpdateLayout(<any>customEv || ev)
+  updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
+    directUpdateLayout(<any>ev['event'] || ev)
   }
 })
+
+
+
+
+
+
 
 

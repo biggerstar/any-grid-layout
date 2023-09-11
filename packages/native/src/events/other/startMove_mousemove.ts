@@ -4,10 +4,10 @@ import {tempStore} from "@/events";
 
 export const startMove_mousemove: Function = throttle((ev) => {
   const {
-    dragItem,
+    fromItem,
     isLeftMousedown,
   } = tempStore
-  if (!isLeftMousedown || !dragItem) return
+  if (!isLeftMousedown || !fromItem) return
   tempStore.toItem = parseItem(ev)
   tempStore.toContainer = parseContainer(ev)
   tempStore.toContainerArea = parseContainerAreaElement(ev)
