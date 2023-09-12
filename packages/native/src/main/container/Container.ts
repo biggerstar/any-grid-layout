@@ -1,6 +1,5 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {defaultStyle} from "@/default/style/defaultStyle";
 import {debounce, merge, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {Sync} from "@/utils/Sync";
@@ -117,7 +116,6 @@ export class Container {
       this.parent.childContainer.push(this)
       this.isNesting = true
     }
-    //-------------------------------------------------
     startGlobalEvent()
   }
 
@@ -266,10 +264,9 @@ export class Container {
     this.contentElement['_gridContainer_'] = this
     this.contentElement['_isGridContainer_'] = true
     this.contentElement.classList.add(this.className)
-    this.domImpl.updateStyle(defaultStyle.gridContainer, this.contentElement)
     this.element.appendChild(this.contentElement)
     setTimeout(() => {
-      this.domImpl.updateStyle(defaultStyle.gridContainerTransition, this.contentElement)
+      this.domImpl.updateStyle({transition: 'all 0.3s'}, this.contentElement)
     }, 500)
   }
 
@@ -425,7 +422,7 @@ export class Container {
       layoutInfo.sort((a, b) => {
         if (isBreak) return 0
         if (typeof a.px !== "number" || typeof b.px !== "number") {
-          this.bus.emit("warn",{
+          this.bus.emit("warn", {
             message: `未指定layout的px值,传入的layout为${b}`
           })
           isBreak = true

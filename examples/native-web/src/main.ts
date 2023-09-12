@@ -7,6 +7,7 @@ import {
   ResponsiveLayoutPlugin,
   ThrowMessageEvent,
 } from '@biggerstar/layout'
+// import '@biggerstar/layout/dist/default-style.css'
 import container2 from "@/container/container2";
 import container3 from "@/container/container3";
 

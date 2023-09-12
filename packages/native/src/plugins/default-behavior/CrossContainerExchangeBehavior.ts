@@ -5,12 +5,13 @@ import {tempStore} from "@/events";
 import {isFunction} from "is-what";
 import {updateCloneElementSize} from "@/plugins/common";
 import {definePlugin} from "@/global";
+import {grid_item_content} from "@/constant";
 
 export const crossContainerExchangeBehavior = definePlugin({
   cross(ev: CrossContainerExchangeEvent) {
     const {fromItem, toContainer, cloneElement, toItem} = tempStore
     if (!toContainer || !fromItem || !cloneElement) return
-    const gridItemContent = fromItem.element.querySelector('.grid-item-content')
+    const gridItemContent = fromItem.element.querySelector(`.${grid_item_content}`)
     if (!fromItem['_mounted'] || !gridItemContent || !ev.mousePos) return
     if (isFunction(ev.rule)) {
       let isMoveTo = ev.rule?.() // 是否移动

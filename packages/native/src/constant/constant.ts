@@ -1,4 +1,6 @@
 //-----------------main-class-name----------------------//
+export const grid_item_close_text = `×`
+export const grid_item_resize_text = '⊿'
 export const grid_container_class_name = 'grid-container'
 export const grid_item_class_name = 'grid-item'
 //-------------------class-name----------------------//

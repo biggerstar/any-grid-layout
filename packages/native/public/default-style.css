@@ -1,0 +1,54 @@
+.grid-container {
+  box-sizing: border-box;
+  margin: 0 auto;
+  height: auto;
+  width: 100%;
+  position: relative;
+  display: block;
+  /*禁止用户选择文本或元素*/
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.grid-item {
+  height: 100%;
+  width: 100%;
+  display: block;
+  overflow: hidden;
+  position: absolute;
+  /*苹果禁用touch提示  */
+  -webkit-touch-callout: none;
+  touch-action: none;
+  -ms-touch-action: none;
+  /*阻止touch事件 */
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.grid-item-resizable-handle {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: grey;
+  text-align: right;
+}
+
+.grid-item-close-btn {
+  height: 20px;
+  width: 20px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 1.2rem;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 50%
+}

@@ -143,6 +143,7 @@ export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
 
 /**
  * 用于将target Element在原型链中对象中往root方向最新的的Path链解析出来
+ * 用于适配移动端获取target的目标不正确的问题
  * */
 const genPrototypeToRootPath = (target, touchEvent) => {
   const path = []

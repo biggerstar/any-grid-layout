@@ -1,4 +1,3 @@
-import {defaultStyle} from "@/default/style/defaultStyle";
 import {Sync} from "@/utils/Sync";
 import {Container} from "@/main/container/Container";
 import {CustomItem, MarginOrSizeDesc} from "@/types";
@@ -7,7 +6,13 @@ import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
 import {isString} from "is-what";
-import {grid_item_close_btn, grid_item_content, grid_item_resizable_handle} from "@/constant";
+import {
+  grid_item_close_btn,
+  grid_item_close_text,
+  grid_item_content,
+  grid_item_resizable_handle,
+  grid_item_resize_text
+} from "@/constant";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -138,7 +143,6 @@ export class Item extends ItemGeneralImpl {
       }
       this.element.classList.add(this.className)
       this.classList = Array.from(this.element.classList)
-      this.domImpl.updateStyle(defaultStyle.gridItem)
       this.updateItemLayout()
       //--------------开启编辑和动画------------------
       this._handleResize(this.resize)
@@ -327,8 +331,7 @@ export class Item extends ItemGeneralImpl {
         const handleResizeEls = this.element.querySelectorAll('.' + grid_item_resizable_handle)
         if (handleResizeEls.length > 0) return;
         const resizeTabEl = document.createElement('span')
-        resizeTabEl.innerHTML = '⊿'
-        this.domImpl.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
+        resizeTabEl.innerHTML = grid_item_resize_text
         this.element.appendChild(resizeTabEl)
         resizeTabEl.classList.add(grid_item_resizable_handle)
         this._resizeTabEl = resizeTabEl
@@ -353,11 +356,10 @@ export class Item extends ItemGeneralImpl {
     const closeBtnFunc = () => {
       if (isDisplayBtn && !this._closeEl) {
         const _closeEl = document.createElement('div')
-        this.domImpl.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
         this._closeEl = _closeEl
         _closeEl.classList.add(grid_item_close_btn)
+        _closeEl.innerHTML = grid_item_close_text
         this.element.appendChild(_closeEl)
-        _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
       }
       if (this._closeEl && !isDisplayBtn) {
         for (let i = 0; i < this.element.children.length; i++) {

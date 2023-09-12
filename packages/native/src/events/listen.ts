@@ -79,7 +79,10 @@ export function allMouseup(ev) {
   endWork_mouseup(ev)
 }
 
+let running = false
+
 export function startGlobalEvent() {
+  if (running) return
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
   //mouseenter该事件监听在静态布局模式下必要，解决了拖拽以超慢进入另一个容器mousemove未触发进入事件导致源容器成员未卸载,新容器未挂载问题
   // 这四个事件原本委托在Container上，但是单个Item编辑的时候会造成不生效，所以就挂document上了
@@ -95,6 +98,7 @@ export function startGlobalEvent() {
   //
   document.addEventListener('mouseup', allMouseup)
   document.addEventListener('touchend', allMouseup, {passive: false})
+  running = true
 }
 
 
