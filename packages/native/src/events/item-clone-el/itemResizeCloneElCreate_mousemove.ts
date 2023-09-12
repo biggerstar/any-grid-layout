@@ -1,5 +1,6 @@
 import {throttle} from "@/utils";
 import {tempStore} from "@/events";
+import {grid_clone_el, grid_resizing_clone_el, grid_resizing_source_el} from "@/constant";
 
 /**
  * 鼠标开始resize后创建一个克隆可实时拖动的元素，不负责后续改变大小
@@ -11,13 +12,12 @@ export const itemResizeCloneElCreate_mousemove: Function = throttle(() => {
     fromItem,
     isResizing,
     cloneElement,
-    isLeftMousedown,
     fromContainer,
   } = tempStore
-  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing || !isLeftMousedown) return
+  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
-  newNode.classList.add('grid-clone-el', 'grid-resizing-clone-el')
-  fromItem.domImpl.addClass('grid-resizing-source-el')
+  newNode.classList.add(grid_clone_el,  grid_resizing_clone_el)
+  fromItem.domImpl.addClass(grid_resizing_source_el)
   fromItem.domImpl.updateStyle({
     transition: 'none',
     pointerEvents:'none'

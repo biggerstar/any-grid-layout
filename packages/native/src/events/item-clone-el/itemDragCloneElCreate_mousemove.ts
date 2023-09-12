@@ -1,5 +1,6 @@
 import {throttle} from "@/utils";
 import {tempStore} from "@/events";
+import {grid_clone_el, grid_dragging_clone_el, grid_dragging_source_el} from "@/constant";
 
 /**
  * 鼠标开始移动后创建一个克隆可实时拖动的元素
@@ -15,12 +16,12 @@ export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
   } = tempStore
   if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
   if (cloneElement) return
-  const finallyRemoveEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
+  const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
   if (finallyRemoveEls.length) return;
   const sourceEl = fromItem.element
   const newNode = <HTMLElement>sourceEl.cloneNode(true)
-  newNode.classList.add('grid-clone-el', 'grid-dragging-clone-el')
-  fromItem.domImpl.addClass('grid-dragging-source-el')
+  newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
+  fromItem.domImpl.addClass(grid_dragging_source_el)
   const {left, top} = sourceEl.getBoundingClientRect()
   fromItem.domImpl.updateStyle({
     pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值

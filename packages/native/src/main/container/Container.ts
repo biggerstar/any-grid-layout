@@ -14,6 +14,7 @@ import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isString} from "is-what";
+import {grid_container_class_name} from "@/constant";
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -49,7 +50,7 @@ import {isString} from "is-what";
 export class Container {
   //---------实例化传进的的参数 --------//
   public name: string = ''
-  public className: string = 'grid-container'
+  public className: string = grid_container_class_name
   public platform: 'native' | 'vue' = 'native'
   public el: HTMLElement | string = ''
   public events: CustomEventOptions = {} as any

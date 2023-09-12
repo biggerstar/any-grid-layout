@@ -1,4 +1,5 @@
 import {CustomItemPos, ItemTransition} from "@/types";
+import {grid_item_class_name} from "@/constant";
 
 
 /**
@@ -50,7 +51,7 @@ export class ItemGeneralImpl {
    *
    * @default grid-item
    * */
-  className?: string = 'grid-item'
+  className?: string = grid_item_class_name
 
   /**
    *【不允许】 点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)

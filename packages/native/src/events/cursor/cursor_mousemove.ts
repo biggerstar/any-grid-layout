@@ -1,5 +1,13 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
 import {cursor, tempStore,} from "@/events";
+import {
+  cursor_type_default, cursor_type_drag_to_item_no_drop,
+  cursor_type_in_container, cursor_type_item_close,
+  cursor_type_item_resize, cursor_type_mousedown, cursor_type_no_drop,
+  cursor_type_static_no_drop,
+  grid_item_close_btn,
+  grid_item_resizable_handle
+} from "@/constant";
 
 export const cursor_mousemove: Function = throttle((ev) => {
   const {
@@ -12,15 +20,15 @@ export const cursor_mousemove: Function = throttle((ev) => {
     const mousedownDragCursor = () => {
       // 鼠标按下状态的样式
       if (!container) {
-        if (cursor.cursor !== 'no-drop') cursor.notDrop()  // 容器外
+        if (cursor.cursor !== cursor_type_no_drop) cursor.notDrop()  // 容器外
       } else if (container) {
         if (overItem) {
           if (overItem.static) {
-            if (cursor.cursor !== 'drag-to-item-no-drop') cursor.dragToItemNoDrop()
+            if (cursor.cursor !== cursor_type_drag_to_item_no_drop) cursor.dragToItemNoDrop()
           }
         } else if (!overItem) {
           // 拖动中的样式，这里只写的响应式，静态模式拖动中的逻辑在交换算法那里
-          if (cursor.cursor !== 'mousedown') cursor.mousedown()
+          if (cursor.cursor !== cursor_type_mousedown) cursor.mousedown()
         }
       }
     }
@@ -29,17 +37,17 @@ export const cursor_mousemove: Function = throttle((ev) => {
     // 鼠标抬起状态的样式
     if (overItem) {
       const evClassList = ev.target.classList
-      if (evClassList.contains('grid-item-close-btn')) {
-        if (cursor.cursor !== 'item-close') cursor.itemClose()
-      } else if (evClassList.contains('grid-item-resizable-handle')) {
-        if (cursor.cursor !== 'item-resize') cursor.itemResize()
+      if (evClassList.contains(grid_item_close_btn)) {
+        if (cursor.cursor !== cursor_type_item_close) cursor.itemClose()
+      } else if (evClassList.contains(grid_item_resizable_handle)) {
+        if (cursor.cursor !== cursor_type_item_resize) cursor.itemResize()
       } else if (overItem.static && container) {
-        if (cursor.cursor !== 'static-no-drop') cursor.staticItemNoDrop()   // 静态模式才notDrop
+        if (cursor.cursor !== cursor_type_static_no_drop) cursor.staticItemNoDrop()   // 静态模式才notDrop
       } else {
-        if (cursor.cursor !== 'in-container') cursor.inContainer()
+        if (cursor.cursor !== cursor_type_in_container) cursor.inContainer()
       }
     } else if (parseContainer(ev)) {
-      if (cursor.cursor !== 'in-container') cursor.inContainer()
-    } else if (cursor.cursor !== 'default') cursor.default()
+      if (cursor.cursor !== cursor_type_in_container) cursor.inContainer()
+    } else if (cursor.cursor !== cursor_type_default) cursor.default()
   }
 }, 45)

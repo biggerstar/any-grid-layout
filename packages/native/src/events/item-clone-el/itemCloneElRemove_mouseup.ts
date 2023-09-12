@@ -1,6 +1,6 @@
 import {tempStore} from "@/events";
 import {ItemTransitionObject} from "@/types";
-import {grid_dragging_source_el, grid_resizing_source_el} from "@/constant";
+import {grid_clone_el, grid_dragging_source_el, grid_resizing_source_el} from "@/constant";
 
 
 /**
@@ -12,7 +12,7 @@ export function itemCloneElRemove_mouseup(_) {
   //----------移除Drag或者Resize创建的克隆备份-------------//
   //  清除对Item拖动或者调整大小产生的克隆对象
   let timer = null
-  const gridCloneEls = document.querySelectorAll<HTMLElement>('.grid-clone-el')
+  const gridCloneEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
   //------------------进行拖动归位延时动画执行 和 执行完毕后移除克隆元素--------------------//
   //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
   for (let i = 0; i < gridCloneEls.length; i++) {

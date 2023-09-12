@@ -7,6 +7,7 @@ import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
 import {isString} from "is-what";
+import {grid_item_close_btn, grid_item_content, grid_item_resizable_handle} from "@/constant";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -130,7 +131,7 @@ export class Item extends ItemGeneralImpl {
           this.contentElement = this.el.isConnected ? <HTMLElement>document.adoptNode(this.el) : <HTMLElement>this.el
         }
         if (!this.contentElement) this.contentElement = document.createElement("div")
-        this.contentElement.classList.add('grid-item-content')
+        this.contentElement.classList.add(grid_item_content)
         if (this.id && isString(this.id)) this.contentElement.id = this.id
         this.element.appendChild(this.contentElement)
         this.container.contentElement.appendChild(this.element)
@@ -191,7 +192,9 @@ export class Item extends ItemGeneralImpl {
    * */
   public animation(transition) {
     if (typeof transition !== "object") {
-      console.log('参数应该是对象形式{ time: Number, field: String }')
+      this.container.bus.emit('warn', {
+        message: '参数应该是对象形式{ time: Number, field: String }'
+      })
       return
     }
     Sync.run({
@@ -320,20 +323,19 @@ export class Item extends ItemGeneralImpl {
    * */
   private _handleResize(isResize = false) {
     const handleResizeFunc = () => {
-      const className = 'grid-item-resizable-handle'
       if (isResize && !this._resizeTabEl) {
-        const handleResizeEls = this.element.querySelectorAll('.' + className)
+        const handleResizeEls = this.element.querySelectorAll('.' + grid_item_resizable_handle)
         if (handleResizeEls.length > 0) return;
         const resizeTabEl = document.createElement('span')
         resizeTabEl.innerHTML = '⊿'
         this.domImpl.updateStyle(defaultStyle.gridResizableHandle, resizeTabEl)
         this.element.appendChild(resizeTabEl)
-        resizeTabEl.classList.add(className)
+        resizeTabEl.classList.add(grid_item_resizable_handle)
         this._resizeTabEl = resizeTabEl
       } else if (this.element && !isResize) {
         for (let i = 0; i < this.element.children.length; i++) {
           const node = this.element.children[i]
-          if (node.className.includes(className)) {
+          if (node.className.includes(grid_item_resizable_handle)) {
             this.element.removeChild(node)
           }
         }
@@ -349,19 +351,18 @@ export class Item extends ItemGeneralImpl {
    * */
   private _closeBtn(isDisplayBtn = false) {
     const closeBtnFunc = () => {
-      const className = 'grid-item-close-btn'
       if (isDisplayBtn && !this._closeEl) {
         const _closeEl = document.createElement('div')
         this.domImpl.updateStyle(defaultStyle.gridItemCloseBtn, _closeEl)
         this._closeEl = _closeEl
-        _closeEl.classList.add(className)
+        _closeEl.classList.add(grid_item_close_btn)
         this.element.appendChild(_closeEl)
         _closeEl.innerHTML = defaultStyle.gridItemCloseBtn.innerHTML
       }
       if (this._closeEl && !isDisplayBtn) {
         for (let i = 0; i < this.element.children.length; i++) {
           const node = this.element.children[i]
-          if (node.className.includes(className)) {
+          if (node.className.includes(grid_item_close_btn)) {
             this.element.removeChild(node)
           }
         }
