@@ -3,35 +3,14 @@
 import {CrossContainerExchangeEvent, definePlugin} from "@/plugins";
 import {tempStore} from "@/events";
 import {isFunction} from "is-what";
-import {analysisCurPositionInfo} from "@/algorithm/common/tool";
+import {updateCloneElementSize} from "@/plugins/common";
 
 export const crossContainerExchangeBehavior = definePlugin({
-  /**
-   * 执行cross事件的用户插件前的处理
-   * */
-  $cross(ev: CrossContainerExchangeEvent) {
-    const {toContainer, fromItem} = tempStore
-    if (!toContainer || !fromItem) return
-    const res = analysisCurPositionInfo(toContainer)
-    ev.toGridX = res.gridX
-    ev.toGridY = res.gridY
-    // console.log(res.gridX, res.gridY)
-    ev.rule = function () {  // 外部可以修改替换该函数，返回false将不会执行本次跨容器交换行为
-      const manager = toContainer.layoutManager
-      if (!manager.isBlank({
-        ...fromItem.pos,
-        x: res.gridX,
-        y: res.gridY,
-      })) {
-        return false
-      }
-    }
-  },
   cross(ev: CrossContainerExchangeEvent) {
     const {fromItem, toContainer, cloneElement, toItem} = tempStore
     if (!toContainer || !fromItem || !cloneElement) return
     const gridItemContent = fromItem.element.querySelector('.grid-item-content')
-    if (!fromItem['_mounted'] || !gridItemContent) return
+    if (!fromItem['_mounted'] || !gridItemContent || !ev.mousePos) return
     if (isFunction(ev.rule)) {
       let isMoveTo = ev.rule?.() // 是否移动
       if (isMoveTo === false) return
@@ -47,21 +26,13 @@ export const crossContainerExchangeBehavior = definePlugin({
       newItem.remove?.()
       return
     }
-
-    newItem.pos.x = ev.toGridX
-    newItem.pos.y = ev.toGridY
+    newItem.pos.x = ev.mousePos.x
+    newItem.pos.y = ev.mousePos.y
     newItem.mount()
-    newItem.domImpl.updateStyle({
-      width: `${newItem.element.clientWidth}px`,
-      height: `${newItem.element.clientHeight}px`,
-      transitionDuration: '0.3s',
-      transitionProperty: 'width,height'
-    }, cloneElement)
+    updateCloneElementSize(newItem)
     // console.log(cloneElement.clientWidth , newItem.element.clientWidth);
     fromItem.container.bus.emit('updateLayout')
-    if (toItem) {
-      toContainer.bus.emit('updateLayout')
-    }
+    if (toItem) toContainer.bus.emit('updateLayout')
     tempStore.fromContainer = toContainer
     tempStore.fromItem = newItem
   },

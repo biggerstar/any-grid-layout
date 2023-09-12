@@ -161,6 +161,7 @@ export class Item extends ItemGeneralImpl {
         }
         if (!this.contentElement) this.contentElement = document.createElement("div")
         this.contentElement.classList.add('grid-item-content')
+        if (this.id && isString(this.id)) this.contentElement.id = this.id
         this.element.appendChild(this.contentElement)
         this.container.contentElement.appendChild(this.element)
       }

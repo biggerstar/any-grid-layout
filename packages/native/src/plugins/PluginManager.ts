@@ -34,8 +34,8 @@ export class PluginManager {
       layoutManager: this.container.layoutManager,
       default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
     })
-    if (isFunction($defaultActionFn)) $defaultActionFn.call(null,ev)
     Object.assign(ev, options)
+    if (isFunction($defaultActionFn)) $defaultActionFn.call(null,ev)
     this.plugins.forEach((plugin) => {
       const callFunc: Function = <any>plugin[eventName]
       if (isFunction(callFunc)) callFunc.call(plugin, ev)

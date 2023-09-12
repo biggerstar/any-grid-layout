@@ -1,6 +1,14 @@
 import container1 from "@/container/container1";
-import {BaseEvent, ItemDragEvent, ItemResizeEvent, ResponsiveLayoutPlugin, ThrowMessageEvent,} from '@biggerstar/layout'
+import {
+  BaseEvent,
+  CrossContainerExchangeEvent,
+  ItemDragEvent,
+  ItemResizeEvent,
+  ResponsiveLayoutPlugin,
+  ThrowMessageEvent,
+} from '@biggerstar/layout'
 import container2 from "@/container/container2";
+import container3 from "@/container/container3";
 
 console.log(container1)
 console.log(container2)
@@ -27,6 +35,9 @@ container1
     },
     itemMounted(ev: BaseEvent) {
       insertItemContent(ev)
+    },
+    cross(ev: CrossContainerExchangeEvent) {
+      ev.prevent()
     }
   })
   .use(ResponsiveLayoutPlugin)
@@ -43,13 +54,18 @@ container2.use({
   },
   itemMounted(ev: BaseEvent) {
     insertItemContent(ev)
+  },
+  cross(ev: CrossContainerExchangeEvent) {
+    ev.prevent()
   }
 })
+
+container3.use(ResponsiveLayoutPlugin)
 
 
 container1.mount()
 container2.mount()
-// container3.mount()
+container3.mount()
 
 
 // setTimeout(()=>{

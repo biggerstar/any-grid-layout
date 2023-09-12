@@ -6,6 +6,10 @@ import {CustomItemPos, ItemTransition} from "@/types";
  * */
 export class ItemGeneralImpl {
   /**
+   * id元素选择器，如果传入该id，框架内部会将该id添加到item的内容区域dom元素上，用户可以使用id查找到对应元素并进行操作
+   * */
+  id?:string
+  /**
    * 可以传入class或者element元素，如果有目标元素会自动载入到到item中
    *  */
   el?: HTMLElement | Node | string

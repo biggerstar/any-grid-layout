@@ -13,7 +13,7 @@ import {Item} from "@/main";
  * */
 export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
   ev.patchDragDirection()
-}, 80)
+}, 46)
 
 /**
  * 节流后的patchResizeNewSize
@@ -27,7 +27,7 @@ export const patchResizeNewSize: Function = throttle((ev: ItemResizeEvent) => {
       fromItem.container.bus.emit('itemSizeChange')
     }
   }
-}, 200)
+}, 162)
 
 /**
  * 立即更新布局
@@ -56,7 +56,7 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
 /**
  * 节流更新布局的函数
  * */
-export const updateLayout: Function = throttle(directUpdateLayout, 66)
+export const updateLayout: Function = throttle(directUpdateLayout, 46)
 
 /**
  * 节流更新drag到 +十字线+ 方向的布局
@@ -73,7 +73,7 @@ export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callba
     })
   }
   directUpdateLayout(ev)
-}, 66)
+}, 30)
 
 /**
  * 节流更新drag到 「对角」 方向的布局
@@ -112,3 +112,17 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
   directUpdateLayout(ev, {sort: false})
 }, 80)
 
+/**
+ * 将cloneElement的大小更新为某个Item的一样的尺寸
+ * */
+export function updateCloneElementSize(newItem: Item) {
+  const {cloneElement} = tempStore
+  if (!cloneElement) return
+  newItem.domImpl.updateStyle({
+    width: `${newItem.element.clientWidth}px`,
+    height: `${newItem.element.clientHeight}px`,
+    transitionDuration: '0.3s',
+    transitionProperty: 'width,height'
+  }, cloneElement)
+
+}

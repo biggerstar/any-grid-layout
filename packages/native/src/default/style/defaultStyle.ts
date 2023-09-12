@@ -3,8 +3,7 @@
  *
  * */
 type DefaultStyleNames =
-  'gridContainerArea'
-  | 'gridContainer'
+  'gridContainer'
   | 'gridContainerTransition'
   | 'gridItem'
   | 'gridResizableHandle'
@@ -12,13 +11,9 @@ type DefaultStyleNames =
 type DefaultStyle = Record<DefaultStyleNames, Partial<CSSStyleDeclaration> & { [ket: string]: any }>
 
 export const defaultStyle: DefaultStyle = {
-  gridContainerArea: {
-    boxSizing: 'border-box',
-    display: 'block',
-  },
   gridContainer: {   // contentElement初始化使用的默认样式
     boxSizing: 'border-box',
-    margin:'0 auto',
+    margin: '0 auto',
     height: 'auto',
     width: '100%',
     position: 'relative',

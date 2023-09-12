@@ -1,27 +1,36 @@
 import {tempStore} from "@/events";
 
+
+let ticking = false
+
 /**
  * 移动当前鼠标拖动的克隆Item的元素，不负责后续改变位置
  * */
 export const itemDrag_mousemove: Function = (ev) => {
-  function updateDragLocation() {
-    const {
-      fromItem,
-      isDragging,
-      mousedownItemOffsetLeft,
-      mousedownItemOffsetTop,
-      isLeftMousedown,
-      cloneElement,
-    } = tempStore
-    if (!fromItem || !isDragging || !cloneElement || !isLeftMousedown) return
+  const {
+    fromItem,
+    isDragging,
+    cloneElement,
+    mousedownItemOffsetLeft,
+    mousedownItemOffsetTop,
+  } = tempStore
+  if (!fromItem || !isDragging) return
+
+  function updateDragConeElementLocation() {
     let left = ev.pageX - mousedownItemOffsetLeft
     let top = ev.pageY - mousedownItemOffsetTop
-    fromItem.domImpl.updateStyle({
+    fromItem!.domImpl.updateStyle({
       left: `${left}px`,
       top: `${top}px`
-    }, cloneElement)  // 必须重新从tempStore获取当前克隆节点
-    fromItem.container.bus.emit('dragging')
+    }, cloneElement)
   }
 
-  requestAnimationFrame(updateDragLocation)
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      updateDragConeElementLocation()
+      ticking = false
+    })
+    ticking = true
+  }
+  if (fromItem) fromItem.container.bus.emit('dragging')
 }
