@@ -27,7 +27,6 @@ class TempStore {
   }
 
   //----------通用可写变量-----------//
-  editItemNum: number = 0   // 当前处于编辑模式的Item个数
   fromContainer: Container | null = null    //  当前Item的初始来源
   toContainer: Container | null = null    //  当前鼠标移动位置下是哪个容器，移动到容器外为null
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里

@@ -9,7 +9,6 @@ export function itemDrag_mousedown(ev) {
   if (!fromContainer || !fromItem) return
   if (!fromItem.draggable || fromItem.static) return  // 如果pos中是要求static则取消该Item的drag
   tempStore.handleMethod = 'drag'
-  // if (fromItem.__temp__.dragging) return
   //------------------------------------------------------------------------------------------
   if ((fromItem.dragIgnoreEls || []).length > 0) {    // 拖拽触发元素的黑名单
     let isAllowDrag = true
@@ -49,8 +48,6 @@ export function itemDrag_mousedown(ev) {
   tempStore.mousedownItemOffsetTop = ev.pageY - (fromEl.top + window.scrollY)
 //--------------------保留未改变尺寸前原始大小------------------------//
   if (fromItem) {
-    fromItem.__temp__.clientWidth = fromItem.nowWidth()
-    fromItem.__temp__.clientHeight = fromItem.nowHeight()
     tempStore.offsetPageX = fromItem.offsetLeft()
     tempStore.offsetPageY = fromItem.offsetTop()
   }

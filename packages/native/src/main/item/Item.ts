@@ -8,9 +8,6 @@ import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
 import {isString} from "is-what";
 
-//---------------------------------------------------------------------------------------------//
-
-//---------------------------------------------------------------------------------------------//
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
@@ -24,17 +21,11 @@ export class Item extends ItemGeneralImpl {
   public container: Container   // 挂载在哪个container上
   public tagName: string = 'div'
   public classList: string[] = []
-  public attr: string[] = []
-  public edit: boolean  // 该Item是否正在被编辑(只读)
-  public nested: boolean = false
   public parentElement: HTMLElement
   public contentElement: HTMLElement
   public readonly domImpl: DomFunctionImpl
   /** 运行时pos */
   public pos: ItemPos
-
-  //----------------vue专用---------------------//
-  public _VueEvents: any = {}   // 用于 vue 携带的内置事件
   //----------------保持状态所用参数---------------------//
   public customOptions: ItemGeneralImpl
   public readonly _default: ItemGeneralImpl
@@ -42,25 +33,7 @@ export class Item extends ItemGeneralImpl {
   private _resizeTabEl?: HTMLElement
   private _closeEl?: HTMLElement
   public __temp__: Record<any, any> = {
-    // -------------不可写变量--------------//
-
-    //------------都是可写变量--------------//
-    // isNestingContainer: false,  // 指示该Item是不是嵌套另一个Container
-    eventRecord: {}, // 当前编辑状态开启的功能，drag || resize
-    event: {},
-    editNumUsing: false, // 是否占用全局editItemNum的计数
-    styleLock: false,
-    maskEl: null,
-    height: 0,
-    width: 0,
-    dragging: false,
-    clientWidth: 0,
-    clientHeight: 0,
     isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
-    resized: {
-      w: 1,
-      h: 1
-    }
   }
 
   //-------------------------getter---------------------------
@@ -127,9 +100,6 @@ export class Item extends ItemGeneralImpl {
         get: () => get('close'),
         set: (v) => set('close', Boolean(v)) || self._closeBtn(v)
       },
-      edit: {
-        get: () => true,
-      },
       transition: {
         get: () => get('transition'),
         set(v) {
@@ -165,7 +135,6 @@ export class Item extends ItemGeneralImpl {
         this.element.appendChild(this.contentElement)
         this.container.contentElement.appendChild(this.element)
       }
-      this.attr = <any>Array.from(this.element.attributes)
       this.element.classList.add(this.className)
       this.classList = Array.from(this.element.classList)
       this.domImpl.updateStyle(defaultStyle.gridItem)
@@ -217,7 +186,6 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * TODO  animation 和 对应setter还能再优化
    * 对该Item开启位置变化过渡动画
    * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
    * */
@@ -246,15 +214,28 @@ export class Item extends ItemGeneralImpl {
 
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
   public updateItemLayout() {
-    this.domImpl.updateStyle(this.genItemStyle())
+    //   三种布局方案，都能实现grid布局，性能最好的是定位法 //
+    this.domImpl.updateStyle({
+      // 定位法
+      width: this.nowWidth() + 'px',
+      height: this.nowHeight() + 'px',
+      left: this.offsetLeft() + 'px',
+      top: this.offsetTop() + 'px',
+
+      // grid布局
+      // gridColumn: `${this.pos.x} / span ${this.pos.w}`,
+      // gridRow: `${this.pos.y} / span ${this.pos.h}`,
+
+      // transform
+      // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
+    })
   }
 
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetLeft() {
-    let marginWidth = 0
-    if ((this.pos.x) > 1) marginWidth = (this.pos.x - 1) * this.margin[0]
+    const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] : 0
     return ((this.pos.x - 1) * this.size[0]) + marginWidth
   }
 
@@ -262,8 +243,7 @@ export class Item extends ItemGeneralImpl {
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetTop() {
-    let marginHeight = 0
-    if ((this.pos.y) > 1) marginHeight = (this.pos.y - 1) * this.margin[1]
+    const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] : 0
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
   }
 
@@ -288,9 +268,8 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  获取该Item 当前的宽度
    * */
   public nowWidth = (w?: number) => {
-    let marginWidth = 0
-    const nowW = w ? w : (this.pos.tempW ? this.pos.tempW : this.pos.w)
-    if (nowW > 1) marginWidth = (nowW - 1) * this.margin[0]
+    const nowW = w ? w : this.pos.w
+    const marginWidth = nowW > 1 ? (nowW - 1) * this.margin[0] : 0
     return (nowW * this.size[0]) + marginWidth
   }
 
@@ -299,9 +278,8 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  获取该Item 当前的高度
    * */
   public nowHeight = (h?: number) => {
-    let marginHeight = 0
-    const nowH = h ? h : (this.pos.tempH ? this.pos.tempH : this.pos.h)
-    if (nowH > 1) marginHeight = (nowH - 1) * this.margin[1]
+    const nowH = h ? h : this.pos.h
+    const marginHeight = nowH > 1 ? (nowH - 1) * this.margin[1] : 0
     return (nowH * this.size[1]) + marginHeight
   }
 
@@ -309,9 +287,7 @@ export class Item extends ItemGeneralImpl {
    * @return  {number}  根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
    * */
   public minWidth() {
-    let marginWidth = 0
-    if (this.pos.minW === Infinity) return Infinity  // TODO 已经在pos限制，去除Infinity
-    if (this.pos.minW > 1) marginWidth = (this.pos.minW - 1) * this.margin[0]
+    const marginWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * this.margin[0] : 0
     return (this.pos.minW * this.size[0]) + marginWidth
   }
 
@@ -319,9 +295,7 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
    * */
   public minHeight = () => {
-    let marginHeight = 0
-    if (this.pos.minH === Infinity) return Infinity
-    if (this.pos.minH > 1) marginHeight = (this.pos.minH - 1) * this.margin[1]
+    const marginHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * this.margin[1] : 0
     return (this.pos.minH * this.size[1]) + marginHeight
   }
 
@@ -329,29 +303,14 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
   public maxWidth() {
-    let marginWidth = 0
-    if (this.pos.maxW === Infinity) return Infinity
-    marginWidth = (this.pos.maxW - 1) * this.margin[0]
-    return (this.pos.maxW * this.size[0]) + marginWidth
+    return (this.pos.maxW * this.size[0]) + (this.pos.maxW - 1) * this.margin[0]
   }
 
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
   public maxHeight = () => {
-    let marginHeight = 0
-    if (this.pos.maxH === Infinity) return Infinity
-    marginHeight = (this.pos.maxH - 1) * this.margin[1]
-    return (this.pos.maxH * this.size[1]) + marginHeight
-  }
-
-  /**
-   * 是否锁定CSS 样式的渲染 不传参数返回当前的状态 ，传布尔参数将状态设置成相应的布尔值
-   * */
-  public styleLock(isStyle = null) {
-    if (isStyle === null) return this.__temp__.styleLock
-    if (isStyle === true) return this.__temp__.styleLock = true
-    if (isStyle === false) return this.__temp__.styleLock = false
+    return (this.pos.maxH * this.size[1]) + (this.pos.maxH - 1) * this.margin[1]
   }
 
   /**
@@ -409,42 +368,6 @@ export class Item extends ItemGeneralImpl {
       }
     }
     this.element ? closeBtnFunc() : Sync.run(closeBtnFunc)
-  }
-
-
-  /**
-   * 生成该ITEM的栅格放置位置样式
-   * */
-  public genItemStyle = () => {
-    if (this.styleLock()) return {}
-    //   三种布局方案，都实现了grid布局 //
-    return {
-      width: this.nowWidth() + 'px',
-      height: this.nowHeight() + 'px',
-      left: this.offsetLeft() + 'px',
-      top: this.offsetTop() + 'px',
-
-      // gridColumn: `${this.pos.x} / span ${this.pos.w}`,
-      // gridRow: `${this.pos.y} / span ${this.pos.h}`,
-
-      // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
-    }
-  }
-  /**
-   * 生成限制当前元素宽高的样式对象
-   * */
-  public _genLimitSizeStyle = () => {
-    if (this.styleLock()) return {}
-    const minWidth = this.minWidth()
-    const minHeight = this.minHeight()
-    const maxWidth = this.maxWidth()
-    const maxHeight = this.maxHeight()
-    return {
-      maxWidth: maxWidth + 'px',
-      maxHeight: maxHeight + 'px',
-      minWidth: Math.min(minWidth, maxWidth) + 'px',
-      minHeight: Math.min(minHeight, maxHeight) + 'px',
-    }
   }
 }
 

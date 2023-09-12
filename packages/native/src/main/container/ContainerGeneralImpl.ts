@@ -156,13 +156,6 @@ export class ContainerGeneralImpl {
   autoScrollPage?: boolean = true
 
   /**
-   * 如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许
-   *
-   *  @default false
-   * */
-  nestedOutExchange?: boolean = false
-
-  /**
    * 基准线，那个方向作为基底线   TODO left bottom，right
    * */
   baseLine?: BaseLineType = 'top'

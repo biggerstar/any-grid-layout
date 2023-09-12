@@ -23,7 +23,7 @@ export const crossContainerExchangeBehavior = definePlugin({
     const newItem = toContainer.add(newOptions)
     fromItem.unmount(true)
     if (fromItem.element.isConnected) {
-      // 如果fromItem没还载则将新挂载到目标容器的成员移除
+      // 如果fromItem没挂载则将新挂载到目标容器的成员移除
       newItem.remove?.()
       return
     }
@@ -31,7 +31,6 @@ export const crossContainerExchangeBehavior = definePlugin({
     newItem.pos.y = ev.mousePos.y
     newItem.mount()
     updateCloneElementSize(newItem)
-    // console.log(cloneElement.clientWidth , newItem.element.clientWidth);
     fromItem.container.bus.emit('updateLayout')
     if (toItem) toContainer.bus.emit('updateLayout')
     tempStore.fromContainer = toContainer

@@ -48,8 +48,6 @@ export function itemCloneElRemove_mouseup(_) {
         gridCloneEl.parentNode.removeChild(gridCloneEl)
       } catch (e) {
       }
-      fromItem.__temp__.dragging = false
-      fromItem.__temp__.dragging = false
       clearTimeout(timer)
       timer = null
     }
