@@ -206,7 +206,6 @@ export class LayoutManager extends Finder {
         if (this.isBlank(tryPos)) return resPos = tryPos
       })
     }
-    // console.log(resPos)
     return resPos
   }
 
@@ -337,7 +336,6 @@ export class LayoutManager extends Finder {
   public mark(pos: CustomItemPos | ItemPos, markSymbol?: typeof this.place | typeof this.placed): this {
     const {w, h, x, y} = this.toLayoutPos(pos)
     this.each((curRow, curCol) => {
-      // console.log(curRow, curCol,this._layoutMatrix[curRow][curCol])
       this._layoutMatrix[curRow][curCol] = markSymbol !== void 0 ? markSymbol : this.placed
     }, {
       startCol: x,
@@ -369,7 +367,6 @@ export class LayoutManager extends Finder {
       endRow = this.row,
       endCol = this.col
     } = options
-    // console.log(endRow, endCol)
     rowLabel /*statement label*/ :
       for (let curRow = startRow; curRow < endRow; curRow++) {
         for (let curCol = startCol; curCol < endCol; curCol++) {

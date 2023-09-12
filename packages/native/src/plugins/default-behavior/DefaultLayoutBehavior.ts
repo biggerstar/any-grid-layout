@@ -3,11 +3,11 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {tempStore} from "@/events";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {definePlugin} from "@/plugins/global";
 import {patchDragDirection, patchResizeNewSize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
+import {definePlugin} from "@/global";
 
 
 /**
@@ -21,19 +21,18 @@ export const DefaultLayoutBehavior = definePlugin({
    * */
   init(ev: ItemDragEvent) {
     const {container} = ev
-    const {layoutManager: manager, engine} = container
+    const {layoutManager: manager} = container
     autoSetSizeAndMargin(container, true)
-    engine.reset()
-    const res = manager.analysis(engine.items, null, {
+    container.reset()
+    const res = manager.analysis(container.items, null, {
       baseLine: container.getConfig("baseLine"),
       auto: ev.hasAutoDirection()
     })
     res.patch()
-    engine.items = res.successItems
-    engine.items.forEach(item => item.mount())
+    container.items = res.successItems
+    container.items.forEach(item => item.mount())
     ev.patchStyle(res.successItems)
     if (!res.isSuccess) {
-      console.log(res.failedItems)
       container.bus.emit('error', <any>{
         type: 'ContainerOverflowError',
         message: "容器溢出或者Item重叠，您设置了固定的col或row且在首次挂载的时候才会出现该错误",
@@ -210,7 +209,7 @@ export const DefaultLayoutBehavior = definePlugin({
     // console.log('itemSizeChange')
   },
 
-  closing(ev: ItemLayoutEvent) {
+  closing(_: ItemLayoutEvent) {
     const {fromItem, toItem} = tempStore
     if (toItem && toItem === fromItem) {  // 按下和抬起要同一个item才能关闭
       toItem.unmount(true)

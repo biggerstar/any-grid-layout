@@ -1,5 +1,3 @@
-export * from './engine/Engine'
-
 export * from './item/Item'
 export * from './item/ItemGeneralImpl'
 export * from './item-pos/ItemPos'

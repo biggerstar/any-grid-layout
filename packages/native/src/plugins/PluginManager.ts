@@ -25,17 +25,19 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options = {}) {
+    const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]
     const $defaultActionFn: Function = DefaultBehavior[`$${eventName}`]   // 内置用，在事件对象实例化所有插件回调前调用
     const ev = new GEvent({
       name: eventName,
-      container: this.container,
-      layoutManager: this.container.layoutManager,
+      container: container,
+      layoutManager: container.layoutManager,
+      pluginManager: container.pluginManager,
       default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
     })
     Object.assign(ev, options)
-    if (isFunction($defaultActionFn)) $defaultActionFn.call(null,ev)
+    if (isFunction($defaultActionFn)) $defaultActionFn.call(null, ev)
     this.plugins.forEach((plugin) => {
       const callFunc: Function = <any>plugin[eventName]
       if (isFunction(callFunc)) callFunc.call(plugin, ev)

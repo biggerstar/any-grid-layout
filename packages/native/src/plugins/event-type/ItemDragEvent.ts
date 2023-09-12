@@ -139,7 +139,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     if (!fromItem) return true   // 不是drag时就是resize浏览器或者元素盒子窗口
     if (isDragging) {
       if (!toItem || toItem === fromItem) {
-        const foundItems = container.layoutManager.findCoverItemsFromPosition(container.engine.items, {
+        const foundItems = container.layoutManager.findCoverItemsFromPosition(container.items, {
           ...fromItem?.pos,
           x: this.gridX,
           y: this.gridY

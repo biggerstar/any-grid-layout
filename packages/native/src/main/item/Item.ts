@@ -81,7 +81,7 @@ export class Item extends ItemGeneralImpl {
   //----------------------------------------------------------
   constructor(itemOption: CustomItem) {
     super()
-    if (itemOption instanceof Item) return itemOption
+    if (itemOption instanceof Item) return itemOption   // 如果已经是item，则直接返回
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
     this.domImpl = new DomFunctionImpl(this)
     this._default = new ItemGeneralImpl()
@@ -213,7 +213,7 @@ export class Item extends ItemGeneralImpl {
    * 将自身在item列表中移除，不会移除dom元素
    * */
   public remove() {
-    this.container.engine.remove(this)
+    this.container.removeItem(this)
   }
 
   /**

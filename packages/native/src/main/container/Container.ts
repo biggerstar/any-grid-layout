@@ -8,24 +8,21 @@ import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
-import {Engine} from "@/main";
 import {startGlobalEvent} from "@/events/listen";
-import {tempStore} from "@/events";
 import {computeSmartRowAndCol} from "@/algorithm/common";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
-//---------------------------------------------------------------------------------------------//
+import {isString} from "is-what";
 
-//---------------------------------------------------------------------------------------------//
-
-/** #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
+/**
+ * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  *   Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
  *   该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
  *   ```javascript{
  *    col: 8,
  *    size:[80,80],
- *    layout:[{
+ *    layouts:[{
  *          px:1024,
  *          size:[100,100]
  *        },
@@ -36,7 +33,7 @@ import {LayoutManager} from "@/algorithm";
  *    1.暂不支持iframe嵌套
  *    2.使用原生js开发的时候如果首屏加载网页中元素会一闪而过或者布局错误然后才生成网格布局,出现这种情况可以对Container挂载的那个元素点进行display:'none',
  *      框架处理会自动显示出来，出现这个的原因是因为html加载渲染比js对dom的渲染快
- *  # size,margin, [col || row](后面简称CR) 在传入后的响应结果,
+ *  # size,margin, [col | row](后面简称CR) 在传入后的响应结果,
  *    所有参数是通过LayoutConfig算法类以当前容器最大可视区域进行计算，
  * -  CR   size   margin   所见即所得
  * -  CR  !size   margin   自动通过容器剩余空间设定size尺寸
@@ -68,30 +65,29 @@ export class Container {
   public layoutManager: LayoutManager
   public readonly layout: ContainerGeneralImpl = {} as any
   public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  public attr: any = []
-  public engine: Engine
+  private readonly options: ContainerInstantiationOptions
+  public items: Item[] = []
   public isNesting: boolean = false    // 该Container自身是否[被]嵌套
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
-  public element: HTMLElement   //  container主体元素节点
-  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器根element直接包裹
+  public element: HTMLElement   //  container的挂载节点
+  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public parent: Container   // 嵌套情况下上级Container
   public parentItem: Item
   private readonly domImpl: DomFunctionImpl
 
-  //----------------vue 支持---------------------//
-  // TODO 后面在vue的layout模块使用declare module进行声明合并
-  public vue: any
-  public _VueEvents: object
+  // //----------------vue 支持---------------------//
+  // // TODO 后面在vue的layout模块使用declare module进行声明合并
+  // public vue: any
+  // public _VueEvents: object
   //----------------保持状态所用参数---------------------//
   private _mounted: boolean
   public readonly _default: ContainerGeneralImpl
-  private __store__ = tempStore
+  // private __store__ = tempStore
   public __ownTemp__ = {
     //-----内部可写外部只读变量------//
     preCol: 0,   // 容器大小改变之前的col
     preRow: 0,   // 容器大小改变之前的row
     exchangeLock: false,
-    firstInitColNum: null,
     firstEnterUnLock: false,   //  第一次进入的权限是否解锁
     nestingEnterBlankUnLock: false,   //  嵌套第一次进入是否是空白处
     moveExchangeLock: false,
@@ -112,9 +108,8 @@ export class Container {
     this._define()
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
-    this.engine = new Engine(options)
-    this.engine.setContainer(this)
     this.domImpl = new DomFunctionImpl(this)
+    this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
     if (options.parent) {
       this.parent = options.parent
@@ -240,7 +235,11 @@ export class Container {
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   public mount(): void {
-    if (this._mounted) return console.warn('[mount Function] 容器重复挂载被阻止', this)
+    if (this._mounted) return this.bus.emit('error', {
+      type: 'RepeatedContainerMounting',
+      message: '重复挂载容器被阻止',
+      from: this
+    })
     const _mountedFun = () => {
       //-----------------------容器dom初始化-----------------------//
       if (this.el instanceof Element) this.element = this.el
@@ -248,42 +247,26 @@ export class Container {
         if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
         if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
       }
-      this.element['_gridContainer_'] = this       // TODO declare global
-      this.element['_isGridContainer_'] = true
-      if (this.platform === 'vue') {
-        this.contentElement = <HTMLElement>this.element.querySelector('.grid-container-area')
-      } else {
-        this._patchGridContainerBox()
-        this.domImpl.updateStyle(defaultStyle.gridContainerArea)   // 必须在engine.init之前
-      }
-      this.attr = Array.from(this.element.attributes)
+      this._createGridContainerBox()
       //-----------------容器布局信息初始化与检测--------------------//
-      this.engine.init()
+      this._init()
       //-------------------------其他操作--------------------------//
-      let nestingTimer: any = setTimeout(() => {
-        this._isNestingContainer_()
-        clearTimeout(nestingTimer)
-        nestingTimer = null
-      })
       this._observer_()
-      this.__ownTemp__.firstInitColNum = this.getConfig("col") as any
       this._mounted = true
-      this.updateContainerStyleSize()  // 在 _mounted 之后
+      this.updateContainerSizeStyle()  // 在 _mounted 之后
       this.bus.emit('containerMounted')
-      // if (typeof mCallback === 'function') mCallback.bind(this)(this)
     }
-    if (this.platform === 'vue') _mountedFun()
-    else Sync.run(_mountedFun)
+    Sync.run(_mountedFun)
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
-  private _patchGridContainerBox = () => {
+  private _createGridContainerBox = () => {
     this.contentElement = document.createElement('div')
-    this.contentElement.classList.add('grid-container-area')
-    this.contentElement['_isGridContainerArea'] = true
-    this.element.appendChild(this.contentElement)
-    this.domImpl.updateStyle(defaultStyle.gridContainer, this.contentElement)
+    this.contentElement['_gridContainer_'] = this
+    this.contentElement['_isGridContainer_'] = true
     this.contentElement.classList.add(this.className)
+    this.domImpl.updateStyle(defaultStyle.gridContainer, this.contentElement)
+    this.element.appendChild(this.contentElement)
     setTimeout(() => {
       this.domImpl.updateStyle(defaultStyle.gridContainerTransition, this.contentElement)
     }, 500)
@@ -292,9 +275,7 @@ export class Container {
   /** 手动添加item渲染 */
   public render(renderCallback: Function) {
     Sync.run(() => {
-      if (this.element && this.element.clientWidth <= 0) {
-        throw new Error('请指定宽高')
-      }
+      if (this.element && this.element.clientWidth <= 0) throw new Error('请指定容器宽高')
       if (typeof renderCallback === 'function') {
         renderCallback(this.layout.items || [], this.layout, this.element)
       }
@@ -307,21 +288,11 @@ export class Container {
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
   public unmount(isForce = false) {
-    this.engine.unmount(isForce)
+    this.items.forEach((item: Item) => item.unmount(isForce))
+    this.reset()
     this._mounted = false
     this._disconnect_()
     this.bus.emit('containerUnmounted')
-  }
-
-  /** 将item成员从Container中全部移除，之后重新渲染  */
-  public remount() {
-    this.engine.remount()
-  }
-
-  public remove(removeItem) {
-    this.engine.items.forEach((item) => {
-      if (removeItem === item) item.remove()
-    })
   }
 
   /** 移除对容器的resize监听  */
@@ -335,16 +306,12 @@ export class Container {
   private _trySwitchLayout() {
     const useLayout = this.useLayout
     if (!this.getConfig("px") || !useLayout.px) return
-    if (this.getConfig("px") === useLayout.px) return;
+    if (this.getConfig("px") === useLayout.px) return
     if (this.platform === 'native') {
-      // vue中的Item是由vue自己管理，这边不参与，该注释段落保留后面可能有用
-      this.engine.unmount(false)
-      this.engine.clear();
-      (useLayout.items as Item[]).forEach((item) => this.add(item))
+      this.unmount(false)
+      this.clear();
+      (useLayout.items as Item[]).forEach((item) => this.addItem(item))
     }
-    // this.bus.emit('useLayoutChange')
-    const vueUseLayoutChange = this._VueEvents['vueUseLayoutChange']
-    if (typeof vueUseLayoutChange === 'function') vueUseLayoutChange(useLayout)
   }
 
   /**
@@ -375,7 +342,7 @@ export class Container {
    * */
   public add(itemOptions: CustomItem): Item {
     this.layout.items.push(itemOptions)
-    return this.engine.addItem(itemOptions)
+    return this.addItem(itemOptions)
   }
 
   /**
@@ -385,29 +352,19 @@ export class Container {
    * @return {Array} 所有符合条件的Item
    * */
   public find(nameOrClassOrElement: string | HTMLElement): Item[] {
-    return this.engine.items.filter((item) => {
+    return this.items.filter((item) => {
       return item.name === nameOrClassOrElement
-        || item.classList.includes(nameOrClassOrElement)
         || item.element === nameOrClassOrElement
+        || isString(nameOrClassOrElement) && item.classList.includes(nameOrClassOrElement)
     })
   }
 
-  /** 生成该栅格容器布局样式  */
-  public genContainerStyle(): {
-    width: string,
-    height: string,
-  } {
-    const nowWidth = this.nowWidth() + 'px'
-    const nowHeight = this.nowHeight() + 'px'
-    return {
-      width: nowWidth,
-      height: nowHeight,
-    }
-  }
-
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  public updateContainerStyleSize(): void {
-    this.domImpl.updateStyle(this.genContainerStyle(), this.contentElement)
+  public updateContainerSizeStyle(): void {
+    this.domImpl.updateStyle({
+      width: `${this.nowWidth()}px`,
+      height: `${this.nowHeight()}px`,
+    }, this.contentElement)
   }
 
   /** 计算当前Items所占用的Container宽度  */
@@ -446,33 +403,77 @@ export class Container {
     return Math.ceil(this.contentElement.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1]))
   }
 
-  /** 确定该Item是否是嵌套Item，并将其保存到相关配置的字段 */
-  public _isNestingContainer_(element = null): void {
-    element = element ? element : this.element
-    if (!element) return
-    while (true) {
-      if (element.parentElement === null) {    // 父元素往body方向遍历上去为null表示该Container是第一层
-        this.__ownTemp__.offsetPageX = this.contentElement.offsetLeft
-        this.__ownTemp__.offsetPageY = this.contentElement.offsetTop
-        break
-      }
-      element = element.parentElement    //  不是null在链中往上取父元素
-      // console.log(element._isGridItem_);
+  private _init() {
+    this.initLayoutInfo()
+    let items = this.getConfig('items')
+    items.forEach((item) => this.addItem(item))
+    this.bus.emit('init')
+  }
 
-      if (element._isGridItem_) {      //  上级是Item表示是嵌套的， 父元素是Container元素执行自身offset加上父元素offset
-        const upperItem = element._gridItem_
-        this.__ownTemp__.offsetPageX = upperItem.element.offsetLeft + upperItem.container.__ownTemp__.offsetPageX
-        this.__ownTemp__.offsetPageY = upperItem.element.offsetTop + upperItem.container.__ownTemp__.offsetPageY
-        element._gridItem_.container.childContainer.push({
-          parent: element._gridItem_.container,
-          container: this,
-          nestingItem: element._gridItem_
-        })
-        element._gridItem_.nested = true
-        this.isNesting = true
-        this.parentItem = upperItem
+  /**
+   * 用于提取用户传入的[所有]布局配置文件到 container.layouts
+   * */
+  public initLayoutInfo() {
+    const options: Record<any, any> = this.options
+    let layoutInfo = []
+    if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
+    else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
+    else throw new Error("请传入layout配置信息")
+    if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
+      let isBreak = false
+      layoutInfo.sort((a, b) => {
+        if (isBreak) return 0
+        if (typeof a.px !== "number" || typeof b.px !== "number") {
+          this.bus.emit("warn",{
+            message: `未指定layout的px值,传入的layout为${b}`
+          })
+          isBreak = true
+        }
+        return a.px - b.px
+      })
+    }
+    this.layouts = JSON.parse(JSON.stringify(layoutInfo))    // items 可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
+    // console.log(layoutInfo);
+  }
+
+  /** 将item成员从Container中全部移除，之后重新渲染  */
+  public remount() {
+    this.unmount()
+    this.mount()
+  }
+
+  /**
+   * 添加一个itemOptions配置信息创建一个Item实例到items列表中，不会挂载到dom中
+   * 框架内部添加Item时所有的Item必须通过这里添加到容器中
+   * */
+  private addItem(itemOptions: CustomItem): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    const item = new Item(itemOptions)
+    // console.log(item === itemOptions)
+    this.items.push(item)
+    item.customOptions = itemOptions
+    item.container = this
+    item.parentElement = this.contentElement
+    item.i = this.items.length
+    return item
+  }
+
+  /** 在items列表中移除指定Item引用 */
+  public removeItem(removeItem) {
+    for (let i = 0; i < this.items.length; i++) {
+      if (removeItem === this.items[i]) {
+        this.items.splice(i, 1)
         break
       }
     }
+  }
+
+  /** 清除重置布局矩阵 */
+  public reset(): void {
+    this.layoutManager.reset(this.getConfig('col'), this.getConfig('row'))
+  }
+
+  /** 清除所有Items */
+  public clear() {
+    this.items.splice(0, this.items.length)
   }
 }

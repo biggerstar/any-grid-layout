@@ -32,7 +32,6 @@ export function itemCloneElRemove_mouseup(_) {
           top: `${top}px`
         }, gridCloneEl)
       } else if (isResizing) {
-        // console.log(fromItem.offsetLeft(), fromItem.offsetTop())
         fromItem.domImpl.updateStyle({
           transitionProperty: `${transition.field}`,
           transitionDuration: `${transition.time}ms`,

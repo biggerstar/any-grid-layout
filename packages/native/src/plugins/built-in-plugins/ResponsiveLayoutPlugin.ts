@@ -1,7 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {tempStore} from "@/events";
-import {definePlugin} from "@/plugins/global";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
@@ -13,6 +12,7 @@ import {
   updateResponsiveResizeLayout
 } from "@/plugins/common";
 import {CrossContainerExchangeEvent} from "@/plugins";
+import {definePlugin} from "@/global";
 
 /*------------------------------------------------------------------------------------------*/
 /**

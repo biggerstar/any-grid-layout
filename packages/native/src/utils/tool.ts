@@ -1,4 +1,3 @@
-import {CustomItem, CustomItems} from "@/types";
 import {Container, Item} from "@/main";
 
 /**
@@ -61,7 +60,7 @@ export const cloneDeep = (obj: Record<any, any>) => {  // 使用lodash.cloneDeep
 /**
  * 深度合并对象
  * */
-function mergeDeep(target, source) {
+export function mergeDeep(target, source) {
   if (typeof target !== 'object' || typeof source !== 'object') return source
   for (const key in source) {  // 判断属性是否是源对象自身的属性（非继承）
     if (source.hasOwnProperty(key)) {
@@ -247,26 +246,4 @@ export const singleTouchToCommonEvent = (touchEvent) => {
   return touchEvent
 }
 
-/**
- * 为传入的items填充默认数据, 会返回一个深度克隆后的对象
- * 合并方式: 使用 `Object.assign` 合并首层数据
- * 比如
- * @param items  最小可用成员构造对象数组，比如 {pos: {w: 1,h: 1 }}
- * @param fillFields  要为items所有成员添加 填充 的字段
- * @param isDeepClone 是否强制使用fillFields覆盖原本items成员数组，内部使用Object.assign函数实现fillFields覆盖item对象键值
- * @example
- *    const items = [{
- *      pos:{w:h}
- *    }]
- *    // 调用函数
- *    fillInItemLayoutList(items,{ close:true })
- *    //  items结果: [{  pos:{w:h},close:true }]
- * */
-export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem = {}, isDeepClone: boolean = true): CustomItems {
-  return items.map((item) => {
-    if (isDeepClone) item = cloneDeep(item)
-    item = mergeDeep(item, fillFields)
-    return item
-  })
-}
 

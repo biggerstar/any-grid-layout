@@ -1,6 +1,7 @@
 import {Container, Item} from "@/main";
 import {CustomEventOptions} from "@/types";
 import {LayoutManager} from "@/algorithm";
+import {PluginManager} from "@/plugins";
 
 export class BaseEvent {
   public name: keyof CustomEventOptions
@@ -10,6 +11,7 @@ export class BaseEvent {
   }
   public container: Container
   public layoutManager: LayoutManager
+  public pluginManager: PluginManager
   public target: Item | null = null
   public isPrevent: boolean = false
 

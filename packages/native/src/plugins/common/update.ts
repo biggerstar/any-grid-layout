@@ -38,10 +38,10 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   options = Object.assign({
     sort: true
   }, options)
-  const {layoutManager: manager, engine} = container
+  const {layoutManager: manager} = container
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
-  engine.reset()
+  container.reset()
   let res = manager.analysis(items, ev.getModifyItems(), {
     baseline: container.getConfig("baseLine"),
     auto: ev.hasAutoDirection()
@@ -49,8 +49,8 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   if (!res.isSuccess) return
   res.patch()
   ev.patchStyle()
-  if (options.sort) engine.items = manager.sortCurrentMatrixItems(ev.items)
-  container.updateContainerStyleSize()
+  if (options.sort) container.items = manager.sortCurrentMatrixItems(ev.items)
+  container.updateContainerSizeStyle()
 }
 
 /**

@@ -54,12 +54,12 @@ export class ContainerGeneralImpl {
    * */
   maxCol?: number | null = null
 
-  /** 最小行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步 */
+  /** 最小行数 只是容器高度，未和布局算法挂钩*/
   minRow?: number | null = null
   /**
    * @deprecated
    * 弃用，因为设置了baseline必须要有一个方向能让item活动，除了静态布局
-   * 最大行数 只是容器高度，未和布局算法挂钩,由engine配置，和算法通信同步
+   * 最大行数 只是容器高度，未和布局算法挂钩
    * */
   maxRow?: number | null = null
 

@@ -5,7 +5,7 @@ import {Container, Item, ItemPos} from "@/main";
  * */
 export function computeSmartRowAndCol(container: Container) {
   let smartCol = 1, smartRow = 1, maxItemW = 1, maxItemH = 1
-  const items = container.engine.items
+  const items = container.items
   items.forEach((item: Item) => {
     const {x, y, w, h} = item.pos as Required<ItemPos>
     if ((x + w - 1) > smartCol) smartCol = x + w - 1

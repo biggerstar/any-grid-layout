@@ -24,7 +24,7 @@ export class ItemLayoutEvent extends BaseEvent {
 
   constructor(options) {
     super(options);
-    this.items = this.container.engine.items
+    this.items = this.container.items
     const {fromItem, mousemoveEvent} = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//

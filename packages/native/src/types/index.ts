@@ -88,10 +88,15 @@ export type BaseEmitData = {
 
 export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
   error: {
-    type: string,
-    message: string,
-    from: any,
-  }
+    message: string | number,
+    type?: string,
+    from?: any,
+  },
+  warn: {
+    message: string | number,
+    type?: string,
+    from?: any,
+  },
 }
 
 export type CustomEventOptions = {

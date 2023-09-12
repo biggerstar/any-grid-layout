@@ -1,9 +1,10 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {CrossContainerExchangeEvent, definePlugin} from "@/plugins";
+import {CrossContainerExchangeEvent} from "@/plugins";
 import {tempStore} from "@/events";
 import {isFunction} from "is-what";
 import {updateCloneElementSize} from "@/plugins/common";
+import {definePlugin} from "@/global";
 
 export const crossContainerExchangeBehavior = definePlugin({
   cross(ev: CrossContainerExchangeEvent) {

@@ -1,14 +1,15 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {definePlugin} from "@/plugins/global";
 import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
 import {directUpdateLayout, moveToIndexForItems, updateLayout, updateResponsiveResizeLayout} from "@/plugins/common";
 import {CrossContainerExchangeEvent} from "@/plugins";
 import {tempStore} from "@/events";
+import {definePlugin} from "@/global";
 
-/*------------------------------------------------------------------------------------------*/
+/*-
+-----------------------------------------------------------------------------------------*/
 /**
  * 流式布局
  * 建议只在item大小全部一样的时候使用该算法
