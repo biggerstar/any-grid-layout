@@ -177,7 +177,6 @@ export const parseContainerFromPrototypeChain = (target) => {
         break
       }
       target = target.parentNode
-      // console.log(target);
     } while (target.parentNode)
   }
   return container
@@ -205,31 +204,6 @@ export const parseContainer = (ev, reverse = false): Container | null => {
     }
   }
   return container
-}
-
-/**
- * 用于将domEvent对象中往root方向最新的的containerAreaElement解析出来，reverse是最远的靠近root的containerAreaElement
- * */
-export const parseContainerAreaElement = (ev, reverse = false): HTMLElement | null => {
-  let containerAreaElement = null
-  const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
-  if (target._isGridContainerArea) {
-    containerAreaElement = target
-  } else {
-    // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是该目标的Container正常是一样的
-    // 后面有相关需求也能通过parentNode进行获取
-    const target = ev.target || ev['toElement'] || ev['srcElement']   // 兼容
-    const path = genPrototypeToRootPath(target, ev)
-    for (let i = 0; i < path.length; i++) {
-      if (path[i]._isGridContainerArea) {
-        containerAreaElement = path[i]
-        if (!reverse) break
-      }
-    }
-  }
-  return containerAreaElement
-
-
 }
 
 /**

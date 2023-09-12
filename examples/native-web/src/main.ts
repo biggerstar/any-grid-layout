@@ -37,7 +37,7 @@ container1
       insertItemContent(ev)
     },
     cross(ev: CrossContainerExchangeEvent) {
-      ev.prevent()
+      // ev.prevent()
     }
   })
   .use(ResponsiveLayoutPlugin)
@@ -56,7 +56,7 @@ container2.use({
     insertItemContent(ev)
   },
   cross(ev: CrossContainerExchangeEvent) {
-    ev.prevent()
+    // ev.prevent()
   }
 })
 

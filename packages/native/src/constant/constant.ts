@@ -1,3 +1,4 @@
 // TODO 优化硬编码
-export const __ref_item__ = '__ref_item__'
+export const grid_dragging_source_el = 'grid-dragging-source-el'
+export const grid_resizing_source_el = 'grid-resizing-source-el'
 

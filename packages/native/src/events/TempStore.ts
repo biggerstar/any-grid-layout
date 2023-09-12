@@ -30,7 +30,6 @@ class TempStore {
   editItemNum: number = 0   // 当前处于编辑模式的Item个数
   fromContainer: Container | null = null    //  当前Item的初始来源
   toContainer: Container | null = null    //  当前鼠标移动位置下是哪个容器，移动到容器外为null
-  toContainerArea: HTMLElement | null
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   moveItem: Item | null   // 多容器情况下，移动出去到新容器新创建的一个符合新容器Item参数的成员,非克隆元素而是参与排列的元素
