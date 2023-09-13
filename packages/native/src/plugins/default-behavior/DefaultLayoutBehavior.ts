@@ -1,13 +1,12 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {tempStore} from "@/events";
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {patchDragDirection, patchResizeNewSize} from "@/plugins/common";
-import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
+import {patchDragDirection, patchNewSize4Resize} from "@/plugins/common";
+import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
-import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
-import {definePlugin} from "@/global";
+import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {definePlugin, tempStore} from "@/global";
 
 
 /**
@@ -51,7 +50,7 @@ export const DefaultLayoutBehavior = definePlugin({
    * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragging(ev: ItemDragEvent) {
-    const {fromContainer, toContainer} = tempStore
+    const {fromContainer, toContainer, fromItem, mousemoveEvent} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
     patchDragDirection(ev)
   },
@@ -150,56 +149,61 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   resizeToTop(ev: ItemResizeEvent) {
-    // console.log('resizeToTop')
+    console.log('resizeToTop')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
-    const itemMinHeight = fromItem.minHeight()
-    const nextHeight = ev.mousePointY < itemMinHeight ? itemMinHeight : ev.mousePointY
     updateStyle({
-      height: `${nextHeight}px`,
+      height: `${Math.min(ev.mousePointY, ev.spaceBottom)}px`,
+      minHeight: `${ev.itemMinHeight}px`,
     }, cloneElement)
+    ev.tryChangeSize(fromItem,{
+      h:fromItem.pxToH(ev.cloneElHeight)
+    })
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
-    // console.log('resizeToBottom')
+    console.log('resizeToBottom')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
-    const spaceBottom = ev.spaceBottom
-    const nextHeight = ev.mousePointY > spaceBottom ? spaceBottom : ev.mousePointY
     updateStyle({
-      height: `${nextHeight}px`,
-      maxHeight: `${ev.offsetBottom}px`
+      height: `${Math.min(ev.mousePointY, ev.spaceBottom, ev.itemMaxHeight)}px`,
     }, cloneElement)
+    ev.tryChangeSize(fromItem,{
+      h:fromItem.pxToH(ev.cloneElHeight)
+    })
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
-    // console.log('resizeToLeft')
+    console.log('resizeToLeft')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
-    const itemMinWidth = fromItem.minWidth()
-    const nextWidth = ev.mousePointX < itemMinWidth ? itemMinWidth : ev.mousePointX
     updateStyle({
-      width: `${nextWidth}px`
+      width: `${Math.min(ev.mousePointX, ev.spaceRight)}px`,
+      minWidth: `${ev.itemMinWidth}px`,
     }, cloneElement)
+    ev.tryChangeSize(fromItem,{
+      w:fromItem.pxToW(ev.cloneElWidth)
+    })
   },
 
   resizeToRight(ev: ItemResizeEvent) {
-    // console.log('resizeToRight')
+    console.log('resizeToRight')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
-    const spaceRight = ev.spaceRight
-    const nextWidth = ev.mousePointX > spaceRight ? spaceRight : ev.mousePointX
     updateStyle({
-      width: `${nextWidth}px`,
-      maxWidth: `${ev.offsetRight}px`
+      width: `${Math.min(ev.mousePointX, ev.spaceRight, ev.itemMaxWidth)}px`,
     }, cloneElement)
+    console.log(ev.spaceW);
+    ev.tryChangeSize(fromItem,{
+      w:fromItem.pxToW(ev.cloneElWidth)
+    })
   },
 
   resizing(ev: ItemResizeEvent) {
     const {fromItem} = tempStore
     if (!fromItem) return
     ev.patchResizeDirection()
-    patchResizeNewSize(ev)
+    patchNewSize4Resize(ev)
   },
 
   resized(_: ItemResizeEvent) {

@@ -1,16 +1,22 @@
-import {BaseEvent} from "@/plugins/event-type/BaseEvent";
+import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
 export class ItemLayoutEvent extends BaseEvent {
   public mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
   public mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
+  public lastMousePointX: number | null // 上一个mousePointX
+  public lastMousePointY: number | null // 上一个mousePointY
   public relativeX: number // 当前鼠标距离源容器的真实x栅格值
   public relativeY: number   // 当前鼠标距离源容器的真实y栅格值
   public gridX: number  // 当前鼠标距离源容器且被限制在容器内位置的X值
   public gridY: number  // 当前鼠标距离源容器且被限制在容器内位置的Y值
+  public itemMinWidth: number  // 和item的minWidth函数的值是一样的，下方同理
+  public itemMaxWidth: number
+  public itemMinHeight: number
+  public itemMaxHeight: number
 
   /**
    * 是否是静态布局  TODO 后续可能更改
@@ -25,12 +31,20 @@ export class ItemLayoutEvent extends BaseEvent {
   constructor(options) {
     super(options);
     this.items = this.container.items
-    const {fromItem, mousemoveEvent} = tempStore
+    const {fromItem, mousemoveEvent, lastMousePointX, lastMousePointY} = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
     const {left, top} = fromItem.element.getBoundingClientRect()
     this.mousePointX = mousemoveEvent.clientX - left
     this.mousePointY = mousemoveEvent.clientY - top
+    this.lastMousePointX = lastMousePointX
+    this.lastMousePointY = lastMousePointY
+    tempStore.lastMousePointX = this.mousePointX
+    tempStore.lastMousePointY = this.mousePointY
+    this.itemMinWidth = fromItem.minWidth()
+    this.itemMaxWidth = fromItem.maxWidth()
+    this.itemMinHeight = fromItem.minHeight()
+    this.itemMaxHeight = fromItem.maxHeight()
     Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))
   }
 

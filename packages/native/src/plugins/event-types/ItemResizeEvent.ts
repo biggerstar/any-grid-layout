@@ -1,7 +1,7 @@
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {tempStore} from "@/events";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
+import {tempStore} from "@/global";
 
 /**
  * Item resize事件对象
@@ -137,19 +137,19 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     if (!fromItem || !resizeEv) return
     const bus = this.container.bus
 
-    if (this.mousePointX > this.itemWidth) {
+    if (this.mousePointX > this.lastMousePointX) {
       bus.emit('resizeToRight')   // resizeOuterRight 的同时 resizeToRight也会触发
       if (this.mousePointX > this.offsetRight) bus.emit('resizeOuterRight')
     }
-    if (this.mousePointX < this.itemWidth) {
+    if (this.mousePointX < this.lastMousePointX) {
       bus.emit('resizeToLeft')
       if (this.mousePointX < 0 && Math.abs(this.mousePointX) > this.offsetLeft) bus.emit('resizeOuterLeft')
     }
-    if (this.mousePointY > this.itemHeight) {
+    if (this.mousePointY > this.lastMousePointY) {
       bus.emit('resizeToBottom')
       if (this.mousePointY > this.offsetBottom) bus.emit('resizeOuterBottom')
     }
-    if (this.mousePointY < this.itemHeight) {
+    if (this.mousePointY < this.lastMousePointY) {
       bus.emit('resizeToTop')
       if (this.mousePointY < 0 && Math.abs(this.mousePointY) > this.offsetTop) bus.emit('resizeOuterTop')
     }
