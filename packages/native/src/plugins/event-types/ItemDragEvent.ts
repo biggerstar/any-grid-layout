@@ -6,6 +6,13 @@ import {getMovableRange, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
+  public toItem: Item | null
+
+  constructor(opt) {
+    super(opt);
+    this.toItem = tempStore.toItem
+  }
+
   /**
    * 在某个item的基础上创建其要修改的pos信息
    * @param oneItemFunc fromItem覆盖目标只需要操作一个的时候执行的函数，如果存在多个取第一个，默认为null

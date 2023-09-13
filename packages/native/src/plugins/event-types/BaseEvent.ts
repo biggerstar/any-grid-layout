@@ -2,13 +2,16 @@ import {Container, Item} from "@/main";
 import {CustomEventOptions} from "@/types";
 import {LayoutManager} from "@/algorithm";
 import {PluginManager} from "@/plugins";
+import {tempStore} from "@/global";
 
 export class BaseEvent {
   public name: keyof CustomEventOptions
 
   constructor(options = {}) {
-    Object.assign(<object>this,options)
+    this.target = tempStore.fromItem  // 有fromItem说明正在操作item则给target，可以被外部options覆盖
+    Object.assign(<object>this, options)
   }
+
   public container: Container
   public layoutManager: LayoutManager
   public pluginManager: PluginManager

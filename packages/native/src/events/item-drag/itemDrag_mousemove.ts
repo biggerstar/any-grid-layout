@@ -1,5 +1,4 @@
 import {tempStore} from "@/global";
-import {getEvTarget, isNesting} from "@/utils";
 
 
 let ticking = false

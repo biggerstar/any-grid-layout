@@ -8,11 +8,12 @@ export class ItemPos extends ItemPosGeneralImpl {
   public tempH?: number    // 临时高度，用于溢出栅格后适配临时作为item的高
   public posHash?: string = ''  // 每个pos的hash，有极低极低的概率重复
   public _default?: ItemPosGeneralImpl  // 框架默认配置
-  public _customPos?: CustomItemPos  // 框架默认配置
+  public customPos?: CustomItemPos
+
   constructor(pos) {
     super()
     this._default = new ItemPosGeneralImpl() // 必须在_defineXXX 之前
-    this._customPos = pos
+    this.customPos = pos
     this.defineSyncCustomOptions(pos)
     merge(this, pos, false, ['x', 'y', 'w', 'h'])   // 1.先排除w, h先加载minX,maxX...等限制后
     merge(this, pos)  //  2. 再合并所有
@@ -65,8 +66,15 @@ export class ItemPos extends ItemPosGeneralImpl {
     }
   }
 
-  getCustomPos(): CustomItemPos {
-    return <CustomItemPos>this._customPos
+  /**
+   * 获取计算后受minX，maxX限制的pos
+   * */
+  getComputedCustomPos() {
+    const result = {}
+    for (const name in this.customPos) {
+      result[name] = this[name]
+    }
+    return result
   }
 
   _define() {

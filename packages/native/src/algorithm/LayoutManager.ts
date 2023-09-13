@@ -113,7 +113,7 @@ export class LayoutManager extends Finder {
     const staticItems = []   // 静态items
     const ordinaryItems = []  // 普通items
     items.forEach((item) => {
-      if (this.isStaticPos(item.pos.getCustomPos())) staticItems.push(item)
+      if (this.isStaticPos(item.pos.getComputedCustomPos())) staticItems.push(item)
       else ordinaryItems.push(item)
     })
     return {
@@ -258,7 +258,7 @@ export class LayoutManager extends Finder {
     const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
     /*---------------------------站位所有静态item-------------------------*/
     staticItems.forEach(item => {
-      const pos = item.pos.getCustomPos()
+      const pos = item.pos.getComputedCustomPos()
       const scs = this.isBlank(pos)
       if (scs) {
         this.mark(pos)
@@ -284,8 +284,9 @@ export class LayoutManager extends Finder {
     /*--------------------------剩余所有未执行x,y的Item----------------------------*/
     for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
       const item = ordinaryItems[i]
-      const sizeXY = item.pos.getCustomPos()
+      const sizeXY = item.pos.getComputedCustomPos()
       const foundPos = this.findBlank(sizeXY, options)
+      // console.log(foundPos)
       if (!foundPos) {
         isSuccess = false
         failed.push(item)

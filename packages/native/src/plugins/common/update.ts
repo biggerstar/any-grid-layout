@@ -18,13 +18,13 @@ export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
 /**
  * 节流后的patchResizeNewSize
  * */
-export const patchNewSize4Resize: Function = throttle((ev: ItemResizeEvent) => {
+export const checkItemHasChanged: Function = (ev: ItemResizeEvent) => {
   const {fromItem} = tempStore
   if (!fromItem) return
   if (fromItem.pos.w !== ev.w || fromItem.pos.h !== ev.h) {
     fromItem.container.bus.emit('itemSizeChange')
   }
-}, 162)
+}
 
 /**
  * 立即更新布局
@@ -62,11 +62,11 @@ export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callba
   const {fromItem} = tempStore
   if (!fromItem) return
   ev.prevent()
-  ev.addModifyItems(fromItem, {x: ev.gridX, y: ev.gridY})
+  ev.addModifyItem(fromItem, {x: ev.gridX, y: ev.gridY})
   if (isFunction(callback)) {
     ev.findDiffCoverItem(null, (item) => {
       const changePos = callback(item)
-      if (changePos && isObject(changePos)) ev.addModifyItems(item, callback(item))
+      if (changePos && isObject(changePos)) ev.addModifyItem(item, callback(item))
     })
   }
   directUpdateLayout(ev)
@@ -90,9 +90,9 @@ export const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
 export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
   const {fromItem} = tempStore
   if (!fromItem) return
-  ev.addModifyItems(fromItem, {
-    w: ev.gridW,
-    h: ev.gridH,
+  ev.addModifyItem(fromItem, {
+    w: ev.restrictedItemW,
+    h: ev.restrictedItemH,
   })
   directUpdateLayout(ev)
 }

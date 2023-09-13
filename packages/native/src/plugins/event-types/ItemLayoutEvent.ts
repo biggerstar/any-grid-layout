@@ -5,49 +5,172 @@ import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/t
 import {tempStore} from "@/global";
 
 export class ItemLayoutEvent extends BaseEvent {
+  public fromItem: Item
   public mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
   public mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
-  public lastMousePointX: number | null // 上一个mousePointX
-  public lastMousePointY: number | null // 上一个mousePointY
+  public lastMousePointX: number | null // 上一个mousePointX位置
+  public lastMousePointY: number | null // 上一个mousePointY位置
+  public gridX: number // 当前鼠标限制在容器内的x栅格值
+  public gridY: number // 当前鼠标限制在容器内的y栅格值
   public relativeX: number // 当前鼠标距离源容器的真实x栅格值
   public relativeY: number   // 当前鼠标距离源容器的真实y栅格值
-  public gridX: number  // 当前鼠标距离源容器且被限制在容器内位置的X值
-  public gridY: number  // 当前鼠标距离源容器且被限制在容器内位置的Y值
-  public itemMinWidth: number  // 和item的minWidth函数的值是一样的，下方同理
-  public itemMaxWidth: number
-  public itemMinHeight: number
-  public itemMaxHeight: number
+  public item: {  // 源item的信息
+    width: number // 当前源item元素元素的高
+    height: number // 当前源item元素元素的高
+    minWidth: number  // 和item的minWidth函数的值是一样的，下方同理
+    maxWidth: number
+    minHeight: number
+    maxHeight: number
+  } = {}
+  public offsetTop: number // 当前item左上角的点和container top边界距离
+  public offsetLeft: number // 当前item左上角的点和container left边界距离
+  public offsetRight: number // 当前item左上角的点和container right边界距离
+  public offsetBottom: number // 当前item左上角的点和container bottom边界距离
+  public cloneElWidth: number // 当前clone元素的高
+  public cloneElHeight: number // 当前clone元素的高
 
-  /**
-   * 是否是静态布局  TODO 后续可能更改
-   * */
-  public static: boolean = false
   /**
    * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
    * 注意：列表中的成员必须是已经挂载在的引用
    * */
   public items: Item[]
 
+  /**
+   * 下次要修改的Item
+   * */
+  private _modifyItems: Array<{ item: Item, pos: CustomItemPos }> = []
+
   constructor(options) {
     super(options);
     this.items = this.container.items
-    const {fromItem, mousemoveEvent, lastMousePointX, lastMousePointY} = tempStore
+    const {fromItem, mousemoveEvent, lastMousePointX, lastMousePointY, cloneElement} = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
     const {left, top} = fromItem.element.getBoundingClientRect()
+    const {right: containerRight, bottom: containerBottom} = this.container.contentElement.getBoundingClientRect()
+    const {width: cloneElWidth, height: cloneElHeight} = (cloneElement || fromItem.element).getBoundingClientRect()
+    this.fromItem = fromItem
     this.mousePointX = mousemoveEvent.clientX - left
     this.mousePointY = mousemoveEvent.clientY - top
     this.lastMousePointX = lastMousePointX
     this.lastMousePointY = lastMousePointY
     tempStore.lastMousePointX = this.mousePointX
     tempStore.lastMousePointY = this.mousePointY
-    this.itemMinWidth = fromItem.minWidth()
-    this.itemMaxWidth = fromItem.maxWidth()
-    this.itemMinHeight = fromItem.minHeight()
-    this.itemMaxHeight = fromItem.maxHeight()
+    this.item.width = fromItem.nowWidth()
+    this.item.height = fromItem.nowHeight()
+    this.item.minWidth = fromItem.minWidth()
+    this.item.maxWidth = fromItem.maxWidth()
+    this.item.minHeight = fromItem.minHeight()
+    this.item.maxHeight = fromItem.maxHeight()
+    this.offsetLeft = fromItem.offsetLeft()
+    this.offsetTop = fromItem.offsetTop()
+    this.offsetRight = containerRight - left
+    this.offsetBottom = containerBottom - top
+    this.cloneElWidth = cloneElWidth
+    this.cloneElHeight = cloneElHeight
     Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))
   }
 
+  /**
+   * 当前resize中的item元素宽度
+   * 受item.pos中minW,maxW和 spaceRight 限制,不会越界其他item边界宽度，正常用于静态布局限制 cloneElement 的宽
+   * */
+  public get spaceWidth() {
+    return Math.min(this.spaceRight, this.width)
+  }
+
+  /**
+   * 当前resize中的item元素高度
+   * 受item.pos中minH,maxH和 spaceBottom 限制,不会越界其他item边界的高度，正常用于静态布局限制 cloneElement 的高
+   * */
+  public get spaceHeight() {
+    return Math.min(this.spaceBottom, this.height)
+  }
+
+  /**
+   * 当前resize中的item元素宽度
+   * 受item.pos中minW,maxW 限制,不会越界container边界的宽度，正常用于响应式布局限制 cloneElement 的宽
+   * */
+  public get width() {
+    return Math.min(this.mousePointX, this.item.maxWidth)
+  }
+
+  /**
+   * 当前resize中的item元素高度
+   * 受item.pos中minH,maxH 限制,不会越界container边界的高度，正常用于响应式布局限制 cloneElement 的高
+   * */
+  public get height() {
+    return Math.min(this.mousePointY, this.item.maxHeight)
+  }
+
+  /**
+   * 限制在网格内的fromItem，当前安全resize不会溢出容器的栅格单位宽
+   * */
+  public get restrictedItemW(): number {
+    const restrictedItemWidth = this.width
+    let curW = this.fromItem.pxToW(restrictedItemWidth) * Math.sign(restrictedItemWidth)
+    if (curW < 0) curW = 1
+    const maxW = this.fromItem.container.getConfig("col") - this.fromItem.pos.x + 1
+    return curW > maxW ? maxW : curW
+  }
+
+  /**
+   * 限制在网格内的fromItem，当前安全resize不会溢出容器的栅格单位的高
+   * */
+  public get restrictedItemH(): number {
+    const restrictedItemHeight = this.height
+    let curH = this.fromItem.pxToH(restrictedItemHeight) * Math.sign(restrictedItemHeight)
+    if (curH < 0) curH = 1
+    const maxH = this.fromItem.container.getConfig("row") - this.fromItem.pos.y + 1
+    return curH > maxH ? maxH : curH
+  }
+
+  /**
+   * 距离right方向上最近的可调整距离(包含item的width)
+   * */
+  get spaceRight(): number {
+    const manager = this.layoutManager
+    const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
+      ...this.fromItem.pos,
+      w: this.fromItem.container.getConfig('col') - this.fromItem.pos.x + 1
+    }, [this.fromItem])
+    let minOffsetRight = Infinity
+    coverRightItems.forEach((item) => {
+      const offsetRight = item.offsetLeft()
+      if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
+    })
+    let spaceRight = minOffsetRight - this.fromItem.offsetLeft()
+    return isFinite(spaceRight) ? spaceRight : this.offsetRight
+  }
+
+  /**
+   * 距离bottom方向上最近的最大可调整距离(包含item的height)
+   * */
+  get spaceBottom(): number {
+    const manager = this.layoutManager
+    const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
+      ...this.fromItem.pos,
+      h: this.fromItem.container.getConfig('row') - this.fromItem.pos.y + 1
+    }, [this.fromItem])
+
+    let minOffsetBottom = Infinity
+    coverRightItems.forEach((item) => {
+      const offsetBottom = item.offsetTop()
+      if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
+    })
+    let spaceBottom = minOffsetBottom - this.fromItem.offsetTop()
+    return isFinite(spaceBottom) ? spaceBottom : this.offsetBottom
+  }
+
+  get spaceW(): number {
+    return this.fromItem.pxToW(this.spaceRight)
+  }
+
+  get spaceH(): number {
+    return this.fromItem.pxToH(this.spaceBottom)
+  }
+
+  //--------------------------------------------字段定义结束分割线------------------------------------------------
   /**
    * 两个item的尺寸是否相等
    * */
@@ -63,14 +186,9 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 下次要修改的Item
-   * */
-  private _modifyItems: Array<{ item: Item, pos: CustomItemPos }> = []
-
-  /**
    * 获取要修改的Items并清空当前列表,所有要修改的Item都添加到这里来，不要修改item本身的pos，后面检测能添加的时候会自动修改
    * */
-  public addModifyItems(item: Item, pos: Partial<CustomItemPos> = {}) {
+  public addModifyItem(item: Item, pos: Partial<CustomItemPos> = {}) {
     const info: { item: Item, pos: CustomItemPos } = createModifyPosInfo(item, pos)
     this._modifyItems.push(info)
   }

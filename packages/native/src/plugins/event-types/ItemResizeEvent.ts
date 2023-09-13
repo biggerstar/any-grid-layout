@@ -10,38 +10,6 @@ import {tempStore} from "@/global";
 export class ItemResizeEvent extends ItemLayoutEvent {
   public w: number // 当前的占用网格的宽
   public h: number // 当前的占用网格的宽
-  public itemWidth: number // 当前item元素元素的高
-  public itemHeight: number // 当前item元素元素的高
-  public cloneElWidth: number // 当前clone元素的高
-  public cloneElHeight: number // 当前clone元素的高
-  public offsetTop: number // 当前item左上角的点和container top边界距离
-  public offsetLeft: number // 当前item左上角的点和container left边界距离
-  public offsetRight: number // 当前item左上角的点和container right边界距离
-  public offsetBottom: number // 当前item左上角的点和container bottom边界距离
-
-  /**
-   * 限制在网格内的fromItem，当前安全resize不会溢出容器的宽
-   * */
-  public get gridW(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    let curW = fromItem.pxToW(this.mousePointX) * Math.sign(this.mousePointX)
-    if (curW < 0) curW = 1
-    const maxW = fromItem.container.getConfig("col") - fromItem.pos.x + 1
-    return curW > maxW ? maxW : curW
-  }
-
-  /**
-   * 限制在网格内的fromItem，当前安全resize不会溢出容器的高
-   * */
-  public get gridH(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    let curH = fromItem.pxToH(this.mousePointY) * Math.sign(this.mousePointY)
-    if (curH < 0) curH = 1
-    const maxH = fromItem.container.getConfig("row") - fromItem.pos.y + 1
-    return curH > maxH ? maxH : curH
-  }
 
   constructor(...args) {
     super(...args);
@@ -49,81 +17,14 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       isResizing,
       isLeftMousedown,
       fromItem,
-      cloneElement,
       mousemoveEvent: resizeEv,
     } = tempStore
     if (!isResizing || !isLeftMousedown) return
     if (!fromItem || !resizeEv || !isLeftMousedown) return
-
     const curW = fromItem.pxToW(this.mousePointX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
     const curH = fromItem.pxToH(this.mousePointY)
-    const {left: itemRight, top: itemTop} = fromItem.element.getBoundingClientRect()
-    const {right: containerRight, bottom: containerBottom} = this.container.contentElement.getBoundingClientRect()
-    const {width: cloneElWidth, height: cloneElHeight} = (cloneElement || fromItem.element).getBoundingClientRect()
-    //-------------------------------------------------------------------------------------//
     this.w = curW < 1 ? 1 : curW
     this.h = curH < 1 ? 1 : curH
-    this.cloneElWidth = cloneElWidth
-    this.cloneElHeight = cloneElHeight
-    this.itemWidth = fromItem.nowWidth()
-    this.itemHeight = fromItem.nowHeight()
-    this.offsetLeft = fromItem.offsetLeft()
-    this.offsetTop = fromItem.offsetTop()
-    this.offsetRight = containerRight - itemRight
-    this.offsetBottom = containerBottom - itemTop
-  }
-
-  /**
-   * 距离right方向上最近的可调整距离(包含item的width)
-   * */
-  get spaceRight(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    const manager = this.layoutManager
-    const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
-      ...fromItem.pos,
-      w: fromItem.container.getConfig('col') - fromItem.pos.x + 1
-    }, [fromItem])
-    let minOffsetRight = Infinity
-    coverRightItems.forEach((item) => {
-      const offsetRight = item.offsetLeft()
-      if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
-    })
-    let spaceRight = minOffsetRight - fromItem.offsetLeft()
-    return isFinite(spaceRight) ? spaceRight : this.offsetRight
-  }
-
-  /**
-   * 距离bottom方向上最近的最大可调整距离(包含item的height)
-   * */
-  get spaceBottom(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    const manager = this.layoutManager
-    const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
-      ...fromItem.pos,
-      h: fromItem.container.getConfig('row') - fromItem.pos.y + 1
-    }, [fromItem])
-
-    let minOffsetBottom = Infinity
-    coverRightItems.forEach((item) => {
-      const offsetBottom = item.offsetTop()
-      if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
-    })
-    let spaceBottom = minOffsetBottom - fromItem.offsetTop()
-    return isFinite(spaceBottom) ? spaceBottom : this.offsetBottom
-  }
-
-  get spaceW(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    return fromItem.pxToW(this.spaceRight)
-  }
-
-  get spaceH(): number {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    return fromItem.pxToH(this.spaceBottom)
   }
 
   /**

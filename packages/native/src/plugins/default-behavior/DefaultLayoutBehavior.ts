@@ -2,7 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {patchDragDirection, patchNewSize4Resize} from "@/plugins/common";
+import {checkItemHasChanged, patchDragDirection} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
@@ -153,12 +153,10 @@ export const DefaultLayoutBehavior = definePlugin({
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      height: `${Math.min(ev.mousePointY, ev.spaceBottom)}px`,
-      minHeight: `${ev.itemMinHeight}px`,
+      height: `${ev.spaceHeight}px`,
+      minHeight: `${ev.item.minHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem,{
-      h:fromItem.pxToH(ev.cloneElHeight)
-    })
+    ev.tryChangeSize(fromItem, {h: fromItem.pxToH(ev.cloneElHeight)})
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
@@ -166,11 +164,9 @@ export const DefaultLayoutBehavior = definePlugin({
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      height: `${Math.min(ev.mousePointY, ev.spaceBottom, ev.itemMaxHeight)}px`,
+      height: `${ev.spaceHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem,{
-      h:fromItem.pxToH(ev.cloneElHeight)
-    })
+    ev.tryChangeSize(fromItem, {h: fromItem.pxToH(ev.cloneElHeight)})
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
@@ -178,12 +174,10 @@ export const DefaultLayoutBehavior = definePlugin({
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      width: `${Math.min(ev.mousePointX, ev.spaceRight)}px`,
-      minWidth: `${ev.itemMinWidth}px`,
+      width: `${ev.spaceWidth}px`,
+      minWidth: `${ev.item.minWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem,{
-      w:fromItem.pxToW(ev.cloneElWidth)
-    })
+    ev.tryChangeSize(fromItem, {w: fromItem.pxToW(ev.cloneElWidth)})
   },
 
   resizeToRight(ev: ItemResizeEvent) {
@@ -191,18 +185,16 @@ export const DefaultLayoutBehavior = definePlugin({
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      width: `${Math.min(ev.mousePointX, ev.spaceRight, ev.itemMaxWidth)}px`,
+      width: `${ev.spaceWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem,{
-      w:fromItem.pxToW(ev.cloneElWidth)
-    })
+    ev.tryChangeSize(fromItem, {w: fromItem.pxToW(ev.cloneElWidth)})
   },
 
   resizing(ev: ItemResizeEvent) {
     const {fromItem} = tempStore
     if (!fromItem) return
     ev.patchResizeDirection()
-    patchNewSize4Resize(ev)
+    checkItemHasChanged(ev)
   },
 
   resized(_: ItemResizeEvent) {
@@ -228,7 +220,7 @@ export const DefaultLayoutBehavior = definePlugin({
    * 自动执行响应式布局贴近网格
    * 布局算法自行实现更新逻辑
    * @param ev 如果没有传入customEv的时候默认使用的事件对象
-   * ev.event 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItems添加过要修改的成员
+   * ev.event 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItem添加过要修改的成员
    * */
   updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
   }

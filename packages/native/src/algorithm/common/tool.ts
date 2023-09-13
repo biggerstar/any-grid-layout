@@ -30,7 +30,7 @@ export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>) {
 }
 
 /**
- *
+ * 计算当前鼠标相对container的位置
  * */
 export function analysisCurPositionInfo(container: Container): {
   relativeX: number,
