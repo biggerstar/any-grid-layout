@@ -7,12 +7,12 @@ export * from './ThrowMessageEvent'
 export * from './CrossContainerExchangeEvent'
 
 import {CustomEventOptions} from "@/types";
-import {BaseEvent} from "@/plugins/event-type/BaseEvent";
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
-import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
-import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
-import {CrossContainerExchangeEvent} from "@/plugins/event-type/CrossContainerExchangeEvent";
+import {BaseEvent} from "@/plugins/event-types/BaseEvent";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
+import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
+import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
+import {CrossContainerExchangeEvent} from "@/plugins/event-types/CrossContainerExchangeEvent";
 
 type EventMapType = Record<keyof CustomEventOptions, any> & Record<any, any>
 export const EventMap: EventMapType = {

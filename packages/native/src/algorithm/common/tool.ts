@@ -5,7 +5,7 @@
  * */
 import {Container, Item} from "@/main";
 import {CustomItemPos} from "@/types";
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
 
 /**

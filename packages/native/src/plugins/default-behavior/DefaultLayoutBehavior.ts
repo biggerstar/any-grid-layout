@@ -149,7 +149,7 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   resizeToTop(ev: ItemResizeEvent) {
-    console.log('resizeToTop')
+    // console.log('resizeToTop')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
@@ -162,7 +162,7 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
-    console.log('resizeToBottom')
+    // console.log('resizeToBottom')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
@@ -174,7 +174,7 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
-    console.log('resizeToLeft')
+    // console.log('resizeToLeft')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
@@ -187,13 +187,12 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   resizeToRight(ev: ItemResizeEvent) {
-    console.log('resizeToRight')
+    // console.log('resizeToRight')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
       width: `${Math.min(ev.mousePointX, ev.spaceRight, ev.itemMaxWidth)}px`,
     }, cloneElement)
-    console.log(ev.spaceW);
     ev.tryChangeSize(fromItem,{
       w:fromItem.pxToW(ev.cloneElWidth)
     })

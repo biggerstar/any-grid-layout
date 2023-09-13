@@ -47,6 +47,8 @@ class TempStore {
   scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态
   deviceEventMode: 'mouse' | 'touch' = 'mouse'   //   mouse || touch
   timeOutEvent: any = null
+  lastMousePointX: number | null
+  lastMousePointY: number | null
 }
 
 export const tempStore: TempStore = new TempStore()

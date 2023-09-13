@@ -1,12 +1,12 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {tempStore} from "@/events";
 import {throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
-import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
-import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
+import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins";
 import {isAnimation} from "@/algorithm/common/tool";
 import {Item} from "@/main";
+import {tempStore} from "@/global";
 
 /**
  * 节流后的patchDragDirection
@@ -18,14 +18,11 @@ export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
 /**
  * 节流后的patchResizeNewSize
  * */
-export const patchResizeNewSize: Function = throttle((ev: ItemResizeEvent) => {
+export const patchNewSize4Resize: Function = throttle((ev: ItemResizeEvent) => {
   const {fromItem} = tempStore
   if (!fromItem) return
   if (fromItem.pos.w !== ev.w || fromItem.pos.h !== ev.h) {
-    const isSuccess = ev.tryChangeSize()
-    if (isSuccess) {
-      fromItem.container.bus.emit('itemSizeChange')
-    }
+    fromItem.container.bus.emit('itemSizeChange')
   }
 }, 162)
 

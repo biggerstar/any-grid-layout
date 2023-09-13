@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
+import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {isFunction} from "is-what";
 import {definePlugin} from "@/global";
 

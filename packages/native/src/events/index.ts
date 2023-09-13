@@ -1,5 +1,3 @@
-export * from './TempStore'
-
 export * from './listen'
 export * from './common'
 

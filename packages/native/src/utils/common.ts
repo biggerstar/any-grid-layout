@@ -1,6 +1,6 @@
 import {CustomItemPos} from "@/types";
-import {tempStore} from "@/events";
 import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
+import {tempStore} from "@/global";
 
 
 /**

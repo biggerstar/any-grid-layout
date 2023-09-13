@@ -1,6 +1,6 @@
-import {tempStore} from "@/events";
 import {Item} from "@/main";
 import {parseContainer, parseItem} from "@/utils";
+import {tempStore} from "@/global";
 
 
 export function startWork_mousedown(ev) {

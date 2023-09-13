@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {debounce, merge, throttle} from "@/utils/tool";
+import {debounce, merge, parseItemFromPrototypeChain, throttle} from "@/utils/tool";
 import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
 import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
@@ -71,8 +71,8 @@ export class Container {
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public element: HTMLElement   //  container的挂载节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
-  public parent: Container   // 嵌套情况下上级Container
-  public parentItem: Item
+  public parent?: Container    // 嵌套情况下上级Container
+  public parentItem: Item | null
   private readonly domImpl: DomFunctionImpl
 
   // //----------------vue 支持---------------------//
@@ -250,6 +250,8 @@ export class Container {
       //-----------------容器布局信息初始化与检测--------------------//
       this._init()
       //-------------------------其他操作--------------------------//
+      this.parentItem = parseItemFromPrototypeChain(this.element)
+      this.parent = this.parentItem?.container
       this._observer_()
       this._mounted = true
       this.updateContainerSizeStyle()  // 在 _mounted 之后

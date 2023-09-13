@@ -1,7 +1,7 @@
 import {throttle} from "@/utils";
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
-export const itemResize_mousemove: Function = throttle((ev: MouseEvent) => {
+export const itemResize_mousemove: Function = throttle((_: MouseEvent) => {
   const {isResizing, isLeftMousedown, fromItem} = tempStore
   if (!fromItem || !isResizing || !isLeftMousedown) return
   const {bus} = fromItem.container

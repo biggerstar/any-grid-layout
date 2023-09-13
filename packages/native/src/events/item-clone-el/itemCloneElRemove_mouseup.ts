@@ -1,6 +1,6 @@
-import {tempStore} from "@/events";
 import {ItemTransitionObject} from "@/types";
 import {grid_clone_el, grid_dragging_source_el, grid_resizing_source_el} from "@/constant";
+import {tempStore} from "@/global";
 
 
 /**

@@ -2,9 +2,9 @@
 
 import {ItemLayoutEvent} from "@/plugins";
 import {Container} from "@/main";
-import {tempStore} from "@/events";
 import {CustomItemPos} from "@/types";
 import {analysisCurPositionInfo} from "@/algorithm/common/tool";
+import {tempStore} from "@/global";
 
 export class CrossContainerExchangeEvent extends ItemLayoutEvent {
   public fromContainer: Container

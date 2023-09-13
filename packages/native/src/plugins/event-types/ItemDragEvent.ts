@@ -1,9 +1,9 @@
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {tempStore} from "@/events";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {isFunction} from "is-what";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {getMovableRange, spiralTraversal} from "@/utils";
+import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
   /**

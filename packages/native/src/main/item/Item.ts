@@ -13,6 +13,7 @@ import {
   grid_item_resizable_handle,
   grid_item_resize_text
 } from "@/constant";
+import {parseItemFromPrototypeChain} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document

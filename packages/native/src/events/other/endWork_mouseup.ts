@@ -1,5 +1,5 @@
-import {tempStore} from "@/events";
 import {grid_item_mask} from "@/constant";
+import {tempStore} from "@/global";
 
 /**
  * 做拖动结束的后续清理工作

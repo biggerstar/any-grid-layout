@@ -1,4 +1,4 @@
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
 export function itemDrag_mouseup(_) {
   const {fromItem, isDragging} = tempStore

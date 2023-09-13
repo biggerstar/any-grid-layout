@@ -15,9 +15,6 @@
       "require": "./dist/index.umd.js",
       "types": "./types/index.d.ts"
     },
-    "./plugins": {
-      "default": "./src/plugins/index.ts"
-    },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },

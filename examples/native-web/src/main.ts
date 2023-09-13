@@ -7,7 +7,7 @@ import {
   ResponsiveLayoutPlugin,
   ThrowMessageEvent,
 } from '@biggerstar/layout'
-// import '@biggerstar/layout/dist/default-style.css'
+import '@biggerstar/layout/dist/default-style.css'
 import container2 from "@/container/container2";
 import container3 from "@/container/container3";
 
@@ -39,7 +39,7 @@ container1
     },
     cross(ev: CrossContainerExchangeEvent) {
       // ev.prevent()
-    }
+    },
   })
   .use(ResponsiveLayoutPlugin)
 
@@ -58,7 +58,19 @@ container2.use({
   },
   cross(ev: CrossContainerExchangeEvent) {
     // ev.prevent()
-  }
+  },
+  // resizeToBottom(ev: ItemResizeEvent) {
+  //   ev.prevent()
+  // },
+  // resizeToTop(ev: ItemResizeEvent) {
+  //   ev.prevent()
+  // },
+  // resizeToRight(ev: ItemResizeEvent) {
+  //   ev.prevent()
+  // },
+  // resizeToLeft(ev: ItemResizeEvent) {
+  //   ev.prevent()
+  // }
 })
 
 container3.use(ResponsiveLayoutPlugin)

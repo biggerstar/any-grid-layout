@@ -1,4 +1,5 @@
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
+import {getEvTarget, isNesting} from "@/utils";
 
 
 let ticking = false
@@ -13,6 +14,7 @@ export const itemDrag_mousemove: Function = (ev) => {
     cloneElement,
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
+    toContainer
   } = tempStore
   if (!fromItem || !isDragging) return
 
@@ -24,7 +26,6 @@ export const itemDrag_mousemove: Function = (ev) => {
       top: `${top}px`
     }, cloneElement)
   }
-
   if (!ticking) {
     requestAnimationFrame(() => {
       updateDragConeElementLocation()

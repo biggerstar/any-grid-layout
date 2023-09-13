@@ -1,9 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {tempStore} from "@/events";
-import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
-import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
+import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
   directUpdateLayout,
   dragMoveToCrossHair,
@@ -12,7 +11,7 @@ import {
   updateResponsiveResizeLayout
 } from "@/plugins/common";
 import {CrossContainerExchangeEvent} from "@/plugins";
-import {definePlugin} from "@/global";
+import {definePlugin, tempStore} from "@/global";
 
 /*------------------------------------------------------------------------------------------*/
 /**

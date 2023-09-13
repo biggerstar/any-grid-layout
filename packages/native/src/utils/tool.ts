@@ -32,12 +32,14 @@ export function debounce(fn: Function, delay: number = 500) {
     }, delay)
   }
 }
+
 /**
  * 转首字母大写
  * */
 export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
 /**
  * 深度克隆对象
  * */
@@ -145,20 +147,20 @@ export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
  * 用于将target Element在原型链中对象中往root方向最新的的Path链解析出来
  * 用于适配移动端获取target的目标不正确的问题
  * */
-const genPrototypeToRootPath = (target, touchEvent) => {
+const genPrototypeToRootPath = (target: HTMLElement, touchEvent) => {
   const path = []
   if (touchEvent.touchTarget) target = touchEvent.touchTarget
   else {
     if (touchEvent.composedPath) return touchEvent.composedPath()
     else {
-      target = document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
+      target = <HTMLElement>document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
     }
   }
   // console.log(touchEvent);
   if (target instanceof Element) {
     do {
       path.push(target)
-      target = target.parentNode
+      target = <HTMLElement>target.parentNode
     } while (target && target.parentNode)
   }
   // console.log(path);
@@ -192,8 +194,7 @@ export const parseContainer = (ev, reverse = false): Container | null => {
     container = target._gridContainer_
   } else {
     // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是该目标的Container正常是一样的
-    // 后面有相关需求也能通过parentNode进行获取
-    const target = ev.target || ev['toElement'] || ev['srcElement']   // 兼容
+    const target = getEvTarget(ev)
     const path = genPrototypeToRootPath(target, ev)
     for (let i = 0; i < path.length; i++) {
       if (path[i]._isGridContainer_) {
@@ -216,8 +217,7 @@ export const parseItem = (ev, reverse = false): Item | null => {
     item = target._gridItem_
   } else {
     // 这里有不严谨的bug，能用，path在触屏下target固定时点击的目标，但是吧，后面else这部分在当前逻辑未用到，
-    // 后面有相关需求也能通过parentNode进行获取
-    const target = ev.target || ev['toElement'] || ev['srcElement']   // 兼容
+    const target = getEvTarget(ev)
     const path = genPrototypeToRootPath(target, ev)
     for (let i = 0; i < path.length; i++) {
       if (path[i]._isGridItem_) {
@@ -228,6 +228,24 @@ export const parseItem = (ev, reverse = false): Item | null => {
     }
   }
   return item
+}
+
+export function getEvTarget(ev: Event) {
+  return ev.target || ev['toElement'] || ev['srcElement']
+}
+
+
+/**
+ * 检测某个item 要放置的HTML元素目标是否被嵌套
+ * */
+export function parseItemFromPrototypeChain(target): Item | null {
+  if (target instanceof Element) {
+    do {
+      if (target._isGridItem_) return target._gridItem_
+      target = <HTMLElement>target.parentNode
+    } while (target.parentNode)
+  }
+  return null
 }
 
 /**

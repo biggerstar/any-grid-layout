@@ -3,11 +3,11 @@ import {Item} from "@/main/item/Item";
 import {Container} from "@/main/container/Container";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
-import {ItemLayoutEvent} from "@/plugins/event-type/ItemLayoutEvent";
-import {BaseEvent} from "@/plugins/event-type/BaseEvent";
-import {ItemDragEvent} from "@/plugins/event-type/ItemDragEvent";
-import {ItemResizeEvent} from "@/plugins/event-type/ItemResizeEvent";
-import {ThrowMessageEvent} from "@/plugins/event-type/ThrowMessageEvent";
+import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
+import {BaseEvent} from "@/plugins/event-types/BaseEvent";
+import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
+import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {CrossContainerExchangeEvent} from "@/plugins";
 import {CustomItemPos} from "../../dist";
 

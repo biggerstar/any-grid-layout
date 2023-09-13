@@ -1,5 +1,4 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
-import {cursor, tempStore,} from "@/events";
 import {
   cursor_type_default, cursor_type_drag_to_item_no_drop,
   cursor_type_in_container, cursor_type_item_close,
@@ -8,6 +7,8 @@ import {
   grid_item_close_btn,
   grid_item_resizable_handle
 } from "@/constant";
+import {tempStore} from "@/global";
+import {cursor} from "@/events";
 
 export const cursor_mousemove: Function = throttle((ev) => {
   const {

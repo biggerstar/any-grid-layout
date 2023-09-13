@@ -1,6 +1,6 @@
 import {throttle} from "@/utils";
-import {tempStore} from "@/events";
 import {grid_clone_el, grid_resizing_clone_el, grid_resizing_source_el} from "@/constant";
+import {tempStore} from "@/global";
 
 /**
  * 鼠标开始resize后创建一个克隆可实时拖动的元素，不负责后续改变大小

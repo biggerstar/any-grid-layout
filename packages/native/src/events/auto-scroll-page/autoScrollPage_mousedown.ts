@@ -1,6 +1,5 @@
 import {Container} from "@/main";
 import {parseContainer} from "@/utils";
-import {tempStore} from "@/events";
 
 /**
  * 鼠标点击判断意图是否是拖动

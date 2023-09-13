@@ -1,7 +1,7 @@
 import {Container} from "@/main";
 import {isFunction, isObject} from 'is-what'
 import * as AllDefaultBehavior from "@/plugins/default-behavior";
-import {EventMap} from './event-type'
+import {EventMap} from './event-types'
 import {CustomEventOptions} from "@/types";
 
 let DefaultBehavior = {}

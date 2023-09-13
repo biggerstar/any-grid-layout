@@ -1,4 +1,4 @@
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
 export function itemResize_mouseup(_: Event) {
   const {isResizing, fromItem} = tempStore

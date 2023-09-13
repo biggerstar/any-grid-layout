@@ -1,6 +1,6 @@
 import {Container} from "@/main";
-import {parseContainer, throttle} from "@/utils";
-import {tempStore} from "@/events";
+import {throttle} from "@/utils";
+import {tempStore} from "@/global";
 
 /**
  * 拖拽到边界自动滚动container内容

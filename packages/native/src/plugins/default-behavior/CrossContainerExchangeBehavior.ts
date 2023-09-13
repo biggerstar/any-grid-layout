@@ -1,10 +1,9 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {CrossContainerExchangeEvent} from "@/plugins";
-import {tempStore} from "@/events";
 import {isFunction} from "is-what";
 import {updateCloneElementSize} from "@/plugins/common";
-import {definePlugin} from "@/global";
+import {definePlugin, tempStore} from "@/global";
 import {grid_item_content} from "@/constant";
 
 export const crossContainerExchangeBehavior = definePlugin({

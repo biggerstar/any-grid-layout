@@ -1,5 +1,5 @@
-import {tempStore} from "@/events";
 import {grid_item_close_btn} from "@/constant";
+import {tempStore} from "@/global";
 
 /** 点击关闭按钮 */
 export function itemClose_mousedown(ev) {

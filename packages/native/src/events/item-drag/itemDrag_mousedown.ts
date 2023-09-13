@@ -1,4 +1,4 @@
-import {tempStore} from "@/events";
+import {tempStore} from "@/global";
 
 /**
  * 鼠标点击判断意图是否是拖动
