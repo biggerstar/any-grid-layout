@@ -1,9 +1,9 @@
 import {tempStore} from "@/global";
 
 export function itemResize_mouseup(_: Event) {
-  const {isResizing, fromItem} = tempStore
+  const {isResizing, fromItem, preventResizing} = tempStore
   if (!isResizing || !fromItem) return
   //----------------------------------------//
   fromItem.updateItemLayout()
-  fromItem.container.bus.emit('resized')
+  if (!preventResizing) fromItem.container.bus.emit('resized')
 }
