@@ -10,7 +10,7 @@ import {
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
-import {CrossContainerExchangeEvent} from "@/plugins";
+import {ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 
 /*------------------------------------------------------------------------------------------*/
@@ -18,10 +18,10 @@ import {definePlugin, tempStore} from "@/global";
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
-  cross(ev: CrossContainerExchangeEvent) {
+  exchange(ev: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return
-    ev.rule = null
+    ev.verification = null
   },
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)

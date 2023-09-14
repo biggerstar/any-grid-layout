@@ -4,7 +4,7 @@ export * from './ItemDragEvent'
 export * from './ItemResizeEvent'
 export * from './ItemLayoutEvent'
 export * from './ThrowMessageEvent'
-export * from './CrossContainerExchangeEvent'
+export * from './ItemExchangeEvent'
 
 import {CustomEventOptions} from "@/types";
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
@@ -12,7 +12,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {CrossContainerExchangeEvent} from "@/plugins/event-types/CrossContainerExchangeEvent";
+import {ItemExchangeEvent} from "@/plugins";
 
 type EventMapType = Record<keyof CustomEventOptions, any> & Record<any, any>
 export const EventMap: EventMapType = {
@@ -57,7 +57,8 @@ export const EventMap: EventMapType = {
   error:ThrowMessageEvent,
   warn:ThrowMessageEvent,
   //-------------cross-container-exchange-----------
-  cross:CrossContainerExchangeEvent,
-  crossSource:CrossContainerExchangeEvent,
-  crossTarget:CrossContainerExchangeEvent,
+  exchange:ItemExchangeEvent,
+  exchangeProvide:ItemExchangeEvent,
+  exchangeProcess:ItemExchangeEvent,
+  exchangeReceive:ItemExchangeEvent,
 }

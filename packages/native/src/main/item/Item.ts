@@ -13,7 +13,6 @@ import {
   grid_item_resizable_handle,
   grid_item_resize_text
 } from "@/constant";
-import {parseItemFromPrototypeChain} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -59,10 +58,11 @@ export class Item extends ItemGeneralImpl {
   }
 
   //----------------------------------------------------------
-  constructor(itemOption: CustomItem) {
+  constructor(itemOption: CustomItem | Item) {
     super()
-    if (itemOption instanceof Item) return itemOption   // 如果已经是item，则直接返回
+    if (itemOption instanceof Item) return itemOption  // 如果已经是item，则直接返回
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
+    this.customOptions = itemOption
     this.domImpl = new DomFunctionImpl(this)
     this._default = new ItemGeneralImpl()
     this._define(itemOption)
@@ -167,7 +167,7 @@ export class Item extends ItemGeneralImpl {
    * 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
    * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
-  public unmount(isForce = false) {
+  public unmount() {
     if (this._mounted) {
       const container = this.container
       container.contentElement.removeChild(this.element)

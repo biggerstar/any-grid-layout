@@ -71,7 +71,6 @@ export class Container {
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public element: HTMLElement   //  container的挂载节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
-  public parent?: Container    // 嵌套情况下上级Container
   public parentItem: Item | null
   private readonly domImpl: DomFunctionImpl
 
@@ -111,11 +110,6 @@ export class Container {
     this.domImpl = new DomFunctionImpl(this)
     this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
-    if (options.parent) {
-      this.parent = options.parent
-      this.parent.childContainer.push(this)
-      this.isNesting = true
-    }
     startGlobalEvent()
   }
 
@@ -336,16 +330,6 @@ export class Container {
   }
 
   /**
-   * 为dom添加新成员
-   * @param { CustomItem} itemOptions
-   * @return {Item}  添加成功返回该添加创建的Item，添加失败返回null
-   * */
-  public add(itemOptions: CustomItem): Item {
-    this.layout.items.push(itemOptions)
-    return this.addItem(itemOptions)
-  }
-
-  /**
    * 使用css class 或者 Item的对应name, 或者 Element元素 找到该对应的Item，并返回所有符合条件的Item
    * name的值在创建 Item的时候可以传入 或者直接在标签属性上使用name键值，在这边也能获取到
    * @param { String,Element } nameOrClassOrElement  宽度 高度 是栅格的倍数
@@ -446,11 +430,15 @@ export class Container {
    * 添加一个itemOptions配置信息创建一个Item实例到items列表中，不会挂载到dom中
    * 框架内部添加Item时所有的Item必须通过这里添加到容器中
    * */
-  private addItem(itemOptions: CustomItem): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
-    const item = new Item(itemOptions)
+  public addItem(itemOptions: CustomItem | Item): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    let item = <Item>itemOptions
+    let customOpt = itemOptions
+    if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
+    else item = new Item(customOpt)
+    this.layout.items.push(customOpt)
     // console.log(item === itemOptions)
     this.items.push(item)
-    item.customOptions = itemOptions
+    item.customOptions = customOpt
     item.container = this
     item.parentElement = this.contentElement
     item.i = this.items.length

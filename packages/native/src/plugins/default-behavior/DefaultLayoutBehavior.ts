@@ -207,8 +207,7 @@ export const DefaultLayoutBehavior = definePlugin({
   closing(_: ItemLayoutEvent) {
     const {fromItem, toItem} = tempStore
     if (toItem && toItem === fromItem) {  // 按下和抬起要同一个item才能关闭
-      toItem.unmount(true)
-      // ev.layoutManager.unmark(fromItem.pos)
+      toItem.unmount()
       toItem.container.bus.emit('closed')
     }
   },

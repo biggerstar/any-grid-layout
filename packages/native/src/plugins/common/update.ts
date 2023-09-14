@@ -112,7 +112,7 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
 /**
  * 将cloneElement的大小更新为某个Item的一样的尺寸
  * */
-export function updateCloneElementSize(newItem: Item) {
+export function updateCloneElementSize4Item(newItem: Item) {
   const {cloneElement} = tempStore
   if (!cloneElement) return
   newItem.domImpl.updateStyle({

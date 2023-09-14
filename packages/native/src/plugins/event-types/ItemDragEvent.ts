@@ -60,7 +60,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
         x: this.relativeX,
         y: this.relativeY,
       }
-    const securityPos = getMovableRange(targetPos)
+    const securityPos = getMovableRange(targetItem,targetPos)
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager

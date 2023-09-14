@@ -39,6 +39,12 @@ export function itemCloneElRemove_mouseup(_) {
           height: `${fromItem.nowHeight()}px`,
         }, gridCloneEl)
       }
+      setTimeout(()=>{
+        try {
+          cloneElement.parentNode.removeChild(cloneElement)
+        } catch (e) {
+        }
+      },transition.time)
     }
 
     function removeCloneEl() {

@@ -8,8 +8,7 @@ import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {CrossContainerExchangeEvent} from "@/plugins";
-import {CustomItemPos} from "../../dist";
+import {ItemExchangeEvent} from "@/plugins";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -100,7 +99,7 @@ export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
 }
 
 export type CustomEventOptions = {
-  [key: string]: Function
+  // [key: string]: Function
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
   error?(ev: ThrowMessageEvent): void,
@@ -187,22 +186,25 @@ export type CustomEventOptions = {
   updateLayout?(ev: ItemLayoutEvent): void,
 
   /**
-   * 内置，跨容器移动成员时的派发函数
-   * @default 无
+   * 内置用：跨容器移动开始时派发函数
    * */
-  cross?(ev: CrossContainerExchangeEvent): void;
+  exchange?(ev: ItemExchangeEvent): void;
 
   /**
-   * 跨容器移动成员时的源容器
-   * @default 无
+   * 跨容器移动时Item提供者，在提供的Container上触发
    * */
-  crossSource?(ev: CrossContainerExchangeEvent): void,
+  exchangeProvide?(ev: ItemExchangeEvent): void;
 
   /**
-   * 跨容器移动成员时的目标容器
-   * @default 无
+   * 跨容器移动时Item过程，主要用于处理如何挂载Item到新容器中
    * */
-  crossTarget?(ev: CrossContainerExchangeEvent): void,
+  exchangeProcess?(ev: ItemExchangeEvent): void;
+
+  /**
+   * 跨容器移动时Item接受者，在接收的Container上触发
+   * */
+  exchangeReceive?(ev: ItemExchangeEvent): void;
+
   itemSizeChange?(ev: BaseEvent): void,
   //------------container-outer-move------------
   dragOuterLeft?(ev: ItemDragEvent): void,
