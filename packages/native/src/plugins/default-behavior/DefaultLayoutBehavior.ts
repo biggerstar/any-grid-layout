@@ -50,7 +50,7 @@ export const DefaultLayoutBehavior = definePlugin({
    * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
    * */
   dragging(ev: ItemDragEvent) {
-    const {fromContainer, toContainer, fromItem, mousemoveEvent} = tempStore
+    const {fromContainer, toContainer} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
     patchDragDirection(ev)
   },

@@ -210,7 +210,7 @@ export const parseContainer = (ev, reverse = false): Container | null => {
 /**
  * 用于将domEvent对象中往root方向最新的的Item解析出来，reverse是最远的靠近root的Item
  * */
-export const parseItem = (ev, reverse = false): Item | null => {
+export const parseItem = (ev): Item | null => {
   let item = null
   const target = ev.touchTarget ? ev.touchTarget : ev.target   // touchTarget是触屏设备下外部通过elementFromPoint手动获取的
   if (target._isGridItem_) {
@@ -220,11 +220,9 @@ export const parseItem = (ev, reverse = false): Item | null => {
     const target = getEvTarget(ev)
     const path = genPrototypeToRootPath(target, ev)
     for (let i = 0; i < path.length; i++) {
-      if (path[i]._isGridItem_) {
-        item = path[i]._gridItem_
-        // console.log(ev.path[i]);
-        if (!reverse) break
-      }
+      const el = path[i]
+      if (el._isGridContainer_) return null  // 嵌套情况下如果没有item但是找到了container，则直接返回null
+      if (el._isGridItem_) return el._gridItem_
     }
   }
   return item

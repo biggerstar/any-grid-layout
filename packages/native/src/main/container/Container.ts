@@ -52,7 +52,6 @@ export class Container {
   public className: string = grid_container_class_name
   public platform: 'native' | 'vue' = 'native'
   public el: HTMLElement | string = ''
-  public events: CustomEventOptions = {} as any
   public global: ContainerGeneralImpl = {} as any
   public layouts: ContainerGeneralImpl[] = [] as any
   //----------------内部需要的参数---------------------//
@@ -433,6 +432,7 @@ export class Container {
   /**
    * 添加一个itemOptions配置信息创建一个Item实例到items列表中，不会挂载到dom中
    * 框架内部添加Item时所有的Item必须通过这里添加到容器中
+   * @param itemOptions
    * */
   public addItem(itemOptions: CustomItem | Item): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
     let item = <Item>itemOptions
@@ -440,8 +440,8 @@ export class Container {
     if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
     else item = new Item(customOpt)
     this.layout.items.push(customOpt)
-    // console.log(item === itemOptions)
     this.items.push(item)
+    // console.log(item === itemOptions)
     item.customOptions = customOpt
     item.container = this
     item.parentElement = this.contentElement

@@ -5,8 +5,8 @@ import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
   directUpdateLayout,
-  dragMoveToCrossHair,
-  dragMoveToDiagonal,
+  dragToCrossHair,
+  dragToDiagonal,
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
@@ -39,7 +39,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
   dragOuterLeft(ev: ItemDragEvent) {
     const {fromItem, toItem} = tempStore
     if (!fromItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x + fromItem.pos.w}) : null)
+    dragToCrossHair(ev, (item) => toItem ? ({x: item.pos.x + fromItem.pos.w}) : null)
   },
 
   /**
@@ -48,7 +48,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
   dragOuterRight(ev: ItemDragEvent) {
     const {fromItem, toItem} = tempStore
     if (!fromItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({x: item.pos.x - fromItem.pos.w}) : null)
+    dragToCrossHair(ev, (item) => toItem ? ({x: item.pos.x - fromItem.pos.w}) : null)
   },
 
   /**
@@ -57,7 +57,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
   dragOuterTop(ev: ItemDragEvent) {
     const {fromItem, toItem} = tempStore
     if (!fromItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y + fromItem.pos.h}) : null)
+    dragToCrossHair(ev, (item) => toItem ? ({y: item.pos.y + fromItem.pos.h}) : null)
   },
 
   /**
@@ -66,23 +66,23 @@ export const ResponsiveLayoutPlugin = definePlugin({
   dragOuterBottom(ev: ItemDragEvent) {
     const {fromItem, toItem} = tempStore
     if (!fromItem) return
-    dragMoveToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - fromItem.pos.h}) : null)
+    dragToCrossHair(ev, (item) => toItem ? ({y: item.pos.y - fromItem.pos.h}) : null)
   },
 
   dragToLeftTop(ev: ItemDragEvent) {
-    dragMoveToDiagonal(ev)
+    dragToDiagonal(ev)
   },
 
   dragToLetBottom(ev: ItemDragEvent) {
-    dragMoveToDiagonal(ev)
+    dragToDiagonal(ev)
   },
 
   dragToRightTop(ev: ItemDragEvent) {
-    dragMoveToDiagonal(ev)
+    dragToDiagonal(ev)
   },
 
   dragToRightBottom(ev: ItemDragEvent) {
-    dragMoveToDiagonal(ev)
+    dragToDiagonal(ev)
   },
 
   dragToTop(ev: ItemDragEvent) {
@@ -91,7 +91,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     let call = !(fromItem.pos.y - toItem.pos.y > toItem.pos.h)
       ? (item) => ({y: item.pos.y + fromItem.pos.h})
       : null
-    dragMoveToCrossHair(ev, call)
+    dragToCrossHair(ev, call)
   },
 
   dragToBottom(ev: ItemDragEvent) {
@@ -100,7 +100,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     let call = !(toItem.pos.y - fromItem.pos.y > fromItem.pos.h)
       ? (item) => ({y: item.pos.y - fromItem.pos.h})
       : null
-    dragMoveToCrossHair(ev, call)
+    dragToCrossHair(ev, call)
   },
 
   dragToLeft(ev: ItemDragEvent) {
@@ -109,7 +109,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     let call = !(fromItem.pos.x - toItem.pos.x > toItem.pos.w)
       ? (item) => ({x: item.pos.x + fromItem.pos.w})
       : null
-    dragMoveToCrossHair(ev, call)
+    dragToCrossHair(ev, call)
   },
 
   dragToRight(ev: ItemDragEvent) {
@@ -118,7 +118,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     let call = !(toItem.pos.x - fromItem.pos.x > fromItem.pos.w)
       ? (item) => ({x: item.pos.x - fromItem.pos.w})
       : null
-    dragMoveToCrossHair(ev, call)
+    dragToCrossHair(ev, call)
   },
 
   /*------------------------------------------------------------------*/
@@ -164,5 +164,5 @@ export const ResponsiveLayoutPlugin = definePlugin({
 
   updateLayout(ev: ItemLayoutEvent) {
     directUpdateLayout(<any>ev['event'] || ev)
-  }
+  },
 })

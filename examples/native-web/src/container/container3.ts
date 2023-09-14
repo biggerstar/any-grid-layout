@@ -9,8 +9,8 @@ const container3 = new Container({
     ratioCol: 0.1,
     // col: 9,
     // row: 4,
-    margin: [10, 10],
-    size: [60, 50],
+    // margin: [20, 10],
+    // size: [60, 50],
     minCol: 2,
     exchange: true,
     items: fillItemLayoutList(layoutData, {
@@ -25,16 +25,6 @@ const container3 = new Container({
         // maxW:1
       }
     }),
-    // items: layoutData11,
-    responsive: true,
-    edit: true,
-    animation: true,
-    follow: true,
-  },
-  events: {
-    // error(type){
-    //     // console.log(type);
-    // },
   },
 })
 

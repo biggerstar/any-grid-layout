@@ -64,11 +64,6 @@ export type ContainerInstantiationOptions = {
    * */
   platform?: 'native' | 'vue'
 
-  // /**
-  //  * 当前的事件钩子
-  //  * */
-  // events?: CustomEventOptions,
-
   /**
    * 当前的布局配置，可以是一个配置对象或者配置对象数组
    * */

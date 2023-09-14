@@ -58,7 +58,7 @@ export const updateLayout: Function = throttle(directUpdateLayout, 46)
 /**
  * 节流更新drag到 +十字线+ 方向的布局
  * */
-export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
+export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
   const {fromItem} = tempStore
   if (!fromItem) return
   ev.prevent()
@@ -75,7 +75,7 @@ export const dragMoveToCrossHair: Function = throttle((ev: ItemDragEvent, callba
 /**
  * 节流更新drag到 「对角」 方向的布局
  * */
-export const dragMoveToDiagonal: Function = throttle((ev: ItemDragEvent) => {
+export const dragToDiagonal: Function = throttle((ev: ItemDragEvent) => {
   const {toItem, fromItem} = tempStore
   const {layoutManager, items} = ev
   if (!toItem || !fromItem) return

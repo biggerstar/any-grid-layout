@@ -91,6 +91,7 @@ export class ItemExchangeEvent extends ItemLayoutEvent {
     const {toContainer} = tempStore
     if (!this.newItem || !toContainer) return
     toContainer.addItem(this.newItem)
+    toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     this.newItem.mount()
     if (this.toItem) toContainer.bus.emit('updateLayout')
     updateCloneElementSize4Item(this.newItem)

@@ -6,32 +6,32 @@ export abstract class Finder {
 
   public abstract get row(): number
 
-  /**
-   *  找当前矩阵下x,y位置当前存在的item
-   *
-   *  @return {Item | null}
-   * */
-  public findItemFromXY(items = [], fromX: number, fromY: number): Item | null {
-    let pointItem = null
-    let lastY = 1
-    if (items.length === 0) return null
-    for (let i = 0; i < items.length; i++) {
-      let item: Item = items[i]
-      if (!item) continue
-      const {x, y, w, h} = item.pos
-      const xItemStart = x
-      const yItemStart = y
-      const xItemEnd = x + w - 1
-      const yItemEnd = y + h - 1
-
-      if (xItemStart !== fromX) continue
-      if (fromY > lastY) fromY = lastY
-      if (x => xItemStart && x <= xItemEnd && fromY >= yItemStart && fromY <= yItemEnd) {
-        if (fromX === xItemStart && fromY === yItemStart) pointItem = item
-      }
-    }
-    return pointItem
-  }
+  // /**
+  //  *  找当前矩阵下x,y位置当前存在的item
+  //  *
+  //  *  @return {Item | null}
+  //  * */
+  // public findItemFromXY(items = [], fromX: number, fromY: number): Item | null {
+  //   let pointItem = null
+  //   let lastY = 1
+  //   if (items.length === 0) return null
+  //   for (let i = 0; i < items.length; i++) {
+  //     let item: Item = items[i]
+  //     if (!item) continue
+  //     const {x, y, w, h} = item.pos
+  //     const xItemStart = x
+  //     const yItemStart = y
+  //     const xItemEnd = x + w - 1
+  //     const yItemEnd = y + h - 1
+  //
+  //     if (xItemStart !== fromX) continue
+  //     if (fromY > lastY) fromY = lastY
+  //     if (x => xItemStart && x <= xItemEnd && fromY >= yItemStart && fromY <= yItemEnd) {
+  //       if (fromX === xItemStart && fromY === yItemStart) pointItem = item
+  //     }
+  //   }
+  //   return pointItem
+  // }
 
   /** 寻找某个指定矩阵范围内包含的所有Item,下方四个变量构成一个域范围;
    *  Item可能不完全都在该指定矩阵范围内落点，只是有一部分落在范围内，该情况也会被查找收集起来
@@ -147,13 +147,9 @@ export abstract class Finder {
           const item = items[index]
           if (x >= item.pos.x && x < (item.pos.x + item.pos.w)
             && y >= item.pos.y && y < (item.pos.y + item.pos.h)) {
-            if (!sortItems.includes(item)) {
-              sortItems.push(item)
-            }
-            break
+            if (!sortItems.includes(item)) sortItems.push(item)
           }
         }
-        //-------------------------------------
       }
     }
     return sortItems
