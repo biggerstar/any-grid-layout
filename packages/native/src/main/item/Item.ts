@@ -311,14 +311,16 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
   public maxWidth() {
-    return (this.pos.maxW * this.size[0]) + (this.pos.maxW - 1) * this.margin[0]
+    if (!isFinite(this.pos.maxW)) return Infinity
+    return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0]
   }
 
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
   public maxHeight = () => {
-    return (this.pos.maxH * this.size[1]) + (this.pos.maxH - 1) * this.margin[1]
+    if (!isFinite(this.pos.maxH)) return Infinity
+    return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1]
   }
 
   /**

@@ -1,18 +1,21 @@
 import container1 from "@/container/container1";
 import {
   BaseEvent,
-  CrossContainerExchangeEvent,
   ItemDragEvent,
+  ItemExchangeEvent,
   ItemResizeEvent,
   ResponsiveLayoutPlugin,
+  StreamLayoutPlugin,
   ThrowMessageEvent,
 } from '@biggerstar/layout'
 import '@biggerstar/layout/dist/default-style.css'
+import '@biggerstar/layout/dist/scroll-bar.css'
 import container2 from "@/container/container2";
 import container3 from "@/container/container3";
 
 console.log(container1)
 console.log(container2)
+console.log(container3)
 
 function insertItemContent(ev: BaseEvent) {
   const item = ev.target
@@ -37,7 +40,7 @@ container1
     itemMounted(ev: BaseEvent) {
       insertItemContent(ev)
     },
-    exchange(ev: CrossContainerExchangeEvent) {
+    exchange(ev: ItemExchangeEvent) {
       // ev.prevent()
     },
   })
@@ -56,7 +59,7 @@ container2.use({
   itemMounted(ev: BaseEvent) {
     insertItemContent(ev)
   },
-  exchange(ev: CrossContainerExchangeEvent) {
+  exchange(ev: ItemExchangeEvent) {
     // ev.prevent()
   },
   // resizeToBottom(ev: ItemResizeEvent) {
@@ -73,7 +76,7 @@ container2.use({
   // }
 })
 
-container3.use(ResponsiveLayoutPlugin)
+container3.use(StreamLayoutPlugin)
 
 
 container1.mount()

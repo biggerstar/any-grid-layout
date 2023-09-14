@@ -49,6 +49,8 @@ class TempStore {
   timeOutEvent: any = null
   lastMousePointX: number | null
   lastMousePointY: number | null
+  lastResizeW: number | null
+  lastResizeH: number | null
 }
 
 export const tempStore: TempStore = new TempStore()

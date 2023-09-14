@@ -2,7 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemHasChanged, patchDragDirection} from "@/plugins/common";
+import {checkItemHasChanged, directUpdateLayout, patchDragDirection} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
@@ -21,6 +21,7 @@ export const DefaultLayoutBehavior = definePlugin({
   init(ev: ItemDragEvent) {
     const {container} = ev
     const {layoutManager: manager} = container
+    container.updateContainerSizeStyle()
     autoSetSizeAndMargin(container, true)
     container.reset()
     const res = manager.analysis(container.items, null, {
@@ -94,7 +95,6 @@ export const DefaultLayoutBehavior = definePlugin({
     ev.tryMoveToBlank()
   },
 
-
   dragToLeftTop(ev: ItemDragEvent) {
     ev.tryMoveToNearestBlank()
   },
@@ -104,7 +104,6 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem) return
     // console.log('dragToLetBottom')
     ev.tryMoveToNearestBlank()
-
   },
 
   dragToRightTop(ev: ItemDragEvent) {
@@ -114,7 +113,6 @@ export const DefaultLayoutBehavior = definePlugin({
   dragToRightBottom(ev: ItemDragEvent) {
     ev.tryMoveToNearestBlank()
   },
-
 
   dragToTop(ev: ItemDragEvent) {
     ev.tryMoveToNearestBlank()

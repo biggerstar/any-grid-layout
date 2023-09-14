@@ -16,13 +16,17 @@ export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
 }, 46)
 
 /**
+ * 检测item resize的时候是否改变了大小
  * 节流后的patchResizeNewSize
  * */
 export const checkItemHasChanged: Function = (ev: ItemResizeEvent) => {
-  const {fromItem} = tempStore
+  const {fromItem, lastResizeW, lastResizeH} = tempStore
   if (!fromItem) return
-  if (fromItem.pos.w !== ev.w || fromItem.pos.h !== ev.h) {
-    fromItem.container.bus.emit('itemSizeChange')
+  // console.log(fromItem.pos.w, fromItem.pos.h, tempStore.lastResizeW, tempStore.lastResizeH)
+  if (fromItem.pos.w !== tempStore.lastResizeW || fromItem.pos.h !== tempStore.lastResizeH) {
+    tempStore.lastResizeW = fromItem.pos.w
+    tempStore.lastResizeH = fromItem.pos.h
+    if (lastResizeW && lastResizeH) fromItem.container.bus.emit('itemSizeChange')
   }
 }
 

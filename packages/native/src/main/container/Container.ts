@@ -71,6 +71,7 @@ export class Container {
   public element: HTMLElement   //  container的挂载节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public parentItem: Item | null
+  public parent?: Container
   private readonly domImpl: DomFunctionImpl
 
   // //----------------vue 支持---------------------//
@@ -85,18 +86,9 @@ export class Container {
     //-----内部可写外部只读变量------//
     preCol: 0,   // 容器大小改变之前的col
     preRow: 0,   // 容器大小改变之前的row
-    exchangeLock: false,
-    firstEnterUnLock: false,   //  第一次进入的权限是否解锁
-    nestingEnterBlankUnLock: false,   //  嵌套第一次进入是否是空白处
-    moveExchangeLock: false,
-    beforeOverItems: [],  // 保存响应式模式下开始拖拽后经过的Item,最多保存20个
-    moveCount: 0,
     offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
     offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
-    exchangeLockX: false,  // 锁定Item是否可以横向移动
-    exchangeLockY: false, // 锁定Item是否可以纵向向移动
     observer: null,
-    nestingFirstMounted: false // 嵌套模式下第一次是否挂载，决定是否执行render函数
     //----------可写变量-----------//
   }
 
@@ -282,10 +274,9 @@ export class Container {
 
   /**
    * 将item成员从Container中全部移除
-   * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
-  public unmount(isForce = false) {
-    this.items.forEach((item: Item) => item.unmount(isForce))
+  public unmount() {
+    this.items.forEach((item: Item) => item.unmount())
     this.reset()
     this._mounted = false
     this._disconnect_()
@@ -305,7 +296,7 @@ export class Container {
     if (!this.getConfig("px") || !useLayout.px) return
     if (this.getConfig("px") === useLayout.px) return
     if (this.platform === 'native') {
-      this.unmount(false)
+      this.unmount()
       this.clear();
       (useLayout.items as Item[]).forEach((item) => this.addItem(item))
     }
@@ -326,8 +317,8 @@ export class Container {
       layoutChangeFun()
       _debounce() // 防抖，保证最后一次执行执行最终布局
     }
-    const _debounce = debounce(layoutChangeFun, 300)
-    const _throttle = throttle(observerResize, 80)
+    const _debounce: Function = debounce(layoutChangeFun, 300)
+    const _throttle: Function = throttle(observerResize, 80)
     this.__ownTemp__.observer = new ResizeObserver(_throttle)
     this.__ownTemp__.observer['observe'](this.element)
   }
@@ -393,7 +384,7 @@ export class Container {
   private _init() {
     this.initLayoutInfo()
     let items = this.getConfig('items')
-    items.forEach((item) => this.addItem(item))
+    items.forEach((item) => this.addItem(item, {syncCustomItems: false}))
     this.bus.emit('init')
   }
 
@@ -433,13 +424,16 @@ export class Container {
    * 添加一个itemOptions配置信息创建一个Item实例到items列表中，不会挂载到dom中
    * 框架内部添加Item时所有的Item必须通过这里添加到容器中
    * @param itemOptions
+   * @param options
+   * @param options.syncCustomItems  同步到用户的items配置中
    * */
-  public addItem(itemOptions: CustomItem | Item): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
+  public addItem(itemOptions: CustomItem | Item, options: { syncCustomItems?: boolean } = {}): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    const {syncCustomItems = true} = options
     let item = <Item>itemOptions
     let customOpt = itemOptions
     if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
     else item = new Item(customOpt)
-    this.layout.items.push(customOpt)
+    if (syncCustomItems) this.layout.items.push(customOpt)
     this.items.push(item)
     // console.log(item === itemOptions)
     item.customOptions = customOpt

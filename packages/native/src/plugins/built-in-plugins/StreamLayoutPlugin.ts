@@ -120,4 +120,7 @@ export const StreamLayoutPlugin = definePlugin({
   closed(ev: ItemLayoutEvent) {
     directUpdateLayout(ev)
   },
+  updateLayout(ev: ItemLayoutEvent) {
+    directUpdateLayout(ev)
+  }
 })
