@@ -28,6 +28,8 @@ export class ItemLayoutEvent extends BaseEvent {
   public offsetBottom: number // 当前item左上角的点和container bottom边界距离
   public cloneElWidth: number // 当前clone元素的高
   public cloneElHeight: number // 当前clone元素的高
+  public cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
+  public cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
 
   /**
    * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
@@ -43,7 +45,15 @@ export class ItemLayoutEvent extends BaseEvent {
   constructor(options) {
     super(options);
     this.items = this.container.items
-    const {fromItem, mousemoveEvent, lastMousePointX, lastMousePointY, cloneElement} = tempStore
+    const {
+      fromItem,
+      mousemoveEvent,
+      lastMousePointX,
+      lastMousePointY,
+      cloneElement,
+      mousedownItemOffsetLeft,
+      mousedownItemOffsetTop
+    } = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
     const {left, top} = fromItem.element.getBoundingClientRect()
@@ -68,6 +78,8 @@ export class ItemLayoutEvent extends BaseEvent {
     this.offsetBottom = containerBottom - top
     this.cloneElWidth = cloneElWidth
     this.cloneElHeight = cloneElHeight
+    this.cloneElOffsetMouseLeft = <number>mousedownItemOffsetLeft
+    this.cloneElOffsetMouseTop = <number>mousedownItemOffsetTop
     Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))
   }
 

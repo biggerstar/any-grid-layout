@@ -57,10 +57,11 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: this.relativeX,
-        y: this.relativeY,
+        x: this.relativeX - targetItem.pxToW(this.cloneElOffsetMouseLeft) + 1,
+        y: this.relativeY - targetItem.pxToH(this.cloneElOffsetMouseTop) + 1,
       }
-    const securityPos = getMovableRange(targetItem,targetPos)
+    const securityPos = getMovableRange(targetItem, targetPos)
+    // console.log(securityPos)
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
@@ -79,28 +80,32 @@ export class ItemDragEvent extends ItemLayoutEvent {
   /**
    * 尝试移动到附近有空白位置的地方
    * @param options
-   * @param options.radius  拓展的半径倍数
+   * @param options.radius  拓展的半径倍数,最大的length为8
    *                        最终range.w的计算方式: 扩展的直径(radius * 2 ) + 1(当前x,y原点),合并后为fromItem.pos.w * (radius * 2) + 1
    * */
-  public tryMoveToNearestBlank({radius = 1} = {}): boolean {
+  public tryMoveToNearestBlank({radius = 1, maxLen = 8} = {}): boolean {
     const {fromItem} = tempStore
     if (!fromItem) return false
     const manager = this.layoutManager
+    const isSuccess = this.tryMoveToBlank()
+    if (isSuccess) return  // 如果当前位置有空位则直接移动过去，不进行周边空位检测
+
     const rangeMinX = this.gridX - fromItem.pos.w * radius
     const rangeMinY = this.gridY - fromItem.pos.h * radius
-    const range = {  // 当前item位置扩大两倍宽高的矩形范围
+    const baseRange = {  // 当前item位置扩大两倍宽高的矩形范围
       x: rangeMinX < 1 ? 1 : rangeMinX,
       y: rangeMinY < 1 ? 1 : rangeMinY,
-      w: fromItem.pos.w * radius * 2 + 1,
-      h: fromItem.pos.h * radius * 2 + 1,
+      w: Math.min(fromItem.pos.w * radius * 2 + 1, maxLen),
+      h: Math.min(fromItem.pos.h * radius * 2 + 1, maxLen),
     }
+    // console.log(baseRange)
     const allBlankRange = []
-    const matrix = new Array(range.h).fill(new Array(range.w).fill(0))
+    const matrix = new Array(baseRange.h).fill(new Array(baseRange.w).fill(0))
     manager.unmark(fromItem.pos)   // 先释放fromItem.pos位置
     spiralTraversal(matrix, (row, col) => {
       const targetPos = {
-        x: range.x + col,
-        y: range.y + row,
+        x: baseRange.x + col,
+        y: baseRange.y + row,
         w: fromItem.pos.w,
         h: fromItem.pos.h,
       }
@@ -110,14 +115,16 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
     })
     allBlankRange.push(fromItem.pos)
+    // console.log(allBlankRange)
     let minimumArea = Infinity
     let finallyPos = fromItem.pos  // 如果没找到则不变
     allBlankRange.forEach(range => {
       const W = Math.abs(this.gridX - range.x) + 1
       const H = Math.abs(this.gridY - range.y) + 1
-      const area = W * H  // 求最小面积
-      if (area <= minimumArea) { // 最后一个是fromItem，保证前面所有计算后的最小面积等于当前fromItem面积，此时不会进行改变位置
+      const area = W * H   // 求最小面积
+      if (area <= minimumArea) {  // 最后一个是fromItem，保证前面所有计算后的最小面积等于当前fromItem面积，此时不会进行改变位置
         minimumArea = area
+        // console.log(range)
         finallyPos = range
       }
     })
@@ -126,6 +133,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
       return false
     }
     if (allBlankRange.length) {
+      // console.log(minimumArea,finallyPos)
       this.tryMoveToBlank(fromItem, finallyPos)
       manager.mark(finallyPos)  // 如果成功，标记新的pos位置
     }
