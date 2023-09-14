@@ -68,8 +68,6 @@ export class ItemExchangeEvent extends ItemLayoutEvent {
    * 创建一个当前x,y为鼠标位置新的Item，开发者也可以自行通过new Item({pos:{ x:number,y: number }}) 确定移入时新item的位置
    * */
   public createNewItem(newItemOptions: CustomItem) {
-    const {fromItem, toContainer, cloneElement} = tempStore
-    if (!toContainer || !fromItem || !cloneElement) return
     const newItemIns = new Item(newItemOptions)
     if (this.mousePos) {
       if (!newItemOptions.pos?.x) newItemIns.pos.x = this.mousePos.x
