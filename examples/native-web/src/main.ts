@@ -37,7 +37,7 @@ container1
     itemMounted(ev: BaseEvent) {
       insertItemContent(ev)
     },
-    cross(ev: CrossContainerExchangeEvent) {
+    exchange(ev: CrossContainerExchangeEvent) {
       // ev.prevent()
     },
   })
@@ -56,7 +56,7 @@ container2.use({
   itemMounted(ev: BaseEvent) {
     insertItemContent(ev)
   },
-  cross(ev: CrossContainerExchangeEvent) {
+  exchange(ev: CrossContainerExchangeEvent) {
     // ev.prevent()
   },
   // resizeToBottom(ev: ItemResizeEvent) {

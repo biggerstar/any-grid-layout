@@ -13,7 +13,7 @@ const container1 = new Container({
   },
   layouts: {
     from: '来自layout',
-    exchange:true,
+    exchange:false,
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

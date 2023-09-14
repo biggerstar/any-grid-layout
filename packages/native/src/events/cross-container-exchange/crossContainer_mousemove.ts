@@ -10,18 +10,15 @@ export const crossContainer_mousemove: Function = throttle((ev) => {
     fromContainer,
     toContainer,
     fromItem,
-    newItem,
     isDragging
   } = tempStore
 
   if (!isDragging || !fromItem || !isLeftMousedown || !toContainer || !fromContainer) return
   if (fromContainer === toContainer) return
+
   if (!fromItem.exchange   /* 要求item和容器都允许交换才能继续 */
-    || (
-      !toContainer.getConfig('exchange')
-      || !fromItem.container.getConfig('exchange')
-      // || !toItem.container.getConfig('exchange')
-    )
+    || !toContainer.getConfig('exchange')
+    || !fromContainer.getConfig('exchange')
   ) return
   if (toContainer.parentItem === fromItem) return
   toContainer.bus.emit('exchange')  // crossTarget如果移除成功，之后在该事件移除源fromItem

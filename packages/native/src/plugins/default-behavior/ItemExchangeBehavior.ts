@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {definePlugin, tempStore} from "@/global";
-import {grid_item_content} from "@/constant";
+import {grid_dragging_source_el, grid_item_content} from "@/constant";
 import {ItemExchangeEvent} from "@/plugins/event-types/ItemExchangeEvent";
 import {isFunction} from "is-what";
 
@@ -36,5 +36,6 @@ export const itemExchangeBehavior = definePlugin({
 
   exchangeReceive(ev: ItemExchangeEvent) {
     ev.receiveNewItem()
+    if (ev.newItem) ev.newItem.element.classList.add(grid_dragging_source_el)
   },
 })
