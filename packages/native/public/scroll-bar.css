@@ -1,0 +1,46 @@
+.grid-container::-webkit-scrollbar,
+.grid-item-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.grid-container::-webkit-scrollbar-thumb,
+.grid-item-content::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(143, 146, 153, 0.3);
+}
+
+/* 滚动条滑块 */
+.grid-container::-webkit-scrollbar-thumb:hover,
+.grid-item-content::-webkit-scrollbar-thumb:hover {
+  border-radius: 10px;
+  background: rgba(143, 146, 153, 0.7);
+}
+
+/* 滚动槽 */
+.grid-container::-webkit-scrollbar-track,
+.grid-item-content::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* 右下角滚动条交汇处 */
+.grid-container::-webkit-scrollbar-corner,
+.grid-item-content::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+/* 两个滚动条的交汇处调整元素大小的小控件*/
+.grid-container::-webkit-resizer, .grid-item-content::-webkit-resizer {
+}
+
+/* 滚动条非活动状态 */
+.grid-container::-webkit-scrollbar:window-inactive,
+.grid-container::-webkit-scrollbar-thumb:window-inactive,
+.grid-container::-webkit-scrollbar-track:window-inactive,
+.grid-item-content::-webkit-scrollbar:window-inactive,
+.grid-item-content::-webkit-scrollbar-thumb:window-inactive,
+.grid-item-content::-webkit-scrollbar-track:window-inactive {
+  background: transparent;
+  width: 0;
+  height: 0;
+}
