@@ -1,5 +1,5 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {throttle} from "@/utils";
+import {throttle, updateStyle} from "@/utils";
 import {isFunction, isObject} from "is-what";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
@@ -19,7 +19,7 @@ export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
  * 检测item resize的时候是否改变了大小
  * 节流后的patchResizeNewSize
  * */
-export const checkItemHasChanged: Function = (ev: ItemResizeEvent) => {
+export const checkItemHasChanged: Function = (_: ItemResizeEvent) => {
   const {fromItem, lastResizeW, lastResizeH} = tempStore
   if (!fromItem) return
   // console.log(fromItem.pos.w, fromItem.pos.h, tempStore.lastResizeW, tempStore.lastResizeH)
@@ -117,13 +117,27 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
  * 将cloneElement的大小更新为某个Item的一样的尺寸
  * */
 export function updateCloneElementSize4Item(newItem: Item) {
-  const {cloneElement} = tempStore
-  if (!cloneElement) return
-  newItem.domImpl.updateStyle({
-    width: `${newItem.element.clientWidth}px`,
-    height: `${newItem.element.clientHeight}px`,
+  const {cloneElement, fromItem} = tempStore
+  if (!cloneElement || !fromItem) return
+  // const {left, top} = cloneElement.getBoundingClientRect()
+  const {clientWidth, clientHeight} = newItem.element
+  const nextWidth = newItem.nowWidth()
+  const nextHeight = newItem.nowHeight()
+  const fromWidth = fromItem.nowWidth()
+  const fromHeight = fromItem.nowHeight()
+  updateStyle({
+    width: `${clientWidth}px`,
+    height: `${clientHeight}px`,
     transitionDuration: '0.3s',
-    transitionProperty: 'width,height'
+    transitionProperty: 'width,height',
   }, cloneElement)
-
+  // 移动到新容器中改变cloneEl的大小和鼠标拖动位置，按比例缩放
+  tempStore.mousedownItemOffsetLeft = tempStore.mousedownItemOffsetLeft * nextWidth / fromWidth
+  tempStore.mousedownItemOffsetTop = tempStore.mousedownItemOffsetTop * nextHeight / fromHeight
 }
+
+
+
+
+
+
