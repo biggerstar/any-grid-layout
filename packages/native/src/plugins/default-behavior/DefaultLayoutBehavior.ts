@@ -2,7 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemHasChanged, directUpdateLayout, patchDragDirection} from "@/plugins/common";
+import {checkItemHasChanged, patchDragDirection} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";

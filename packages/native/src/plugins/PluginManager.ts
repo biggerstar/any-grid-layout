@@ -18,7 +18,7 @@ export class PluginManager {
 
   constructor(container) {
     this.container = container
-    container.bus.on('*', (eventName, options) => this.call(<string>eventName, options))
+    container.bus.on('*', (eventName, options) => this.call(<any>eventName, options))
   }
 
   /**

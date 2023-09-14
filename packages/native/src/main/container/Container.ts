@@ -244,7 +244,6 @@ export class Container {
       this._observer_()
       this._mounted = true
       this.updateContainerSizeStyle()  // 在 _mounted 之后
-      this.bus.emit('containerMounted')
     }
     Sync.run(_mountedFun)
   }
@@ -256,6 +255,7 @@ export class Container {
     this.contentElement['_isGridContainer_'] = true
     this.contentElement.classList.add(this.className)
     this.element.appendChild(this.contentElement)
+    this.bus.emit('containerMounted')
     setTimeout(() => {
       this.domImpl.updateStyle({transition: 'all 0.3s'}, this.contentElement)
     }, 500)

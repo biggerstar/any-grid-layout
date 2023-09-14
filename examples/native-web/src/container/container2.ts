@@ -1,4 +1,4 @@
-import {Container, fillItemLayoutList, Item} from "@biggerstar/layout";
+import {Container, fillItemLayoutList} from "@biggerstar/layout";
 import {layoutData11} from "@/stores/layout";
 
 const container2 = new Container({
@@ -36,7 +36,7 @@ const container2 = new Container({
       // col: 9,
       // row: 1,
       margin: [10, 10],
-      size: [150, 80],
+      size: [50, 80],
       exchange:true,
       items: fillItemLayoutList(layoutData11, {
         draggable: true,

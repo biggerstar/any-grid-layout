@@ -15,7 +15,7 @@ export class DomFunctionImpl {
    * */
   public updateStyle(
     style: Partial<CSSStyleDeclaration> & { [ket: string]: any },
-    element: HTMLElement | null = null,
+    element?: HTMLElement,
     isCssText: boolean = true
   ) {
     if (Object.keys(style).length === 0) return

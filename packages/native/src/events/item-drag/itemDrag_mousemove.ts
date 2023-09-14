@@ -1,4 +1,5 @@
 import {tempStore} from "@/global";
+import {updateStyle} from "@/utils";
 
 
 let ticking = false
@@ -13,18 +14,19 @@ export const itemDrag_mousemove: Function = (ev) => {
     cloneElement,
     mousedownItemOffsetLeft,
     mousedownItemOffsetTop,
-    toContainer
   } = tempStore
   if (!fromItem || !isDragging) return
 
   function updateDragConeElementLocation() {
+    if (!cloneElement) return
     let left = ev.pageX - mousedownItemOffsetLeft
     let top = ev.pageY - mousedownItemOffsetTop
-    fromItem!.domImpl.updateStyle({
+    updateStyle({
       left: `${left}px`,
       top: `${top}px`
-    }, cloneElement)
+    }, <HTMLElement>cloneElement)
   }
+
   if (!ticking) {
     requestAnimationFrame(() => {
       updateDragConeElementLocation()
@@ -32,5 +34,6 @@ export const itemDrag_mousemove: Function = (ev) => {
     })
     ticking = true
   }
+  // console.log(fromItem.pos.x,fromItem.pos.y);
   if (fromItem) fromItem.container.bus.emit('dragging')
 }

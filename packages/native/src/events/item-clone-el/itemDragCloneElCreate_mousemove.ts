@@ -27,8 +27,8 @@ export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
     pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
     transitionProperty: 'none',
     transitionDuration: 'none',
-    left: `${left}px`,
-    top: `${top}px`
+    left: `${window.scrollX + left}px`,
+    top: `${window.scrollY + top}px`
   }, newNode)
   tempStore.cloneElement = newNode
   document.body.appendChild(newNode)    // 直接添加到body中后面定位省心省力

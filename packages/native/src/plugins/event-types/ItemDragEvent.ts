@@ -89,7 +89,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const manager = this.layoutManager
     const isSuccess = this.tryMoveToBlank()
     if (isSuccess) return  // 如果当前位置有空位则直接移动过去，不进行周边空位检测
-
+    //---------------------------开始判定移动到周边空位了逻辑----------------------------------//
     const rangeMinX = this.gridX - fromItem.pos.w * radius
     const rangeMinY = this.gridY - fromItem.pos.h * radius
     const baseRange = {  // 当前item位置扩大两倍宽高的矩形范围
