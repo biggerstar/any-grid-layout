@@ -171,7 +171,11 @@ export class Container {
   }
 
   private _getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
-    return this.useLayout[name] || this.layout[name] || this.global[name] || this._default[name]
+    if (this.useLayout.hasOwnProperty(name)) return this.useLayout[name]
+    if (this.layout.hasOwnProperty(name)) return this.layout[name]
+    if (this.global.hasOwnProperty(name)) return this.global[name]
+    if (this._default.hasOwnProperty(name)) return this._default[name]
+    return void 0
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
