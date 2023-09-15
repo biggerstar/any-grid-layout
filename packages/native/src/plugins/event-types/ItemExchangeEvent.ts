@@ -40,7 +40,7 @@ export class ItemExchangeEvent extends ItemLayoutEvent {
       this.spacePos = <any>this.layoutManager.findBlank({
         w: fromItem.pos.w,
         h: fromItem.pos.h,
-      }, {auto: true})
+      }, {auto: this.hasAutoDirection()})
     }
   }
 
@@ -94,6 +94,7 @@ export class ItemExchangeEvent extends ItemLayoutEvent {
     toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     this.newItem.mount()
     if (this.toItem) toContainer.bus.emit('updateLayout')
+    toContainer.updateContainerSizeStyle()
     updateCloneElementSize4Item(this.newItem)
   }
 }

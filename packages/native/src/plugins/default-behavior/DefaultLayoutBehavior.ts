@@ -104,9 +104,6 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   dragToLetBottom(ev: ItemDragEvent) {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    // console.log('dragToLetBottom')
     ev.tryMoveToNearBlank()
   },
 
