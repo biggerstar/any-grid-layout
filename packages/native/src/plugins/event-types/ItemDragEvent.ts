@@ -45,6 +45,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
    * @param item？ 当前要移动的item
    * @param pos  当前移动到新位置的pos
+   *
+   * @return {boolean} 是否移动成功
    * */
   public tryMoveToBlank(item?: Item, pos?: Partial<Pick<CustomItemPos, 'x' | 'y'>>): boolean {
     let {fromItem} = tempStore
@@ -82,8 +84,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * @param options
    * @param options.radius  拓展的半径倍数,最大的length为8
    *                        最终range.w的计算方式: 扩展的直径(radius * 2 ) + 1(当前x,y原点),合并后为fromItem.pos.w * (radius * 2) + 1
+   *
+   * @return {boolean} 是否移动成功
    * */
-  public tryMoveToNearestBlank({radius = 1, maxLen = 8} = {}): boolean {
+  public tryMoveToNearBlank({radius = 1, maxLen = 8} = {}): boolean {
     const {fromItem} = tempStore
     if (!fromItem) return false
     const manager = this.layoutManager
@@ -171,41 +175,27 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public patchDragDirection() {
     let {
       fromItem,
-      toItem,
       toContainer
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
     const X = this.relativeX - fromItem.pos.x   // 当前鼠标cloneEl位于grid X相对源item偏移
     const Y = this.relativeY - fromItem.pos.y
+    const inOuterContainer = !toContainer && fromItem
     // console.log(X,Y);
     // console.log(x, y);
-    if (!toContainer && fromItem) {
-      if (X !== 0) {
-        if (X > 0) bus.emit('dragOuterRight')
-        if (X < 0) bus.emit('dragOuterLeft')
-      } else if (Y !== 0) {
-        if (Y > 0) bus.emit('dragOuterBottom')
-        if (Y < 0) bus.emit('dragOuterTop')
-      }
-    } else if (toContainer && !toItem) {
-      const isBlank = this.layoutManager.isBlank({
-        ...fromItem.pos,
-        x: fromItem.pos.x + X,
-        y: fromItem.pos.y + Y,
-      })
-      if (isBlank) bus.emit('dragToBlank')
-    } else if (X !== 0 && Y !== 0) {
+
+    if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLetBottom')
       else if (X < 0 && Y < 0) bus.emit('dragToLeftTop')
       else if (X > 0 && Y < 0) bus.emit('dragToRightTop')
     } else if (X !== 0) {
-      if (X > 0) bus.emit("dragToRight")
-      if (X < 0) bus.emit("dragToLeft")
+      if (X < 0) bus.emit("dragToLeft") || inOuterContainer && bus.emit('dragOuterLeft')
+      if (X > 0) bus.emit("dragToRight") || inOuterContainer && bus.emit('dragOuterRight')
     } else if (Y !== 0) {
-      if (Y > 0) bus.emit("dragToBottom")
-      if (Y < 0) bus.emit("dragToTop")
+      if (Y < 0) bus.emit("dragToTop") || inOuterContainer && bus.emit('dragOuterTop')
+      if (Y > 0) bus.emit("dragToBottom") || inOuterContainer && bus.emit('dragOuterBottom')
     }
   }
 }

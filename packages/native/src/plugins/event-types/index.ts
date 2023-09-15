@@ -29,7 +29,6 @@ export const EventMap: EventMapType = {
   //--------------drag-------------------
   dragging: ItemDragEvent,
   dragend: ItemDragEvent,
-  dragToBlank: ItemDragEvent,
   dragToTop: ItemDragEvent,
   dragToBottom: ItemDragEvent,
   dragToLeft: ItemDragEvent,

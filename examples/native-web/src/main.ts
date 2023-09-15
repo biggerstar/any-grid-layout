@@ -43,6 +43,12 @@ container1
     exchange(ev: ItemExchangeEvent) {
       // ev.prevent()
     },
+    resizeToRight(ev: ItemResizeEvent) {
+      // ev.prevent()
+    },
+    resizeToLeft(ev: ItemResizeEvent) {
+      // ev.prevent()
+    }
   })
   .use(ResponsiveLayoutPlugin)
 
@@ -64,18 +70,27 @@ container2.use({
   exchange(ev: ItemExchangeEvent) {
     // ev.prevent()
   },
-  // resizeToBottom(ev: ItemResizeEvent) {
-  //   ev.prevent()
-  // },
-  // resizeToTop(ev: ItemResizeEvent) {
-  //   ev.prevent()
-  // },
-  // resizeToRight(ev: ItemResizeEvent) {
-  //   ev.prevent()
-  // },
-  // resizeToLeft(ev: ItemResizeEvent) {
-  //   ev.prevent()
-  // }
+  resizeToBottom(ev: ItemResizeEvent) {
+    // ev.prevent()
+  },
+  resizeToTop(ev: ItemResizeEvent) {
+    // ev.prevent()
+  },
+  resizeToRight(ev: ItemResizeEvent) {
+    // ev.prevent()
+  },
+  resizeToLeft(ev: ItemResizeEvent) {
+    // ev.prevent()
+  },
+  dragToBottom(ev: ItemDragEvent) {
+    // ev.prevent()
+  },
+  dragToLetBottom(ev: ItemDragEvent) {
+    // ev.prevent()
+  },
+  dragToRightBottom(ev: ItemDragEvent) {
+    // ev.prevent()
+  },
 })
 
 container3.use(StreamLayoutPlugin)

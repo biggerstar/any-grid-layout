@@ -84,7 +84,9 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 当前resize中的item元素宽度
+   * [当前实时宽度] 正在resize中的宽度
+   * resize范围：
+   *        一个栅格单位的宽 <--- spaceWidth  --->  距离右方第一个item元素的距离
    * 受item.pos中minW,maxW和 spaceRight 限制,不会越界其他item边界宽度，正常用于静态布局限制 cloneElement 的宽
    * */
   public get spaceWidth() {
@@ -92,7 +94,9 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 当前resize中的item元素高度
+   * [当前实时高度] 正在resize中的高度
+   * resize范围：
+   *        一个栅格单位的高  <--- spaceHeight  --->  距离下方第一个item元素的距离
    * 受item.pos中minH,maxH和 spaceBottom 限制,不会越界其他item边界的高度，正常用于静态布局限制 cloneElement 的高
    * */
   public get spaceHeight() {
@@ -100,7 +104,9 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 当前resize中的item元素宽度
+   * [当前实时宽度] resize中的鼠标相对左上角的item元素距离
+   * resize范围：
+   *        一个栅格单位的宽  <--- width  --->  距离右侧container边界
    * 受item.pos中minW,maxW 限制,不会越界container边界的宽度，正常用于响应式布局限制 cloneElement 的宽
    * */
   public get width() {
@@ -108,7 +114,9 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 当前resize中的item元素高度
+   * [当前实时高度] resize中的鼠标相对左上角的item元素距离
+   * resize范围：
+   *        一个栅格单位的高  <--- height  --->  距离下方container边界
    * 受item.pos中minH,maxH 限制,不会越界container边界的高度，正常用于响应式布局限制 cloneElement 的高
    * */
   public get height() {

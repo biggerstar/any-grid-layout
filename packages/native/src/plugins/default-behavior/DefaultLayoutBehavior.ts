@@ -59,75 +59,63 @@ export const DefaultLayoutBehavior = definePlugin({
   dragend(_: ItemDragEvent) {
   },
 
-  /**
-   * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
-   * */
-  dragOuterLeft(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+  dragToTop(ev: ItemDragEvent) {
+    ev.tryMoveToNearBlank()
+  },
+
+  dragToBottom(ev: ItemDragEvent) {
+    ev.tryMoveToNearBlank()
+  },
+
+  dragToLeft(ev: ItemDragEvent) {
+    ev.tryMoveToNearBlank()
+  },
+
+  dragToRight(ev: ItemDragEvent) {
+    ev.tryMoveToNearBlank()
   },
 
   /**
-   * 在container外围X轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * 在container外围X轴left方向移动的事件
    * */
-  dragOuterRight(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+  dragOuterLeft(_: ItemDragEvent) {
   },
 
   /**
-   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * 在container外围X轴right方向移动的事件
    * */
-  dragOuterTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+  dragOuterRight(_: ItemDragEvent) {
   },
 
   /**
-   * 在container外围Y轴移动的事件，移动方向钩子不会触发，但是itemMoving照样会触发
+   * 在container外围Y轴top方向移动的事件
    * */
-  dragOuterBottom(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+  dragOuterTop(_: ItemDragEvent) {
   },
 
   /**
-   * 在container内且鼠标位置正下方没有toItem，如果移动到Item间空隙也会触发
-   * moveToBlank函数能自动过滤静态布局下已经占位的Item不会移动过去，且只会移动到当前容器空白位置处
+   * 在container外围Y轴bootom方向移动的事件
    * */
-  dragToBlank(ev: ItemDragEvent) {
-    ev.tryMoveToBlank()
+  dragOuterBottom(_: ItemDragEvent) {
   },
 
   dragToLeftTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+    ev.tryMoveToNearBlank()
   },
 
   dragToLetBottom(ev: ItemDragEvent) {
     const {fromItem} = tempStore
     if (!fromItem) return
     // console.log('dragToLetBottom')
-    ev.tryMoveToNearestBlank()
+    ev.tryMoveToNearBlank()
   },
 
   dragToRightTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+    ev.tryMoveToNearBlank()
   },
 
   dragToRightBottom(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
-  },
-
-  dragToTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
-  },
-
-  dragToBottom(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
-  },
-
-  dragToLeft(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
-  },
-
-  dragToRight(ev: ItemDragEvent) {
-    ev.tryMoveToNearestBlank()
+    ev.tryMoveToNearBlank()
   },
 
   resizeOuterTop() {
@@ -163,6 +151,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       height: `${ev.spaceHeight}px`,
+      minHeight: `${ev.item.minHeight}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {h: fromItem.pxToH(ev.cloneElHeight)})
   },
@@ -184,6 +173,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       width: `${ev.spaceWidth}px`,
+      minWidth: `${ev.item.minWidth}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {w: fromItem.pxToW(ev.cloneElWidth)})
   },

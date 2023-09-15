@@ -209,7 +209,6 @@ export type CustomEventOptions = {
   //--------------drag-------------------
   dragging?(ev: ItemDragEvent): void,
   dragend?(ev: ItemDragEvent): void,
-  dragToBlank?(ev: ItemDragEvent): void,
   dragToTop?(ev: ItemDragEvent): void,
   dragToBottom?(ev: ItemDragEvent): void,
   dragToLeft?(ev: ItemDragEvent): void,
