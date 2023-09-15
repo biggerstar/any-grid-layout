@@ -16,35 +16,10 @@ export class ItemGeneralImpl {
   el?: HTMLElement | Node | string
 
   /**
-   * 开发者直接在元素标签上使用name作为名称，后续便能直接通过该名字找到对应的Item
+   * 给item命名
+   * 命名后可以直接通过 `container.find(name)` 找到对应的Item
    * */
   name?: string = ''
-
-  /**
-   *【vue专用】 该Item的类型，可用于区分组件
-   * */
-  type?: any = null
-
-  /**
-   * 是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
-   *
-   * @default true
-   * */
-  follow?: boolean = true
-
-  /**
-   * 是否可以将Item拖动到容器外
-   *
-   *  @default true
-   * */
-  dragOut?: boolean = true
-
-  /**
-   * 是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
-   *
-   * @default false
-   * */
-  resizeOut?: boolean = false
 
   /**
    * Item在文档中默认的类名,可以由外部传入重新自定义

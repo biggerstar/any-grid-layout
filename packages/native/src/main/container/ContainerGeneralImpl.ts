@@ -64,30 +64,6 @@ export class ContainerGeneralImpl {
   maxRow?: number | null = null
 
   /**
-   * 响应式下resize和drag自动撑开Row，内部暂未进行实现
-   * autoGrowRow for vue 外部开发者主动设置自动增长容器大小演示，作用于leaveContainerArea事件，自动缩小内部会自动计算
-   * col 自动增长似乎有点问题，能用就用不能就不用。。。。。。。
-   * const container = containerAPI.getContainer()
-   * container.row =  container.row + 1
-   *
-   * @default  false
-   * */
-  autoGrowRow?: boolean = false
-  // autoGrowCol = true     // 暂未支持
-
-  /**
-   * 同上
-   * */
-  autoGrowCol?: boolean = false
-
-  /**
-   * 是否重新进行Item顺序调整排序，排序后布局和原来位置一致，该情况出现存在有尺寸较大Item的i值较大却被挤压到下一行且i值比大Item大的却在上一行的情况
-   *
-   * @default  true
-   * */
-  autoReorder?: boolean = true
-
-  /**
    * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
    * 或者没有col只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioCol值为1
    *
@@ -108,16 +84,15 @@ export class ContainerGeneralImpl {
   ratioRow?: number = 0.1
 
   /**
-   * 拖拽移动的灵敏度，表示每秒移动X像素触发交换检测,这里默认每秒36px   ## 不稳定性高，自用
-   * @default 0.45
-   * */
-  sensitivity?: number = 0.45
-
-  /**
    * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
    * @default 0.45
    * */
   exchange?: boolean = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
+
+  /**
+   * 基准线，那个方向作为基底线   TODO left bottom，right
+   * */
+  baseLine?: BaseLineType = 'top'
 
   /**
    * 触屏下长按多久响应拖拽事件,默认360ms
@@ -144,19 +119,8 @@ export class ContainerGeneralImpl {
   scrollSpeedY?: number | null = 36
 
   /**
-   * 当Container元素大小改变时检测是否切换其他符合px限制的layout所用的时间间隔
-   * @default 50
-   * */
-  resizeReactionDelay?: number = 50
-
-  /**
    * 长按container的空白处是否能拖拽进行滑动容器
    * @default true
    * */
   autoScrollPage?: boolean = true
-
-  /**
-   * 基准线，那个方向作为基底线   TODO left bottom，right
-   * */
-  baseLine?: BaseLineType = 'top'
 }
