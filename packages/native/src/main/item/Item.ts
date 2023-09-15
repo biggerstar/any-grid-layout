@@ -1,7 +1,6 @@
 import {Sync} from "@/utils/Sync";
 import {Container} from "@/main/container/Container";
 import {CustomItem, MarginOrSizeDesc} from "@/types";
-import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
@@ -13,6 +12,7 @@ import {
   grid_item_resizable_handle,
   grid_item_resize_text
 } from "@/constant";
+import {updateStyle} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -29,8 +29,6 @@ export class Item extends ItemGeneralImpl {
   public classList: string[] = []
   public parentElement: HTMLElement
   public contentElement: HTMLElement
-  public readonly domImpl: DomFunctionImpl
-  /** 运行时pos */
   public pos: ItemPos
   //----------------保持状态所用参数---------------------//
   public customOptions: ItemGeneralImpl
@@ -63,7 +61,6 @@ export class Item extends ItemGeneralImpl {
     if (itemOption instanceof Item) return itemOption  // 如果已经是item，则直接返回
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
     this.customOptions = itemOption
-    this.domImpl = new DomFunctionImpl(this)
     this._default = new ItemGeneralImpl()
     this._define(itemOption)
   }
@@ -165,7 +162,6 @@ export class Item extends ItemGeneralImpl {
 
   /**
    * 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
-   * @param {Boolean} isForce 是否移除element元素的同时移除掉现有加载的items列表中的对应item
    * */
   public unmount() {
     if (this._mounted) {
@@ -212,7 +208,7 @@ export class Item extends ItemGeneralImpl {
         } else if (transition.time === 0) {
           style.transition = 'none'
         }
-        this.domImpl.updateStyle(style)
+        updateStyle(style,this.element)
       },
       rule: () => this.__temp__.isDelayLoadAnimation
     })
@@ -223,7 +219,7 @@ export class Item extends ItemGeneralImpl {
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
   public updateItemLayout() {
     //   三种布局方案，都能实现grid布局，性能最好的是定位法 //
-    this.domImpl.updateStyle({
+    updateStyle({
       // 定位法
       width: this.nowWidth() + 'px',
       height: this.nowHeight() + 'px',
@@ -236,7 +232,7 @@ export class Item extends ItemGeneralImpl {
 
       // transform
       // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
-    })
+    },this.element)
   }
 
   /**

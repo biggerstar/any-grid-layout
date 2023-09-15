@@ -147,14 +147,6 @@ export type CustomEventOptions = {
    */
   containerSizeChange?(oldSize: number, newSize: number, container: Container): void,
 
-  /**
-   *  外层容器(挂载点)大小正在改变时触发的事件(如果是嵌套容器,只会等col和row改变才触发，效果和containerResized一样),
-   *  containerWidth是当前container的宽度，useLayout是当前使用的布局配置,使用的是实例化时传入的layout字段，
-   *  可以直接修改形参useLayout的值或者直接返回一个新的layout对象，框架将会使用该新的layout对象进行布局,返回null或者false将会阻止布局切换
-   *  可通过实例属性resizeReactionDelay控制触发间隔
-   */
-  mountPointElementResizing?(useLayout: any, containerWidth: any, container: Container): void,
-
   /** 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
   enterContainerArea?(container, item): void,
 

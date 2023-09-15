@@ -7,6 +7,7 @@ import {
   ResponsiveLayoutPlugin,
   StreamLayoutPlugin,
   ThrowMessageEvent,
+  updateStyle,
 } from '@biggerstar/layout'
 import '@biggerstar/layout/dist/default-style.css'
 import '@biggerstar/layout/dist/scroll-bar.css'
@@ -22,7 +23,7 @@ function insertItemContent(ev: BaseEvent) {
   if (!item) return
   if (item.contentElement.innerHTML) return
   item.contentElement.innerHTML = item.i.toString()
-  item.domImpl.updateStyle({
+  updateStyle({
     fontSize: `${Math.max(30, <number>item.size[0] / 4)}px`,
     fontWeight: '800',
     color: '#6b798e'

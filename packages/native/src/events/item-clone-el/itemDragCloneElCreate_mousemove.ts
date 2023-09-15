@@ -1,4 +1,4 @@
-import {throttle} from "@/utils";
+import {throttle, updateStyle} from "@/utils";
 import {grid_clone_el, grid_dragging_clone_el, grid_dragging_source_el} from "@/constant";
 import {tempStore} from "@/global";
 
@@ -22,9 +22,9 @@ export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
   const newNode = <HTMLElement>sourceEl.cloneNode(true)
   newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
   newNode.classList.remove(grid_dragging_source_el)
-  fromItem.domImpl.addClass(grid_dragging_source_el)
+  fromItem.element.classList.add(grid_dragging_source_el)
   const {left, top} = sourceEl.getBoundingClientRect()
-  fromItem.domImpl.updateStyle({
+  updateStyle({
     pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
     transitionProperty: 'none',
     transitionDuration: 'none',

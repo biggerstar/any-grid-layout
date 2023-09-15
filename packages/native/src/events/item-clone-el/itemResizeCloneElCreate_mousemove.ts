@@ -1,5 +1,5 @@
-import {throttle} from "@/utils";
-import {grid_clone_el, grid_dragging_source_el, grid_resizing_clone_el, grid_resizing_source_el} from "@/constant";
+import {throttle, updateStyle} from "@/utils";
+import {grid_clone_el, grid_resizing_clone_el, grid_resizing_source_el} from "@/constant";
 import {tempStore} from "@/global";
 
 /**
@@ -18,8 +18,8 @@ export const itemResizeCloneElCreate_mousemove: Function = throttle(() => {
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
   newNode.classList.add(grid_clone_el,  grid_resizing_clone_el)
   newNode.classList.remove(grid_resizing_source_el)
-  fromItem.domImpl.addClass(grid_resizing_source_el)
-  fromItem.domImpl.updateStyle({
+  fromItem.element.classList.add(grid_resizing_source_el)
+  updateStyle({
     transition: 'none',
     pointerEvents:'none'
   }, newNode)

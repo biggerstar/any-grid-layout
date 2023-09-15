@@ -6,7 +6,6 @@ import {Sync} from "@/utils/Sync";
 import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
-import {DomFunctionImpl} from "@/utils/DomFunctionImpl";
 import {startGlobalEvent} from "@/events/listen";
 import {computeSmartRowAndCol} from "@/algorithm/common";
 import Bus, {Emitter} from 'mitt'
@@ -14,6 +13,7 @@ import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
+import {updateStyle} from "@/utils";
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -72,8 +72,6 @@ export class Container {
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public parentItem: Item | null
   public parent?: Container
-  private readonly domImpl: DomFunctionImpl
-
   // //----------------vue 支持---------------------//
   // // TODO 后面在vue的layout模块使用declare module进行声明合并
   // public vue: any
@@ -98,7 +96,6 @@ export class Container {
     this._define()
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
-    this.domImpl = new DomFunctionImpl(this)
     this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
     startGlobalEvent()
@@ -257,7 +254,7 @@ export class Container {
     this.element.appendChild(this.contentElement)
     this.bus.emit('containerMounted')
     setTimeout(() => {
-      this.domImpl.updateStyle({transition: 'all 0.3s'}, this.contentElement)
+      updateStyle({transition: 'all 0.3s'}, this.contentElement)
     }, 500)
   }
 
@@ -339,7 +336,7 @@ export class Container {
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
   public updateContainerSizeStyle(): void {
-    this.domImpl.updateStyle({
+    updateStyle({
       width: `${this.nowWidth()}px`,
       height: `${this.nowHeight()}px`,
     }, this.contentElement)

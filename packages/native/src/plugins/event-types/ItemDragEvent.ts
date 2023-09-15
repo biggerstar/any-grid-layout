@@ -2,7 +2,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {isFunction} from "is-what";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
-import {getMovableRange, spiralTraversal} from "@/utils";
+import {createMovableRange, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
@@ -62,7 +62,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
         x: this.relativeX - targetItem.pxToW(this.cloneElOffsetMouseLeft) + 1,
         y: this.relativeY - targetItem.pxToH(this.cloneElOffsetMouseTop) + 1,
       }
-    const securityPos = getMovableRange(targetItem, targetPos)
+    const securityPos = createMovableRange(targetItem, targetPos)
     // console.log(securityPos)
     //-------------------------------------
     const container = this.container

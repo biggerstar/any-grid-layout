@@ -49,7 +49,7 @@ export function itemCloneElRemove_mouseup(_) {
         gridCloneEl.parentNode.removeChild(gridCloneEl)
       } catch (e) {
       }
-      fromItem.domImpl.removeClass(grid_dragging_source_el, grid_resizing_source_el)
+      fromItem.element.classList.remove(grid_dragging_source_el, grid_resizing_source_el)
       clearTimeout(timer)
       timer = null
     }
