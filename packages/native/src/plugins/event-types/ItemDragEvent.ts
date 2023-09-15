@@ -145,31 +145,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
   }
 
   /**
-   * 检测是否允许本次布局，检测方位drag，resize window
-   * 目的：防止move事件太快造成item移动太过灵敏发生抖动
-   * 检测规则:
-   *      如果当前fromItem覆盖区域只有当前fromItem的源item，则忽略移动
-   *      如果fromItem移动区域下为空位置，忽略移动
-   * 这是一个骚操作，建议不要使用
-   * */
-  public allowLayout() {
-    const container = this.container
-    const {toItem, fromItem, isDragging} = tempStore
-    if (!fromItem) return true   // 不是drag时就是resize浏览器或者元素盒子窗口
-    if (isDragging) {
-      if (!toItem || toItem === fromItem) {
-        const foundItems = container.layoutManager.findCoverItemsFromPosition(container.items, {
-          ...fromItem?.pos,
-          x: this.gridX,
-          y: this.gridY
-        })
-        if (foundItems.length <= 1) return
-      }
-    }
-    return true
-  }
-
-  /**
    * 分析当前鼠标drag操作移动在源item的某个方向，并执行对应方向的钩子
    * */
   public patchDragDirection() {

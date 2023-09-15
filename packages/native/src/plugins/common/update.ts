@@ -34,8 +34,7 @@ export const checkItemHasChanged: Function = (_: ItemResizeEvent) => {
  * 立即更新布局
  * */
 export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}) => {
-  const {container, items, toContainer} = ev
-  if (toContainer && !ev['allowLayout']?.()) return
+  const {container, items} = ev
   options = Object.assign({
     sort: true
   }, options)
