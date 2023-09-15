@@ -21,6 +21,7 @@ export const itemDragCloneElCreate_mousemove: Function = throttle(() => {
   const sourceEl = fromItem.element
   const newNode = <HTMLElement>sourceEl.cloneNode(true)
   newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
+  newNode.classList.remove(grid_dragging_source_el)
   fromItem.domImpl.addClass(grid_dragging_source_el)
   const {left, top} = sourceEl.getBoundingClientRect()
   fromItem.domImpl.updateStyle({
