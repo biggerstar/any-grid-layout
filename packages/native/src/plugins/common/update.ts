@@ -65,11 +65,16 @@ export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: 
   const {fromItem} = tempStore
   if (!fromItem) return
   ev.prevent()
-  ev.addModifyItem(fromItem, {x: ev.gridX, y: ev.gridY})
+  ev.addModifyItem(fromItem,
+    {
+      x: ev.startX,
+      y: ev.startY
+    })
   if (isFunction(callback)) {
     ev.findDiffCoverItem(null, (item) => {
       const changePos = callback(item)
-      if (changePos && isObject(changePos)) ev.addModifyItem(item, callback(item))
+      // console.log(changePos)
+      if (changePos && isObject(changePos)) ev.addModifyItem(item, callback(item))  // 添加被当前cloneEl覆盖item的移动方式
     })
   }
   directUpdateLayout(ev)
@@ -134,9 +139,4 @@ export function updateCloneElementSize4Item(newItem: Item) {
   tempStore.mousedownItemOffsetLeft = tempStore.mousedownItemOffsetLeft * nextWidth / fromWidth
   tempStore.mousedownItemOffsetTop = tempStore.mousedownItemOffsetTop * nextHeight / fromHeight
 }
-
-
-
-
-
 

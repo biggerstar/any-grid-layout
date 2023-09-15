@@ -21,8 +21,8 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     } = tempStore
     if (!isResizing || !isLeftMousedown) return
     if (!fromItem || !resizeEv || !isLeftMousedown) return
-    const curW = fromItem.pxToW(this.mousePointX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
-    const curH = fromItem.pxToH(this.mousePointY)
+    const curW = this.container.pxToW(this.mousePointX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
+    const curH = this.container.pxToH(this.mousePointY)
     this.w = curW < 1 ? 1 : curW
     this.h = curH < 1 ? 1 : curH
   }

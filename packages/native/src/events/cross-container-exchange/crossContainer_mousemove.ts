@@ -1,10 +1,9 @@
-import {throttle} from "@/utils";
 import {tempStore} from "@/global";
 
 /**
  *  判断当前移动过程中从哪个container出来或者进去了哪个container
  *  */
-export const crossContainer_mousemove: Function = throttle((ev) => {
+export const crossContainer_mousemove: Function = (_) => {
   const {
     isLeftMousedown,
     fromContainer,
@@ -22,7 +21,7 @@ export const crossContainer_mousemove: Function = throttle((ev) => {
   ) return
   if (toContainer.parentItem === fromItem) return
   toContainer.bus.emit('exchange')  // crossTarget如果移除成功，之后在该事件移除源fromItem
-}, 15)
+}
 
 
 

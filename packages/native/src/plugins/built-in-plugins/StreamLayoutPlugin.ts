@@ -19,7 +19,7 @@ import {definePlugin, tempStore} from "@/global";
  *      3.不要使用static item
  * */
 export const StreamLayoutPlugin = definePlugin({
-  exchange(ev: ItemExchangeEvent) {
+  exchangeProcess(ev: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return
     ev.verification = null

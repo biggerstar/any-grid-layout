@@ -26,8 +26,7 @@ export class ItemLayoutEvent extends BaseEvent {
   public offsetLeft: number // 当前item左上角的点和container left边界距离
   public offsetRight: number // 当前item左上角的点和container right边界距离
   public offsetBottom: number // 当前item左上角的点和container bottom边界距离
-  public cloneElWidth: number // 当前clone元素的高
-  public cloneElHeight: number // 当前clone元素的高
+  public cloneElRect: DOMRect // 当前clone元素的rect信息
   public cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
   public cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
 
@@ -56,9 +55,13 @@ export class ItemLayoutEvent extends BaseEvent {
     } = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
+    Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))  // 合并 relativeX，relativeY， gridX， gridY
     const {left, top} = fromItem.element.getBoundingClientRect()
-    const {right: containerRight, bottom: containerBottom} = this.container.contentElement.getBoundingClientRect()
-    const {width: cloneElWidth, height: cloneElHeight} = (cloneElement || fromItem.element).getBoundingClientRect()
+    const {
+      right: containerRight,
+      bottom: containerBottom,
+    } = this.container.contentElement.getBoundingClientRect()
+    const cloneElRect = (cloneElement || fromItem.element).getBoundingClientRect()
     this.fromItem = fromItem
     this.mousePointX = mousemoveEvent.clientX - left
     this.mousePointY = mousemoveEvent.clientY - top
@@ -76,11 +79,9 @@ export class ItemLayoutEvent extends BaseEvent {
     this.offsetTop = fromItem.offsetTop()
     this.offsetRight = containerRight - left
     this.offsetBottom = containerBottom - top
-    this.cloneElWidth = cloneElWidth
-    this.cloneElHeight = cloneElHeight
+    this.cloneElRect = cloneElRect
     this.cloneElOffsetMouseLeft = <number>mousedownItemOffsetLeft
     this.cloneElOffsetMouseTop = <number>mousedownItemOffsetTop
-    Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))
   }
 
   /**
@@ -128,7 +129,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * */
   public get restrictedItemW(): number {
     const restrictedItemWidth = this.width
-    let curW = this.fromItem.pxToW(restrictedItemWidth) * Math.sign(restrictedItemWidth)
+    let curW = this.container.pxToW(restrictedItemWidth) * Math.sign(restrictedItemWidth)
     if (curW < 0) curW = 1
     const maxW = this.fromItem.container.getConfig("col") - this.fromItem.pos.x + 1
     return curW > maxW ? maxW : curW
@@ -139,7 +140,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * */
   public get restrictedItemH(): number {
     const restrictedItemHeight = this.height
-    let curH = this.fromItem.pxToH(restrictedItemHeight) * Math.sign(restrictedItemHeight)
+    let curH = this.container.pxToH(restrictedItemHeight) * Math.sign(restrictedItemHeight)
     if (curH < 0) curH = 1
     const maxH = this.fromItem.container.getConfig("row") - this.fromItem.pos.y + 1
     return curH > maxH ? maxH : curH
@@ -183,11 +184,11 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   get spaceW(): number {
-    return this.fromItem.pxToW(this.spaceRight)
+    return this.container.pxToW(this.spaceRight)
   }
 
   get spaceH(): number {
-    return this.fromItem.pxToH(this.spaceBottom)
+    return this.container.pxToH(this.spaceBottom)
   }
 
   //--------------------------------------------字段定义结束分割线------------------------------------------------

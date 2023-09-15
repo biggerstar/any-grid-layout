@@ -250,22 +250,6 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return {number} px像素转栅格单位 w
-   * */
-  public pxToW = (pxNum: number) => {
-    if (this.margin[0] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (this.margin[0] + this.size[0]))
-  }
-
-  /**
-   * @return {number} px像素转栅格单位 h
-   * */
-  public pxToH = (pxNum: number) => {
-    if (this.margin[1] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (this.margin[1] + this.size[1]))
-  }
-
-  /**
    * @param w 栅格单位
    * @return {number}  获取该Item 当前的宽度
    * */

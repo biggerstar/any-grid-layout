@@ -1,4 +1,4 @@
-import {CustomItems} from "@biggerstar/layout/dist/types";
+import {CustomItems} from "@biggerstar/layout";
 
 export const layoutData11: CustomItems = [
   // {pos: {w: 2, h: 2, x: 1, y: 3}},
@@ -12,17 +12,17 @@ export const layoutData11: CustomItems = [
   // {pos: {w: 2, h: 2, x: 1, y: 3}, static: true, resize: false},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
-  {pos: {w: 2, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
-  {pos: {w: 4, h: 3,minW:5,maxW: 6,maxH: 3},id:'container3'},
   // {pos: {w: 2, h: 2}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
-  // {pos: {w: 1, h: 1}},
-  // {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 4, h: 3, minW: 5, maxW: 6, maxH: 3}, id: 'container3'},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 2, h: 1}},
   // {pos: {w: 2, h: 1}},
   // {pos: {w: 2, h: 1}},
   // {pos: {w: 2, h: 1}},
@@ -46,7 +46,7 @@ export const layoutData22: CustomItems = [
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
-  {pos: {w: 4, h: 3}, type: 'folder'},
+  {pos: {w: 4, h: 3}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},

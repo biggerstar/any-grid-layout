@@ -459,4 +459,24 @@ export class Container {
   public clear() {
     this.items.splice(0, this.items.length)
   }
+
+  /**
+   * @return {number} px像素转栅格单位 w
+   * */
+  public pxToW = (pxNum: number) => {
+    const margin = this.getConfig('margin')
+    const size = this.getConfig('size')
+    if (margin[0] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (margin[0] + size[0]))
+  }
+
+  /**
+   * @return {number} px像素转栅格单位 h
+   * */
+  public pxToH = (pxNum: number) => {
+    const margin = this.getConfig('margin')
+    const size = this.getConfig('size')
+    if (margin[1] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (margin[1] + size[1]))
+  }
 }

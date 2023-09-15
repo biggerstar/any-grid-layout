@@ -24,6 +24,7 @@ import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
+import {tempStore} from "@/global";
 
 export function allMousedown(ev) {
   // autoScrollPage_mousedown(ev)  // TODO
@@ -48,6 +49,8 @@ export function allMousemove(ev) {
   startMove_mousemove(ev)
   /* cursor */
   cursor_mousemove(ev)
+  /* crossContainer */
+  crossContainer_mousemove(ev)
   /* scrollPage */
   autoScrollPage_mousemove(ev)
   /* ItemResize */
@@ -56,8 +59,6 @@ export function allMousemove(ev) {
   /* itemDrag */
   itemDragCloneElCreate_mousemove(ev)  // 同resize
   itemDrag_mousemove(ev)
-  /* crossContainer */
-  crossContainer_mousemove(ev)
 }
 
 export function allMouseup(ev) {

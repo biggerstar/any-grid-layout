@@ -18,7 +18,7 @@ import {definePlugin, tempStore} from "@/global";
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
-  exchange(ev: ItemExchangeEvent) {
+  exchangeProcess(ev: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return
     ev.verification = null
@@ -88,8 +88,8 @@ export const ResponsiveLayoutPlugin = definePlugin({
   dragToTop(ev: ItemDragEvent) {
     const {fromItem, toItem} = tempStore
     if (!fromItem || !toItem) return
-    let call = !(fromItem.pos.y - toItem.pos.y > toItem.pos.h)
-      ? (item) => ({y: item.pos.y + fromItem.pos.h})
+    let call = !(fromItem.pos.y - toItem.pos.y > toItem.pos.h)  // 到toItem最顶上边界的时候触发
+      ? (item) => ({y: item.pos.y + fromItem.pos.h})  // toItem移动到fromItem下面，距离为fromItem.pos.h
       : null
     dragToCrossHair(ev, call)
   },

@@ -7,10 +7,16 @@ import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
   public toItem: Item | null
+  public startX: number // 克隆元素当前位于网格左上角相对的栅格X位置
+  public startY: number // 克隆元素当前位于网格左上角相对中的栅格Y位置
 
   constructor(opt) {
     super(opt);
     this.toItem = tempStore.toItem
+    const cloneElStartX = this.gridX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1
+    const cloneElStartY = this.gridY - this.container.pxToW(this.cloneElOffsetMouseTop) + 1
+    this.startX = cloneElStartX < 1 ? 1 : cloneElStartX
+    this.startY = cloneElStartY < 1 ? 1 : cloneElStartY
   }
 
   /**
@@ -59,8 +65,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: this.relativeX - targetItem.pxToW(this.cloneElOffsetMouseLeft) + 1,
-        y: this.relativeY - targetItem.pxToH(this.cloneElOffsetMouseTop) + 1,
+        x: this.relativeX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1,
+        y: this.relativeY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1,
       }
     const securityPos = createMovableRange(targetItem, targetPos)
     // console.log(securityPos)
@@ -154,8 +160,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.relativeX - fromItem.pos.x   // 当前鼠标cloneEl位于grid X相对源item偏移
-    const Y = this.relativeY - fromItem.pos.y
+    const X = this.startX - fromItem.pos.x   // 当前鼠标cloneEl位于grid X相对源item偏移
+    const Y = this.startY - fromItem.pos.y
     const inOuterContainer = !toContainer && fromItem
     // console.log(X,Y);
     // console.log(x, y);
