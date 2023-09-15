@@ -147,8 +147,6 @@ export class Item extends ItemGeneralImpl {
       this._closeBtn(this.close)
       this.animation(this.transition)
       //--------------------------------------------
-      this.__temp__.w = this.pos.w
-      this.__temp__.h = this.pos.h
       this.element['_gridItem_'] = this
       this.element['_isGridItem_'] = true
       this._mounted = true

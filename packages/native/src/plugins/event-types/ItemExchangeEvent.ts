@@ -93,6 +93,7 @@ export class ItemExchangeEvent extends ItemLayoutEvent {
     toContainer.addItem(this.newItem)
     toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     this.newItem.mount()
+    this.layoutManager.mark(this.newItem.pos)
     if (this.toItem) toContainer.bus.emit('updateLayout')
     toContainer.updateContainerSizeStyle()
     updateCloneElementSize4Item(this.newItem)

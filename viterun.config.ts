@@ -7,6 +7,7 @@ import {
   viteRunLogPlugin
 } from "vite-run";
 import dts from "vite-plugin-dts";
+import copyDtsPlugin from 'vite-plugin-copy-dts'
 
 export default defineViteRunConfig({
   baseConfig: getBaseConfig,
@@ -131,12 +132,23 @@ export default defineViteRunConfig({
     }
   },
   plugins: {
-    types: () => {
+    types: (options) => {
       return [
         dts({
           copyDtsFiles: true,
           declarationOnly: true,
+          rollupTypes:true,
+          clearPureImport:true,
         }),
+        copyDtsPlugin({
+          delayMerge:1200,
+          files: [
+            {
+              from: `${options.packagePath}/typings/*.ts`,
+              to: `${options.packagePath}/dist/index.d.ts`
+            }
+          ]
+        })
       ]
     }
   }

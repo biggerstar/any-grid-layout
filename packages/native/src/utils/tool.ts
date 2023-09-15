@@ -167,6 +167,11 @@ const genPrototypeToRootPath = (target: HTMLElement, touchEvent) => {
   return path
 }
 
+export function getEvTarget(ev: Event) {
+  return ev.target || ev['toElement'] || ev['srcElement']
+}
+
+
 /**
  * [parentNode方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
  * */
@@ -226,10 +231,6 @@ export const parseItem = (ev): Item | null => {
     }
   }
   return item
-}
-
-export function getEvTarget(ev: Event) {
-  return ev.target || ev['toElement'] || ev['srcElement']
 }
 
 

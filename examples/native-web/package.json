@@ -4,17 +4,9 @@
   "version": "0.0.31-Beta",
   "type": "module",
   "scripts": {},
-  "files": [
-    "dist",
-    "types"
-  ],
   "author": "biggerstar",
   "license": "GPL-3.0-or-later",
   "description": "",
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "eslintIgnore": [
     "dist"
   ],

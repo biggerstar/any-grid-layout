@@ -8,12 +8,13 @@
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
   "exports": {
     ".": {
       "default": "./dist/index.es.js",
       "import": "./dist/index.es.js",
       "require": "./dist/index.umd.js",
-      "types": "./types/index.d.ts"
+      "types": "./dist/index.d.ts"
     },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
@@ -24,8 +25,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/biggerstar/any-grid-layout"
+    "url": "https://github.com/biggerstar/any-grid-layout"
   },
+  "homepage": "https://github.com/biggerstar/any-grid-layout",
   "author": "biggerstar",
   "license": "GPL-3.0-or-later",
   "description": "",

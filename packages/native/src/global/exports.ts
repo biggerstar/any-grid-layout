@@ -24,7 +24,9 @@ export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomIt
   })
 }
 
-
+/**
+ * 定义插件函数，目的是获得类型提示
+ * */
 export function definePlugin(plugin: Record<keyof CustomEventOptions, any> & Record<any, any>) {
   return plugin
 }
