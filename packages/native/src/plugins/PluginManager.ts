@@ -26,7 +26,7 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options = {}) {
-    // console.log(eventName)
+    // if (!['dragging'].includes(eventName)) console.log(eventName)
     const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]
@@ -47,9 +47,9 @@ export class PluginManager {
     if (!ev.isPrevent && isFunction(ev.default)) {  // 默认行为函数在最后执行
       (ev.default || defaultActionFn)?.call(null, ev)  // 内置的插件没有this
     }
-    if(ev.isPrevent){
-      if(eventName === 'dragging') tempStore.preventDragging = true
-      if(eventName === 'resizing') tempStore.preventResizing = true
+    if (ev.isPrevent) {
+      if (eventName === 'dragging') tempStore.preventDragging = true
+      if (eventName === 'resizing') tempStore.preventResizing = true
     }
   }
 

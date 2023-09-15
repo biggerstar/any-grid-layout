@@ -176,7 +176,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.relativeX - fromItem.pos.x
+    const X = this.relativeX - fromItem.pos.x   // 当前鼠标cloneEl位于grid X相对源item偏移
     const Y = this.relativeY - fromItem.pos.y
     // console.log(X,Y);
     // console.log(x, y);
@@ -189,7 +189,12 @@ export class ItemDragEvent extends ItemLayoutEvent {
         if (Y < 0) bus.emit('dragOuterTop')
       }
     } else if (toContainer && !toItem) {
-      bus.emit('dragToBlank')
+      const isBlank = this.layoutManager.isBlank({
+        ...fromItem.pos,
+        x: fromItem.pos.x + X,
+        y: fromItem.pos.y + Y,
+      })
+      if (isBlank) bus.emit('dragToBlank')
     } else if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLetBottom')
