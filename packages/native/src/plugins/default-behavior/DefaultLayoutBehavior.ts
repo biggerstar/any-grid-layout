@@ -139,7 +139,7 @@ export const DefaultLayoutBehavior = definePlugin({
       height: `${ev.spaceHeight}px`,
       minHeight: `${ev.item.minHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: fromItem.pxToH(ev.cloneElHeight)})
+    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
@@ -150,7 +150,7 @@ export const DefaultLayoutBehavior = definePlugin({
       height: `${ev.spaceHeight}px`,
       minHeight: `${ev.item.minHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: fromItem.pxToH(ev.cloneElHeight)})
+    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
@@ -161,7 +161,7 @@ export const DefaultLayoutBehavior = definePlugin({
       width: `${ev.spaceWidth}px`,
       minWidth: `${ev.item.minWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: this.container.pxToW(ev.cloneElRect.width)})
+    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
   },
 
   resizeToRight(ev: ItemResizeEvent) {
@@ -172,7 +172,7 @@ export const DefaultLayoutBehavior = definePlugin({
       width: `${ev.spaceWidth}px`,
       minWidth: `${ev.item.minWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: this.container.pxToW(ev.cloneElRect.width)})
+    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
   },
 
   resizing(ev: ItemResizeEvent) {

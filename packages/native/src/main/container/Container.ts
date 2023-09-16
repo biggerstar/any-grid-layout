@@ -143,6 +143,17 @@ export class Container {
   }
 
   /**
+   * 获取当前矩阵中横向优先遍历获得的items列表
+   * 比如1 X 1 开始，到 1 X 5
+   * 之后2 X 1 开始，到 2 X 5
+   * ......
+   * */
+  public sequence(): this {
+    this.items = this.layoutManager.sortCurrentMatrixItems(this.items)
+    return this
+  }
+
+  /**
    * 是否是自动增长col方向的容器
    * */
   public get autoGrowCol() {
@@ -235,6 +246,7 @@ export class Container {
       this._createGridContainerBox()
       //-----------------容器布局信息初始化与检测--------------------//
       this._init()
+      this.sequence()
       //-------------------------其他操作--------------------------//
       this.parentItem = parseItemFromPrototypeChain(this.element)
       this.parent = this.parentItem?.container
