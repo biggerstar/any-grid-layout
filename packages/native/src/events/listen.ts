@@ -16,15 +16,12 @@ import {
   itemResize_mouseup
 } from "@/events";
 import {itemResize_mousemove} from "@/events/item-resize/itemResize_mousemove";
-import {itemResizeCloneElCreate_mousemove} from "@/events/item-clone-el/itemResizeCloneElCreate_mousemove";
-import {itemDragCloneElCreate_mousemove} from "@/events/item-clone-el/itemDragCloneElCreate_mousemove";
 import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemove_mouseup";
 import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
-import {tempStore} from "@/global";
 
 export function allMousedown(ev) {
   // autoScrollPage_mousedown(ev)  // TODO
@@ -54,10 +51,8 @@ export function allMousemove(ev) {
   /* scrollPage */
   autoScrollPage_mousemove(ev)
   /* ItemResize */
-  itemResizeCloneElCreate_mousemove(ev)  //  需在itemResize_mousemove前面
   itemResize_mousemove(ev)
   /* itemDrag */
-  itemDragCloneElCreate_mousemove(ev)  // 同resize
   itemDrag_mousemove(ev)
 }
 

@@ -2,7 +2,12 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemHasChanged, patchDragDirection} from "@/plugins/common";
+import {
+  checkItemHasChanged,
+  createDraggingCloneEl,
+  patchDragDirection,
+  updateResizingCloneElSize
+} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
@@ -53,6 +58,7 @@ export const DefaultLayoutBehavior = definePlugin({
   dragging(ev: ItemDragEvent) {
     const {fromContainer, toContainer} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
+    createDraggingCloneEl()
     patchDragDirection(ev)
   },
 
@@ -180,6 +186,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem) return
     ev.patchResizeDirection()
     checkItemHasChanged(ev)
+    updateResizingCloneElSize()
   },
 
   resized(_: ItemResizeEvent) {

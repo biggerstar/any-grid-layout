@@ -5,7 +5,7 @@ import {Container, Item} from "@/main";
 import {CustomItem, CustomItemPos} from "@/types";
 import {analysisCurPositionInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {updateCloneElementSize4Item} from "@/plugins/common";
+import {updateExchangedCloneElementSize4Item} from "@/plugins/common";
 
 export class ItemExchangeEvent extends ItemDragEvent {
   public spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
@@ -118,7 +118,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     this.newItem.mount()
     if (this.toItem) toContainer.bus.emit('updateLayout')
     toContainer.updateContainerSizeStyle()
-    updateCloneElementSize4Item(this.newItem)
+    updateExchangedCloneElementSize4Item(this.newItem)
   }
 }
 

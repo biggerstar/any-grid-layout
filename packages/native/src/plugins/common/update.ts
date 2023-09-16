@@ -7,6 +7,13 @@ import {ItemLayoutEvent} from "@/plugins";
 import {isAnimation} from "@/algorithm/common/tool";
 import {Item} from "@/main";
 import {tempStore} from "@/global";
+import {
+  grid_clone_el,
+  grid_dragging_clone_el,
+  grid_dragging_source_el,
+  grid_resizing_clone_el,
+  grid_resizing_source_el
+} from "@/constant";
 
 /**
  * 节流后的patchDragDirection
@@ -120,7 +127,7 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
 /**
  * 将cloneElement的大小更新为某个Item的一样的尺寸
  * */
-export function updateCloneElementSize4Item(newItem: Item) {
+export function updateExchangedCloneElementSize4Item(newItem: Item) {
   const {cloneElement, fromItem} = tempStore
   if (!cloneElement || !fromItem) return
   // const {left, top} = cloneElement.getBoundingClientRect()
@@ -140,3 +147,59 @@ export function updateCloneElementSize4Item(newItem: Item) {
   tempStore.mousedownItemOffsetTop = tempStore.mousedownItemOffsetTop * nextHeight / fromHeight
 }
 
+/**
+ * [resizing] 更改cloneEl跟随鼠标的最新大小
+ * */
+export function updateResizingCloneElSize() {
+  const {
+    mousedownEvent,
+    fromItem,
+    isResizing,
+    cloneElement,
+    fromContainer,
+  } = tempStore
+  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
+  const newNode = <HTMLElement>fromItem.element.cloneNode(true)
+  newNode.classList.add(grid_clone_el,  grid_resizing_clone_el)
+  newNode.classList.remove(grid_resizing_source_el)
+  fromItem.element.classList.add(grid_resizing_source_el)
+  updateStyle({
+    transition: 'none',
+    pointerEvents:'none'
+  }, newNode)
+  tempStore.cloneElement = newNode
+  fromContainer.contentElement.appendChild(newNode)
+}
+
+/**
+ * [dragging]更改cloneEl跟随鼠标的最新大小
+ * 如果已存存在，不会重复创建
+ * */
+export function createDraggingCloneEl() {
+  const {
+    mousedownEvent,
+    fromItem,
+    isDragging,
+    cloneElement,
+    isLeftMousedown,
+  } = tempStore
+  if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
+  if (cloneElement) return
+  const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
+  if (finallyRemoveEls.length) return;
+  const sourceEl = fromItem.element
+  const newNode = <HTMLElement>sourceEl.cloneNode(true)
+  newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
+  newNode.classList.remove(grid_dragging_source_el)
+  fromItem.element.classList.add(grid_dragging_source_el)
+  const {left, top} = sourceEl.getBoundingClientRect()
+  updateStyle({
+    pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
+    transitionProperty: 'none',
+    transitionDuration: 'none',
+    left: `${window.scrollX + left}px`,
+    top: `${window.scrollY + top}px`
+  }, newNode)
+  tempStore.cloneElement = newNode
+  document.body.appendChild(newNode)    // 直接添加到body中后面定位省心省力
+}

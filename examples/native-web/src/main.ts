@@ -33,9 +33,11 @@ function insertItemContent(ev: BaseEvent) {
 container1
   .use({
     resizing(ev: ItemResizeEvent) {
+      // ev.prevent()
       // console.log(111111111111111111)
     },
     dragging(ev: ItemDragEvent) {
+      // ev.prevent()
       // console.log('container1',22222222222222)
     },
     itemMounted(ev: BaseEvent) {
