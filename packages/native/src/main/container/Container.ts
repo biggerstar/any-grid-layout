@@ -279,6 +279,8 @@ export class Container {
     //-------------------------其他操作--------------------------//
     this.parentItem = parseItemFromPrototypeChain(this.element)
     this.parent = this.parentItem?.container
+    this.__ownTemp__.preCol = this.getConfig("col")
+    this.__ownTemp__.preRow = this.getConfig("row")
     this._observer_()
     this.updateContainerSizeStyle()
     this._mounted = true

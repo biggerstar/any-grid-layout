@@ -14,7 +14,7 @@ export class ItemLayoutEvent extends BaseEvent {
   public gridY: number // 当前鼠标限制在容器内的y栅格值
   public relativeX: number // 当前鼠标距离源容器的真实x栅格值
   public relativeY: number   // 当前鼠标距离源容器的真实y栅格值
-  public item: {  // 源item的信息
+  public itemInfo: {  // 源item的信息
     width: number // 当前源item元素元素的高
     height: number // 当前源item元素元素的高
     minWidth: number  // 和item的minWidth函数的值是一样的，下方同理
@@ -69,12 +69,12 @@ export class ItemLayoutEvent extends BaseEvent {
     this.lastMousePointY = lastMousePointY
     tempStore.lastMousePointX = this.mousePointX
     tempStore.lastMousePointY = this.mousePointY
-    this.item.width = fromItem.nowWidth()
-    this.item.height = fromItem.nowHeight()
-    this.item.minWidth = fromItem.minWidth()
-    this.item.maxWidth = fromItem.maxWidth()
-    this.item.minHeight = fromItem.minHeight()
-    this.item.maxHeight = fromItem.maxHeight()
+    this.itemInfo.width = fromItem.nowWidth()
+    this.itemInfo.height = fromItem.nowHeight()
+    this.itemInfo.minWidth = fromItem.minWidth()
+    this.itemInfo.maxWidth = fromItem.maxWidth()
+    this.itemInfo.minHeight = fromItem.minHeight()
+    this.itemInfo.maxHeight = fromItem.maxHeight()
     this.offsetLeft = fromItem.offsetLeft()
     this.offsetTop = fromItem.offsetTop()
     this.offsetRight = containerRight - left
@@ -111,7 +111,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 受item.pos中minW,maxW 限制,不会越界container边界的宽度，正常用于响应式布局限制 cloneElement 的宽
    * */
   public get width() {
-    return Math.min(this.mousePointX, this.item.maxWidth)
+    return Math.min(this.mousePointX, this.itemInfo.maxWidth)
   }
 
   /**
@@ -121,7 +121,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 受item.pos中minH,maxH 限制,不会越界container边界的高度，正常用于响应式布局限制 cloneElement 的高
    * */
   public get height() {
-    return Math.min(this.mousePointY, this.item.maxHeight)
+    return Math.min(this.mousePointY, this.itemInfo.maxHeight)
   }
 
   /**

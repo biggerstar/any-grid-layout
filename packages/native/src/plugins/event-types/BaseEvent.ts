@@ -2,7 +2,6 @@ import {Container, Item} from "@/main";
 import {CustomEventOptions} from "@/types";
 import {LayoutManager} from "@/algorithm";
 import {PluginManager} from "@/plugins";
-import {tempStore} from "@/global";
 
 export class BaseEvent {
   public name: keyof CustomEventOptions

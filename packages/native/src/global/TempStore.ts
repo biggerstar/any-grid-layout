@@ -51,6 +51,8 @@ class TempStore {
   lastMousePointY: number | null
   lastResizeW: number | null
   lastResizeH: number | null
+  lastDragX: number | null
+  lastDragY: number | null
   //-----------------------------------------------------------
   preventDragging: boolean | null
   preventResizing: boolean | null

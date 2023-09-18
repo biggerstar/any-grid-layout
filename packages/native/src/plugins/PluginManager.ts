@@ -30,7 +30,7 @@ export class PluginManager {
     const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]
-    const $defaultActionFn: Function = DefaultBehavior[`$${eventName}`]   // 内置用，在事件对象实例化所有插件回调前调用
+    const $defaultActionFn: Function = DefaultBehavior[`$${eventName}`]   // 内置用，在事件对象实例化所有插件回调前调用,不可被阻止
     const ev = new GEvent({
       name: eventName,
       container: container,
@@ -39,6 +39,7 @@ export class PluginManager {
       default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
     })
     Object.assign(ev, options)
+    Object.keys(ev).forEach(name => ev[name] === void 0 ? ev[name] = null : void 0)  // 将undefined置成null
     if (isFunction($defaultActionFn)) $defaultActionFn.call(null, ev)
     this.plugins.forEach((plugin) => {
       const callFunc: Function = <any>plugin[eventName]

@@ -3,16 +3,16 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
-  checkItemHasChanged,
+  checkItemPositionHasChanged,
+  checkItemSizeHasChanged,
   createDraggingCloneEl,
   patchDragDirection,
   updateResizingCloneElSize
 } from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {parseContainerFromPrototypeChain, updateStyle} from "@/utils";
+import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
-import {grid_container_class_name} from "@/constant";
 
 
 /**
@@ -50,7 +50,16 @@ export const DefaultLayoutBehavior = definePlugin({
   /**
    * container盒子大小改变
    * */
-  containerResizing(_: ItemLayoutEvent) {
+  $containerResizing(ev: ItemLayoutEvent) {
+    const {preCol, preRow} = ev.container.__ownTemp__
+    const container = ev.container
+    const curCol = container.getConfig("col")
+    const curRow = container.getConfig("row")
+    const isChangedCol = !(preCol && preCol === curCol)
+    const isChangedRow = !(preRow && preRow === curRow)
+    if(isChangedCol || isChangedRow) container.bus.emit('containerSizeChanged')
+    if(isChangedCol) container.bus.emit('colChanged')
+    if(isChangedRow) container.bus.emit('rowChanged')
   },
 
   /**
@@ -61,6 +70,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
     createDraggingCloneEl()
     patchDragDirection(ev)
+    checkItemPositionHasChanged()
   },
 
   dragend(_: ItemDragEvent) {
@@ -144,7 +154,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       height: `${ev.spaceHeight}px`,
-      minHeight: `${ev.item.minHeight}px`,
+      minHeight: `${ev.itemInfo.minHeight}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
   },
@@ -155,7 +165,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       height: `${ev.spaceHeight}px`,
-      minHeight: `${ev.item.minHeight}px`,
+      minHeight: `${ev.itemInfo.minHeight}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
   },
@@ -166,7 +176,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       width: `${ev.spaceWidth}px`,
-      minWidth: `${ev.item.minWidth}px`,
+      minWidth: `${ev.itemInfo.minWidth}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
   },
@@ -177,7 +187,7 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem || !cloneElement) return
     updateStyle({
       width: `${ev.spaceWidth}px`,
-      minWidth: `${ev.item.minWidth}px`,
+      minWidth: `${ev.itemInfo.minWidth}px`,
     }, cloneElement)
     ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
   },
@@ -186,7 +196,7 @@ export const DefaultLayoutBehavior = definePlugin({
     const {fromItem} = tempStore
     if (!fromItem) return
     ev.patchResizeDirection()
-    checkItemHasChanged(ev)
+    checkItemSizeHasChanged(ev)
     updateResizingCloneElSize()
   },
 

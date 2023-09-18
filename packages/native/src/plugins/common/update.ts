@@ -23,17 +23,28 @@ export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
 }, 46)
 
 /**
- * 检测item resize的时候是否改变了大小
- * 节流后的patchResizeNewSize
+ * 检测当前拖动的元素大小和上一次相比是否变化
  * */
-export const checkItemHasChanged: Function = (_: ItemResizeEvent) => {
+export const checkItemSizeHasChanged: Function = (_: ItemResizeEvent) => {
   const {fromItem, lastResizeW, lastResizeH} = tempStore
   if (!fromItem) return
-  // console.log(fromItem.pos.w, fromItem.pos.h, tempStore.lastResizeW, tempStore.lastResizeH)
   if (fromItem.pos.w !== tempStore.lastResizeW || fromItem.pos.h !== tempStore.lastResizeH) {
+    if (lastResizeW && lastResizeH) fromItem.container.bus.emit('itemSizeChanged', {item: fromItem})
     tempStore.lastResizeW = fromItem.pos.w
     tempStore.lastResizeH = fromItem.pos.h
-    if (lastResizeW && lastResizeH) fromItem.container.bus.emit('itemSizeChange')
+  }
+}
+
+/**
+ * 检测当前拖动的元素位置和上一次相比是否变化
+ * */
+export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
+  const {fromItem, lastDragX, lastDragY} = tempStore
+  if (!fromItem) return
+  if (fromItem.pos.x !== lastDragX || fromItem.pos.y !== lastDragY) {
+    if (lastDragX && lastDragY) fromItem.container.bus.emit('itemPositionChanged', {item: fromItem})
+    tempStore.lastDragX = <number>fromItem.pos.x
+    tempStore.lastDragY = <number>fromItem.pos.y
   }
 }
 
@@ -42,7 +53,7 @@ export const checkItemHasChanged: Function = (_: ItemResizeEvent) => {
  * */
 export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}) => {
   const {container, items} = ev
-  // if(!container._mounted) return
+  if(!container._mounted) return
   options = Object.assign({
     sort: true
   }, options)
@@ -161,12 +172,12 @@ export function updateResizingCloneElSize() {
   } = tempStore
   if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
-  newNode.classList.add(grid_clone_el,  grid_resizing_clone_el)
+  newNode.classList.add(grid_clone_el, grid_resizing_clone_el)
   newNode.classList.remove(grid_resizing_source_el)
   fromItem.element.classList.add(grid_resizing_source_el)
   updateStyle({
     transition: 'none',
-    pointerEvents:'none'
+    pointerEvents: 'none'
   }, newNode)
   tempStore.cloneElement = newNode
   fromContainer.contentElement.appendChild(newNode)

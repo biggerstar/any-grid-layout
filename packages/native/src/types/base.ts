@@ -9,6 +9,8 @@ import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {ItemExchangeEvent} from "@/plugins";
+import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
+import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -95,7 +97,23 @@ export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
 }
 
 export type CustomEventOptions = {
-  // [key: string]: Function
+  // /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
+  // updated?(ev: BaseEvent): void
+  //
+  // /**
+  //  *   鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
+  //  *   返回null或者false取消该次滚动，direction是方向, offset是滚动距离,负值为反方向滚动
+  //  *   可以返回 {direction,offset} 对象临时指定该次滚动的新参数,允许返回{direction}或{offset}修改单个值
+  //  */
+  // autoScroll?(direction: 'X' | 'Y', offset: number, container: Container): void,
+  //
+  // /** 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
+  // enterContainerArea?(container, item): void,
+  //
+  // /** 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
+  // leaveContainerArea?(container, item): void,
+
+  //------------------throw-message--------------
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
   error?(ev: ThrowMessageEvent): void,
@@ -104,58 +122,7 @@ export type CustomEventOptions = {
    *  如果没有使用该函数接受错误，框架则会直接使用抛出warn */
   warn?(ev: ThrowMessageEvent): void,
 
-  /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
-  updated?(ev: BaseEvent): void
-
-  /** Container成功挂载事件 */
-  containerMounted?(ev: BaseEvent): void,
-
-  /** Container成功卸载事件 */
-  containerUnmounted?(ev: BaseEvent): void,
-
-  /** Item成功挂载事件 */
-  itemMounted?(ev: BaseEvent): void,
-
-  /** Item成功卸载事件 */
-  itemUnmounted?(ev: BaseEvent): void,
-
-  /** Item添加成功事件 */
-  addItemSuccess?(ev: BaseEvent): void,
-
-  /** item位置变化时响应的事件,只有位置变化才触发 */
-  itemMovePositionChange?(oldX: number, oldY: number, newX: number, newY: number): void
-
-  /**
-   *   鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
-   *   返回null或者false取消该次滚动，direction是方向, offset是滚动距离,负值为反方向滚动
-   *   可以返回 {direction,offset} 对象临时指定该次滚动的新参数,允许返回{direction}或{offset}修改单个值
-   */
-  autoScroll?(direction: 'X' | 'Y', offset: number, container: Container): void,
-
-  /**
-   响应式模式中自身容器中的Item交换，fromItem:来自哪个Item，toItem:要和哪个Item交换，返回null或者false将会阻止该次交换
-   */
-  itemExchange?(fromItem: Item, toItem: Item): void,
-
-  /**
-   * 内层容器(grid-container)col或者row大小改变触发的事件,oldSize和newSize包含以下信息{ row,col,width,height }
-   */
-  containerSizeChange?(oldSize: number, newSize: number, container: Container): void,
-
-  /** 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
-  enterContainerArea?(container, item): void,
-
-  /** 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
-  leaveContainerArea?(container, item): void,
-
-  /** col列数改变 */
-  colChange?(col, preCol, container): void,
-
-  /** row列数改变 */
-  rowChange?(row, preRow, container): void,
-
-
-  //--------------other-------------------
+  //--------------------other--------------------
   /**
    * @default 初始化载入item成员并挂载
    * */
@@ -167,6 +134,76 @@ export type CustomEventOptions = {
    * */
   updateLayout?(ev: ItemLayoutEvent): void,
 
+  //-----------------container------------------
+  /** Container成功挂载事件 */
+  containerMounted?(ev: BaseEvent): void,
+
+  /** Container成功卸载事件 */
+  containerUnmounted?(ev: BaseEvent): void,
+
+  /** Container dom盒子大小改变 */
+  containerResizing?(ev: ContainerSizeChangeEvent): void,
+
+  /**
+   * 容器(.grid-container类)col或者row大小改变触发的事件
+   */
+  containerSizeChanged?(ev: ContainerSizeChangeEvent): void,
+
+  /** col列数改变 */
+  colChanged?(ev: ContainerSizeChangeEvent): void,
+
+  /** row列数改变 */
+  rowChanged?(ev: ContainerSizeChangeEvent): void,
+
+  //-------------------item---------------------
+  /** Item添加成功事件 */
+  addItemSuccess?(ev: BaseEvent): void,
+
+  /** Item成功挂载事件 */
+  itemMounted?(ev: BaseEvent): void,
+
+  /** Item成功卸载事件 */
+  itemUnmounted?(ev: BaseEvent): void,
+
+  /** item 位置变化 时响应的事件,只有位置变化才触发 */
+  itemPositionChanged?(ev: ItemPosChangeEvent): void
+
+  /** item 尺寸变化 时响应的事件,只有位置变化才触发 */
+  itemSizeChanged?(ev: ItemPosChangeEvent): void,
+
+  //------------------drag----------------------
+  dragging?(ev: ItemDragEvent): void,
+  dragend?(ev: ItemDragEvent): void,
+  dragToTop?(ev: ItemDragEvent): void,
+  dragToLeft?(ev: ItemDragEvent): void,
+  dragToBottom?(ev: ItemDragEvent): void,
+  dragToRight?(ev: ItemDragEvent): void,
+  dragToLeftTop?(ev: ItemDragEvent): void,
+  dragToRightTop?(ev: ItemDragEvent): void,
+  dragToRightBottom?(ev: ItemDragEvent): void,
+  dragToLeftBottom?(ev: ItemDragEvent): void,
+  dragOuterTop?(ev: ItemDragEvent): void,
+  dragOuterRight?(ev: ItemDragEvent): void,
+  dragOuterBottom?(ev: ItemDragEvent): void,
+  dragOuterLeft?(ev: ItemDragEvent): void,
+
+  //-----------------resize---------------------
+  resizing?(ev: ItemResizeEvent): void,
+  resized?(ev: ItemResizeEvent): void,
+  resizeToTop?(ev: ItemResizeEvent): void,
+  resizeToRight?(ev: ItemResizeEvent): void,
+  resizeToBottom?(ev: ItemResizeEvent): void,
+  resizeToLeft?(ev: ItemResizeEvent): void,
+  resizeOuterTop?(ev: ItemResizeEvent): void,
+  resizeOuterRight?(ev: ItemResizeEvent): void,
+  resizeOuterBottom?(ev: ItemResizeEvent): void,
+  resizeOuterLeft?(ev: ItemResizeEvent): void,
+
+  //------------------close---------------------
+  closing?(ev: ItemLayoutEvent): void,
+  closed?(ev: ItemLayoutEvent): void,
+
+  //------------------exchange------------------
   /**
    * [ 内置用 ]：跨容器移动开始时派发函数
    * */
@@ -186,39 +223,6 @@ export type CustomEventOptions = {
    * 跨容器移动时Item接受者，在接收的Container上触发
    * */
   exchangeReceive?(ev: ItemExchangeEvent): void;
-
-  itemSizeChange?(ev: BaseEvent): void,
-  //------------container-outer-move------------
-  dragOuterLeft?(ev: ItemDragEvent): void,
-  dragOuterRight?(ev: ItemDragEvent): void,
-  dragOuterTop?(ev: ItemDragEvent): void,
-  dragOuterBottom?(ev: ItemDragEvent): void,
-  //--------------drag-------------------
-  dragging?(ev: ItemDragEvent): void,
-  dragend?(ev: ItemDragEvent): void,
-  dragToTop?(ev: ItemDragEvent): void,
-  dragToBottom?(ev: ItemDragEvent): void,
-  dragToLeft?(ev: ItemDragEvent): void,
-  dragToRight?(ev: ItemDragEvent): void,
-  dragToRightBottom?(ev: ItemDragEvent): void,
-  dragToLetBottom?(ev: ItemDragEvent): void,
-  dragToLeftTop?(ev: ItemDragEvent): void,
-  dragToRightTop?(ev: ItemDragEvent): void,
-  //--------------resize-----------------
-  containerResizing?(ev: ItemLayoutEvent): void,
-  resizing?(ev: ItemResizeEvent): void,
-  resized?(ev: ItemResizeEvent): void,
-  resizeToTop?(ev: ItemResizeEvent): void,
-  resizeToRight?(ev: ItemResizeEvent): void,
-  resizeToBottom?(ev: ItemResizeEvent): void,
-  resizeToLeft?(ev: ItemResizeEvent): void,
-  resizeOuterTop?(ev: ItemResizeEvent): void,
-  resizeOuterRight?(ev: ItemResizeEvent): void,
-  resizeOuterBottom?(ev: ItemResizeEvent): void,
-  resizeOuterLeft?(ev: ItemResizeEvent): void,
-  //--------------close------------------
-  closing?(ev: ItemLayoutEvent): void,
-  closed?(ev: ItemLayoutEvent): void,
 }
 
 export type AnalysisResult = {

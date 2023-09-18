@@ -4,6 +4,8 @@ import {
   definePlugin,
   ItemDragEvent,
   ItemExchangeEvent,
+  ItemLayoutEvent,
+  ItemPosChangeEvent,
   ItemResizeEvent,
   ResponsiveLayoutPlugin,
   StreamLayoutPlugin,
@@ -21,38 +23,85 @@ console.log(container3)
 
 
 const plugin = definePlugin({
+  //-------------throw-message-----------
   error(ev: ThrowMessageEvent) {
     console.log(ev.message)
   },
   warn(ev: ThrowMessageEvent) {
     console.warn(ev.message)
   },
+
+  //-----------------container------------------
+
+  containerMounted(ev: BaseEvent) {
+    // console.log('containerMounted', ev)
+  },
+  containerUnmounted(ev: BaseEvent) {
+    // console.log('containerUnmounted', ev.container.el)
+  },
+  containerResizing(ev: ItemLayoutEvent) {
+    // console.log(ev);
+  },
+  //-------------------item---------------------
+  addItemSuccess(ev: BaseEvent) {
+    // console.log('addItemSuccess', ev.item)
+  },
   itemMounted(ev: BaseEvent) {
-    console.log('itemMounted', ev.item)
+    // console.log('itemMounted', ev.item)
     insertItemContent(ev)
   },
   itemUnmounted(ev: BaseEvent) {
-    console.log('itemUnmounted', ev.item)
+    // console.log('itemUnmounted', ev.item)
   },
-  containerMounted(ev: BaseEvent) {
-    console.log('containerMounted', ev)
+  itemSizeChange(ev: ItemPosChangeEvent) {
+    // console.log(ev);
   },
-  containerUnmounted(ev: BaseEvent) {
-    console.log('containerUnmounted', ev.container.el)
+  itemPositionChange(ev: ItemPosChangeEvent) {
+    // console.log(ev);
   },
-  resizing(ev: ItemResizeEvent) {
-    // ev.prevent()
-    // console.log(111111111111111111)
-  },
+
+  //--------------drag-------------------
   dragging(ev: ItemDragEvent) {
     // ev.prevent()
     // console.log('container2',222222222222)
   },
-  exchange(ev: ItemExchangeEvent) {
+  dragend(ev: ItemDragEvent) {
+  },
+  dragToTop(ev: ItemDragEvent) {
+  },
+  dragToRight(ev: ItemDragEvent) {
+  },
+  dragToBottom(ev: ItemDragEvent) {
     // ev.prevent()
   },
-  resizeToBottom(ev: ItemResizeEvent) {
+  dragToLeft(ev: ItemDragEvent) {
+  },
+  dragToLeftTop(ev: ItemDragEvent) {
+  },
+  dragToRightTop(ev: ItemDragEvent) {
+  },
+  dragToRightBottom(ev: ItemDragEvent) {
     // ev.prevent()
+  },
+  dragToLeftBottom(ev: ItemDragEvent) {
+    // ev.prevent()
+  },
+  dragOuterTop(ev: ItemDragEvent) {
+  },
+  dragOuterRight(ev: ItemDragEvent) {
+  },
+  dragOuterBottom(ev: ItemDragEvent) {
+  },
+  dragOuterLeft(ev: ItemDragEvent) {
+  },
+
+  //--------------resize-----------------
+  resizing(ev: ItemResizeEvent) {
+    // ev.prevent()
+    // console.log(ev);
+    // console.log(111111111111111111)
+  },
+  resized(ev: ItemResizeEvent) {
   },
   resizeToTop(ev: ItemResizeEvent) {
     // ev.prevent()
@@ -60,18 +109,37 @@ const plugin = definePlugin({
   resizeToRight(ev: ItemResizeEvent) {
     // ev.prevent()
   },
+  resizeToBottom(ev: ItemResizeEvent) {
+    // ev.prevent()
+  },
   resizeToLeft(ev: ItemResizeEvent) {
     // ev.prevent()
   },
-  dragToBottom(ev: ItemDragEvent) {
+  resizeOuterTop(ev: ItemResizeEvent) {
+  },
+  resizeOuterRight(ev: ItemResizeEvent) {
+  },
+  resizeOuterBottom(ev: ItemResizeEvent) {
+  },
+  resizeOuterLeft(ev: ItemResizeEvent) {
+  },
+
+  //--------------close------------------
+  closing(ev: ItemLayoutEvent) {
+  },
+  closed(ev: ItemLayoutEvent) {
+  },
+
+  //-------------cross-container-exchange-----------
+  exchange(ev: ItemExchangeEvent) {
     // ev.prevent()
   },
-  dragToLetBottom(ev: ItemDragEvent) {
-    // ev.prevent()
+  exchangeProvide(ev: ItemExchangeEvent) {
   },
-  dragToRightBottom(ev: ItemDragEvent) {
-    // ev.prevent()
+  exchangeProcess(ev: ItemExchangeEvent) {
   },
+  exchangeReceive(ev: ItemExchangeEvent) {
+  }
 })
 
 
