@@ -1,7 +1,5 @@
 import {prevent} from "@/events/common";
 import {
-  autoScrollPage_mousemove,
-  autoScrollPage_mouseup,
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown,
@@ -24,7 +22,6 @@ import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
 
 export function allMousedown(ev) {
-  // autoScrollPage_mousedown(ev)  // TODO
   /* cursor */
   cursor_mousedown(ev)
   /* compatible */
@@ -48,8 +45,6 @@ export function allMousemove(ev) {
   cursor_mousemove(ev)
   /* crossContainer */
   crossContainer_mousemove(ev)
-  /* scrollPage */
-  autoScrollPage_mousemove(ev)
   /* ItemResize */
   itemResize_mousemove(ev)
   /* itemDrag */
@@ -61,8 +56,6 @@ export function allMouseup(ev) {
   compatible_touchend_mouseup(ev)
   /*  cursor */
   cursor_mouseup(ev)
-  /*  scrollPage */
-  autoScrollPage_mouseup(ev)
   /*  itemResize */
   itemResize_mouseup(ev)
   /*  itemClose */

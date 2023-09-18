@@ -115,10 +115,4 @@ export class ContainerGeneralImpl {
    * @default 36  单位(ms)
    * */
   scrollSpeedY?: number | null = 36
-
-  /**
-   * 长按container的空白处是否能拖拽进行滑动容器
-   * @default true
-   * */
-  autoScrollPage?: boolean = true
 }

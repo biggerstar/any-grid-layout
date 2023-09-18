@@ -105,13 +105,6 @@ export type CustomEventOptions = {
   // /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
   // updated?(ev: BaseEvent): void
   //
-  // /**
-  //  *   鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
-  //  *   返回null或者false取消该次滚动，direction是方向, offset是滚动距离,负值为反方向滚动
-  //  *   可以返回 {direction,offset} 对象临时指定该次滚动的新参数,允许返回{direction}或{offset}修改单个值
-  //  */
-  // autoScroll?(direction: 'X' | 'Y', offset: number, container: Container): void,
-  //
   // /** 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
   // enterContainerArea?(container, item): void,
   //
