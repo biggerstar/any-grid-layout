@@ -1,6 +1,7 @@
 import container1 from "@/container/container1";
 import {
   BaseEvent,
+  ContainerSizeChangeEvent,
   definePlugin,
   ItemDragEvent,
   ItemExchangeEvent,
@@ -41,6 +42,15 @@ const plugin = definePlugin({
   },
   containerResizing(ev: ItemLayoutEvent) {
     // console.log(ev);
+  },
+  containerSizeChanged(ev: ContainerSizeChangeEvent) {
+    console.log('containerSizeChanged',ev.container)
+  },
+  colChanged(ev: ContainerSizeChangeEvent) {
+    console.log('colChanged',ev.container)
+  },
+  rowChanged(ev: ContainerSizeChangeEvent) {
+    console.log('rowChanged',ev.container)
   },
   //-------------------item---------------------
   addItemSuccess(ev: BaseEvent) {

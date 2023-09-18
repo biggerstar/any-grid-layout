@@ -12,13 +12,13 @@ import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
 import {startGlobalEvent} from "@/events/listen";
-import {computeSmartRowAndCol} from "@/algorithm/common";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {updateStyle} from "@/utils";
+import {ConfigurationEvent} from "@/plugins";
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -75,8 +75,8 @@ export class Container {
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public element: HTMLElement   //  container的挂载节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
-  public parentItem: Item | null
-  public parent?: Container
+  public parentItem: Item | null = null
+  public parent: Container | null = null
   // //----------------vue 支持---------------------//
   // // TODO 后面在vue的layout模块使用declare module进行声明合并
   // public vue: any
@@ -87,8 +87,8 @@ export class Container {
   // private __store__ = tempStore
   public __ownTemp__ = {
     //-----内部可写外部只读变量------//
-    preCol: 0,   // 容器大小改变之前的col
-    preRow: 0,   // 容器大小改变之前的row
+    preCol: void 0,   // 容器大小改变之前的col
+    preRow: void 0,   // 容器大小改变之前的row
     offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
     offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
     observers: {
@@ -165,72 +165,49 @@ export class Container {
    * 是否是自动增长col方向的容器
    * */
   public get autoGrowCol() {
-    const baseline = this.getConfig("baseLine")
-    return !this._getConfig('col') && (baseline === 'left' || baseline === 'right')
+    return !this._getConfig('col')
   }
 
   /**
    * 是否是自动增长row方向的容器
    * */
   public get autoGrowRow() {
-    const baseline = this.getConfig("baseLine")
-    return !this._getConfig('row') && (baseline === 'top' || baseline === 'bottom')
+    return !this._getConfig('row')
   }
 
   private _getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
-    if (this.useLayout.hasOwnProperty(name)) return this.useLayout[name]
-    if (this.layout.hasOwnProperty(name)) return this.layout[name]
-    if (this.global.hasOwnProperty(name)) return this.global[name]
-    if (this._default.hasOwnProperty(name)) return this._default[name]
+    const has = (obj: object, name: string) => obj.hasOwnProperty(name)
+    if (has(this.useLayout, name)) return this.useLayout[name]
+    if (has(this.layout, name)) return this.layout[name]
+    if (has(this.global, name)) return this.global[name]
+    if (has(this._default, name)) return this._default[name]
     return void 0
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
     let data = this._getConfig(name)
-    //-------------------------------------------------------------------------//
-    let smartColRowInfo
-    if (['col', 'row'].includes(name)) smartColRowInfo = computeSmartRowAndCol(this)
-    //-------------------如果不是动态的col，则以当前containerW为准------------------//
-    if (name === 'col') {
-      const containerW = this.containerW
-      const autoGrowCol = this.autoGrowCol
-      if (!data) { // 未指定col自动设置
-        if (!this._mounted) data = Math.max(smartColRowInfo.smartCol, containerW)
-        else if (!autoGrowCol) data = containerW
-        else data = smartColRowInfo.smartCol
-        if (data < containerW) data = containerW   // 最低保留盒子的W
-      }
-      //-----------------------------Col限制确定---------------------------------//
-      const curMinCol = this._getConfig('minCol')
-      if (curMinCol && data < curMinCol) data = curMinCol
-      if (data < smartColRowInfo.maxItemW && autoGrowCol) data = smartColRowInfo.maxItemW
-    }
-    //-------------------如果不是动态的row，则以当前containerH为准------------------//
-    if (name === 'row') {
-      const containerH = this.containerH
-      const autoGrowRow = this.autoGrowRow
-      if (!data) {  // 未指定row自动设置
-        if (!this._mounted) data = Math.max(smartColRowInfo.smartRow, containerH)
-        else if (!autoGrowRow) data = containerH
-        else data = smartColRowInfo.smartRow
-        // console.log(data, smartColRowInfo.smartRow);
-        if (data < containerH) data = containerH   // 最低保留盒子的H
-      }
-      // console.log(data,smartColRowInfo.smartRow);
-      //-----------------------------Row限制确定---------------------------------//
-      const curMinRow = this._getConfig('minRow')
-      if (curMinRow && data < curMinRow) data = curMinRow
-      if (data < smartColRowInfo.maxItemH && autoGrowRow) data = smartColRowInfo.maxItemH
-      // console.log('data', data, 'containerH', containerH)
-    }
+    let ev: ConfigurationEvent
+    this.bus.emit('getConfig', {
+      configName: name,
+      configData: data,
+      callback: (e: ConfigurationEvent) => ev = e
+    })
+    if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
+    // if (['col', 'row'].includes(name) && this.el.includes(1)) console.log(name, data)
     return data
   }
 
   /** 将值设置到当前使用的配置信息中 */
-  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): this {
+  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): void {
+    let ev: ConfigurationEvent
+    this.bus.emit('setConfig', {
+      configName: name,
+      configData: data,
+      callback: (e: ConfigurationEvent) => ev = e
+    })
+    if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
     this.useLayout[name] = data
-    return this
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
@@ -264,7 +241,7 @@ export class Container {
     if (this._mounted) return this.bus.emit('error', {
       type: 'RepeatedContainerMounting',
       message: '重复挂载容器被阻止',
-      from: this
+      from: this,
     })
     //-----------------------容器dom初始化-----------------------//
     if (this.el instanceof Element) this.element = this.el
@@ -278,7 +255,7 @@ export class Container {
     this.sequence()
     //-------------------------其他操作--------------------------//
     this.parentItem = parseItemFromPrototypeChain(this.element)
-    this.parent = this.parentItem?.container
+    this.parent = this.parentItem?.container || null
     this.__ownTemp__.preCol = this.getConfig("col")
     this.__ownTemp__.preRow = this.getConfig("row")
     this._observer_()

@@ -1,5 +1,5 @@
 import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
-import {CustomEventOptions} from "@/types";
+import {CustomEventOptions, EventMapType} from "@/types";
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
@@ -7,6 +7,7 @@ import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {ItemExchangeEvent} from "@/plugins";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
+import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 
 export * from './BaseEvent'
 export * from './ItemDragEvent'
@@ -15,10 +16,9 @@ export * from './ItemLayoutEvent'
 export * from './ThrowMessageEvent'
 export * from './ItemExchangeEvent'
 export * from './ItemPosChangeEvent'
+export * from './ContainerSizeChangeEvent'
+export * from './ConfigurationEvent'
 
-type EventMapType<T> = {
-  [Key in keyof T]: Parameters<T[Key]>[0]
-} & Record<'*', BaseEvent>
 
 export const EventMap: EventMapType<CustomEventOptions> = {
   '*': BaseEvent,
@@ -28,6 +28,8 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //--------------other-------------------
   init: ItemLayoutEvent,
   updateLayout: ItemLayoutEvent,
+  getConfig: ConfigurationEvent,
+  setConfig: ConfigurationEvent,
   //-----------------container------------------
   containerMounted: BaseEvent,
   containerUnmounted: BaseEvent,

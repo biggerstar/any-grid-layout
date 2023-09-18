@@ -34,8 +34,8 @@ const container2 = new Container({
     {
       px: 900,
       // col: 9,
-      row: 6,
-      margin: [10, 10],
+      // row: 6,
+      // margin: [10, 10],
       size: [50, 80],
       exchange:true,
       items: fillItemLayoutList(layoutData11, {

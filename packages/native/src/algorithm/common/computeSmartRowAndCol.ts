@@ -1,9 +1,10 @@
 import {Container, Item, ItemPos} from "@/main";
+import {SmartRowAndColType} from "@/types";
 
 /**
  * 智能计算当前 已经布局后items中的最大col边界值和最大row边界值
  * */
-export function computeSmartRowAndCol(container: Container) {
+export function computeSmartRowAndCol(container: Container): SmartRowAndColType {
   let smartCol = 1, smartRow = 1, maxItemW = 1, maxItemH = 1
   const items = container.items
   items.forEach((item: Item) => {

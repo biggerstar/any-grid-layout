@@ -1,6 +1,5 @@
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
-import {Container} from "@/main/container/Container";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
@@ -11,6 +10,7 @@ import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {ItemExchangeEvent} from "@/plugins";
 import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
+import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -36,6 +36,13 @@ export type ItemLimitType = {
   maxH?: number,
   minW?: number,
   minH?: number
+}
+
+export type SmartRowAndColType = {
+  smartCol: number,
+  smartRow: number,
+  maxItemW: number,
+  maxItemH: number,
 }
 
 /** Container 实例化配置选项 */
@@ -77,24 +84,22 @@ export type ContainerInstantiationOptions = {
   global?: CustomLayoutsOption,
 }
 
-export type BaseEmitData = {
-  [key: string | symbol]: any
-  container?: Container
-  item?: Item
+
+export type EventMapType<T> = {
+  [Key in keyof T]: Parameters<T[Key]>[0]
+} & Record<'*', BaseEvent>
+
+export type BaseEmitData<T> = {
+  [Key in keyof T]:
+  Partial<Parameters<T[Key]>[0]>
+  // & { callback?(ev: Parameters<T[Key]>[0]): void }
+  & {
+  /** 回调最终经过插件和内置处理后的事件对象 */
+  callback?(ev): void
+}
 }
 
-export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
-  error: {
-    message: string | number,
-    type?: string,
-    from?: any,
-  },
-  warn: {
-    message: string | number,
-    type?: string,
-    from?: any,
-  },
-}
+export type EventBusType = BaseEmitData<CustomEventOptions>
 
 export type CustomEventOptions = {
   // /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
@@ -133,6 +138,10 @@ export type CustomEventOptions = {
    * @default 无
    * */
   updateLayout?(ev: ItemLayoutEvent): void,
+  /** 获取配置事件，设置过程可被拦截(configName,configData)修改 */
+  getConfig?(ev: ConfigurationEvent): void,
+  /** 设置配置事件，设置过程可被拦截(configName,configData)修改 */
+  setConfig?(ev: ConfigurationEvent): void,
 
   //-----------------container------------------
   /** Container成功挂载事件 */

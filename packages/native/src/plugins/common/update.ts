@@ -14,6 +14,7 @@ import {
   grid_resizing_clone_el,
   grid_resizing_source_el
 } from "@/constant";
+import {hasAutoDirection} from "@/plugins/common/method";
 
 /**
  * 节流后的patchDragDirection
@@ -53,7 +54,7 @@ export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
  * */
 export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}) => {
   const {container, items} = ev
-  if(!container._mounted) return
+  if (!container._mounted) return
   options = Object.assign({
     sort: true
   }, options)
@@ -61,9 +62,10 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
   container.reset()
+  const baseline = container.getConfig("baseline")
   let res = manager.analysis(items, ev.getModifyItems(), {
-    baseline: container.getConfig("baseLine"),
-    auto: ev.hasAutoDirection()
+    baseline,
+    auto: hasAutoDirection(container, baseline)
   })
   if (!res.isSuccess) return
   res.patch()

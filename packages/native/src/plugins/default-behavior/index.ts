@@ -3,3 +3,4 @@
 export * from './DefaultLayoutBehavior'
 export * from './ThrowMessageBehavior'
 export * from './ItemExchangeBehavior'
+export * from './ConfigBehavior'

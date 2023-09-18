@@ -42,12 +42,12 @@ export function autoComputeSizeInfo(direction, containerBoxLen, size = null, mar
   } else if (!direction) {   // col不指定执行动态布局， 主算 col数量，次算margin,size中的一个,缺啥算啥
     // if (margin !== null && size === null) {  }  // col = null size = null 没有这种情况！！
     if (margin === null && size !== null) {   // size固定，自动分配margin和计算col
+      margin = size * ratio
       if (containerBoxLen <= size) {    //  别问为什么这里和上面写重复代码，不想提出来且为了容易理解逻辑，也为了维护容易，差不了几行的-_-
         margin = 0
         direction = 1
       } else {
-        direction = Math.floor(containerBoxLen / size)
-        margin = (containerBoxLen - (size * direction)) / direction
+        direction = Math.floor(containerBoxLen / (size + margin))
       }
     } else if (margin !== null && size !== null) {   // margin和size固定，自动计算col
       if (containerBoxLen <= size) {   //  Container宽度小于预设的size宽度，表示是一行，此时不设置margin将全部宽度给size
@@ -57,7 +57,7 @@ export function autoComputeSizeInfo(direction, containerBoxLen, size = null, mar
         direction = Math.floor((containerBoxLen + margin) / (margin + size))
       }
     } else if (margin !== null && size === null) {
-      size = margin / ratio
+      size = margin / ratio     // 只有margin的时候size以ratio为标准
       if (containerBoxLen <= size) {
         direction = 1
       } else {

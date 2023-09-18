@@ -64,8 +64,7 @@ export class ContainerGeneralImpl {
   maxRow?: number | null = null
 
   /**
-   * (该ratioCol生效能实现铺满col方向)只有col的情况下(margin和size都没有指定),
-   * 或者没有col只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioCol值为1
+   * 在没有指定col的情况下， 假设margin和size自动分配margin/size的比例 10:100 ratioCol值为0.1
    *
    * 注意: 必须为container所挂载的元素指定宽高,且col方向没有指定size和margin才能生效
    *
@@ -74,8 +73,7 @@ export class ContainerGeneralImpl {
   ratioCol?: number = 0.1
 
   /**
-   * (该ratioRow生效能实现铺满row方向)只有row的情况下(margin和size都没有指定),
-   * 或者没有row只有margin情况下， 假设margin和size自动分配margin/size的比例 1:1 ratioRow值为1
+   * 在没有指定row的情况下， 假设margin和size自动分配margin/size的比例 10:100 ratioRow值为0.1
    *
    * 注意: 必须为container所挂载的元素指定宽高，,且row方向没有指定size和margin才能生效
    *
@@ -92,7 +90,7 @@ export class ContainerGeneralImpl {
   /**
    * 基准线，那个方向作为基底线   TODO left bottom，right
    * */
-  baseLine?: BaseLineType = 'top'
+  baseline?: BaseLineType = 'top'
 
   /**
    * 触屏下长按多久响应拖拽事件,默认360ms

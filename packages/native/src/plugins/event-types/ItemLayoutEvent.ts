@@ -222,15 +222,4 @@ export class ItemLayoutEvent extends BaseEvent {
     this._modifyItems = []
     return _items
   }
-
-  /**
-   * 判断当前container的baseline方向盒子是否能自动增长
-   * */
-  public hasAutoDirection() {
-    const container = this.container
-    const baseLine = container.getConfig("baseLine")
-    if (['top', 'bottom'].includes(baseLine) && container.autoGrowRow) return true
-    else if (['left', 'right'].includes(baseLine) && container.autoGrowCol) return true
-    return false
-  }
 }

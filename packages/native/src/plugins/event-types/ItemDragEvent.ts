@@ -168,7 +168,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
 
     if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
-      else if (X < 0 && Y > 0) bus.emit('dragToLetBottom')
+      else if (X < 0 && Y > 0) bus.emit('dragToLeftBottom')
       else if (X < 0 && Y < 0) bus.emit('dragToLeftTop')
       else if (X > 0 && Y < 0) bus.emit('dragToRightTop')
     } else if (X !== 0) {

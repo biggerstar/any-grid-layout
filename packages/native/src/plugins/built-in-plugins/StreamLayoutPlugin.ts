@@ -3,8 +3,14 @@
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {directUpdateLayout, moveToIndexForItems, updateLayout, updateResponsiveResizeLayout} from "@/plugins/common";
-import {ItemExchangeEvent} from "@/plugins";
+import {
+  directUpdateLayout,
+  moveToIndexForItems,
+  patchResponsiveColOrRow,
+  updateLayout,
+  updateResponsiveResizeLayout
+} from "@/plugins/common";
+import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 
 /*-
@@ -19,6 +25,9 @@ import {definePlugin, tempStore} from "@/global";
  *      3.不要使用static item
  * */
 export const StreamLayoutPlugin = definePlugin({
+  getConfig(ev: ConfigurationEvent) {
+    patchResponsiveColOrRow(ev)
+  },
   exchangeProcess(ev: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return

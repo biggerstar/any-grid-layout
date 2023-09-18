@@ -1,5 +1,5 @@
 import {CustomEventOptions, CustomItem, CustomItems} from "@/types";
-import {cloneDeep,mergeDeep} from "@/utils";
+import {cloneDeep, mergeDeep} from "@/utils";
 
 /**
  * 为传入的items填充默认数据, 会返回一个深度克隆后的对象
@@ -27,6 +27,6 @@ export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomIt
 /**
  * 定义插件函数，目的是获得类型提示
  * */
-export function definePlugin(plugin: Record<keyof CustomEventOptions, any> & Record<any, any>) {
+export function definePlugin(plugin: CustomEventOptions & Record<any, any>) {
   return plugin
 }

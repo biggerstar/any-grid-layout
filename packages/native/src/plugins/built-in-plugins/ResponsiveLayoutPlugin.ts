@@ -7,19 +7,22 @@ import {
   directUpdateLayout,
   dragToCrossHair,
   dragToDiagonal,
+  patchResponsiveColOrRow,
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
-import {ItemExchangeEvent} from "@/plugins";
+import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 
-/*------------------------------------------------------------------------------------------*/
 /**
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
+  getConfig(ev: ConfigurationEvent) {
+    patchResponsiveColOrRow(ev)
+  },
   exchangeProcess(ev: ItemExchangeEvent) {
-    const {toContainer, fromItem} = tempStore
+    let {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return
     ev.verification = null
   },

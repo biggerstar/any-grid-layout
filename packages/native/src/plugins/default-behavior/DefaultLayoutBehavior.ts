@@ -6,6 +6,7 @@ import {
   checkItemPositionHasChanged,
   checkItemSizeHasChanged,
   createDraggingCloneEl,
+  hasAutoDirection,
   patchDragDirection,
   updateResizingCloneElSize
 } from "@/plugins/common";
@@ -13,6 +14,7 @@ import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
+import {ContainerSizeChangeEvent} from "@/plugins";
 
 
 /**
@@ -30,16 +32,17 @@ export const DefaultLayoutBehavior = definePlugin({
     container.updateContainerSizeStyle()
     autoSetSizeAndMargin(container, true)
     container.reset()
+    const baseline = container.getConfig("baseline")
     const res = manager.analysis(container.items, null, {
-      baseLine: container.getConfig("baseLine"),
-      auto: ev.hasAutoDirection()
+      baseline,
+      auto: hasAutoDirection(container, baseline)
     })
     res.patch()
     container.items = res.successItems
     container.items.forEach(item => item.mount())
     ev.patchStyle(res.successItems)
     if (!res.isSuccess) {
-      container.bus.emit('error', <any>{
+      container.bus.emit('error', {
         type: 'ContainerOverflowError',
         message: "容器溢出或者Item重叠，您设置了固定的col或row且在首次挂载的时候才会出现该错误",
         from: res
@@ -50,16 +53,24 @@ export const DefaultLayoutBehavior = definePlugin({
   /**
    * container盒子大小改变
    * */
-  $containerResizing(ev: ItemLayoutEvent) {
-    const {preCol, preRow} = ev.container.__ownTemp__
+  $containerResizing(ev: ContainerSizeChangeEvent) {
+    const {isColChanged, isRowChanged, curCol, curRow} = ev
     const container = ev.container
-    const curCol = container.getConfig("col")
-    const curRow = container.getConfig("row")
-    const isChangedCol = !(preCol && preCol === curCol)
-    const isChangedRow = !(preRow && preRow === curRow)
-    if(isChangedCol || isChangedRow) container.bus.emit('containerSizeChanged')
-    if(isChangedCol) container.bus.emit('colChanged')
-    if(isChangedRow) container.bus.emit('rowChanged')
+    if (isColChanged || isRowChanged) container.bus.emit('containerSizeChanged')
+    if (isColChanged) {
+      container.bus.emit('colChanged')
+      container.__ownTemp__.preCol = curCol
+    }
+    if (isRowChanged) {
+      container.bus.emit('rowChanged')
+      container.__ownTemp__.preRow = curRow
+    }
+  },
+
+  containerResizing(ev: ContainerSizeChangeEvent) {
+    autoSetSizeAndMargin(ev.container, true)
+    ev.patchStyle()
+    ev.container.updateContainerSizeStyle()
   },
 
   /**
@@ -111,7 +122,7 @@ export const DefaultLayoutBehavior = definePlugin({
   },
 
   /**
-   * 在container外围Y轴bootom方向移动的事件
+   * 在container外围Y轴bottom方向移动的事件
    * */
   dragOuterBottom(_: ItemDragEvent) {
   },
@@ -120,7 +131,7 @@ export const DefaultLayoutBehavior = definePlugin({
     ev.tryMoveToNearBlank()
   },
 
-  dragToLetBottom(ev: ItemDragEvent) {
+  dragToLeftBottom(ev: ItemDragEvent) {
     ev.tryMoveToNearBlank()
   },
 
