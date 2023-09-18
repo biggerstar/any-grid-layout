@@ -157,7 +157,7 @@ const genPrototypeToRootPath = (target: HTMLElement, touchEvent) => {
     }
   }
   // console.log(touchEvent);
-  if (target instanceof Element) {
+  if (target instanceof HTMLElement) {
     do {
       path.push(target)
       target = <HTMLElement>target.parentNode
@@ -171,11 +171,18 @@ export function getEvTarget(ev: Event) {
   return ev.target || ev['toElement'] || ev['srcElement']
 }
 
+export function getItemFromElement(el): Item | null {
+  return el._isGridItem_ ? el._gridItem_ : null
+}
+
+export function getContainerFromElement(el): Container | null {
+  return el._isGridContainer_ ? el._gridContainer_ : null
+}
 
 /**
  * [parentNode方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
  * */
-export const parseContainerFromPrototypeChain = (target) => {
+export const parseContainerFromPrototypeChain = (target): Container | null => {
   let container
   if (target instanceof Element) {
     do {
@@ -184,7 +191,7 @@ export const parseContainerFromPrototypeChain = (target) => {
         break
       }
       target = target.parentNode
-    } while (target.parentNode)
+    } while (target && target.parentNode)
   }
   return container
 }
@@ -242,7 +249,7 @@ export function parseItemFromPrototypeChain(target): Item | null {
     do {
       if (target._isGridItem_) return target._gridItem_
       target = <HTMLElement>target.parentNode
-    } while (target.parentNode)
+    } while (target && target.parentNode)
   }
   return null
 }

@@ -1,8 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {debounce, merge, parseItemFromPrototypeChain, throttle} from "@/utils/tool";
-import ResizeObserver from 'resize-observer-polyfill/dist/ResizeObserver.es.js';
-import {Sync} from "@/utils/Sync";
+import {
+  debounce,
+  getContainerFromElement,
+  getItemFromElement,
+  merge,
+  parseItemFromPrototypeChain,
+  throttle
+} from "@/utils/tool";
 import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
@@ -77,7 +82,7 @@ export class Container {
   // public vue: any
   // public _VueEvents: object
   //----------------保持状态所用参数---------------------//
-  private _mounted: boolean
+  public _mounted: boolean
   public readonly _default: ContainerGeneralImpl
   // private __store__ = tempStore
   public __ownTemp__ = {
@@ -86,7 +91,10 @@ export class Container {
     preRow: 0,   // 容器大小改变之前的row
     offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
     offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
-    observer: null,
+    observers: {
+      resize: void 0,
+      mutation: void 0,
+    },
     //----------可写变量-----------//
   }
 
@@ -225,38 +233,6 @@ export class Container {
     return this
   }
 
-  /**
-   * el 参数可以传入一个具名ID  或者一个原生的 Element 对象
-   * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 items 数据渲染出来，
-   * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
-   * */
-  public mount(): void {
-    if (this._mounted) return this.bus.emit('error', {
-      type: 'RepeatedContainerMounting',
-      message: '重复挂载容器被阻止',
-      from: this
-    })
-    const _mountedFun = () => {
-      //-----------------------容器dom初始化-----------------------//
-      if (this.el instanceof Element) this.element = this.el
-      if (!this.element) {
-        if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
-        if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
-      }
-      this._createGridContainerBox()
-      //-----------------容器布局信息初始化与检测--------------------//
-      this._init()
-      this.sequence()
-      //-------------------------其他操作--------------------------//
-      this.parentItem = parseItemFromPrototypeChain(this.element)
-      this.parent = this.parentItem?.container
-      this._observer_()
-      this._mounted = true
-      this.updateContainerSizeStyle()  // 在 _mounted 之后
-    }
-    Sync.run(_mountedFun)
-  }
-
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
   private _createGridContainerBox = () => {
     this.contentElement = document.createElement('div')
@@ -272,35 +248,112 @@ export class Container {
 
   /** 手动添加item渲染 */
   public render(renderCallback: Function) {
-    Sync.run(() => {
-      if (this.element && this.element.clientWidth <= 0) throw new Error('请指定容器宽高')
-      if (typeof renderCallback === 'function') {
-        renderCallback(this.layout.items || [], this.layout, this.element)
-      }
-      if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
+    if (this.element && this.element.clientWidth <= 0) throw new Error('请指定容器宽高')
+    if (typeof renderCallback === 'function') {
+      renderCallback.call(this, this.layout.items, this.layout, this.element)
+    }
+    if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
+  }
+
+  /**
+   * el 参数可以传入一个具名ID  或者一个原生的 Element 对象
+   * 直接渲染Container到实例化传入的所指 ID 元素中, 将实例化时候传入的 items 数据渲染出来，
+   * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
+   * */
+  public mount(): void {
+    if (this._mounted) return this.bus.emit('error', {
+      type: 'RepeatedContainerMounting',
+      message: '重复挂载容器被阻止',
+      from: this
     })
+    //-----------------------容器dom初始化-----------------------//
+    if (this.el instanceof Element) this.element = this.el
+    if (!this.element) {
+      if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
+      if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+    }
+    this._createGridContainerBox()
+    //-----------------容器布局信息初始化与检测--------------------//
+    this._init()
+    this.sequence()
+    //-------------------------其他操作--------------------------//
+    this.parentItem = parseItemFromPrototypeChain(this.element)
+    this.parent = this.parentItem?.container
+    this._observer_()
+    this.updateContainerSizeStyle()
+    this._mounted = true
   }
 
   /**
    * 将item成员从Container中全部移除
    * */
-  public unmount() {
-    this.items.forEach((item: Item) => item.unmount())
+  public unmount(): void {
+    if (!this._mounted) return
+    Array.from(this.items).forEach((item: Item) => item.unmount()) // 使用Array.from是不会被卸载过程影响到原数组导致卸载不干净
     this.reset()
     this._mounted = false
+    if (this.contentElement.isConnected) this.element.removeChild(this.contentElement)
     this._disconnect_()
     this.bus.emit('containerUnmounted')
   }
 
+  /** 将item成员从Container中全部移除，之后重新渲染  */
+  public remount() {
+    this.unmount()
+    this.mount()
+  }
+
   /** 移除对容器的resize监听  */
   private _disconnect_() {
-    this.__ownTemp__.observer['disconnect']()
+    const observers = this.__ownTemp__.observers || {}
+    Object.values(observers).forEach(observer => observer && observer.disconnect())
+  }
+
+  /**
+   * 监听浏览器窗口resize
+   * 监听container，item元素卸载
+   * */
+  public _observer_() {
+    if (this._mounted) return
+    const layoutChangeFun = () => this.bus.emit('containerResizing') || this._trySwitchLayout()
+    const observerResize = () => layoutChangeFun() || _debounce() // 防抖，保证最后一次执行执行最终布局
+    const _debounce: Function = debounce(layoutChangeFun, 300)
+    const _throttle: Function = throttle(observerResize, 80)
+    const resizeObserver = new ResizeObserver(<any>_throttle)  //  ResizeObserver在es6才支持，若要兼容需要外部自行polyfill
+    resizeObserver.observe(this.element)
+    this.__ownTemp__.observers.resize = resizeObserver
+    //---------------------------------------------------------------------
+    const mutationOb = (mutations) => {
+      // 如果[container | item]节点被任何方式移除，则触发unmount卸载并触发其unmourned事件
+      const removedNodes = mutations.map(mutation => [...mutation.removedNodes]).flat(1)
+      // console.log(removedNodes)
+      removedNodes.forEach(node => {
+        const item = getItemFromElement(node)
+        if (item) {
+          Array.from(item.element.getElementsByClassName(grid_container_class_name))
+            .map(getContainerFromElement)
+            .filter(Boolean)
+            .forEach(container => container?.unmount())
+        }
+        const container = getContainerFromElement(node)
+        if (container) container.unmount()
+      })
+    }
+    const mutationObserver = new MutationObserver(mutationOb)
+    mutationObserver.observe(this.element, {   // 监控container移除
+      childList: true,
+      // subtree:false
+    })
+    mutationObserver.observe(this.contentElement, { // 监控所有的item移除
+      childList: true,
+    })
+    this.__ownTemp__.observers.mutation = mutationObserver
   }
 
   /**
    * 尝试切换并渲染布局  // TODO getter layout 里面判断窗口大小并返回对应布局数据
    * */
-  private _trySwitchLayout() {
+  private _trySwitchLayout(): void {
     const useLayout = this.useLayout
     if (!this.getConfig("px") || !useLayout.px) return
     if (this.getConfig("px") === useLayout.px) return
@@ -309,27 +362,6 @@ export class Container {
       this.clear();
       (useLayout.items as Item[]).forEach((item) => this.addItem(item))
     }
-  }
-
-  /**
-   * 监听浏览器窗口resize
-   * */
-  public _observer_() {
-    let refuseFirstCallDebounceAndThrottle = 0  // 拒绝container.mount时第一次节流函数和防抖函数执行
-    const layoutChangeFun = () => {
-      if (refuseFirstCallDebounceAndThrottle++ < 2) return
-      if (!this._mounted) return
-      this.bus.emit('containerResizing')
-      this._trySwitchLayout()
-    }
-    const observerResize = () => {
-      layoutChangeFun()
-      _debounce() // 防抖，保证最后一次执行执行最终布局
-    }
-    const _debounce: Function = debounce(layoutChangeFun, 300)
-    const _throttle: Function = throttle(observerResize, 80)
-    this.__ownTemp__.observer = new ResizeObserver(_throttle)
-    this.__ownTemp__.observer['observe'](this.element)
   }
 
   /**
@@ -423,12 +455,6 @@ export class Container {
     // console.log(layoutInfo);
   }
 
-  /** 将item成员从Container中全部移除，之后重新渲染  */
-  public remount() {
-    this.unmount()
-    this.mount()
-  }
-
   /**
    * 添加一个itemOptions配置信息创建一个Item实例到items列表中，不会挂载到dom中
    * 框架内部添加Item时所有的Item必须通过这里添加到容器中
@@ -443,12 +469,13 @@ export class Container {
     if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
     else item = new Item(customOpt)
     if (syncCustomItems) this.layout.items.push(customOpt)
-    this.items.push(item)
     // console.log(item === itemOptions)
     item.customOptions = customOpt
     item.container = this
     item.parentElement = this.contentElement
     item.i = this.items.length
+    this.items.push(item)
+    this.bus.emit('addItemSuccess', {item})
     return item
   }
 

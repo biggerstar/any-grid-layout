@@ -150,9 +150,7 @@ export class Item extends ItemGeneralImpl {
       this.element['_gridItem_'] = this
       this.element['_isGridItem_'] = true
       this._mounted = true
-      this.container.bus.emit('itemMounted', {
-        target: this
-      })
+      this.container.bus.emit('itemMounted', {item: this})
     }
     _mountedFun()
   }
@@ -164,11 +162,11 @@ export class Item extends ItemGeneralImpl {
   public unmount() {
     if (this._mounted) {
       const container = this.container
-      container.contentElement.removeChild(this.element)
+      if (this.element.isConnected) container.contentElement.removeChild(this.element)
       this.remove()
       container.layoutManager.unmark(this.pos)
-      container.bus.emit('itemUnmounted')
       this._mounted = false
+      container.bus.emit('itemUnmounted', {item: this})
     } else {
       this.container.bus.emit('error', {
         type: 'ItemAlreadyRemove',
@@ -206,7 +204,7 @@ export class Item extends ItemGeneralImpl {
         } else if (transition.time === 0) {
           style.transition = 'none'
         }
-        updateStyle(style,this.element)
+        updateStyle(style, this.element)
       },
       rule: () => this.__temp__.isDelayLoadAnimation
     })
@@ -230,7 +228,7 @@ export class Item extends ItemGeneralImpl {
 
       // transform
       // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
-    },this.element)
+    }, this.element)
   }
 
   /**

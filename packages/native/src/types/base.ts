@@ -77,7 +77,8 @@ export type ContainerInstantiationOptions = {
 
 export type BaseEmitData = {
   [key: string | symbol]: any
-  target?: Item
+  container?: Container
+  item?: Item
 }
 
 export type EventBusType = Record<keyof CustomEventOptions, BaseEmitData> & {
@@ -121,14 +122,8 @@ export type CustomEventOptions = {
   /** Item添加成功事件 */
   addItemSuccess?(ev: BaseEvent): void,
 
-
   /** item位置变化时响应的事件,只有位置变化才触发 */
   itemMovePositionChange?(oldX: number, oldY: number, newX: number, newY: number): void
-
-  /**
-   *交换成功后oldItem会从原Container中卸载,而新Item将会自动添加进新容器中，无需手动添加，返回null或者false将会阻止该次交换
-   * */
-  crossContainerExchange?(oldItem: Item, newItem: Item): void,
 
   /**
    *   鼠标移动到容器边界自动滚动时触发，direction是方向X或Y,offset是滚动距离，触发间隔36ms，
@@ -173,7 +168,7 @@ export type CustomEventOptions = {
   updateLayout?(ev: ItemLayoutEvent): void,
 
   /**
-   * 内置用：跨容器移动开始时派发函数
+   * [ 内置用 ]：跨容器移动开始时派发函数
    * */
   exchange?(ev: ItemExchangeEvent): void;
 

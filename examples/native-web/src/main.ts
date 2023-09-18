@@ -1,6 +1,7 @@
 import container1 from "@/container/container1";
 import {
   BaseEvent,
+  definePlugin,
   ItemDragEvent,
   ItemExchangeEvent,
   ItemResizeEvent,
@@ -18,46 +19,26 @@ console.log(container1)
 console.log(container2)
 console.log(container3)
 
-function insertItemContent(ev: BaseEvent) {
-  const item = ev.target
-  if (!item) return
-  if (item.contentElement.innerHTML) return
-  item.contentElement.innerHTML = item.i.toString()
-  updateStyle({
-    fontSize: `${Math.max(30, <number>item.size[0] / 4)}px`,
-    fontWeight: '800',
-    color: '#6b798e'
-  }, item.contentElement)
-}
 
-container1
-  .use({
-    resizing(ev: ItemResizeEvent) {
-      // ev.prevent()
-      // console.log(111111111111111111)
-    },
-    dragging(ev: ItemDragEvent) {
-      // ev.prevent()
-      // console.log('container1',22222222222222)
-    },
-    itemMounted(ev: BaseEvent) {
-      insertItemContent(ev)
-    },
-    exchange(ev: ItemExchangeEvent) {
-      // ev.prevent()
-    },
-    resizeToRight(ev: ItemResizeEvent) {
-      // ev.prevent()
-    },
-    resizeToLeft(ev: ItemResizeEvent) {
-      // ev.prevent()
-    }
-  })
-  .use(ResponsiveLayoutPlugin)
-
-container2.use({
+const plugin = definePlugin({
   error(ev: ThrowMessageEvent) {
     console.log(ev.message)
+  },
+  warn(ev: ThrowMessageEvent) {
+    console.warn(ev.message)
+  },
+  itemMounted(ev: BaseEvent) {
+    console.log('itemMounted', ev.item)
+    insertItemContent(ev)
+  },
+  itemUnmounted(ev: BaseEvent) {
+    console.log('itemUnmounted', ev.item)
+  },
+  containerMounted(ev: BaseEvent) {
+    console.log('containerMounted', ev)
+  },
+  containerUnmounted(ev: BaseEvent) {
+    console.log('containerUnmounted', ev.container.el)
   },
   resizing(ev: ItemResizeEvent) {
     // ev.prevent()
@@ -66,9 +47,6 @@ container2.use({
   dragging(ev: ItemDragEvent) {
     // ev.prevent()
     // console.log('container2',222222222222)
-  },
-  itemMounted(ev: BaseEvent) {
-    insertItemContent(ev)
   },
   exchange(ev: ItemExchangeEvent) {
     // ev.prevent()
@@ -96,7 +74,29 @@ container2.use({
   },
 })
 
-container3.use(StreamLayoutPlugin)
+
+function insertItemContent(ev: BaseEvent) {
+  const item = ev.item
+  if (!item) return
+  if (item.contentElement.innerHTML) return
+  item.contentElement.innerHTML = item.i.toString()
+  updateStyle({
+    fontSize: `${Math.max(30, <number>item.size[0] / 4)}px`,
+    fontWeight: '800',
+    color: '#6b798e'
+  }, item.contentElement)
+}
+
+container1
+  .use(plugin)
+  .use(ResponsiveLayoutPlugin)
+
+container2
+  .use(plugin)
+
+container3
+  .use(plugin)
+  .use(StreamLayoutPlugin)
 
 
 container1.mount()

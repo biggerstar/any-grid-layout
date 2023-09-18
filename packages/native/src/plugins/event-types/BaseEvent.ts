@@ -8,14 +8,13 @@ export class BaseEvent {
   public name: keyof CustomEventOptions
 
   constructor(options = {}) {
-    this.target = tempStore.fromItem  // 有fromItem说明正在操作item则给target，可以被外部options覆盖
     Object.assign(<object>this, options)
   }
 
   public container: Container
+  public item: Item | null = null
   public layoutManager: LayoutManager
   public pluginManager: PluginManager
-  public target: Item | null = null
   public isPrevent: boolean = false
 
   /**

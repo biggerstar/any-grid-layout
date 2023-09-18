@@ -9,9 +9,10 @@ import {
   updateResizingCloneElSize
 } from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {updateStyle} from "@/utils";
+import {parseContainerFromPrototypeChain, updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
+import {grid_container_class_name} from "@/constant";
 
 
 /**
