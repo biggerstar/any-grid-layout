@@ -17,23 +17,23 @@ export function autoComputeSizeInfo(direction, containerBoxLen, size = null, mar
         //   marginAndSizeWidth +  margin[0]
         // ---------------------------------   =  1
         //     (margin  + size) * col
-        // containerBoxLen +  margin = (margin  + size) * col
-        // size = (containerBoxLen - ((col - 1) *  margin)) / col
+        // containerBoxLen +  margin = (margin * 2 + size) * col
+        // size = (containerBoxLen - ((col - 1) *  margin* 2)) / col
         // margin=  size * ratioCol
         // 通过消元法消去 size
         // 得到： margin    = containerBoxLen /  ( col - 1 + (col / ratioCol) )
         margin = containerBoxLen / (direction - 1 + (direction / ratio))
         // size = margin / ratioCol
-        size = (containerBoxLen - (direction - 1) * margin) / direction
+        size = (containerBoxLen - (direction - 1) * margin * 2) / direction
         // console.log(size * col + (margin * (col - 1)));
       }
     } else if (size !== null && margin === null) {   // size[0]固定，自动分配margin
       if (parseInt(direction.toString()) === 1) margin = 0
-      else margin = (containerBoxLen - (direction * size)) / (direction - 1)
+      else margin = (containerBoxLen - (direction * size)) / (direction - 1) / 2
       if (margin <= 0) margin = 0
     } else if (size === null && margin !== null) {  // margin固定，自动分配size
       if (parseInt(direction.toString()) === 1) margin = 0
-      size = (containerBoxLen - ((direction - 1) * margin)) / direction
+      size = (containerBoxLen - ((direction - 1) * margin) * 2) / direction
       if (size <= 0) throw new Error('在margin[*(0 or 1)]或在margin* (X or Y)为' + margin +
         '的情况下,size[*(0 or 1)]或size*(Width or Height)的Item主体宽度已经小于0,' +
         '您可以调小margin或者设定Container最小宽度或者高度(css:min-XXX),且保证margin*(col||row)大于最小宽度')
@@ -47,21 +47,21 @@ export function autoComputeSizeInfo(direction, containerBoxLen, size = null, mar
         margin = 0
         direction = 1
       } else {
-        direction = Math.floor(containerBoxLen / (size + margin))
+        direction = Math.floor(containerBoxLen / (size + margin * 2))
       }
     } else if (margin !== null && size !== null) {   // margin和size固定，自动计算col
       if (containerBoxLen <= size) {   //  Container宽度小于预设的size宽度，表示是一行，此时不设置margin将全部宽度给size
         margin = 0
         direction = 1
       } else {     //  上面不是一行那这里就是多行了~~~~~~
-        direction = Math.floor((containerBoxLen + margin) / (margin + size))
+        direction = Math.floor((containerBoxLen + margin) / (margin * 2 + size))
       }
     } else if (margin !== null && size === null) {
       size = margin / ratio     // 只有margin的时候size以ratio为标准
       if (containerBoxLen <= size) {
         direction = 1
       } else {
-        direction = Math.floor((containerBoxLen + margin) / (margin + size))
+        direction = Math.floor((containerBoxLen + margin) / (margin * 2 + size))
       }
     }
   }

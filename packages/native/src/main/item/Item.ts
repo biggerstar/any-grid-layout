@@ -235,7 +235,7 @@ export class Item extends ItemGeneralImpl {
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetLeft() {
-    const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] : 0
+    const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] * 2 : 0
     return ((this.pos.x - 1) * this.size[0]) + marginWidth
   }
 
@@ -243,7 +243,7 @@ export class Item extends ItemGeneralImpl {
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetTop() {
-    const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] : 0
+    const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] * 2 : 0
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
   }
 
@@ -253,7 +253,7 @@ export class Item extends ItemGeneralImpl {
    * */
   public nowWidth = (w?: number) => {
     const nowW = w ? w : this.pos.w
-    const marginWidth = nowW > 1 ? (nowW - 1) * this.margin[0] : 0
+    const marginWidth = nowW > 1 ? (nowW - 1) * this.margin[0] * 2 : 0
     return (nowW * this.size[0]) + marginWidth
   }
 
@@ -263,7 +263,7 @@ export class Item extends ItemGeneralImpl {
    * */
   public nowHeight = (h?: number) => {
     const nowH = h ? h : this.pos.h
-    const marginHeight = nowH > 1 ? (nowH - 1) * this.margin[1] : 0
+    const marginHeight = nowH > 1 ? (nowH - 1) * this.margin[1] * 2 : 0
     return (nowH * this.size[1]) + marginHeight
   }
 
@@ -271,7 +271,7 @@ export class Item extends ItemGeneralImpl {
    * @return  {number}  根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
    * */
   public minWidth() {
-    const marginWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * this.margin[0] : 0
+    const marginWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * this.margin[0] * 2 : 0
     return (this.pos.minW * this.size[0]) + marginWidth
   }
 
@@ -279,7 +279,7 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
    * */
   public minHeight = () => {
-    const marginHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * this.margin[1] : 0
+    const marginHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * this.margin[1] * 2 : 0
     return (this.pos.minH * this.size[1]) + marginHeight
   }
 
@@ -288,7 +288,7 @@ export class Item extends ItemGeneralImpl {
    * */
   public maxWidth() {
     if (!isFinite(this.pos.maxW)) return Infinity
-    return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0]
+    return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0] * 2
   }
 
   /**
@@ -296,7 +296,7 @@ export class Item extends ItemGeneralImpl {
    * */
   public maxHeight = () => {
     if (!isFinite(this.pos.maxH)) return Infinity
-    return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1]
+    return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1] * 2
   }
 
   /**

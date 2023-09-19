@@ -10,7 +10,7 @@ import {
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
 import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerInstantiationOptions, CustomEventOptions, CustomItem, EventBusType} from "@/types";
+import {ContainerInstantiationOptions, CustomItem, EventBusType, GridPlugin} from "@/types";
 import {startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
@@ -145,7 +145,7 @@ export class Container {
     })
   }
 
-  public use(plugin: CustomEventOptions): this {
+  public use(plugin: GridPlugin): this {
     this.pluginManager.use(plugin)
     return this
   }
@@ -194,7 +194,6 @@ export class Container {
       callback: (e: ConfigurationEvent) => ev = e
     })
     if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
-    // if (['col', 'row'].includes(name) && this.el.includes(1)) console.log(name, data)
     return data
   }
 
@@ -255,6 +254,7 @@ export class Container {
     this.sequence()
     //-------------------------其他操作--------------------------//
     this.parentItem = parseItemFromPrototypeChain(this.element)
+    if (this.parentItem) this.parentItem.container.childContainer.push(this)
     this.parent = this.parentItem?.container || null
     this.__ownTemp__.preCol = this.getConfig("col")
     this.__ownTemp__.preRow = this.getConfig("row")
@@ -294,7 +294,8 @@ export class Container {
    * */
   public _observer_() {
     if (this._mounted) return
-    const layoutChangeFun = () => this.bus.emit('containerResizing') || this._trySwitchLayout()
+    let preventFirstResizingCount = 0   // 阻止resize首次加载触发的容器调整大小改变事件
+    const layoutChangeFun = () => preventFirstResizingCount++ > 2 && this.bus.emit('containerResizing') || this._trySwitchLayout()
     const observerResize = () => layoutChangeFun() || _debounce() // 防抖，保证最后一次执行执行最终布局
     const _debounce: Function = debounce(layoutChangeFun, 300)
     const _throttle: Function = throttle(observerResize, 80)
@@ -358,26 +359,26 @@ export class Container {
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  public updateContainerSizeStyle(): void {
+  public updateContainerSizeStyle({col, row} = {}): void {
     updateStyle({
-      width: `${this.nowWidth()}px`,
-      height: `${this.nowHeight()}px`,
+      width: `${this.nowWidth(col)}px`,
+      height: `${this.nowHeight(row)}px`,
     }, this.contentElement)
   }
 
   /** 计算当前Items所占用的Container宽度  */
-  public nowWidth(): number {
+  public nowWidth(nowCol?: number): number {
     let marginWidth = 0
-    let nowCol = this.getConfig("col")
-    if (nowCol > 1) marginWidth = (nowCol - 1) * this.getConfig("margin")[0]
+    nowCol = nowCol || this.getConfig("col")
+    if (nowCol > 1) marginWidth = (nowCol - 1) * this.getConfig("margin")[0] * 2
     return (nowCol * this.getConfig("size")[0]) + marginWidth || 0
   }
 
   /** 计算当前Items所占用的Container高度   */
-  public nowHeight(): number {
+  public nowHeight(nowRow?: number): number {
     let marginHeight = 0
-    let nowRow = this.getConfig("row")
-    if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1]
+    nowRow = nowRow || this.getConfig("row")
+    if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1] * 2
     return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
   }
 
@@ -484,8 +485,8 @@ export class Container {
   public pxToW = (pxNum: number) => {
     const margin = this.getConfig('margin')
     const size = this.getConfig('size')
-    if (margin[0] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (margin[0] + size[0]))
+    if (size[0] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
   }
 
   /**
@@ -494,7 +495,7 @@ export class Container {
   public pxToH = (pxNum: number) => {
     const margin = this.getConfig('margin')
     const size = this.getConfig('size')
-    if (margin[1] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (margin[1] + size[1]))
+    if (size[1] >= Math.abs(pxNum)) return 1
+    else return Math.ceil(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
   }
 }
