@@ -5,10 +5,11 @@ import {CustomItemPos} from "@/types";
 import {createMovableRange, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
 
+
 export class ItemDragEvent extends ItemLayoutEvent {
-  public toItem: Item | null
-  public startX: number // 克隆元素当前位于网格左上角相对的栅格X位置
-  public startY: number // 克隆元素当前位于网格左上角相对中的栅格Y位置
+  public readonly toItem: Item | null
+  public readonly startX: number // 克隆元素当前位于网格左上角相对的栅格X位置
+  public readonly startY: number // 克隆元素当前位于网格左上角相对中的栅格Y位置
 
   constructor(opt) {
     super(opt);

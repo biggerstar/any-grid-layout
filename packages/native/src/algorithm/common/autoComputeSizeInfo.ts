@@ -34,9 +34,7 @@ export function autoComputeSizeInfo(direction, containerBoxLen, size = null, mar
     } else if (size === null && margin !== null) {  // margin固定，自动分配size
       if (parseInt(direction.toString()) === 1) margin = 0
       size = (containerBoxLen - ((direction - 1) * margin) * 2) / direction
-      if (size <= 0) throw new Error('在margin[*(0 or 1)]或在margin* (X or Y)为' + margin +
-        '的情况下,size[*(0 or 1)]或size*(Width or Height)的Item主体宽度已经小于0,' +
-        '您可以调小margin或者设定Container最小宽度或者高度(css:min-XXX),且保证margin*(col||row)大于最小宽度')
+      if (size <= 0) size = margin / ratio
     } else if (size !== null && margin !== null) {
     } // margin和size都固定,啥事都不做，用户给的已知数太多,都不用计算了
   } else if (!direction) {   // col不指定执行动态布局， 主算 col数量，次算margin,size中的一个,缺啥算啥

@@ -1,6 +1,7 @@
 import {CustomItemPos} from "@/types";
 import {Item} from "@/main";
 import {getKebabCase} from "@/utils/tool";
+import {tempStore} from "@/global";
 
 
 /**
@@ -34,4 +35,16 @@ export function updateStyle(
   let cssText = ''
   Object.keys(style).forEach((key) => cssText = `${cssText} ${getKebabCase(key)}:${style[key]}; `)
   element.style.cssText = element.style.cssText + ';' + cssText
+}
+
+/**
+ * 判断当前操作行为是否允许跨容器移动
+ * */
+export function canExchange() {
+  const {fromContainer, fromItem, toContainer} = tempStore
+  if (!fromContainer || !fromItem || !toContainer) return false
+  return !(!fromItem.exchange   /* 要求item和容器都允许交换才能继续 */
+    || !toContainer.getConfig('exchange')
+    || !fromContainer.getConfig('exchange'));
+
 }

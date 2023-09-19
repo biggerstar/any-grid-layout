@@ -5,12 +5,12 @@ import {isNumber} from "is-what";
  * container大小改变事件对象
  * */
 export class ContainerSizeChangeEvent extends ItemLayoutEvent {
-  public isColChanged: boolean
-  public isRowChanged: boolean
-  public preCol?: number
-  public preRow?: number
-  public curCol: number
-  public curRow: number
+  public readonly isColChanged: boolean
+  public readonly isRowChanged: boolean
+  public readonly preCol?: number
+  public readonly preRow?: number
+  public readonly curCol: number
+  public readonly curRow: number
 
   constructor(opt) {
     super(opt);

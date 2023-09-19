@@ -8,8 +8,8 @@ import {tempStore} from "@/global";
  * 请注意，如果想实现Limit限制，请尽量使用maxWidth,minHeight...等限制样式
  * */
 export class ItemResizeEvent extends ItemLayoutEvent {
-  public w: number // 当前的占用网格的宽
-  public h: number // 当前的占用网格的宽
+  public readonly w: number // 当前的占用网格的宽
+  public readonly h: number // 当前的占用网格的宽
 
   constructor(...args) {
     super(...args);

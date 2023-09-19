@@ -7,7 +7,7 @@ import {
   cursor_mousedown,
   cursor_mousemove,
   cursor_mouseup,
-  endWork_mouseup,
+  endWork_mouseup, itemCloneEl_mousemove,
   itemClose_mouseup,
   itemDrag_mousedown,
   itemResize_mousedown,
@@ -49,6 +49,8 @@ export function allMousemove(ev) {
   itemResize_mousemove(ev)
   /* itemDrag */
   itemDrag_mousemove(ev)
+  /* itemCloneEl */
+  itemCloneEl_mousemove(ev)
 }
 
 export function allMouseup(ev) {

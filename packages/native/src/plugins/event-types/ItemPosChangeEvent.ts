@@ -2,10 +2,10 @@ import {tempStore} from "@/global";
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 
 export class ItemPosChangeEvent extends BaseEvent {
-  public lastX: number    // 未改变之前的x
-  public lastY: number    // 未改变之前的y
-  public lastW: number    // 未改变之前的w
-  public lastH: number    // 未改变之前的h
+  public readonly lastX: number    // 未改变之前的x
+  public readonly lastY: number    // 未改变之前的y
+  public readonly lastW: number    // 未改变之前的w
+  public readonly lastH: number    // 未改变之前的h
   constructor(opt) {
     super(opt);
     const {fromItem, lastResizeW, lastResizeH, lastDragX, lastDragY} = tempStore

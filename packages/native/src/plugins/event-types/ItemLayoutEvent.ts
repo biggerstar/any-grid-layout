@@ -5,16 +5,16 @@ import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/t
 import {tempStore} from "@/global";
 
 export class ItemLayoutEvent extends BaseEvent {
-  public fromItem: Item
-  public mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
-  public mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
-  public lastMousePointX: number | null // 上一个mousePointX位置
-  public lastMousePointY: number | null // 上一个mousePointY位置
-  public gridX: number // 当前鼠标限制在容器内的x栅格值
-  public gridY: number // 当前鼠标限制在容器内的y栅格值
-  public relativeX: number // 当前鼠标距离源容器的真实x栅格值
-  public relativeY: number   // 当前鼠标距离源容器的真实y栅格值
-  public itemInfo: {  // 源item的信息
+  public readonly fromItem: Item
+  public readonly mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
+  public readonly mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
+  public readonly lastMousePointX: number | null // 上一个mousePointX位置
+  public readonly lastMousePointY: number | null // 上一个mousePointY位置
+  public readonly gridX: number // 当前鼠标限制在容器内的x栅格值
+  public readonly gridY: number // 当前鼠标限制在容器内的y栅格值
+  public readonly relativeX: number // 当前鼠标距离源容器的真实x栅格值
+  public readonly relativeY: number   // 当前鼠标距离源容器的真实y栅格值
+  public readonly itemInfo: {  // 源item的信息
     width: number // 当前源item元素元素的高
     height: number // 当前源item元素元素的高
     minWidth: number  // 和item的minWidth函数的值是一样的，下方同理
@@ -22,13 +22,13 @@ export class ItemLayoutEvent extends BaseEvent {
     minHeight: number
     maxHeight: number
   } = {}
-  public offsetTop: number // 当前item左上角的点和container top边界距离
-  public offsetLeft: number // 当前item左上角的点和container left边界距离
-  public offsetRight: number // 当前item左上角的点和container right边界距离
-  public offsetBottom: number // 当前item左上角的点和container bottom边界距离
-  public cloneElRect: DOMRect // 当前clone元素的rect信息
-  public cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
-  public cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
+  public readonly offsetTop: number // 当前item左上角的点和container top边界距离
+  public readonly offsetLeft: number // 当前item左上角的点和container left边界距离
+  public readonly offsetRight: number // 当前item左上角的点和container right边界距离
+  public readonly offsetBottom: number // 当前item左上角的点和container bottom边界距离
+  public readonly cloneElRect: DOMRect // 当前clone元素的rect信息
+  public readonly cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
+  public readonly cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
 
   /**
    * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
@@ -51,7 +51,7 @@ export class ItemLayoutEvent extends BaseEvent {
       lastMousePointY,
       cloneElement,
       mousedownItemOffsetLeft,
-      mousedownItemOffsetTop
+      mousedownItemOffsetTop,
     } = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//

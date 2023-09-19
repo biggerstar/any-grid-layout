@@ -4,15 +4,15 @@ export class ThrowMessageEvent extends BaseEvent {
   /**
    * 错误类型
    * */
-  type?: string
+  public readonly type?: string
 
   /**
    * 错误信息
    * */
-  message: string | number = ''
+  public readonly message: string | number = ''
 
   /**
    * 错误来源
    * */
-  from?: any = null
+  public readonly from?: any = null
 }

@@ -89,8 +89,6 @@ export class Container {
     //-----内部可写外部只读变量------//
     preCol: void 0,   // 容器大小改变之前的col
     preRow: void 0,   // 容器大小改变之前的row
-    offsetPageX: 0,        // 容器距离浏览器可视区域左边的距离
-    offsetPageY: 0,       //  容器距离浏览器可视区域上边的距离
     observers: {
       resize: void 0,
       mutation: void 0,
