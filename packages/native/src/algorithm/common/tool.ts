@@ -46,8 +46,8 @@ export function analysisCurPositionInfo(container: Container): {
   const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
   const margin = container.getConfig('margin')
   const size = container.getConfig('size')
-  result.relativeX = Math.ceil(Math.abs(relativeLeftTopX4Container) / (margin[0] + size[0])) * Math.sign(relativeLeftTopX4Container)
-  result.relativeY = Math.ceil(Math.abs(relativeLeftTopY4Container) / (margin[1] + size[1])) * Math.sign(relativeLeftTopY4Container)
+  result.relativeX = Math.ceil(Math.abs(relativeLeftTopX4Container) / (margin[0] * 2 + size[0])) * Math.sign(relativeLeftTopX4Container)
+  result.relativeY = Math.ceil(Math.abs(relativeLeftTopY4Container) / (margin[1] * 2 + size[1])) * Math.sign(relativeLeftTopY4Container)
   const contentBoxW = container.contentBoxW
   const contentBoxH = container.contentBoxH
   result.gridX = result.relativeX < 1 ? 1 : (result.relativeX > contentBoxW ? contentBoxW : result.relativeX)

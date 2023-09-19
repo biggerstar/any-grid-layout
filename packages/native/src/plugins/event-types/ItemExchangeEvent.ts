@@ -5,26 +5,29 @@ import {Container, Item} from "@/main";
 import {CustomItem, CustomItemPos} from "@/types";
 import {analysisCurPositionInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {hasAutoDirection, updateExchangedCloneElementSize4Item} from "@/plugins/common";
+import {hasAutoDirection} from "@/plugins/common";
 
 export class ItemExchangeEvent extends ItemDragEvent {
-  public spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
-  public mousePos: CustomItemPos | null = null   // 当前鼠标所在位置的pos
-  public toItem: Item | null
-  public newItem: Item | null
-  public fromContainer: Container
-  public toContainer: Container
-  public toContainerRect: DOMRect // toContainer的DomRect位置信息
-  public toGridX: number   // 鼠标位于目标容器内的网格位置
-  public toGridY: number   // 同上
-  public toStartX: number // 克隆元素当前位于新容器目标网格左上角相对的栅格X位置
-  public toStartY: number // 克隆元素当前位于新容器目标网格左上角相对的栅格Y位置
+  public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
+  public readonly mousePos: CustomItemPos | null = null   // 当前鼠标所在位置的pos
+  public readonly toItem: Item | null
+  public readonly newItem: Item | null
+  public readonly fromContainer: Container
+  public readonly toContainer: Container
+  public readonly toContainerRect: DOMRect // toContainer的DomRect位置信息
+  public readonly toGridX: number   // 鼠标位于目标容器内的网格位置
+  public readonly toGridY: number   // 同上
+  public readonly toStartX: number // 克隆元素当前位于新容器目标网格左上角相对的栅格X位置
+  public readonly toStartY: number // 克隆元素当前位于新容器目标网格左上角相对的栅格Y位置
+  public isExchange: boolean
+
   constructor(options) {
     super(options);
     const {fromContainer, fromItem, newItem, toItem, toContainer} = tempStore
     this.fromContainer = <Container>fromContainer
     this.toContainer = <Container>toContainer
     if (!toContainer || !fromItem) return
+    this.isExchange = false
     const res = analysisCurPositionInfo(toContainer)
     this.toItem = toItem
     this.newItem = newItem
@@ -57,20 +60,8 @@ export class ItemExchangeEvent extends ItemDragEvent {
     this.toStartY = toStartRelativeY < 1 ? 1 : toStartRelativeY
   }
 
-  /**
-   * 检测是否可以移动到新容器，外部可以自行定义规则函数
-   * 返回值：
-   *     false： 不允许移动
-   *     除了false的任何值： 允许移动
-   * */
-  public verification?(): false | boolean | void {
-    const toPos = {
-      w: this.fromItem.pos.w,
-      h: this.fromItem.pos.h,
-      x: this.toStartX,
-      y: this.toStartY,
-    }
-    return this.fromItem && this.toContainer.layoutManager.isBlank(toPos)
+  public doExchange() {
+    this.isExchange = true
   }
 
   /**
@@ -89,7 +80,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
    *
    * @return Item|null 返回null表示该位置没空位
    * */
-  public tryCreateNewItem(newItemOptions: CustomItem): Item {
+  public createNewItem(newItemOptions: CustomItem): Item {
     const newItemIns = new Item(newItemOptions)
     newItemIns.pos.x = this.toStartX
     newItemIns.pos.y = this.toStartY
@@ -101,7 +92,6 @@ export class ItemExchangeEvent extends ItemDragEvent {
    * 将一个Item添加到新容器的item列表中
    * */
   public provideItem(newItemIns: Item) {
-    if (this.newItem) return
     tempStore.newItem = newItemIns
   }
 
@@ -117,9 +107,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     // console.log('receive', toPos.x, toPos.y)
     this.layoutManager.mark(toPos)
     this.newItem.mount()
-    if (this.toItem) toContainer.bus.emit('updateLayout')
     toContainer.updateContainerSizeStyle()
-    updateExchangedCloneElementSize4Item(this.newItem)
+    if (this.toItem) toContainer.bus.emit('updateLayout')
   }
 }
-

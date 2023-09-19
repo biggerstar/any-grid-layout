@@ -3,30 +3,42 @@
 import {definePlugin, tempStore} from "@/global";
 import {grid_dragging_source_el, grid_item_content} from "@/constant";
 import {ItemExchangeEvent} from "@/plugins/event-types/ItemExchangeEvent";
-import {isFunction} from "is-what";
+import {CloneElementStyleEvent} from "@/plugins";
+
 
 export const itemExchangeBehavior = definePlugin({
-  // 节流防止超高频移动
-  exchange: (ev: ItemExchangeEvent) => {
-    const {toContainer, fromContainer} = tempStore
-    ev.container.bus.emit('exchangeProcess')
-    if (ev.newItem && toContainer && fromContainer) {
-      // 顺序不能变 exchangeProvide， 然后exchangeReceive，否则高频来回移动会出错
-      fromContainer.bus.emit('exchangeProvide')
-      toContainer.bus.emit('exchangeReceive')
-      tempStore.fromContainer = toContainer
-      tempStore.fromItem = ev.newItem
-      tempStore.newItem = null
+  updateCloneElementSize(ev: CloneElementStyleEvent) {
+    ev.autoCreateCloneElement()
+    ev.syncCloneSize()
+    ev.updatePosition() // TODO 重构到drag事件中
+  },
+
+  updateCloneElementSize$$(_: CloneElementStyleEvent) {
+  },
+
+  /**
+   * 控制是否可以移动到新容器
+   * */
+  exchangeVerification(ev: ItemExchangeEvent) {
+    const toPos = {
+      w: ev.fromItem.pos.w,
+      h: ev.fromItem.pos.h,
+      x: ev.toStartX,
+      y: ev.toStartY,
+    }
+    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
+      ev.doExchange()
     }
   },
 
-  exchangeProvide(ev: ItemExchangeEvent) {
-    ev.removeSourceItem()
+  exchangeVerification$$(ev: ItemExchangeEvent) {
+    if (ev.isExchange) ev.fromContainer.bus.emit('exchangeProvide')
   },
 
-  exchangeProcess(ev: ItemExchangeEvent) {
-    const isV_S = isFunction(ev.verification) ? !(ev.verification?.() === false) : true
-    if (!isV_S) return
+  /**
+   * 一旦exchangeVerification验证通过，跨容器移动过程便不可阻止，只能在事件里面更改要新添加的item信息
+   * */
+  exchangeProvide$(ev: ItemExchangeEvent) {
     if (!ev.fromItem) return
     if (ev.newItem) return
     const gridItemContent = ev.fromItem.element.querySelector(`.${grid_item_content}`)
@@ -34,11 +46,16 @@ export const itemExchangeBehavior = definePlugin({
       ...ev.fromItem.customOptions,
       el: gridItemContent,
     }
-    ev.provideItem(ev.tryCreateNewItem(newOptions))
+    ev.provideItem(ev.createNewItem(newOptions))
+    ev.toContainer.bus.emit('exchangeReceive')
   },
 
-  exchangeReceive(ev: ItemExchangeEvent) {
+  exchangeReceive$(ev: ItemExchangeEvent) {
     ev.receiveNewItem()
+    ev.removeSourceItem()
     if (ev.newItem) ev.newItem.element.classList.add(grid_dragging_source_el)
+    tempStore.fromContainer = ev.toContainer
+    tempStore.fromItem = ev.newItem
+    tempStore.newItem = null
   },
 })

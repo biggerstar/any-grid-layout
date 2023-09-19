@@ -179,7 +179,7 @@ export class LayoutManager extends Finder {
    * */
   public findBlank(
     pos: CustomItemPos,
-    options: { baseline?: BaseLineType; auto?: boolean })
+    options?: { baseline?: BaseLineType; auto?: boolean })
     : CustomItemPos | null {
     const {baseline = 'top', auto = false} = options   // 定义默认，在形参定义的话代码太长了
     const {w, h, x, y} = pos

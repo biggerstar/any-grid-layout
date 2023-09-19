@@ -13,17 +13,17 @@ const container1 = new Container({
   },
   layouts: {
     from: '来自layout',
-    // exchange:true,
+    // exchange: false,
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,
       close: true,
-      exchange:true
+      exchange: true
     }),
     // minRow:20,
-    // col: 5,
+    col: 5,
     // row: 2,
-    ratioCol: 0.2,
+    // ratioCol: 0.2,
     // ratioRow: 0.2,
     // marginX:10,
     // margin: [10, 10],

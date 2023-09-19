@@ -5,7 +5,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {ItemExchangeEvent} from "@/plugins";
+import {CloneElementStyleEvent, ItemExchangeEvent} from "@/plugins";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 
@@ -18,6 +18,7 @@ export * from './ItemExchangeEvent'
 export * from './ItemPosChangeEvent'
 export * from './ContainerSizeChangeEvent'
 export * from './ConfigurationEvent'
+export * from './CloneElementStyleEvent'
 
 
 export const EventMap: EventMapType<CustomEventOptions> = {
@@ -28,6 +29,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //--------------other-------------------
   init: ItemLayoutEvent,
   updateLayout: ItemLayoutEvent,
+  updateCloneElementSize: CloneElementStyleEvent,
   getConfig: ConfigurationEvent,
   setConfig: ConfigurationEvent,
   //-----------------container------------------
@@ -73,7 +75,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   closing: ItemLayoutEvent,
   closed: ItemLayoutEvent,
   //-------------cross-container-exchange-----------
-  exchange: ItemExchangeEvent,
+  exchangeVerification: ItemExchangeEvent,
   exchangeProvide: ItemExchangeEvent,
   exchangeProcess: ItemExchangeEvent,
   exchangeReceive: ItemExchangeEvent,

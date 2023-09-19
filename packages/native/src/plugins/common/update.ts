@@ -1,27 +1,13 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {throttle, updateStyle} from "@/utils";
+import {throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins";
 import {isAnimation} from "@/algorithm/common/tool";
-import {Item} from "@/main";
 import {tempStore} from "@/global";
-import {
-  grid_clone_el,
-  grid_dragging_clone_el,
-  grid_dragging_source_el,
-  grid_resizing_clone_el,
-  grid_resizing_source_el
-} from "@/constant";
 import {hasAutoDirection} from "@/plugins/common/method";
 
-/**
- * 节流后的patchDragDirection
- * */
-export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
-  ev.patchDragDirection()
-}, 46)
 
 /**
  * 检测当前拖动的元素大小和上一次相比是否变化
@@ -52,9 +38,9 @@ export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
 /**
  * 立即更新布局
  * */
-export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}) => {
+export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}): boolean => {
   const {container, items} = ev
-  if (!container._mounted) return
+  if (!container._mounted) return false
   options = Object.assign({
     sort: true
   }, options)
@@ -67,11 +53,12 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
     baseline,
     auto: hasAutoDirection(container, baseline)
   })
-  if (!res.isSuccess) return
+  if (!res.isSuccess) return false
   res.patch()
   ev.patchStyle()
   if (options.sort) container.items = manager.sortCurrentMatrixItems(ev.items)
   container.updateContainerSizeStyle()
+  return true
 }
 
 /**
@@ -85,6 +72,18 @@ export const updateLayout: Function = throttle(directUpdateLayout, 46)
 export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
   const {fromItem} = tempStore
   if (!fromItem) return
+  // console.log(111111111111111111)
+  // const isSuccess = ev.tryMoveToBlank()
+  // console.log(isSuccess)
+  // if (isSuccess) {
+  //   ev.patchStyle()
+  //   ev.container.updateContainerSizeStyle()
+  //   return
+  // }
+  // console.log({
+  //   x: ev.startX,
+  //   y: ev.startY
+  // }, ev)
   ev.prevent()
   ev.addModifyItem(fromItem,
     {
@@ -104,13 +103,36 @@ export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: 
 /**
  * 节流更新drag到 「对角」 方向的布局
  * */
-export const dragToDiagonal: Function = throttle((ev: ItemDragEvent) => {
+export const dragToDiagonal: Function = throttle((_: ItemDragEvent) => {
   const {toItem, fromItem} = tempStore
-  const {layoutManager, items} = ev
+  // const {layoutManager, items} = ev
   if (!toItem || !fromItem) return
-  ev.prevent()
-  layoutManager.move(items, fromItem, toItem)
-  directUpdateLayout(ev)
+  // console.log(222222222222222222)
+  // const isSuccess = ev.tryMoveToBlank()
+  // if (isSuccess) {
+  //   ev.patchStyle()
+  //   ev.container.updateContainerSizeStyle()
+  //   return;
+  // }
+  return;
+
+  // ev.prevent()
+  // ev.addModifyItem(fromItem,
+  //   {
+  //     x: ev.startX,
+  //     y: ev.startY
+  //   })
+  // directUpdateLayout(ev)
+  //
+  //
+  // return;
+  // ev.prevent()
+  // layoutManager.move(items, fromItem, toItem)
+  // const isSuccess = directUpdateLayout(ev)
+  // if (!isSuccess) {
+  //   layoutManager.move(items, toItem, fromItem)
+  //   directUpdateLayout(ev)
+  // }
 }, 200)
 
 /**
@@ -138,82 +160,5 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
   directUpdateLayout(ev, {sort: false})
 }, 80)
 
-/**
- * 将cloneElement的大小更新为某个Item的一样的尺寸
- * */
-export function updateExchangedCloneElementSize4Item(newItem: Item) {
-  const {cloneElement, fromItem} = tempStore
-  if (!cloneElement || !fromItem) return
-  // const {left, top} = cloneElement.getBoundingClientRect()
-  const {clientWidth, clientHeight} = newItem.element
-  const nextWidth = newItem.nowWidth()
-  const nextHeight = newItem.nowHeight()
-  const fromWidth = fromItem.nowWidth()
-  const fromHeight = fromItem.nowHeight()
-  updateStyle({
-    width: `${clientWidth}px`,
-    height: `${clientHeight}px`,
-    transitionDuration: '0.3s',
-    transitionProperty: 'width,height',
-  }, cloneElement)
-  // 移动到新容器中改变cloneEl的大小和鼠标拖动位置，按比例缩放
-  tempStore.mousedownItemOffsetLeft = tempStore.mousedownItemOffsetLeft * nextWidth / fromWidth
-  tempStore.mousedownItemOffsetTop = tempStore.mousedownItemOffsetTop * nextHeight / fromHeight
-}
 
-/**
- * [resizing] 更改cloneEl跟随鼠标的最新大小
- * */
-export function updateResizingCloneElSize() {
-  const {
-    mousedownEvent,
-    fromItem,
-    isResizing,
-    cloneElement,
-    fromContainer,
-  } = tempStore
-  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
-  const newNode = <HTMLElement>fromItem.element.cloneNode(true)
-  newNode.classList.add(grid_clone_el, grid_resizing_clone_el)
-  newNode.classList.remove(grid_resizing_source_el)
-  fromItem.element.classList.add(grid_resizing_source_el)
-  updateStyle({
-    transition: 'none',
-    pointerEvents: 'none'
-  }, newNode)
-  tempStore.cloneElement = newNode
-  fromContainer.contentElement.appendChild(newNode)
-}
 
-/**
- * [dragging]更改cloneEl跟随鼠标的最新大小
- * 如果已存存在，不会重复创建
- * */
-export function createDraggingCloneEl() {
-  const {
-    mousedownEvent,
-    fromItem,
-    isDragging,
-    cloneElement,
-    isLeftMousedown,
-  } = tempStore
-  if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
-  if (cloneElement) return
-  const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
-  if (finallyRemoveEls.length) return;
-  const sourceEl = fromItem.element
-  const newNode = <HTMLElement>sourceEl.cloneNode(true)
-  newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
-  newNode.classList.remove(grid_dragging_source_el)
-  fromItem.element.classList.add(grid_dragging_source_el)
-  const {left, top} = sourceEl.getBoundingClientRect()
-  updateStyle({
-    pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
-    transitionProperty: 'none',
-    transitionDuration: 'none',
-    left: `${window.scrollX + left}px`,
-    top: `${window.scrollY + top}px`
-  }, newNode)
-  tempStore.cloneElement = newNode
-  document.body.appendChild(newNode)    // 直接添加到body中后面定位省心省力
-}

@@ -1,6 +1,6 @@
 import container1 from "@/container/container1";
 import {
-  BaseEvent,
+  BaseEvent, CloneElementStyleEvent,
   ContainerSizeChangeEvent,
   definePlugin,
   ItemDragEvent,
@@ -31,7 +31,9 @@ const plugin = definePlugin({
   warn(ev: ThrowMessageEvent) {
     console.warn(ev.message)
   },
-
+  updateCloneElementSize(ev: CloneElementStyleEvent) {
+    // ev.prevent()
+  },
   //-----------------container------------------
 
   containerMounted(ev: BaseEvent) {
@@ -44,13 +46,13 @@ const plugin = definePlugin({
     // console.log(ev);
   },
   containerSizeChanged(ev: ContainerSizeChangeEvent) {
-    console.log('containerSizeChanged',ev.container)
+    // console.log('containerSizeChanged',ev.container)
   },
   colChanged(ev: ContainerSizeChangeEvent) {
-    console.log('colChanged',ev.container)
+    // console.log('colChanged',ev.container)
   },
   rowChanged(ev: ContainerSizeChangeEvent) {
-    console.log('rowChanged',ev.container)
+    // console.log('rowChanged',ev.container)
   },
   //-------------------item---------------------
   addItemSuccess(ev: BaseEvent) {

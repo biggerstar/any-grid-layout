@@ -2,21 +2,21 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {
-  checkItemPositionHasChanged,
-  checkItemSizeHasChanged,
-  createDraggingCloneEl,
-  hasAutoDirection,
-  patchDragDirection,
-  updateResizingCloneElSize
-} from "@/plugins/common";
+import {checkItemPositionHasChanged, checkItemSizeHasChanged, hasAutoDirection,} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {updateStyle} from "@/utils";
+import {throttle, updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent} from "@/plugins";
 
+/**
+ * 节流后的patchDragDirection
+ * */
+export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
+  ev.patchDragDirection()
+}, 46)
 
+//---------------------------------------------------------------------------------
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
  * */
@@ -29,18 +29,19 @@ export const DefaultLayoutBehavior = definePlugin({
   init(ev: ItemDragEvent) {
     const {container} = ev
     const {layoutManager: manager} = container
-    container.updateContainerSizeStyle()
-    autoSetSizeAndMargin(container, true)
+    autoSetSizeAndMargin(container, true)  // 1.先初始化初始配置
     container.reset()
     const baseline = container.getConfig("baseline")
-    const res = manager.analysis(container.items, null, {
+    const res = manager.analysis(container.items, null, {  // 2. 分析当前布局
       baseline,
       auto: hasAutoDirection(container, baseline)
     })
-    res.patch()
+    res.patch()  // 3. 修改当前item位置
+    container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
+    autoSetSizeAndMargin(container, true)  // 5.根据最终容器大小配置最终margin和size
     container.items = res.successItems
-    container.items.forEach(item => item.mount())
-    ev.patchStyle(res.successItems)
+    container.items.forEach(item => item.mount())   // 6. 挂载item到dom上
+    ev.patchStyle(res.successItems)  // 7.更新item在容器中的最终位置
     if (!res.isSuccess) {
       container.bus.emit('error', {
         type: 'ContainerOverflowError',
@@ -79,7 +80,6 @@ export const DefaultLayoutBehavior = definePlugin({
   dragging(ev: ItemDragEvent) {
     const {fromContainer, toContainer} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
-    createDraggingCloneEl()
     patchDragDirection(ev)
     checkItemPositionHasChanged()
   },
@@ -208,7 +208,6 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!fromItem) return
     ev.patchResizeDirection()
     checkItemSizeHasChanged(ev)
-    updateResizingCloneElSize()
   },
 
   resized(_: ItemResizeEvent) {

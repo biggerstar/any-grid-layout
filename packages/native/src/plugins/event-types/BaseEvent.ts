@@ -10,11 +10,13 @@ export class BaseEvent {
     Object.assign(<object>this, options)
   }
 
-  public container: Container
-  public item: Item | null = null
-  public layoutManager: LayoutManager
-  public pluginManager: PluginManager
+  public readonly container: Container
+  public readonly item: Item | null = null
+  public readonly layoutManager: LayoutManager
+  public readonly pluginManager: PluginManager
   public isPrevent: boolean = false
+
+  // public shared: object   // 事件组对象流传播共享数据的对象，比如dragging -> dragToXXX -> dragend
 
   /**
    * 阻止内置的默认行为

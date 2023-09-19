@@ -25,13 +25,13 @@ import {definePlugin, tempStore} from "@/global";
  *      3.不要使用static item
  * */
 export const StreamLayoutPlugin = definePlugin({
+  name: 'StreamLayoutPlugin',
   getConfig(ev: ConfigurationEvent) {
     patchResponsiveColOrRow(ev)
   },
-  exchangeProcess(ev: ItemExchangeEvent) {
+  exchangeProcess(_: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
     if (!toContainer || !fromItem) return
-    ev.verification = null
   },
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)

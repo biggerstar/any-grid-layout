@@ -5,7 +5,7 @@ declare global {
     AnyGridLayout: any  // TODO 完善导出名称
   }
 
-  interface Node {
+  interface Element {
     _isGridItem_: boolean
     _gridItem_: Item
     _isGridContainer_: boolean

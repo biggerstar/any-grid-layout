@@ -36,8 +36,8 @@ const container2 = new Container({
       // col: 9,
       // row: 6,
       // margin: [10, 10],
-      size: [50, 80],
-      exchange:true,
+      size: [50, 100],
+      // exchange:false,
       items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,

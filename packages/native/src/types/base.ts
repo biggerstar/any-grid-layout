@@ -7,7 +7,7 @@ import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {ItemExchangeEvent} from "@/plugins";
+import {CloneElementStyleEvent, ItemExchangeEvent} from "@/plugins";
 import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
@@ -16,7 +16,7 @@ export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
 export type CustomItems = ItemGeneralImpl[]
 
-export type BasePosType = 'x' | 'y' | 'w' | 'h'
+// export type BasePosType = 'x' | 'y' | 'w' | 'h'
 export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'
 export type MarginOrSizeDesc = [number | null, number | null]
 
@@ -101,16 +101,15 @@ export type BaseEmitData<T> = {
 
 export type EventBusType = BaseEmitData<CustomEventOptions>
 
-export type CustomEventOptions = {
-  // /**  触发条件： items列表长度变化，item的宽高变化，item的位置变化都会触发 */
-  // updated?(ev: BaseEvent): void
-  //
-  // /** 当前鼠标按下状态进入的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
-  // enterContainerArea?(container, item): void,
-  //
-  // /** 当前鼠标按下状态离开的ContainerArea，item是指当前正在操作的Item，如果没有则为null,可做贴边或者拖动到区域边界自动撑开容器大小 */
-  // leaveContainerArea?(container, item): void,
+export type GridPlugin = CustomEventOptions & {
+  /** 插件名称 */
+  name?: string,
 
+  /** 插件版本 */
+  version?: string | number,
+}
+
+export type CustomEventOptions = {
   //------------------throw-message--------------
   /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
    *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
@@ -131,6 +130,12 @@ export type CustomEventOptions = {
    * @default 无
    * */
   updateLayout?(ev: ItemLayoutEvent): void,
+
+  /**
+   * 更新克隆元素的尺寸，可以用于跨容器移动同步适配item尺寸
+   * */
+  updateCloneElementSize?(ev: CloneElementStyleEvent): void,
+
   /** 获取配置事件，设置过程可被拦截(configName,configData)修改 */
   getConfig?(ev: ConfigurationEvent): void,
   /** 设置配置事件，设置过程可被拦截(configName,configData)修改 */
@@ -207,9 +212,9 @@ export type CustomEventOptions = {
 
   //------------------exchange------------------
   /**
-   * [ 内置用 ]：跨容器移动开始时派发函数
+   * 跨容器交换前的验证，只有验证通过才执行交换
    * */
-  exchange?(ev: ItemExchangeEvent): void;
+  exchangeVerification?(ev: ItemExchangeEvent): void;
 
   /**
    * 跨容器移动时Item提供者，在提供的Container上触发
@@ -218,6 +223,7 @@ export type CustomEventOptions = {
 
   /**
    * 跨容器移动时Item过程，主要用于处理如何挂载Item到新容器中
+   * 通过provideItem添加要移动到目标容器的新item
    * */
   exchangeProcess?(ev: ItemExchangeEvent): void;
 

@@ -1,4 +1,4 @@
-import {CustomEventOptions, CustomItem, CustomItems} from "@/types";
+import {CustomItem, CustomItems, GridPlugin} from "@/types";
 import {cloneDeep, mergeDeep} from "@/utils";
 
 /**
@@ -27,6 +27,6 @@ export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomIt
 /**
  * 定义插件函数，目的是获得类型提示
  * */
-export function definePlugin(plugin: CustomEventOptions & Record<any, any>) {
+export function definePlugin(plugin: GridPlugin & Record<any, any>) {
   return plugin
 }

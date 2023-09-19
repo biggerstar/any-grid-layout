@@ -18,14 +18,32 @@ import {definePlugin, tempStore} from "@/global";
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
+  name: 'ResponsiveLayoutPlugin',
   getConfig(ev: ConfigurationEvent) {
     patchResponsiveColOrRow(ev)
   },
-  exchangeProcess(ev: ItemExchangeEvent) {
-    let {toContainer, fromItem} = tempStore
-    if (!toContainer || !fromItem) return
-    ev.verification = null
+  exchangeVerification(ev: ItemExchangeEvent) {
+    ev.prevent()
+    if (!ev.fromItem) return
+    const toPos = {
+      w: ev.fromItem.pos.w,
+      h: ev.fromItem.pos.h,
+      x: ev.toStartX,
+      y: ev.toStartY,
+    }
+    // console.log(111111111111111111)
+    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
+      ev.doExchange()
+    } else if (ev.toItem) {
+      // console.log(ev.toItem)
+      console.log(tempStore.fromContainer, tempStore.toContainer);
+      ev.doExchange()
+    }
   },
+  // exchangeProcess(ev: ItemExchangeEvent) {
+  //   let {toContainer, fromItem} = tempStore
+  //   if (!toContainer || !fromItem) return
+  // },
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)
   },

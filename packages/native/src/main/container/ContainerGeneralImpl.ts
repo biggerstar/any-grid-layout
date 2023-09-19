@@ -97,22 +97,4 @@ export class ContainerGeneralImpl {
    * @default 360
    * */
   pressTime?: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
-
-  /**
-   * 当Item移动到容器边缘，等待多久进行自动滚动,默认800ms
-   * @default 800
-   * */
-  scrollWaitTime?: number = 800
-
-  /**
-   * 当Item移动到容器边缘，自动滚动每36ms 的X轴速度,单位是px,默认为null
-   * @default 36  单位(ms)
-   * */
-  scrollSpeedX?: number | null = 36
-
-  /**
-   * 当Item移动到容器边缘，自动滚动每36ms 的Y轴速度,单位是px,默认为null
-   * @default 36  单位(ms)
-   * */
-  scrollSpeedY?: number | null = 36
 }

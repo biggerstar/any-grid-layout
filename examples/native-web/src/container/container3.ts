@@ -7,7 +7,7 @@ const container3 = new Container({
   layouts: {
     from: '来自layout2',
     ratioCol: 0.1,
-    col: 9,
+    // col: 9,
     // row: 4,
     // margin: [20, 10],
     size: [60, 50],
