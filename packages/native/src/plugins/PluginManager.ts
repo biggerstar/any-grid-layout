@@ -93,7 +93,11 @@ export class PluginManager {
    * 添加一个自定义插件，是一个普通js对象而不是一个类
    * */
   public use(plugin: GridPlugin) {
-    if (isObject(plugin)) this.plugins.push(plugin)
+    if (isFunction(plugin)) plugin.call(null, this.container)
+    else if (isObject(plugin)) {
+      if (isFunction(plugin.install)) plugin.install.call(null, this.container)
+      this.plugins.push(plugin)
+    }
   }
 
   /**
