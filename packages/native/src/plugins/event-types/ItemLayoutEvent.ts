@@ -29,7 +29,6 @@ export class ItemLayoutEvent extends BaseEvent {
   public readonly cloneElRect: DOMRect // 当前clone元素的rect信息
   public readonly cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
   public readonly cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
-
   /**
    * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
    * 注意：列表中的成员必须是已经挂载在的引用
@@ -50,8 +49,8 @@ export class ItemLayoutEvent extends BaseEvent {
       lastMousePointX,
       lastMousePointY,
       cloneElement,
-      mousedownItemOffsetLeft,
-      mousedownItemOffsetTop,
+      mousedownItemOffsetLeftProportion,
+      mousedownItemOffsetTopProportion,
     } = tempStore
     if (!fromItem || !mousemoveEvent) return
     //--------------------------------------//
@@ -80,8 +79,8 @@ export class ItemLayoutEvent extends BaseEvent {
     this.offsetRight = containerRight - left
     this.offsetBottom = containerBottom - top
     this.cloneElRect = cloneElRect
-    this.cloneElOffsetMouseLeft = <number>mousedownItemOffsetLeft
-    this.cloneElOffsetMouseTop = <number>mousedownItemOffsetTop
+    this.cloneElOffsetMouseLeft = this.itemInfo.width * mousedownItemOffsetLeftProportion
+    this.cloneElOffsetMouseTop = this.itemInfo.height * mousedownItemOffsetTopProportion
   }
 
   /**
@@ -203,7 +202,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 派发Items的样式更新
    * */
   public patchStyle(items?: Item[]) {
-    requestAnimationFrame(() => (items || this.items).forEach((item) => item.updateItemLayout()))
+    (items || this.items).forEach((item) => item.updateItemLayout())
   }
 
   /**

@@ -37,12 +37,12 @@ const container2 = new Container({
       // row: 6,
       // margin: [10, 10],
       size: [50, 100],
-      // exchange:false,
+      exchange: true,
       items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,
-        exchange:true,
+        exchange: true,
         pos: {
           // minH:2,
           // maxH:1,

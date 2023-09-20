@@ -4,19 +4,11 @@ import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {checkItemPositionHasChanged, checkItemSizeHasChanged, hasAutoDirection,} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {throttle, updateStyle} from "@/utils";
+import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent} from "@/plugins";
 
-/**
- * 节流后的patchDragDirection
- * */
-export const patchDragDirection: Function = throttle((ev: ItemDragEvent) => {
-  ev.patchDragDirection()
-}, 46)
-
-//---------------------------------------------------------------------------------
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
  * */
@@ -80,7 +72,7 @@ export const DefaultLayoutBehavior = definePlugin({
   dragging(ev: ItemDragEvent) {
     const {fromContainer, toContainer} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
-    patchDragDirection(ev)
+    ev.patchDragDirection()
     checkItemPositionHasChanged()
   },
 
@@ -237,11 +229,4 @@ export const DefaultLayoutBehavior = definePlugin({
   updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
   }
 })
-
-
-
-
-
-
-
 

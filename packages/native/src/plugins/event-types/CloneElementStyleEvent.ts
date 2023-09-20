@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins";
 import {tempStore} from "@/global";
-import {throttle, updateStyle} from "@/utils";
+import {canExchange, SingleThrottle, throttle, updateStyle} from "@/utils";
 import {
   grid_clone_el,
   grid_dragging_clone_el,
@@ -8,8 +8,6 @@ import {
   grid_resizing_clone_el,
   grid_resizing_source_el
 } from "@/constant";
-
-let ticking = false
 
 /**
  * [resizing] 创建resize的克隆元素
@@ -73,75 +71,125 @@ const createDraggingClonePosition: Function = throttle(() => {
   tempStore.cloneElScaleMultipleY = height / fromItem.nowHeight()
 }, 300)
 
+
+/**
+ * 真实更新克隆元素尺寸和位置的函数，使用raf后无需节流，120帧下很丝滑
+ * */
+const _updateLocation: Function = () => {
+  let {
+    fromItem,
+    fromContainer,
+    toContainer,
+    isDragging,
+    mousemoveEvent,
+    cloneElement,
+    cloneElScaleMultipleX = 1,
+    cloneElScaleMultipleY = 1,
+    mousedownItemOffsetLeftProportion,
+    mousedownItemOffsetTopProportion,
+    mousedownItemWidth,
+    mousedownItemHeight,
+    lastOffsetM_left: offsetM_left,
+    lastOffsetM_Top: offsetM_top,
+  } = tempStore
+  if (!isDragging || !fromItem || !fromContainer || !cloneElement || !mousemoveEvent) return
+  let nextWidth, nextHeight
+  const targetContainer = toContainer || fromContainer
+  const exchange = canExchange()
+  const {adaption, keepBaseSize} = targetContainer.getConfig('cloneElement')
+
+  nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
+  nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
+  const allowChange = adaption && exchange
+  let isKeepOffset
+  let sizeStyle = {}
+  if (allowChange) {  // 不允许交换
+    isKeepOffset = !adaption || !exchange || toContainer === fromItem.container || !toContainer // 如果移出container，恢复源容器item尺寸
+  } else {   // 允许交换
+    isKeepOffset = true
+  }
+  // console.log(
+  //   'allowChange', allowChange,
+  //   'isKeepOffset', isKeepOffset,
+  //   'keepBaseSize', keepBaseSize,
+  //   'adaption', adaption,
+  // )
+
+  function reset() {
+    offsetM_left = mousedownItemWidth * cloneElScaleMultipleX * mousedownItemOffsetLeftProportion
+    offsetM_top = mousedownItemHeight * cloneElScaleMultipleY * mousedownItemOffsetTopProportion
+    const width = keepBaseSize || isKeepOffset ? mousedownItemWidth : fromItem!.nowWidth()
+    const height = keepBaseSize || isKeepOffset ? mousedownItemHeight : fromItem!.nowHeight()
+    sizeStyle = {
+      width: `${width * cloneElScaleMultipleX}px`,
+      height: `${height * cloneElScaleMultipleY}px`,
+    }
+  }
+
+  function change() {
+    offsetM_left = nextWidth * mousedownItemOffsetLeftProportion
+    offsetM_top = nextHeight * mousedownItemOffsetTopProportion
+    sizeStyle = {
+      width: `${nextWidth}px`,
+      height: `${nextHeight}px`,
+      transitionDuration: '150ms',
+      transitionProperty: 'width,height',
+    }
+    if (!keepBaseSize) {
+      tempStore.mousedownItemWidth = fromItem!.nowWidth()
+      tempStore.mousedownItemHeight = fromItem!.nowHeight()
+    }
+  }
+
+  function setNewOffsetInfo() {
+    tempStore.lastOffsetM_left = offsetM_left
+    tempStore.lastOffsetM_Top = offsetM_top
+  }
+
+  if (!offsetM_left || !offsetM_top) {
+    offsetM_left = mousedownItemWidth * cloneElScaleMultipleX * mousedownItemOffsetLeftProportion
+    offsetM_top = mousedownItemHeight * cloneElScaleMultipleY * mousedownItemOffsetTopProportion
+    setNewOffsetInfo()
+  }
+
+  throttleChangeCloneSize.do(() => {
+    if (allowChange) {
+      change()
+    } else if (isKeepOffset) {
+      reset()
+    }
+    setNewOffsetInfo()
+  })
+
+  let left = mousemoveEvent.pageX - offsetM_left
+  let top = mousemoveEvent.pageY - offsetM_top
+  updateStyle({
+    left: `${left}px`,
+    top: `${top}px`,
+    ...sizeStyle
+  }, cloneElement)
+}
+
+const throttleChangeCloneSize = new SingleThrottle(200)
+
 /**
  * 用于更新克隆元素的样式和大小
  * */
 export class CloneElementStyleEvent extends BaseEvent {
   /**
    * 自动创建当前行为 (drag, resize) 可用的克隆元素
+   * 若已经存在不会重复创建
    * */
   public autoCreateCloneElement() {
+    if (tempStore.cloneElement) return
     createDraggingClonePosition()
     createResizingCloneElSize()
   }
 
   /**
-   * 将克隆元素修改成符合目标container的item大小
+   * 自动更新当前拖动所在合适的位置,更新克隆元素尺寸和位置的函数
    * */
-  public syncCloneSize() {
-    const {
-      cloneElement,
-      fromItem,
-      fromContainer,
-      toContainer,
-      isDragging,
-      cloneElScaleMultipleX = 1,
-      cloneElScaleMultipleY = 1
-    } = tempStore
-    if (!cloneElement || !isDragging || !fromItem || !toContainer || !fromContainer) return
-    const item = toContainer.items[0]  // 随便选一个item只为了计算nowWidth，nowHeight
-    if (!item) return
-    const nextWidth = parseInt(item.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
-    const nextHeight = parseInt(item.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
-    const {clientWidth, clientHeight} = cloneElement
-    if (clientWidth === nextWidth && clientHeight === nextHeight) return  // 如果大小没被改变则忽略
-    updateStyle({
-      width: `${nextWidth}px`,
-      height: `${nextHeight}px`,
-      transitionDuration: '150ms',
-      transitionProperty: 'width,height',
-    }, cloneElement)
-  }
-
-  /**
-   * 自动更新当前拖动所在合适的位置
-   * */
-  public updatePosition() {
-    const {
-      cloneElement,
-      isDragging,
-      mousedownItemOffsetLeft,
-      mousedownItemOffsetTop,
-      mousemoveEvent
-    } = tempStore
-    if (!isDragging) return
-
-    function updateDragConeElementLocation() {
-      if (!cloneElement || !mousemoveEvent) return
-      let left = mousemoveEvent.pageX - mousedownItemOffsetLeft
-      let top = mousemoveEvent.pageY - mousedownItemOffsetTop
-      updateStyle({
-        left: `${left}px`,
-        top: `${top}px`
-      }, <HTMLElement>cloneElement)
-    }
-
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        updateDragConeElementLocation()
-        ticking = false
-      })
-      ticking = true
-    }
+  public updateLocation() {
+    _updateLocation()
   }
 }

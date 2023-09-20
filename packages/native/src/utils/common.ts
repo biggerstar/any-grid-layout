@@ -45,6 +45,5 @@ export function canExchange() {
   if (!fromContainer || !fromItem || !toContainer) return false
   return !(!fromItem.exchange   /* 要求item和容器都允许交换才能继续 */
     || !toContainer.getConfig('exchange')
-    || !fromContainer.getConfig('exchange'));
-
+    || !fromContainer.getConfig('exchange'))
 }

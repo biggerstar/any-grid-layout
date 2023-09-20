@@ -37,7 +37,6 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem || !resizeEv) return
     const bus = this.container.bus
-
     if (this.mousePointX > this.lastMousePointX) {
       bus.emit('resizeToRight')   // resizeOuterRight 的同时 resizeToRight也会触发
       if (this.mousePointX > this.offsetRight) bus.emit('resizeOuterRight')

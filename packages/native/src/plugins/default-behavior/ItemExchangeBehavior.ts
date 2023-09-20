@@ -5,15 +5,10 @@ import {grid_dragging_source_el, grid_item_content} from "@/constant";
 import {ItemExchangeEvent} from "@/plugins/event-types/ItemExchangeEvent";
 import {CloneElementStyleEvent} from "@/plugins";
 
-
 export const itemExchangeBehavior = definePlugin({
-  updateCloneElementSize(ev: CloneElementStyleEvent) {
+  updateCloneElementStyle(ev: CloneElementStyleEvent) {
     ev.autoCreateCloneElement()
-    ev.syncCloneSize()
-    ev.updatePosition() // TODO 重构到drag事件中
-  },
-
-  updateCloneElementSize$$(_: CloneElementStyleEvent) {
+    ev.updateLocation()
   },
 
   /**

@@ -11,6 +11,7 @@ import {CloneElementStyleEvent, ItemExchangeEvent} from "@/plugins";
 import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
+import {Container} from "@/main";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -102,12 +103,15 @@ export type BaseEmitData<T> = {
 export type EventBusType = BaseEmitData<CustomEventOptions>
 
 export type GridPlugin = CustomEventOptions & {
+  /** 安装函数 */
+  install?(app: Container): void
+
   /** 插件名称 */
   name?: string,
 
   /** 插件版本 */
   version?: string | number,
-}
+} | ((app: Container) => void)
 
 export type CustomEventOptions = {
   //------------------throw-message--------------
@@ -132,9 +136,9 @@ export type CustomEventOptions = {
   updateLayout?(ev: ItemLayoutEvent): void,
 
   /**
-   * 更新克隆元素的尺寸，可以用于跨容器移动同步适配item尺寸
+   * 更新克隆元素的尺寸,位置，可以用于跨容器移动同步适配item尺寸
    * */
-  updateCloneElementSize?(ev: CloneElementStyleEvent): void,
+  updateCloneElementStyle?(ev: CloneElementStyleEvent): void,
 
   /** 获取配置事件，设置过程可被拦截(configName,configData)修改 */
   getConfig?(ev: ConfigurationEvent): void,

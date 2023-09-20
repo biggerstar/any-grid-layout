@@ -1,19 +1,42 @@
 import {Container, Item} from "@/main";
+import {isNumber} from "is-what";
+
+
+/**
+ * 单通道节流,可使用new创建多个通道,不支持参数，只是单纯运行函数
+ * */
+export class SingleThrottle {
+  public do: Function
+  public wait: number = 320
+
+  constructor(wait?: number) {
+    if (isNumber(wait) && wait > 0) this.wait = wait
+    let old = 0;
+    this.do = (func) => {
+      let now = new Date().valueOf();
+      if (now - old < this.wait) return
+      old = now
+      return func.apply(this);
+    }
+  }
+}
+
 
 /**
  * 节流
  * */
 export function throttle(func: Function, wait: number = 350): () => any {  // 全局共用节流函数通道：返回的是函数，记得再执行
-  let self, args;
+  let self
   let old = 0;
   return function () {
+    let res
     self = this;
-    args = arguments;
     let now = new Date().valueOf();
     if (now - old > wait) {
-      func.apply(self, args);
+      res = func.apply(self, arguments);
       old = now;
     }
+    return res
   }
 }
 

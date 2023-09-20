@@ -3,7 +3,6 @@ import {grid_clone_el, grid_dragging_source_el, grid_resizing_source_el} from "@
 import {tempStore} from "@/global";
 import {updateStyle} from "@/utils";
 
-
 /**
  * 移除当前鼠标操作的clone元素 (drag,resize)
  * */
@@ -22,24 +21,24 @@ export function itemCloneElRemove_mouseup(_) {
     if (fromItem && fromItem.transition) {
       const transition = <ItemTransitionObject>fromItem.transition
       const containerElOffset = fromItem.container.contentElement.getBoundingClientRect()
+      const baseStyle = {
+        transitionProperty: `${transition.field}`,
+        transitionDuration: `${transition.time}ms`,
+        width: `${fromItem.nowWidth()}px`,
+        height: `${fromItem.nowHeight()}px`,
+      }
       if (isDragging) {
         let left = window.scrollX + containerElOffset.left + fromItem.offsetLeft()
         let top = window.scrollY + containerElOffset.top + fromItem.offsetTop()
         setTimeout(() => {
           updateStyle({
-            transitionProperty: `${transition.field}`,
-            transitionDuration: `${transition.time}ms`,
+            ...baseStyle,
             left: `${left}px`,
             top: `${top}px`
           }, gridCloneEl)
         }, delayUpdateAnimationTime)
       } else if (isResizing) {
-        updateStyle({
-          transitionProperty: `${transition.field}`,
-          transitionDuration: `${transition.time}ms`,
-          width: `${fromItem.nowWidth()}px`,
-          height: `${fromItem.nowHeight()}px`,
-        }, gridCloneEl)
+        updateStyle(baseStyle, gridCloneEl)
       }
     }
 
@@ -59,18 +58,4 @@ export function itemCloneElRemove_mouseup(_) {
     } else removeCloneEl()
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

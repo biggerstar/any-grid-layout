@@ -366,18 +366,16 @@ export class Container {
 
   /** 计算当前Items所占用的Container宽度  */
   public nowWidth(nowCol?: number): number {
-    let marginWidth = 0
     nowCol = nowCol || this.getConfig("col")
-    if (nowCol > 1) marginWidth = (nowCol - 1) * this.getConfig("margin")[0] * 2
-    return (nowCol * this.getConfig("size")[0]) + marginWidth || 0
+    const marginWidth = nowCol > 1 ? (nowCol - 1) * this.getConfig("margin")[0] * 2 : 0
+    return (nowCol * this.getConfig("size")[0]) + marginWidth
   }
 
   /** 计算当前Items所占用的Container高度   */
   public nowHeight(nowRow?: number): number {
-    let marginHeight = 0
     nowRow = nowRow || this.getConfig("row")
-    if (nowRow > 1) marginHeight = (nowRow - 1) * this.getConfig("margin")[1] * 2
-    return (nowRow * this.getConfig("size")[1]) + marginHeight || 0
+    const marginHeight = nowRow > 1 ? (nowRow - 1) * this.getConfig("margin")[1] * 2 : 0
+    return (nowRow * this.getConfig("size")[1]) + marginHeight
   }
 
   /** 获取外容器可视范围的col  */

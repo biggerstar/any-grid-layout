@@ -29,7 +29,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //--------------other-------------------
   init: ItemLayoutEvent,
   updateLayout: ItemLayoutEvent,
-  updateCloneElementSize: CloneElementStyleEvent,
+  updateCloneElementStyle: CloneElementStyleEvent,
   getConfig: ConfigurationEvent,
   setConfig: ConfigurationEvent,
   //-----------------container------------------

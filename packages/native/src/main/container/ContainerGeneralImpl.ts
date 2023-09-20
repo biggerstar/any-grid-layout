@@ -5,8 +5,6 @@ import {BaseLineType, CustomItems, MarginOrSizeDesc} from "@/types";
  * 包含默认配置信息，用户配置找不到则会找该类的默认配置
  * */
 export class ContainerGeneralImpl {
-  [key: string]: any
-
   //----------------Container实例化传进的的参数---------------------//
   /**
    * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
@@ -97,4 +95,23 @@ export class ContainerGeneralImpl {
    * @default 360
    * */
   pressTime?: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
+
+  /**
+   * 对dragging或者resizing的元素进行配置
+   * */
+  cloneElement?: {
+    /**
+     * [跨容器]  克隆元素拖动到当前container时，将拖动的克隆元素动态转换成符合本容器item大小的尺寸
+     * */
+    adaption?: boolean,
+    /**
+     * [跨容器] 是否保持拖动元素最初的大小，如果为false，将会以当前item所在容器的尺寸作为clone元素大小
+     * 用途：
+     *    用于拖动某个元素可能会经过多个容器时，依然可以保持最初元素大小
+     * */
+    keepBaseSize?: boolean
+  } = {
+    adaption: true,
+    keepBaseSize: false,
+  }
 }

@@ -1,6 +1,6 @@
 import container1 from "@/container/container1";
 import {
-  BaseEvent, CloneElementStyleEvent,
+  BaseEvent, CloneElementStyleEvent, Container,
   ContainerSizeChangeEvent,
   definePlugin,
   ItemDragEvent,

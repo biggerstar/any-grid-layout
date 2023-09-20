@@ -3,6 +3,7 @@
 import {definePlugin} from "@/global";
 import {ConfigurationEvent} from "@/plugins";
 
+
 export const ConfigBehavior = definePlugin({
   $getConfig(ev: ConfigurationEvent) {
     if (ev.configName === 'col') ev.configData = ev.getCol()

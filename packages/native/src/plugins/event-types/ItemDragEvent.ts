@@ -166,7 +166,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const inOuterContainer = !toContainer && fromItem
     // console.log(X,Y);
     // console.log(x, y);
-
     if (X !== 0 && Y !== 0) {
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLeftBottom')

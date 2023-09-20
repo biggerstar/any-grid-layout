@@ -1,9 +1,14 @@
-import {throttle} from "@/utils";
 import {tempStore} from "@/global";
 
-export const itemResize_mousemove: Function = throttle((_: MouseEvent) => {
+let bl = false
+
+export const itemResize_mousemove: Function = (_: MouseEvent) => {
   const {isResizing, isLeftMousedown, fromItem} = tempStore
   if (!fromItem || !isResizing || !isLeftMousedown) return
-  const {bus} = fromItem.container
-  bus.emit('resizing')
-}, 15)
+  if (bl) return
+  requestAnimationFrame(() => {
+    fromItem.container.bus.emit('resizing')
+    bl = false
+  })
+  bl = true
+}
