@@ -3,12 +3,41 @@ import {AnalysisResult, BaseLineType, CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
 
+export type EachOptions = {
+  point1: [number, number]
+  point2: [number, number]
+  align?: 'start' | 'end',
+  direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+}
+
+export type DirectionInfoType = {
+  start: {
+    stepCol: 1 | -1,
+    stepRow: 1 | -1,
+    startRow: number,
+    endRow: number,
+    startCol: number,
+    endCol: number,
+  },
+  end: {
+    stepCol: 1 | -1,
+    stepRow: 1 | -1,
+    startRow: number,
+    endRow: number,
+    startCol: number,
+    endCol: number,
+  }
+}
+
+
 /**
  * 布局算法管理器
  * 该类提供一些API用于快捷构建自定义布局算法
  * 继承该类的子类算法主要就是实现layout函数，layout函数也可以理解成算法入口
  * */
 export class LayoutManager extends Finder {
+  public FlexDirection = FlexDirection
+
   public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
   }
@@ -321,12 +350,12 @@ export class LayoutManager extends Finder {
     })
   }
 
-  /**
-   * 在矩阵中标记某个数组的所有pos占位
-   * */
-  public markList(posList: CustomItemPos[] | ItemPos[]): void {
-    posList.forEach((pos) => this.mark(pos))
-  }
+  // /**
+  //  * 在矩阵中标记某个数组的所有pos占位
+  //  * */
+  // public markList(posList: CustomItemPos[] | ItemPos[]): void {
+  //   posList.forEach((pos) => this.mark(pos))
+  // }
 
   /**
    * 在矩阵中标记该pos占位
@@ -347,35 +376,196 @@ export class LayoutManager extends Finder {
     return this
   }
 
+  // /**
+  //  * 遍历整个矩阵 (先行后列),内部使用双层for i实现
+  //  * @param {(curRow, curCol) => any} fn  回调函数,返回 !!res === true 将结束each循环, curRow当前行索引，curCol当前列索引
+  //  * @param options
+  //  * @param {number} options.startRow 从第几行开始，起始为0，默认为0
+  //  * @param {number} options.startCol 从第几列开始，起始为0，默认为0
+  //  * @param {number} options.endRow   到第几行结束，起始为0，默认为到当前矩阵的行数
+  //  * @param {number} options.endCol 到第几列结束，起始为0，默认为到当前矩阵的列数
+  //  * */
+  // public each(fn: (curRow, curCol) => any, options: {
+  //   startRow?: number
+  //   startCol?: number
+  //   endRow?: number
+  //   endCol?: number
+  // } = {}): void {
+  //   const {
+  //     startRow = 0,
+  //     startCol = 0,
+  //     endRow = this.row,
+  //     endCol = this.col
+  //   } = options
+  //   rowLabel /*statement label*/ :
+  //     for (let curRow = startRow; curRow < endRow; curRow++) {
+  //       for (let curCol = startCol; curCol < endCol; curCol++) {
+  //         const res = fn(curRow, curCol)
+  //         if (res) break rowLabel
+  //       }
+  //     }
+  // }
+
   /**
-   * 遍历整个矩阵 (先行后列),内部使用双层for i实现
-   * @param {(curRow, curCol) => any} fn  回调函数,返回 !!res === true 将结束each循环, curRow当前行索引，curCol当前列索引
-   * @param options
-   * @param {number} options.startRow 从第几行开始，起始为0，默认为0
-   * @param {number} options.startCol 从第几列开始，起始为0，默认为0
-   * @param {number} options.endRow   到第几行结束，起始为0，默认为到当前矩阵的行数
-   * @param {number} options.endCol 到第几列结束，起始为0，默认为到当前矩阵的列数
+   * 获取当前矩阵左上角的坐标点
    * */
-  public each(fn: (curRow, curCol) => any, options: {
-    startRow?: number
-    startCol?: number
-    endRow?: number
-    endCol?: number
-  } = {}): void {
-    const {
-      startRow = 0,
-      startCol = 0,
-      endRow = this.row,
-      endCol = this.col
-    } = options
+  public get leftTopPoint(): [1, 1] {
+    return [1, 1]
+  }
+
+  /**
+   * 获取当前矩阵右上角的坐标点
+   * */
+  public get rightTopPoint(): [number, 1] {
+    return [this.col, 1]
+  }
+
+  /**
+   * 获取当前矩阵左下角的坐标点
+   * */
+  public get leftBottomPoint(): [1, number] {
+    return [1, this.row]
+  }
+
+  /**
+   * 获取当前矩阵右下角的坐标点
+   * */
+  public get rightBottomPoint(): [number, number] {
+    return [this.col, this.row]
+  }
+
+  /**
+   * 参考css flex布局
+   * 定义一个主轴一个交叉轴
+   * direction为主轴方向
+   * align为交叉轴排列的起点
+   * 遍历任意方向的矩阵，point1和point2必须是对角点
+   * */
+  public each(
+    fn: (curRow, curCol, traverseInfo?) => any,
+    {
+      point1 = this.leftTopPoint,
+      point2 = this.rightBottomPoint,
+      direction = 'row',
+      align = 'start',
+    }: EachOptions)
+    : void {
+    const createTraverseInfo = this.FlexDirection[direction]
+    const traverseInfo = createTraverseInfo(point1, point2)
+    const alignInfo = traverseInfo[align]
     rowLabel /*statement label*/ :
-      for (let curRow = startRow; curRow < endRow; curRow++) {
-        for (let curCol = startCol; curCol < endCol; curCol++) {
-          const res = fn(curRow, curCol)
+      // Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow)
+      // 解释： startRow小，endRow大时，stepRow为正 ，ABS ((curRow - endRow) - +1) 正数减正数，到0退出循环
+      //       startRow大，endRow小时，stepRow为负 ，ABS (-(curRow - endRow) - -1) 负数减负数，到0退出循环
+      for (let curRow = alignInfo.startRow; Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow); curRow += alignInfo.stepRow) {
+        for (let curCol = alignInfo.startCol; Math.abs(curCol - alignInfo.endCol - alignInfo.stepCol); curCol += alignInfo.stepCol) {
+          const res = fn(curRow, curCol, traverseInfo)
           if (res) break rowLabel
         }
       }
   }
 }
 
+/**
+ * 控制变量遍历的方向规则
+ * point1: [1, 10],
+ * point2: [3, 2],
+ * Math.abs(1-3) + 1
+ * Math.abs(10-3) + 1
+ *       ||
+ * rect-size  [3, 9]
+ * --------------------
+ * Math.min(1,3)    1
+ * Math.min(10,2)   2
+ * Math.max(1,3)    3
+ * Math.max(10,2)   10
+ * */
+export const FlexDirection: Record<NonNullable<EachOptions["direction"]>, (p1, p2) => DirectionInfoType> = {
+  /**
+   * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
+   * */
+  'row': (p1, p2) => {
+    return {
+      start: {
+        stepCol: 1,
+        stepRow: 1,
+        startRow: Math.min(p1[1], p2[1]),
+        endRow: Math.max(p1[1], p2[1]),
+        startCol: Math.min(p1[0], p2[0]),
+        endCol: Math.max(p1[0], p2[0]),
+      },
+      end: {
+        stepCol: 1,
+        stepRow: -1,
+        startRow: Math.max(p1[1], p2[1]),
+        endRow: Math.min(p1[1], p2[1]),
+        startCol: Math.min(p1[0], p2[0]),
+        endCol: Math.max(p1[0], p2[0]),
+      }
+    }
+  },
+  'row-reverse': (p1, p2) => {
+    return {
+      start: {
+        stepCol: -1,
+        stepRow: 1,
+        startRow: Math.min(p1[1], p2[1]),
+        endRow: Math.max(p1[1], p2[1]),
+        startCol: Math.max(p1[0], p2[0]),
+        endCol: Math.min(p1[0], p2[0]),
+      },
+      end: {
+        stepCol: -1,
+        stepRow: -1,
+        startRow: Math.max(p1[1], p2[1]),
+        endRow: Math.min(p1[1], p2[1]),
+        startCol: Math.max(p1[0], p2[0]),
+        endCol: Math.min(p1[0], p2[0]),
+      }
+    }
+  },
 
+  /**
+   * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
+   * */
+  'column': (p1, p2) => {
+    return {
+      start: {
+        stepCol: 1,
+        stepRow: 1,
+        startRow: Math.min(p1[0], p2[0]),
+        endRow: Math.max(p1[0], p2[0]),
+        startCol: Math.min(p1[1], p2[1]),
+        endCol: Math.max(p1[1], p2[1]),
+      },
+      end: {
+        stepCol: 1,
+        stepRow: -1,
+        startRow: Math.max(p1[0], p2[0]),
+        endRow: Math.min(p1[0], p2[0]),
+        startCol: Math.min(p1[1], p2[1]),
+        endCol: Math.max(p1[1], p2[1]),
+      }
+    }
+  },
+  'column-reverse': (p1, p2) => {
+    return {
+      start: {
+        stepCol: -1,
+        stepRow: 1,
+        startRow: Math.min(p1[0], p2[0]),
+        endRow: Math.max(p1[0], p2[0]),
+        startCol: Math.max(p1[1], p2[1]),
+        endCol: Math.min(p1[1], p2[1]),
+      },
+      end: {
+        stepCol: -1,
+        stepRow: -1,
+        startRow: Math.max(p1[0], p2[0]),
+        endRow: Math.min(p1[0], p2[0]),
+        startCol: Math.max(p1[1], p2[1]),
+        endCol: Math.min(p1[1], p2[1]),
+      }
+    }
+  }
+}

@@ -6,10 +6,10 @@
   position: relative;
   display: block;
   /*禁止用户选择文本或元素*/
-  user-select: none;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  user-select: none;
 }
 
 .grid-item {
@@ -19,15 +19,16 @@
   position: absolute;
   /*苹果禁用touch提示  */
   -webkit-touch-callout: none;
-  touch-action: none;
   -ms-touch-action: none;
+  touch-action: none;
   /*阻止touch事件 */
-  user-select: none;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  user-select: none;
 }
-.grid-item-content{
+
+.grid-item-content {
   height: 100%;
   width: 100%;
   overflow: auto;

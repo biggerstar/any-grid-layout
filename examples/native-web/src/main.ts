@@ -1,6 +1,7 @@
 import container1 from "@/container/container1";
 import {
-  BaseEvent, CloneElementStyleEvent, Container,
+  BaseEvent,
+  CloneElementStyleEvent,
   ContainerSizeChangeEvent,
   definePlugin,
   ItemDragEvent,
@@ -8,8 +9,6 @@ import {
   ItemLayoutEvent,
   ItemPosChangeEvent,
   ItemResizeEvent,
-  ResponsiveLayoutPlugin,
-  StreamLayoutPlugin,
   ThrowMessageEvent,
   updateStyle,
 } from '@biggerstar/layout'
@@ -169,19 +168,39 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(ResponsiveLayoutPlugin)
+// .use(ResponsiveLayoutPlugin)
 
 container2
   .use(plugin)
 
 container3
   .use(plugin)
-  .use(StreamLayoutPlugin)
+// .use(StreamLayoutPlugin)
 
 
-container1.mount()
+// container1.mount()
 container2.mount()
-container3.mount()
+// container3.mount()
+
+const manager = container2.layoutManager
+
+manager.each((curRow, curCol, traverseInfo) => {
+  console.log(curRow, curCol);
+}, {
+  point2: [1, 2],
+  point1: [9, 0],
+  direction: 'row',
+  align: "start"
+})
+console.log('------------------------------')
+
+
+// manager.each1((curRow, curCol) => {
+//   console.log(curRow, curCol)
+// },{
+//   point1:[1,13],
+//   point2:[1,3],
+// })
 
 
 // setTimeout(()=>{
