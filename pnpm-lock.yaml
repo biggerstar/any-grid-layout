@@ -24,6 +24,9 @@ importers:
       '@biggerstar/layout':
         specifier: workspace:0.0.31-Beta
         version: link:packages/native
+      '@biggerstar/localhost-certs':
+        specifier: ^1.1.1
+        version: 1.1.1
       '@types/lodash':
         specifier: ^4.14.198
         version: 4.14.198
@@ -270,6 +273,10 @@ packages:
       '@babel/helper-string-parser': 7.22.5
       '@babel/helper-validator-identifier': 7.22.5
       to-fast-properties: 2.0.0
+
+  /@biggerstar/localhost-certs@1.1.1:
+    resolution: {integrity: sha512-Py/wmWg7g6s19sAn/94iajd+YdXeGvBpMYy4TaBZY+IVMnYVgQQcR8h+EkonWqT4SnNpDX6jxMHZXiHU3AJ/uw==}
+    dev: true
 
   /@docsearch/css@3.5.2:
     resolution: {integrity: sha512-SPiDHaWKQZpwR2siD0KQUwlStvIAnEyK6tAE2h2Wuoq8ue9skzhlyVQ1ddzOxX6khULnAALDiR/isSF3bnuciA==}

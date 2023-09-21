@@ -8,6 +8,7 @@ import {
 } from "vite-run";
 import dts from "vite-plugin-dts";
 import copyDtsPlugin from 'vite-plugin-copy-dts'
+import {viteCertsPlugin} from "@biggerstar/localhost-certs";
 
 export default defineViteRunConfig({
   baseConfig: getBaseConfig,
@@ -41,7 +42,9 @@ export default defineViteRunConfig({
     //   dev: ['watch']
     // },
     'native-web': {
-      dev: ['10000'],
+      dev: [
+        ['10000', 'https']
+      ],
     },
     // 'vue3-web': {
     //   dev: ['11000']
@@ -132,16 +135,17 @@ export default defineViteRunConfig({
     }
   },
   plugins: {
+    https: [viteCertsPlugin()],
     types: (options) => {
       return [
         dts({
           copyDtsFiles: true,
           declarationOnly: true,
-          rollupTypes:true,
-          clearPureImport:true,
+          rollupTypes: true,
+          clearPureImport: true,
         }),
         copyDtsPlugin({
-          delayMerge:1200,
+          delayMerge: 1200,
           files: [
             {
               from: `${options.packagePath}/typings/*.ts`,
