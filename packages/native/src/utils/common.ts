@@ -43,7 +43,7 @@ export function updateStyle(
 export function canExchange() {
   const {fromContainer, fromItem, toContainer} = tempStore
   if (!fromContainer || !fromItem || !toContainer) return false
-  return !(!fromItem.exchange   /* 要求item和容器都允许交换才能继续 */
-    || !toContainer.getConfig('exchange')
-    || !fromContainer.getConfig('exchange'))
+  return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
+    && toContainer.getConfig('exchange')
+    && fromContainer.getConfig('exchange')
 }

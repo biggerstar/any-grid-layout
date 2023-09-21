@@ -3,14 +3,8 @@
 import {definePlugin, tempStore} from "@/global";
 import {grid_dragging_source_el, grid_item_content} from "@/constant";
 import {ItemExchangeEvent} from "@/plugins/event-types/ItemExchangeEvent";
-import {CloneElementStyleEvent} from "@/plugins";
 
 export const itemExchangeBehavior = definePlugin({
-  updateCloneElementStyle(ev: CloneElementStyleEvent) {
-    ev.autoCreateCloneElement()
-    ev.updateLocation()
-  },
-
   /**
    * 控制是否可以移动到新容器
    * */
@@ -21,6 +15,7 @@ export const itemExchangeBehavior = definePlugin({
       x: ev.toStartX,
       y: ev.toStartY,
     }
+    console.log(ev.toContainer.layoutManager.isBlank(toPos))
     if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
       ev.doExchange()
     }
@@ -33,7 +28,7 @@ export const itemExchangeBehavior = definePlugin({
   /**
    * 一旦exchangeVerification验证通过，跨容器移动过程便不可阻止，只能在事件里面更改要新添加的item信息
    * */
-  exchangeProvide$(ev: ItemExchangeEvent) {
+  exchangeProvide$$(ev: ItemExchangeEvent) {
     if (!ev.fromItem) return
     if (ev.newItem) return
     const gridItemContent = ev.fromItem.element.querySelector(`.${grid_item_content}`)
@@ -42,6 +37,7 @@ export const itemExchangeBehavior = definePlugin({
       el: gridItemContent,
     }
     ev.provideItem(ev.createNewItem(newOptions))
+    // console.log(ev.newItem);
     ev.toContainer.bus.emit('exchangeReceive')
   },
 

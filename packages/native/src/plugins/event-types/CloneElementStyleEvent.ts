@@ -100,7 +100,7 @@ const _updateLocation: Function = () => {
 
   nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
   nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
-  const allowChange = adaption && exchange
+  const allowChange = adaption && exchange && toContainer!.parentItem !== fromItem
   let isKeepOffset
   let sizeStyle = {}
   if (allowChange) {  // 不允许交换
@@ -170,7 +170,7 @@ const _updateLocation: Function = () => {
   }, cloneElement)
 }
 
-const throttleChangeCloneSize = new SingleThrottle(200)
+const throttleChangeCloneSize = new SingleThrottle(180)
 
 /**
  * 用于更新克隆元素的样式和大小

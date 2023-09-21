@@ -1,4 +1,5 @@
 import {BaseLineType, CustomItems, MarginOrSizeDesc} from "@/types";
+import {EachOptions} from "@/algorithm";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -95,6 +96,20 @@ export class ContainerGeneralImpl {
    * @default 360
    * */
   pressTime?: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
+
+  /**
+   * 排布的主轴方向
+   *
+   * @default 'row'
+   * */
+  direction?: EachOptions["direction"]
+
+  /**
+   * 排布的交叉轴起点
+   *
+   * @default 'start'
+   * */
+  align?: EachOptions["align"]
 
   /**
    * 对dragging或者resizing的元素进行配置

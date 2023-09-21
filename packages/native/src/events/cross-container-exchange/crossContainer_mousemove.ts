@@ -18,7 +18,7 @@ export const crossContainer_mousemove: Function = throttle((_) => {
   if (
     fromContainer === toContainer
     // 如果在同一个container中 或者 源容器是嵌套容器的时候移动到挂载源容器的item上，不进行跨容器移动
-    || fromContainer.parentItem === toItem
+    || (toItem && fromContainer.parentItem === toItem)
     || !canExchange()
   ) return
 

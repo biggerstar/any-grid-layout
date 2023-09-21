@@ -14,6 +14,7 @@ const container1 = new Container({
   layouts: {
     from: '来自layout',
     // exchange: false,
+    exchange: true,
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

@@ -47,6 +47,7 @@ export class ConfigurationEvent extends BaseEvent {
       if (!container._mounted) data = Math.max(smartCol, containerW)
       else data = Math.max(smartCol, containerW)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
     }
+    // console.log('col',data)
     return data
   }
 
@@ -64,6 +65,7 @@ export class ConfigurationEvent extends BaseEvent {
       if (!container._mounted) data = Math.max(smartRow, containerH)
       else data = Math.max(smartRow, containerH)  // 同上
     }
+    // console.log('row',data)
     return data
   }
 }

@@ -60,6 +60,9 @@ export class ItemExchangeEvent extends ItemDragEvent {
     this.toStartY = toStartRelativeY < 1 ? 1 : toStartRelativeY
   }
 
+  /**
+   * 标记本次是否执行跨容器交换，如果标记允许的话后面将会发起交换流程
+   * */
   public doExchange() {
     this.isExchange = true
   }
