@@ -1,4 +1,4 @@
-import {CustomItems} from "@biggerstar/layout/dist/types";
+import {CustomItems} from "@biggerstar/layout";
 
 export const layoutData1: CustomItems = [
   // {pos: {w: 2, h: 2, x: 1, y: 3}},

@@ -1,5 +1,6 @@
 import {Container, fillItemLayoutList} from "@biggerstar/layout";
 import {layoutData11} from "@/stores/layout";
+import {layoutData2, layoutData3} from "../../../../docs/.vitepress/store/layout";
 
 const container2 = new Container({
   el: '#container2',
@@ -39,10 +40,10 @@ const container2 = new Container({
       // margin: [10, 10],
       size: [50, 100],
       exchange: true,
-      direction: 'row',
+      direction: 'column-reverse',
       align: 'end',
       autoGrow: true,
-      items: fillItemLayoutList(layoutData11, {
+      items: fillItemLayoutList(layoutData3, {
         draggable: true,
         resize: true,
         close: true,

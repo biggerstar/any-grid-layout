@@ -190,9 +190,12 @@ container2.mount()
 
 const manager = container2.layoutManager
 
-manager.each((curRow, curCol, traverseInfo)=>{
-  // console.log(curRow,curCol);
-})
+// manager.each((curRow, curCol, traverseInfo)=>{
+//   // console.log(curRow,curCol);
+// },{
+//   point2:[12,3],
+//   point1:[0,0],
+// })
 
 
 

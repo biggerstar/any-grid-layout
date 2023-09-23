@@ -34,7 +34,7 @@ export type DirectionInfoType = {
     endCol: number,
     grow?: Function,
   },
-  end: {
+  end?: {
     stepCol: 1 | -1,
     stepRow: 1 | -1,
     startRow: number,
@@ -66,7 +66,7 @@ export class LayoutManager extends Finder {
     return this._layoutMatrix.length || 1
   }
 
-  protected _layoutMatrix = [[]]   // 布局矩阵
+  protected _layoutMatrix = []   // 布局矩阵
   protected place = 0
   protected placed = 1
 
@@ -168,11 +168,11 @@ export class LayoutManager extends Finder {
   /**
    * 转成适合矩阵数组操作的pos，外部pos要适配矩阵操作需要使用该函数转换
    * */
-  public toLayoutPos(pos: CustomItemPos): Record<BasePosType, number> {
+  public toMatrixPos(pos: CustomItemPos): Record<BasePosType, number> {
     const x = pos.x - 1 <= 0 ? 0 : pos.x - 1
     const y = pos.y - 1 <= 0 ? 0 : pos.y - 1
-    if (isNaN(x) || isNaN(y)) {
-      console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
+    if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
+      console.error('[any-grid-layout] 请为x 或 y指定一个正整数', pos)
     }
     return {
       w: pos.w,
@@ -259,7 +259,7 @@ export class LayoutManager extends Finder {
       const tryPos = {
         w: pos.w,
         h: pos.h,
-        x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
+        x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos栅格单位,传入的x,y最低的值为1
         y: curRow + 1,
       }
       if (this.isBlank(tryPos)) return resPos = tryPos
@@ -271,11 +271,12 @@ export class LayoutManager extends Finder {
    * 判断一个pos在当前矩阵中能否放置
    * */
   public isBlank(pos: CustomItemPos): boolean {
-    const {w, h, x, y} = this.toLayoutPos(pos)
+    const {w, h, x, y} = this.toMatrixPos(pos)
     if ((this.row - h - y) < 0 || (this.col - w - x) < 0) return false // 如果指定的x,y超出矩阵直接返回false
     let isBlank = true
     this.each((curRow, curCol) => {
-      if (this._layoutMatrix[curRow][curCol] === this.placed) {
+      const line = this._layoutMatrix[curRow]
+      if (!line || line[curCol] === this.placed) {
         isBlank = false
         return true
       }
@@ -295,6 +296,18 @@ export class LayoutManager extends Finder {
    * 分析判断是否能让item移动到指定的`pos`位置
    * @param items  当前所有的items
    * @param modifyList 要修改的列表
+   *
+   * 翻转分析:
+   *        row
+   *        row end                horizontal
+   *        Row-reverse            vertical
+   *        Row-reverse end        vertical horizontal
+   *
+   *        column
+   *        column-reverse         horizontal
+   *        column end             vertical
+   *        column-reverse  end    vertical horizontal
+   *
    * */
   public analysis(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }> | null = []): AnalysisResult {
     if (!Array.isArray(modifyList)) modifyList = []
@@ -320,7 +333,6 @@ export class LayoutManager extends Finder {
         isSuccess = false
       }
     })
-
     //---------------------------------------------------------------------
     /*--------------------------站位所有要修改的item-------------------------*/
     for (const modifyItem of modifyList) {
@@ -351,9 +363,15 @@ export class LayoutManager extends Finder {
       })
     }
 
-    this.horizontalMirrorFlip(success)
-    // this.verticalMirrorFlip(success)
+    if (['row', 'row-reverse'].includes(this.direction)) {
+      if (this.direction === 'row-reverse ') this.verticalMirrorFlip(success)
+      if (this.align === 'end') this.horizontalMirrorFlip(success)
+    }
 
+    if (['column', 'column-reverse'].includes(this.direction)) {
+      if (this.direction === 'column-reverse ') this.horizontalMirrorFlip(success)
+      if (this.align === 'end') this.verticalMirrorFlip(success)
+    }
     return {
       col: this.col,
       row: this.row,
@@ -405,7 +423,7 @@ export class LayoutManager extends Finder {
    * @return {CustomItemPos} 传入的pos原样返回
    * */
   public mark(pos: CustomItemPos | ItemPos, markSymbol?: typeof this.place | typeof this.placed): this {
-    const {w, h, x, y} = this.toLayoutPos(pos)
+    const {w, h, x, y} = this.toMatrixPos(pos)
     this.each((curRow, curCol) => {
       this._layoutMatrix[curRow][curCol] = markSymbol !== void 0 ? markSymbol : this.placed
     }, {
@@ -463,13 +481,20 @@ export class LayoutManager extends Finder {
     const createTraverseInfo = this.FlexDirection[direction]
     const traverseInfo = createTraverseInfo(point1, point2)
     const alignInfo = traverseInfo["start"]
+    const isHorizontal = ['column', 'column-reverse'].includes(this.direction)
+    // console.log(alignInfo)
+    // return
     rowLabel /*statement label*/ :
       // Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow)
       // 解释： startRow小，endRow大时，stepRow为正 ，ABS ((curRow - endRow) - +1) 正数减正数，到0退出循环
       //       startRow大，endRow小时，stepRow为负 ，ABS (-(curRow - endRow) - -1) 负数减负数，到0退出循环
       for (let curRow = alignInfo.startRow; Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow); curRow += alignInfo.stepRow) {
         for (let curCol = alignInfo.startCol; Math.abs(curCol - alignInfo.endCol - alignInfo.stepCol); curCol += alignInfo.stepCol) {
-          const res = fn(curRow, curCol, traverseInfo)
+          /*
+          * 如果是水平方向的布局(上下布局)，此时横向为col，竖向为row
+          * 如果是水平方向的布局(左右布局)，此时竖向为col，横向为row
+          * */
+          const res = isHorizontal ? fn(curCol, curRow, traverseInfo) : fn(curRow, curCol, traverseInfo)
           if (res) break rowLabel
         }
       }
@@ -505,14 +530,14 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.min(p1[0], p2[0]),
         endCol: Math.max(p1[0], p2[0]),
       },
-      end: {
-        stepCol: 1,
-        stepRow: -1,
-        startRow: Math.max(p1[1], p2[1]),
-        endRow: Math.min(p1[1], p2[1]),
-        startCol: Math.min(p1[0], p2[0]),
-        endCol: Math.max(p1[0], p2[0]),
-      }
+      // end: {
+      //   stepCol: 1,
+      //   stepRow: -1,
+      //   startRow: Math.max(p1[1], p2[1]),
+      //   endRow: Math.min(p1[1], p2[1]),
+      //   startCol: Math.min(p1[0], p2[0]),
+      //   endCol: Math.max(p1[0], p2[0]),
+      // }
     }
   },
   'row-reverse': (p1, p2) => {
@@ -525,14 +550,14 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.max(p1[0], p2[0]),
         endCol: Math.min(p1[0], p2[0]),
       },
-      end: {
-        stepCol: -1,
-        stepRow: -1,
-        startRow: Math.max(p1[1], p2[1]),
-        endRow: Math.min(p1[1], p2[1]),
-        startCol: Math.max(p1[0], p2[0]),
-        endCol: Math.min(p1[0], p2[0]),
-      }
+      // end: {
+      //   stepCol: -1,
+      //   stepRow: -1,
+      //   startRow: Math.max(p1[1], p2[1]),
+      //   endRow: Math.min(p1[1], p2[1]),
+      //   startCol: Math.max(p1[0], p2[0]),
+      //   endCol: Math.min(p1[0], p2[0]),
+      // }
     }
   },
 
@@ -549,14 +574,14 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.min(p1[1], p2[1]),
         endCol: Math.max(p1[1], p2[1]),
       },
-      end: {
-        stepCol: 1,
-        stepRow: -1,
-        startRow: Math.max(p1[0], p2[0]),
-        endRow: Math.min(p1[0], p2[0]),
-        startCol: Math.min(p1[1], p2[1]),
-        endCol: Math.max(p1[1], p2[1]),
-      }
+      // end: {
+      //   stepCol: 1,
+      //   stepRow: -1,
+      //   startRow: Math.max(p1[0], p2[0]),
+      //   endRow: Math.min(p1[0], p2[0]),
+      //   startCol: Math.min(p1[1], p2[1]),
+      //   endCol: Math.max(p1[1], p2[1]),
+      // }
     }
   },
   'column-reverse': (p1, p2) => {
@@ -569,14 +594,14 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.max(p1[1], p2[1]),
         endCol: Math.min(p1[1], p2[1]),
       },
-      end: {
-        stepCol: -1,
-        stepRow: -1,
-        startRow: Math.max(p1[0], p2[0]),
-        endRow: Math.min(p1[0], p2[0]),
-        startCol: Math.max(p1[1], p2[1]),
-        endCol: Math.min(p1[1], p2[1]),
-      }
+      // end: {
+      //   stepCol: -1,
+      //   stepRow: -1,
+      //   startRow: Math.max(p1[0], p2[0]),
+      //   endRow: Math.min(p1[0], p2[0]),
+      //   startCol: Math.max(p1[1], p2[1]),
+      //   endCol: Math.min(p1[1], p2[1]),
+      // }
     }
   }
 }
