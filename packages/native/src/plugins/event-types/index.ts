@@ -5,7 +5,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {CloneElementStyleEvent, ItemExchangeEvent} from "@/plugins";
+import {CloneElementStyleEvent, InitOptionsEvent, ItemExchangeEvent} from "@/plugins";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 
@@ -19,6 +19,7 @@ export * from './ItemPosChangeEvent'
 export * from './ContainerSizeChangeEvent'
 export * from './ConfigurationEvent'
 export * from './CloneElementStyleEvent'
+export * from './InitOptionsEvent'
 
 
 export const EventMap: EventMapType<CustomEventOptions> = {
@@ -27,13 +28,15 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   error: ThrowMessageEvent,
   warn: ThrowMessageEvent,
   //--------------other-------------------
-  init: ItemLayoutEvent,
+  config: InitOptionsEvent,
+  configResolved: InitOptionsEvent,
   updateLayout: ItemLayoutEvent,
   updateCloneElementStyle: CloneElementStyleEvent,
   getConfig: ConfigurationEvent,
   setConfig: ConfigurationEvent,
   //-----------------container------------------
-  containerMounted: BaseEvent,
+  containerMountBefore: BaseEvent,
+  containerMounted: ItemLayoutEvent,
   containerUnmounted: BaseEvent,
   containerResizing: ContainerSizeChangeEvent,
   containerSizeChanged: ContainerSizeChangeEvent,

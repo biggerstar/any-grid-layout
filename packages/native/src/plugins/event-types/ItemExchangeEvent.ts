@@ -5,7 +5,6 @@ import {Container, Item} from "@/main";
 import {CustomItem, CustomItemPos} from "@/types";
 import {analysisCurPositionInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {hasAutoDirection} from "@/plugins/common";
 
 export class ItemExchangeEvent extends ItemDragEvent {
   public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
@@ -42,13 +41,9 @@ export class ItemExchangeEvent extends ItemDragEvent {
     }
     this.mousePos = toPos
     if (!manager.isBlank(toPos)) {
-      const baseline = this.container.getConfig("baseline")
       this.spacePos = <any>this.layoutManager.findBlank({
         w: fromItem.pos.w,
         h: fromItem.pos.h,
-      }, {
-        baseline,
-        auto: hasAutoDirection(this.container, baseline)
       })
     }
     const toContainerRect = toContainer.contentElement.getBoundingClientRect()

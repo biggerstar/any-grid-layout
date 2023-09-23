@@ -1,5 +1,5 @@
-import {BaseLineType, CustomItems, MarginOrSizeDesc} from "@/types";
-import {EachOptions} from "@/algorithm";
+import {CustomItems, MarginOrSizeDesc} from "@/types";
+import {AlignEnumType, DirectionEnumType} from "@/algorithm";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -48,7 +48,7 @@ export class ContainerGeneralImpl {
 
   /**
    * @deprecated
-   * 弃用，因为设置了baseline必须要有一个方向能让item活动，除了静态布局
+   * 弃用，因为必须要有一个方向能让item活动，除了静态布局
    * 最大列数
    * */
   maxCol?: number | null = null
@@ -57,7 +57,7 @@ export class ContainerGeneralImpl {
   minRow?: number | null = null
   /**
    * @deprecated
-   * 弃用，因为设置了baseline必须要有一个方向能让item活动，除了静态布局
+   * 弃用，因为必须要有一个方向能让item活动，除了静态布局
    * 最大行数 只是容器高度，未和布局算法挂钩
    * */
   maxRow?: number | null = null
@@ -87,11 +87,6 @@ export class ContainerGeneralImpl {
   exchange?: boolean = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
 
   /**
-   * 基准线，那个方向作为基底线   TODO left bottom，right
-   * */
-  baseline?: BaseLineType = 'top'
-
-  /**
    * 触屏下长按多久响应拖拽事件,默认360ms
    * @default 360
    * */
@@ -102,15 +97,19 @@ export class ContainerGeneralImpl {
    *
    * @default 'row'
    * */
-  direction?: EachOptions["direction"]
+  direction?: DirectionEnumType = 'row'
 
   /**
    * 排布的交叉轴起点
    *
    * @default 'start'
    * */
-  align?: EachOptions["align"]
+  align?: AlignEnumType = 'start'
 
+  /**
+   * 是否在响应布局的交叉轴方向上自动拓展矩阵大小
+   * */
+  autoGrow?: boolean = true
   /**
    * 对dragging或者resizing的元素进行配置
    * */

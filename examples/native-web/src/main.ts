@@ -180,42 +180,19 @@ container3
 
 // container1.mount()
 container2.mount()
+
 // container3.mount()
+
+
+
+
+
 
 const manager = container2.layoutManager
 
-manager.each((curRow, curCol, traverseInfo) => {
-  console.log(curRow, curCol);
-}, {
-  point2: [1, 2],
-  point1: [9, 0],
-  direction: 'row',
-  align: "start"
+manager.each((curRow, curCol, traverseInfo)=>{
+  // console.log(curRow,curCol);
 })
-console.log('------------------------------')
 
 
-// manager.each1((curRow, curCol) => {
-//   console.log(curRow, curCol)
-// },{
-//   point1:[1,13],
-//   point2:[1,3],
-// })
-
-
-// setTimeout(()=>{
-//     container.unmount()
-// },3000)
-//
-// setTimeout(()=>{
-//     container.mount()
-// },6000)
-//
-// setTimeout(()=>{
-//     container.unmount()
-// },10000)
-//
-// setTimeout(()=>{
-//     container.mount()
-// },6000)
 

@@ -2,7 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemPositionHasChanged, checkItemSizeHasChanged, hasAutoDirection,} from "@/plugins/common";
+import {checkItemPositionHasChanged, checkItemSizeHasChanged} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
@@ -18,16 +18,13 @@ export const DefaultLayoutBehavior = definePlugin({
    * 内置已经实现，支持用户阻止init默认行为自行实现
    * @return {AnalysisResult | void} 返回结果，如果failed长度不为0，表明有item没添加成功则会抛出警告事件
    * */
-  init(ev: ItemDragEvent) {
+  containerMounted(ev: ItemDragEvent) {
     const {container} = ev
     const {layoutManager: manager} = container
+    // console.log(manager.direction, manager.align)
     autoSetSizeAndMargin(container, true)  // 1.先初始化初始配置
     container.reset()
-    const baseline = container.getConfig("baseline")
-    const res = manager.analysis(container.items, null, {  // 2. 分析当前布局
-      baseline,
-      auto: hasAutoDirection(container, baseline)
-    })
+    const res = manager.analysis(container.items, null)   // 2. 分析当前布局
     res.patch()  // 3. 修改当前item位置
     container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
     autoSetSizeAndMargin(container, true)  // 5.根据最终容器大小配置最终margin和size

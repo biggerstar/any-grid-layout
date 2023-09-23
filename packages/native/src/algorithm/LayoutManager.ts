@@ -1,14 +1,28 @@
 import {Item} from "@/main/item/Item";
-import {AnalysisResult, BaseLineType, CustomItemPos} from "@/types";
+import {AnalysisResult, BasePosType, CustomItemPos} from "@/types";
 import {ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
 
+/**
+ * point1 和 point2 一起构成的矩阵范围，外部使用者无需关心point1和point2的传入顺序，内部会自动分析矩阵区域
+ * */
 export type EachOptions = {
   point1: [number, number]
   point2: [number, number]
-  align?: 'start' | 'end',
-  direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse'
+
+  /**
+   * 交叉轴的遍历起点
+   * */
+  align?: AlignEnumType,
+
+  /**
+   * 主轴的遍历方向
+   * */
+  direction?: DirectionEnumType
 }
+
+export type AlignEnumType = 'start' | 'end'
+export type DirectionEnumType = 'row' | 'row-reverse' | 'column' | 'column-reverse'
 
 export type DirectionInfoType = {
   start: {
@@ -18,6 +32,7 @@ export type DirectionInfoType = {
     endRow: number,
     startCol: number,
     endCol: number,
+    grow?: Function,
   },
   end: {
     stepCol: 1 | -1,
@@ -26,17 +41,22 @@ export type DirectionInfoType = {
     endRow: number,
     startCol: number,
     endCol: number,
+    grow?: Function,
   }
 }
 
 
 /**
- * 布局算法管理器
+ * 布局算法管理器,单独工具类，不和container关联
  * 该类提供一些API用于快捷构建自定义布局算法
  * 继承该类的子类算法主要就是实现layout函数，layout函数也可以理解成算法入口
  * */
 export class LayoutManager extends Finder {
   public FlexDirection = FlexDirection
+
+  public direction: DirectionEnumType
+  public align: AlignEnumType
+  public autoGrow: boolean
 
   public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
@@ -49,27 +69,6 @@ export class LayoutManager extends Finder {
   protected _layoutMatrix = [[]]   // 布局矩阵
   protected place = 0
   protected placed = 1
-
-  /**
-   * @param {Number} num  添加一行
-   * */
-  public addRow = (num = null) => {
-    if (!num) return
-    for (let i = 0; i < num; i++) {
-      this._layoutMatrix.push(new Array(this.col).fill(this.place))
-    }
-  }
-  /**
-   * @param {Number} num  添加一列
-   * */
-  public addCol = (num = null) => {
-    if (!num) return
-    for (let i = 0; i < this._layoutMatrix.length; i++) {  // 遍历row
-      for (let j = 0; j < num; j++) {     // 往col添加指定num个默认值
-        this._layoutMatrix[i].push(this.place)
-      }
-    }
-  }
 
   /**
    * 判断该pos是否超出当前的矩阵范围,通常用于静态模式
@@ -169,14 +168,15 @@ export class LayoutManager extends Finder {
   /**
    * 转成适合矩阵数组操作的pos，外部pos要适配矩阵操作需要使用该函数转换
    * */
-  public toLayoutPos(pos: CustomItemPos): CustomItemPos {
+  public toLayoutPos(pos: CustomItemPos): Record<BasePosType, number> {
     const x = pos.x - 1 <= 0 ? 0 : pos.x - 1
     const y = pos.y - 1 <= 0 ? 0 : pos.y - 1
     if (isNaN(x) || isNaN(y)) {
       console.error('[grid-layout] 请为x 或 y指定一个正整数', pos)
     }
     return {
-      ...pos,
+      w: pos.w,
+      h: pos.h,
       x,
       y,
     }
@@ -198,43 +198,72 @@ export class LayoutManager extends Finder {
   }
 
   /**
+   * @param {Number} num  添加一行
+   * */
+  public addRow = (num: number = 1) => {
+    for (let i = 0; num && i < num; i++) {
+      this._layoutMatrix.push(new Array(this.col).fill(this.place))
+    }
+  }
+
+  /**
+   * @param {Number} num  添加一列
+   * */
+  public addCol = (num: number = 1) => {
+    for (let i = 0; i < this._layoutMatrix.length; i++) {  // 遍历row
+      for (let j = 0; num && j < num; j++) {     // 往col添加指定num个默认值
+        this._layoutMatrix[i].push(this.place)
+      }
+    }
+  }
+
+  /**
+   * @param num   要拓展交叉轴end方向的行数
+   * */
+  public expandLine(num: number = 1): boolean {
+    if (!this.autoGrow) return
+    const addRow = ['row', 'row-reverse'].includes(this.direction)
+    const addCol = ['column', 'column-reverse'].includes(this.direction)
+    for (let i = 0; i < num; i++) {
+      if (addRow) this.addRow()
+      else if (addCol) this.addCol()
+    }
+  }
+
+  /**
+   * 寻找往交叉轴方向自动增长的合适pos
+   * */
+  public findGrowBlank(
+    pos: { w: number, h: number }
+  ) {
+    let cont = 20   // 最多expand添加二十行供于检测
+    while (cont--) {
+      const found = <boolean>this.findBlank(pos)
+      if (found) return found
+      this.expandLine()
+      // console.log('expandLine')
+    }
+    return null
+  }
+
+  /**
    * 传入一个pos，查看当前矩阵中是否存在适合该pos的空位
-   * 有两种情况:
-   * - 如果pos指定了x,y则查看当前矩阵该位置是否有空位
-   * - 如果pos没有指定x,y，则自动寻找当前矩阵中适合w,h尺寸的空位
    * @param pos
-   * @param options
    * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
    * */
   public findBlank(
-    pos: CustomItemPos,
-    options?: { baseline?: BaseLineType; auto?: boolean })
-    : CustomItemPos | null {
-    const {baseline = 'top', auto = false} = options   // 定义默认，在形参定义的话代码太长了
-    const {w, h, x, y} = pos
-    const isStaticPos = this.isStaticPos(pos)
+    pos: { w: number, h: number },
+  ): CustomItemPos | null {
     let resPos = null
-    if (isStaticPos) {  // 已经有x,y直接看是否有空位
-      if (this.isBlank(pos)) resPos = {w, h, x, y}
-    } else {
-      this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
-        const tryPos = {
-          w,
-          h,
-          x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
-          y: curRow + 1,
-        }
-        if (['left', 'right'].includes(baseline) && auto) {
-          const offset = this.col - curCol - w - 1
-          if (offset < 0) this.addCol(Math.abs(offset))
-        }
-        if (['top', 'bottom'].includes(baseline) && auto) {
-          const offset = this.row - curRow - h - 1
-          if (offset < 0) this.addRow(Math.abs(offset))
-        }
-        if (this.isBlank(tryPos)) return resPos = tryPos
-      })
-    }
+    this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
+      const tryPos = {
+        w: pos.w,
+        h: pos.h,
+        x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos,x,y最低的值为1
+        y: curRow + 1,
+      }
+      if (this.isBlank(tryPos)) return resPos = tryPos
+    })
     return resPos
   }
 
@@ -251,10 +280,8 @@ export class LayoutManager extends Finder {
         return true
       }
     }, {
-      startCol: x,
-      startRow: y,
-      endCol: x + w,
-      endRow: y + h,
+      point1: [x, y],
+      point2: [x + w - 1, y + h - 1],
     })
     return isBlank
   }
@@ -268,12 +295,8 @@ export class LayoutManager extends Finder {
    * 分析判断是否能让item移动到指定的`pos`位置
    * @param items  当前所有的items
    * @param modifyList 要修改的列表
-   * @param options
    * */
-  public analysis(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }> | null = [], options: {
-    baseline?: BaseLineType,
-    auto?: boolean
-  } = {}): AnalysisResult {
+  public analysis(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }> | null = []): AnalysisResult {
     if (!Array.isArray(modifyList)) modifyList = []
     const modifyItems = modifyList.map(({item}) => item)
     const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
@@ -313,8 +336,8 @@ export class LayoutManager extends Finder {
     /*--------------------------剩余所有未执行x,y的Item----------------------------*/
     for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
       const item = ordinaryItems[i]
-      const sizeXY = item.pos.getComputedCustomPos()
-      const foundPos = this.findBlank(sizeXY, options)
+      const sizeWH = item.pos.getComputedCustomPos()
+      const foundPos = this.findGrowBlank(sizeWH)
       // console.log(foundPos)
       if (!foundPos) {
         isSuccess = false
@@ -327,6 +350,10 @@ export class LayoutManager extends Finder {
         pos: foundPos
       })
     }
+
+    this.horizontalMirrorFlip(success)
+    // this.verticalMirrorFlip(success)
+
     return {
       col: this.col,
       row: this.row,
@@ -340,22 +367,36 @@ export class LayoutManager extends Finder {
     }
   }
 
+
+  /**
+   * 镜像翻转
+   * */
+  public verticalMirrorFlip(successItem) {
+    successItem.forEach(item => {
+      item.pos.x = this.col - item.pos.x - (item.pos.w - 1) + 1
+    })
+  }
+
+  /**
+   * 水平翻转
+   * */
+  public horizontalMirrorFlip(successItem) {
+    successItem.forEach(item => {
+      item.pos.y = this.row - item.pos.y - (item.pos.h - 1) + 1
+    })
+  }
+
   /**
    * 派发位置更新到item的pos上
    * */
   public patch(items: { item: Item, pos: CustomItemPos }[], handler?: Function) {
+    this.reset()
     items.forEach(({item, pos}) => {
       Object.assign(item.pos, pos)
+      this.mark(pos)
       if (typeof handler === 'function') handler(item)
     })
   }
-
-  // /**
-  //  * 在矩阵中标记某个数组的所有pos占位
-  //  * */
-  // public markList(posList: CustomItemPos[] | ItemPos[]): void {
-  //   posList.forEach((pos) => this.mark(pos))
-  // }
 
   /**
    * 在矩阵中标记该pos占位
@@ -368,70 +409,38 @@ export class LayoutManager extends Finder {
     this.each((curRow, curCol) => {
       this._layoutMatrix[curRow][curCol] = markSymbol !== void 0 ? markSymbol : this.placed
     }, {
-      startCol: x,
-      startRow: y,
-      endCol: x + w,
-      endRow: y + h,
+      point1: [x, y],
+      point2: [x + w - 1, y + h - 1],
     })
     return this
   }
 
-  // /**
-  //  * 遍历整个矩阵 (先行后列),内部使用双层for i实现
-  //  * @param {(curRow, curCol) => any} fn  回调函数,返回 !!res === true 将结束each循环, curRow当前行索引，curCol当前列索引
-  //  * @param options
-  //  * @param {number} options.startRow 从第几行开始，起始为0，默认为0
-  //  * @param {number} options.startCol 从第几列开始，起始为0，默认为0
-  //  * @param {number} options.endRow   到第几行结束，起始为0，默认为到当前矩阵的行数
-  //  * @param {number} options.endCol 到第几列结束，起始为0，默认为到当前矩阵的列数
-  //  * */
-  // public each(fn: (curRow, curCol) => any, options: {
-  //   startRow?: number
-  //   startCol?: number
-  //   endRow?: number
-  //   endCol?: number
-  // } = {}): void {
-  //   const {
-  //     startRow = 0,
-  //     startCol = 0,
-  //     endRow = this.row,
-  //     endCol = this.col
-  //   } = options
-  //   rowLabel /*statement label*/ :
-  //     for (let curRow = startRow; curRow < endRow; curRow++) {
-  //       for (let curCol = startCol; curCol < endCol; curCol++) {
-  //         const res = fn(curRow, curCol)
-  //         if (res) break rowLabel
-  //       }
-  //     }
-  // }
-
   /**
    * 获取当前矩阵左上角的坐标点
    * */
-  public get leftTopPoint(): [1, 1] {
-    return [1, 1]
+  public get leftTopPoint(): [0, 0] {
+    return [0, 0]
   }
 
   /**
    * 获取当前矩阵右上角的坐标点
    * */
-  public get rightTopPoint(): [number, 1] {
-    return [this.col, 1]
+  public get rightTopPoint(): [number, 0] {
+    return [this.col - 1, 0]
   }
 
   /**
    * 获取当前矩阵左下角的坐标点
    * */
-  public get leftBottomPoint(): [1, number] {
-    return [1, this.row]
+  public get leftBottomPoint(): [0, number] {
+    return [0, this.row - 1]
   }
 
   /**
    * 获取当前矩阵右下角的坐标点
    * */
   public get rightBottomPoint(): [number, number] {
-    return [this.col, this.row]
+    return [this.col - 1, this.row - 1]
   }
 
   /**
@@ -446,13 +455,14 @@ export class LayoutManager extends Finder {
     {
       point1 = this.leftTopPoint,
       point2 = this.rightBottomPoint,
-      direction = 'row',
-      align = 'start',
-    }: EachOptions)
+      direction = this.direction,
+      align = this.align,
+    }?: EachOptions = {})
     : void {
+    // console.log(point1,point2)
     const createTraverseInfo = this.FlexDirection[direction]
     const traverseInfo = createTraverseInfo(point1, point2)
-    const alignInfo = traverseInfo[align]
+    const alignInfo = traverseInfo["start"]
     rowLabel /*statement label*/ :
       // Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow)
       // 解释： startRow小，endRow大时，stepRow为正 ，ABS ((curRow - endRow) - +1) 正数减正数，到0退出循环
@@ -465,6 +475,7 @@ export class LayoutManager extends Finder {
       }
   }
 }
+
 
 /**
  * 控制变量遍历的方向规则
@@ -480,7 +491,7 @@ export class LayoutManager extends Finder {
  * Math.max(1,3)    3
  * Math.max(10,2)   10
  * */
-export const FlexDirection: Record<NonNullable<EachOptions["direction"]>, (p1, p2) => DirectionInfoType> = {
+export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => DirectionInfoType> = {
   /**
    * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
    * */

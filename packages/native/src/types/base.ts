@@ -12,12 +12,13 @@ import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 import {Container} from "@/main";
+import {InitOptionsEvent} from "@/plugins/event-types/InitOptionsEvent";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
 export type CustomItems = ItemGeneralImpl[]
 
-// export type BasePosType = 'x' | 'y' | 'w' | 'h'
+export type BasePosType = 'x' | 'y' | 'w' | 'h'
 export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'
 export type MarginOrSizeDesc = [number | null, number | null]
 
@@ -127,7 +128,12 @@ export type CustomEventOptions = {
   /**
    * @default 初始化载入item成员并挂载
    * */
-  init?(ev: ItemLayoutEvent): void,
+  config?(ev: InitOptionsEvent): void,
+
+  /**
+   * @default 经过各个插件的config之后的最终配置
+   * */
+  configResolved?(ev: InitOptionsEvent): void,
 
   /**
    * 发起一次更新，内置默认事件无任何行为，由当前使用的插件自行实现更新逻辑
@@ -146,6 +152,11 @@ export type CustomEventOptions = {
   setConfig?(ev: ConfigurationEvent): void,
 
   //-----------------container------------------
+  /**
+   * @default 初始化载入item成员并挂载
+   * */
+  containerMountBefore?(ev: BaseEvent): void,
+
   /** Container成功挂载事件 */
   containerMounted?(ev: BaseEvent): void,
 

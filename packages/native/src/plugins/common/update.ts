@@ -6,7 +6,6 @@ import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins";
 import {isAnimation} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {hasAutoDirection} from "@/plugins/common/method";
 
 
 /**
@@ -48,11 +47,7 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
   container.reset()
-  const baseline = container.getConfig("baseline")
-  let res = manager.analysis(items, ev.getModifyItems(), {
-    baseline,
-    auto: hasAutoDirection(container, baseline)
-  })
+  let res = manager.analysis(items, ev.getModifyItems())
   if (!res.isSuccess) return false
   res.patch()
   ev.patchStyle()

@@ -1,10 +1,19 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {definePlugin} from "@/global";
-import {ConfigurationEvent} from "@/plugins";
+import {BaseEvent, ConfigurationEvent} from "@/plugins";
 
 
 export const ConfigBehavior = definePlugin({
+  /**
+   * 每次挂载或者卸载后挂载都会同步相关配置
+   * */
+  $containerMountBefore(ev: BaseEvent) {
+    const {layoutManager, container} = ev
+    layoutManager.direction = container.getConfig("direction")
+    layoutManager.align = container.getConfig("align")
+    layoutManager.autoGrow = container.getConfig("autoGrow")
+  },
   $getConfig(ev: ConfigurationEvent) {
     if (ev.configName === 'col') ev.configData = ev.getCol()
     if (ev.configName === 'row') ev.configData = ev.getRow()

@@ -15,7 +15,7 @@ import {startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
-import {isString} from "is-what";
+import {isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
@@ -98,10 +98,18 @@ export class Container {
 
   constructor(options: ContainerInstantiationOptions) {
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
-    merge(this, options)
-    this._define()
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
+    let resOption = options
+    this.bus.emit('config', {
+      options: options,
+      callback: (ev) => ev.options && isObject(ev.options) && (resOption = ev.options)
+    })
+    this.bus.emit('configResolved' /* 类似vite钩子 */, {
+      options: resOption,
+    })
+    merge(this, resOption)
+    this._define()
     this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
     startGlobalEvent()
@@ -246,9 +254,10 @@ export class Container {
       if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
       if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
     }
-    this._createGridContainerBox()
     //-----------------容器布局信息初始化与检测--------------------//
     this._init()
+    this.bus.emit('containerMountBefore')
+    this._createGridContainerBox()
     this.sequence()
     //-------------------------其他操作--------------------------//
     this.parentItem = parseItemFromPrototypeChain(this.element)
@@ -402,7 +411,6 @@ export class Container {
     this.initLayoutInfo()
     let items = this.getConfig('items')
     items.forEach((item) => this.addItem(item, {syncCustomItems: false}))
-    this.bus.emit('init')
   }
 
   /**
