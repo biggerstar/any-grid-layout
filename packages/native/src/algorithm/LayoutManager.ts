@@ -1,15 +1,5 @@
 import {Item} from "@/main/item/Item";
-import {
-  AlignEnumType,
-  AnalysisResult,
-  BasePosType,
-  CustomItemPos,
-  DirectionEnumType,
-  DirectionInfoType,
-  EachOptions,
-  LayoutItemsInfo,
-  PointType
-} from "@/types";
+import {AnalysisResult, BasePosType, CustomItemPos, EachOptions, LayoutItemsInfo} from "@/types";
 import {Container, ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
 
@@ -20,9 +10,6 @@ import {Finder} from "@/algorithm/interface/Finder";
  * */
 export class LayoutManager extends Finder {
   public container: Container
-  public direction: DirectionEnumType
-  public align: AlignEnumType
-  public autoGrow: boolean
 
   public get col(): number {
     return this._layoutMatrix?.[0]?.length || 1
@@ -186,13 +173,10 @@ export class LayoutManager extends Finder {
    * @param num   要拓展交叉轴end方向的行数
    * */
   public expandLine(num: number = 1): boolean {
-    if (!this.autoGrow) return
-    const addRow = ['row', 'row-reverse'].includes(this.direction)
-    const addCol = ['column', 'column-reverse'].includes(this.direction)
-    for (let i = 0; i < num; i++) {
-      if (addRow) this.addRow()
-      else if (addCol) this.addCol()
-    }
+    if (!this.container.getConfig("autoGrow")) return
+    this.container.bus.emit("expandLine", {
+      expandLineNumber: num
+    })
   }
 
   /**
@@ -273,18 +257,6 @@ export class LayoutManager extends Finder {
   /**
    * 分析判断是否能让item移动到指定的`pos`位置
    * @param modifyList 要修改的列表
-   *
-   * 翻转分析:
-   *        row
-   *        row end                horizontal
-   *        Row-reverse            vertical
-   *        Row-reverse end        vertical horizontal
-   *
-   *        column
-   *        column-reverse         horizontal
-   *        column end             vertical
-   *        column-reverse  end    vertical horizontal
-   *       // TODO analysis 移除items
    * */
   public analysis(modifyList: LayoutItemsInfo = []): AnalysisResult {
     const items = this.container.items
@@ -465,9 +437,6 @@ export class LayoutManager extends Finder {
 
   /**
    * 参考css flex布局
-   * 定义一个主轴一个交叉轴
-   * direction为主轴方向
-   * align为交叉轴排列的起点
    * 遍历任意方向的矩阵，point1和point2必须是对角点
    * */
   public each(
@@ -484,125 +453,3 @@ export class LayoutManager extends Finder {
     })
   }
 }
-
-//--------------------------------------------------------------------------------------------------------
-
-/**
- * 控制变量遍历的方向规则
- * point1: [1, 10],
- * point2: [3, 2],
- * Math.abs(1-3) + 1
- * Math.abs(10-3) + 1
- *       ||
- * rect-size  [3, 9]
- * --------------------
- * Math.min(1,3)    1
- * Math.min(10,2)   2
- * Math.max(1,3)    3
- * Math.max(10,2)   10
- * */
-
-export const LayoutDirection: Record<DirectionEnumType, (p1: PointType, p2: PointType) => DirectionInfoType> = {
-  /**
-   * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
-   * */
-  'row': (p1: PointType, p2: PointType): DirectionInfoType => {
-    return {
-      start: {
-        stepCol: 1,
-        stepRow: 1,
-        startRow: Math.min(p1[1], p2[1]),
-        endRow: Math.max(p1[1], p2[1]),
-        startCol: Math.min(p1[0], p2[0]),
-        endCol: Math.max(p1[0], p2[0]),
-      },
-      end: {
-        stepCol: 1,
-        stepRow: -1,
-        startRow: Math.max(p1[1], p2[1]),
-        endRow: Math.min(p1[1], p2[1]),
-        startCol: Math.min(p1[0], p2[0]),
-        endCol: Math.max(p1[0], p2[0]),
-      }
-    }
-  },
-  'row-reverse': (p1: PointType, p2: PointType): DirectionInfoType => {
-    return {
-      start: {
-        stepCol: -1,
-        stepRow: 1,
-        startRow: Math.min(p1[1], p2[1]),
-        endRow: Math.max(p1[1], p2[1]),
-        startCol: Math.max(p1[0], p2[0]),
-        endCol: Math.min(p1[0], p2[0]),
-      },
-      end: {
-        stepCol: -1,
-        stepRow: -1,
-        startRow: Math.max(p1[1], p2[1]),
-        endRow: Math.min(p1[1], p2[1]),
-        startCol: Math.max(p1[0], p2[0]),
-        endCol: Math.min(p1[0], p2[0]),
-      }
-    }
-  },
-
-  /**
-   * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
-   * */
-  'column': (p1: PointType, p2: PointType): DirectionInfoType => {
-    return {
-      start: {
-        stepCol: 1,
-        stepRow: 1,
-        startRow: Math.min(p1[0], p2[0]),
-        endRow: Math.max(p1[0], p2[0]),
-        startCol: Math.min(p1[1], p2[1]),
-        endCol: Math.max(p1[1], p2[1]),
-      },
-      end: {
-        stepCol: 1,
-        stepRow: -1,
-        startRow: Math.max(p1[0], p2[0]),
-        endRow: Math.min(p1[0], p2[0]),
-        startCol: Math.min(p1[1], p2[1]),
-        endCol: Math.max(p1[1], p2[1]),
-      }
-    }
-  },
-  'column-reverse': (p1: PointType, p2: PointType): DirectionInfoType => {
-    return {
-      start: {
-        stepCol: -1,
-        stepRow: 1,
-        startRow: Math.min(p1[0], p2[0]),
-        endRow: Math.max(p1[0], p2[0]),
-        startCol: Math.max(p1[1], p2[1]),
-        endCol: Math.min(p1[1], p2[1]),
-      },
-      end: {
-        stepCol: -1,
-        stepRow: -1,
-        startRow: Math.max(p1[0], p2[0]),
-        endRow: Math.min(p1[0], p2[0]),
-        startCol: Math.max(p1[1], p2[1]),
-        endCol: Math.min(p1[1], p2[1]),
-      }
-    }
-  }
-}
-
-// export const LayoutDirection: Record<DirectionInfoType, (p1, p2) => DirectionInfoType> = {
-//   /**
-//    * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
-//    * */
-//   'row': FlexDirection.row,
-//   'row-reverse': FlexDirection.row,
-//
-//   /**
-//    * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
-//    * */
-//   'column': FlexDirection.column,
-//   'column-reverse': FlexDirection.column
-// }
-

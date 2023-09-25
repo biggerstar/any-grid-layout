@@ -12,8 +12,7 @@ import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChang
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 import {Container} from "@/main";
 import {InitOptionsEvent} from "@/plugins/event-types/InitOptionsEvent";
-import {EachMatrixEvent} from "@/plugins/event-types/EachMatrixEvent";
-import {CloneElementStyleEvent, ItemExchangeEvent} from "@/plugins";
+import {CloneElementStyleEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -255,7 +254,7 @@ export type CustomEventOptions = {
    * 只需关心:
    *       xxx(eachName) + start 方向作为遍历的主布局，后面的 xxx-reverse ,end 等相关功能由 flip 钩子实现
    * */
-  each?(ev: EachMatrixEvent): void;
+  each?(ev: MatrixEvent): void;
 
   /**
    * 翻转矩阵，无需关心实现逻辑，内部已经做了兼容和实现
@@ -265,7 +264,12 @@ export type CustomEventOptions = {
    *            layoutManager.verticalMirrorFlip
    *            layoutManager.horizontalMirrorFlip翻转
    * */
-  flip?(ev: EachMatrixEvent): void;
+  flip?(ev: MatrixEvent): void;
+
+  /**
+   * 指定在溢出的时候如何增加行，需要指定 autoGrow 配置为 true 才会触发
+   * */
+  expandLine?(ev: MatrixEvent): void;
 }
 
 export type AnalysisResult = {
@@ -323,8 +327,4 @@ export type EachMiddlewareType = {
   endRow: number,
   startCol: number,
   endCol: number,
-}
-export type DirectionInfoType = {
-  start: EachMiddlewareType,
-  end: EachMiddlewareType
 }

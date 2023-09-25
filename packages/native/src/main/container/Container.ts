@@ -99,6 +99,7 @@ export class Container {
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
+    this.layoutManager.container = this
     let resOption = options
     this.bus.emit('config', {
       options: options,
