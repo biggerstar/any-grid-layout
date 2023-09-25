@@ -65,7 +65,7 @@ export class ConfigurationEvent extends BaseEvent {
       if (!container._mounted) data = Math.max(smartRow, containerH)
       else data = Math.max(smartRow, containerH)  // 同上
     }
-    // console.log('row',data)
+    // console.log('row',data,container)
     return data
   }
 }

@@ -3,15 +3,15 @@
 import {definePlugin} from "@/global";
 import {BaseEvent, ConfigurationEvent} from "@/plugins";
 
-
 export const ConfigBehavior = definePlugin({
   /**
    * 每次挂载或者卸载后挂载都会同步相关配置
    * */
   $containerMountBefore(ev: BaseEvent) {
     const {layoutManager, container} = ev
-    layoutManager.direction = container.getConfig("direction")
-    layoutManager.align = container.getConfig("align")
+    layoutManager.container = container
+    layoutManager.direction = <any>container.getConfig("direction") // TODO
+    layoutManager.align = <any>container.getConfig("align")
     layoutManager.autoGrow = container.getConfig("autoGrow")
   },
   $getConfig(ev: ConfigurationEvent) {
@@ -33,6 +33,7 @@ export const ConfigBehavior = definePlugin({
     if (configName === 'row') {
       const curMinRow = ev.container.getConfig('minRow')
       if (curMinRow && configData < curMinRow) ev.configData = curMinRow
+      // console.log(ev.configData)
     }
   },
   $setConfig(_: ConfigurationEvent) {

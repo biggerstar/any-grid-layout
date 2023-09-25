@@ -8,6 +8,7 @@ import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
 import {CloneElementStyleEvent, InitOptionsEvent, ItemExchangeEvent} from "@/plugins";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
+import {EachMatrixEvent} from "@/plugins/event-types/EachMatrixEvent";
 
 export * from './BaseEvent'
 export * from './ItemDragEvent'
@@ -20,6 +21,7 @@ export * from './ContainerSizeChangeEvent'
 export * from './ConfigurationEvent'
 export * from './CloneElementStyleEvent'
 export * from './InitOptionsEvent'
+export * from './EachMatrixEvent'
 
 
 export const EventMap: EventMapType<CustomEventOptions> = {
@@ -82,4 +84,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   exchangeProvide: ItemExchangeEvent,
   exchangeProcess: ItemExchangeEvent,
   exchangeReceive: ItemExchangeEvent,
+  //--------------each------------------
+  each: EachMatrixEvent,
+  flip: EachMatrixEvent,
 }

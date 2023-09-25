@@ -1,6 +1,9 @@
 import {Item} from "@/main";
 import {CustomItemPos, ItemLimitType} from "@/types";
 
+type LayoutItemInfo = Array<{ item: Item, pos: CustomItemPos }>
+
+
 export abstract class Finder {
   public abstract get col(): number
 
@@ -33,7 +36,7 @@ export abstract class Finder {
   //   return pointItem
   // }
 
-  /** 寻找某个指定矩阵范围内包含的所有Item,下方四个变量构成一个域范围;
+  /** 寻找某个指定矩阵范围内包含的所有Item,pos的 x,y,w,h 构成一个域范围;
    *  Item可能不完全都在该指定矩阵范围内落点，只是有一部分落在范围内，该情况也会被查找收集起来
    *  若传入pos可设定w = 1, h = 1, 这样可以直接查某个点的item
    *

@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {Item} from "@/main";
-import {CustomItemPos} from "@/types";
+import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 
@@ -38,7 +38,7 @@ export class ItemLayoutEvent extends BaseEvent {
   /**
    * 下次要修改的Item
    * */
-  private _modifyItems: Array<{ item: Item, pos: CustomItemPos }> = []
+  private _modifyItems: Array<LayoutItemInfo> = []
 
   constructor(options) {
     super(options);
@@ -209,7 +209,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 获取要修改的Items并清空当前列表,所有要修改的Item都添加到这里来，不要修改item本身的pos，后面检测能添加的时候会自动修改
    * */
   public addModifyItem(item: Item, pos: Partial<CustomItemPos> = {}) {
-    const info: { item: Item, pos: CustomItemPos } = createModifyPosInfo(item, pos)
+    const info: LayoutItemInfo = createModifyPosInfo(item, pos)
     this._modifyItems.push(info)
   }
 

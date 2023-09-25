@@ -57,7 +57,7 @@ const createDraggingClonePosition: Function = throttle(() => {
   fromItem.element.classList.add(grid_dragging_source_el)
   const {left, top} = sourceEl.getBoundingClientRect()
   updateStyle({
-    pointerEvents: 'none',   // 指定克隆元素永远不会成为ev.target值
+    pointerEvents: 'none',   // 指定克隆元素不会触发事件成为ev.target值
     transitionProperty: 'none',
     transitionDuration: 'none',
     left: `${window.scrollX + left}px`,

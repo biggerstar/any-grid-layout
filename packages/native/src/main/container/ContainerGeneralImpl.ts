@@ -1,5 +1,4 @@
-import {CustomItems, MarginOrSizeDesc} from "@/types";
-import {AlignEnumType, DirectionEnumType} from "@/algorithm";
+import {AlignEnumType, CustomItems, DirectionEnumType, MarginOrSizeDesc} from "@/types";
 
 /**
  * Container实例化的时候可以在Layout配置中使用的字段
@@ -109,7 +108,7 @@ export class ContainerGeneralImpl {
   /**
    * 是否在响应布局的交叉轴方向上自动拓展矩阵大小
    * */
-  autoGrow?: boolean = true
+  autoGrow?: boolean = false
   /**
    * 对dragging或者resizing的元素进行配置
    * */

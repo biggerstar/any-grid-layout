@@ -6,7 +6,6 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
   directUpdateLayout,
   moveToIndexForItems,
-  patchResponsiveColOrRow,
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
@@ -27,7 +26,6 @@ import {definePlugin, tempStore} from "@/global";
 export const StreamLayoutPlugin = definePlugin({
   name: 'StreamLayoutPlugin',
   getConfig(ev: ConfigurationEvent) {
-    patchResponsiveColOrRow(ev)
   },
   exchangeProcess(_: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore
@@ -61,7 +59,7 @@ export const StreamLayoutPlugin = definePlugin({
     moveToIndexForItems(ev)
   },
 
-  dragToLetBottom(ev: ItemDragEvent) {
+  dragToLeftBottom(ev: ItemDragEvent) {
     moveToIndexForItems(ev)
   },
 

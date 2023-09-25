@@ -14,7 +14,10 @@ const container1 = new Container({
   layouts: {
     from: '来自layout',
     // exchange: false,
+    autoGrow: true,
     exchange: true,
+    direction: 'column',
+    align: 'start',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,
@@ -22,7 +25,7 @@ const container1 = new Container({
       exchange: true
     }),
     // minRow:20,
-    col: 5,
+    // col: 5,
     // row: 2,
     // ratioCol: 0.2,
     // ratioRow: 0.2,
@@ -41,10 +44,5 @@ const container1 = new Container({
   },
 });
 
-
-setTimeout(() => {
-  // console.log(container1.containerH++);
-  // container1.updateContainerStyleSize()
-}, 100)
 
 export default container1

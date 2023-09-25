@@ -6,8 +6,8 @@ import {PluginManager} from "@/plugins";
 export class BaseEvent {
   public name: keyof CustomEventOptions
 
-  constructor(options = {}) {
-    Object.assign(<object>this, options)
+  constructor(options) {
+    Object.assign(<object>this, options || {})
   }
 
   public readonly container: Container

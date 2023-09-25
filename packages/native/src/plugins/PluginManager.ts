@@ -33,7 +33,9 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options: Record<any, any> = {}) {
-    // if (!['dragging'].includes(eventName)) console.log(eventName)
+    // if (!['getConfig','setConfig','dragging','updateCloneElementStyle'].includes(eventName)){
+    //   console.log(eventName)
+    // }
     const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
     const defaultActionFn: Function = DefaultBehavior[eventName]

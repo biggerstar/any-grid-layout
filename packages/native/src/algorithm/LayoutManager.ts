@@ -1,50 +1,17 @@
 import {Item} from "@/main/item/Item";
-import {AnalysisResult, BasePosType, CustomItemPos} from "@/types";
-import {ItemPos} from "@/main";
+import {
+  AlignEnumType,
+  AnalysisResult,
+  BasePosType,
+  CustomItemPos,
+  DirectionEnumType,
+  DirectionInfoType,
+  EachOptions,
+  LayoutItemsInfo,
+  PointType
+} from "@/types";
+import {Container, ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
-
-/**
- * point1 和 point2 一起构成的矩阵范围，外部使用者无需关心point1和point2的传入顺序，内部会自动分析矩阵区域
- * */
-export type EachOptions = {
-  point1: [number, number]
-  point2: [number, number]
-
-  /**
-   * 交叉轴的遍历起点
-   * */
-  align?: AlignEnumType,
-
-  /**
-   * 主轴的遍历方向
-   * */
-  direction?: DirectionEnumType
-}
-
-export type AlignEnumType = 'start' | 'end'
-export type DirectionEnumType = 'row' | 'row-reverse' | 'column' | 'column-reverse'
-
-export type DirectionInfoType = {
-  start: {
-    stepCol: 1 | -1,
-    stepRow: 1 | -1,
-    startRow: number,
-    endRow: number,
-    startCol: number,
-    endCol: number,
-    grow?: Function,
-  },
-  end?: {
-    stepCol: 1 | -1,
-    stepRow: 1 | -1,
-    startRow: number,
-    endRow: number,
-    startCol: number,
-    endCol: number,
-    grow?: Function,
-  }
-}
-
 
 /**
  * 布局算法管理器,单独工具类，不和container关联
@@ -52,8 +19,7 @@ export type DirectionInfoType = {
  * 继承该类的子类算法主要就是实现layout函数，layout函数也可以理解成算法入口
  * */
 export class LayoutManager extends Finder {
-  public FlexDirection = FlexDirection
-
+  public container: Container
   public direction: DirectionEnumType
   public align: AlignEnumType
   public autoGrow: boolean
@@ -233,15 +199,13 @@ export class LayoutManager extends Finder {
   /**
    * 寻找往交叉轴方向自动增长的合适pos
    * */
-  public findGrowBlank(
-    pos: { w: number, h: number }
-  ) {
+  public findGrowBlank(pos: { w: number, h: number }) {
     let cont = 20   // 最多expand添加二十行供于检测
     while (cont--) {
       const found = <boolean>this.findBlank(pos)
       if (found) return found
       this.expandLine()
-      // console.log('expandLine')
+      console.log('expandLine')
     }
     return null
   }
@@ -251,9 +215,7 @@ export class LayoutManager extends Finder {
    * @param pos
    * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
    * */
-  public findBlank(
-    pos: { w: number, h: number },
-  ): CustomItemPos | null {
+  public findBlank(pos: { w: number, h: number }): CustomItemPos | null {
     let resPos = null
     this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
       const tryPos = {
@@ -287,135 +249,6 @@ export class LayoutManager extends Finder {
     return isBlank
   }
 
-  public unmark(pos: CustomItemPos): this {
-    this.mark(pos, this.place)
-    return this
-  }
-
-  /**
-   * 分析判断是否能让item移动到指定的`pos`位置
-   * @param items  当前所有的items
-   * @param modifyList 要修改的列表
-   *
-   * 翻转分析:
-   *        row
-   *        row end                horizontal
-   *        Row-reverse            vertical
-   *        Row-reverse end        vertical horizontal
-   *
-   *        column
-   *        column-reverse         horizontal
-   *        column end             vertical
-   *        column-reverse  end    vertical horizontal
-   *
-   * */
-  public analysis(items: Item[], modifyList: Array<{ item: Item, pos: CustomItemPos }> | null = []): AnalysisResult {
-    if (!Array.isArray(modifyList)) modifyList = []
-    const modifyItems = modifyList.map(({item}) => item)
-    const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
-    let isSuccess: any = true
-    this.reset()
-    const success: Array<{
-      item: Item,
-      pos: CustomItemPos,
-    }> = []
-    const failed = []
-    const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
-    /*---------------------------站位所有静态item-------------------------*/
-    staticItems.forEach(item => {
-      const pos = item.pos.getComputedCustomPos()
-      const scs = this.isBlank(pos)
-      if (scs) {
-        this.mark(pos)
-        success.push({item: item, pos})
-      } else {
-        failed.push(item)
-        isSuccess = false
-      }
-    })
-    //---------------------------------------------------------------------
-    /*--------------------------站位所有要修改的item-------------------------*/
-    for (const modifyItem of modifyList) {
-      const {pos, item} = modifyItem
-      if (this.isBlank(pos)) {
-        this.mark(pos)
-        success.push(modifyItem)
-      } else {
-        isSuccess = false // toPos没有位置,程序执行到这里此时该位置上有静态item
-        failed.push(item)
-      }
-    }
-    /*--------------------------剩余所有未执行x,y的Item----------------------------*/
-    for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
-      const item = ordinaryItems[i]
-      const sizeWH = item.pos.getComputedCustomPos()
-      const foundPos = this.findGrowBlank(sizeWH)
-      // console.log(foundPos)
-      if (!foundPos) {
-        isSuccess = false
-        failed.push(item)
-        continue
-      }
-      this.mark(<any>foundPos)
-      success.push({
-        item: item,
-        pos: foundPos
-      })
-    }
-
-    if (['row', 'row-reverse'].includes(this.direction)) {
-      if (this.direction === 'row-reverse ') this.verticalMirrorFlip(success)
-      if (this.align === 'end') this.horizontalMirrorFlip(success)
-    }
-
-    if (['column', 'column-reverse'].includes(this.direction)) {
-      if (this.direction === 'column-reverse ') this.horizontalMirrorFlip(success)
-      if (this.align === 'end') this.verticalMirrorFlip(success)
-    }
-    return {
-      col: this.col,
-      row: this.row,
-      isSuccess,
-      successInfo: success,
-      get successItems() {
-        return success.map(({item}) => item)
-      },
-      failedItems: failed,
-      patch: (handler?) => this.patch(success, handler)
-    }
-  }
-
-
-  /**
-   * 镜像翻转
-   * */
-  public verticalMirrorFlip(successItem) {
-    successItem.forEach(item => {
-      item.pos.x = this.col - item.pos.x - (item.pos.w - 1) + 1
-    })
-  }
-
-  /**
-   * 水平翻转
-   * */
-  public horizontalMirrorFlip(successItem) {
-    successItem.forEach(item => {
-      item.pos.y = this.row - item.pos.y - (item.pos.h - 1) + 1
-    })
-  }
-
-  /**
-   * 派发位置更新到item的pos上
-   * */
-  public patch(items: { item: Item, pos: CustomItemPos }[], handler?: Function) {
-    this.reset()
-    items.forEach(({item, pos}) => {
-      Object.assign(item.pos, pos)
-      this.mark(pos)
-      if (typeof handler === 'function') handler(item)
-    })
-  }
-
   /**
    * 在矩阵中标记该pos占位
    * @param pos 标记区域
@@ -431,6 +264,176 @@ export class LayoutManager extends Finder {
       point2: [x + w - 1, y + h - 1],
     })
     return this
+  }
+
+  public unmark(pos: CustomItemPos): this {
+    this.mark(pos, this.place)
+    return this
+  }
+
+  /**
+   * 分析判断是否能让item移动到指定的`pos`位置
+   * @param modifyList 要修改的列表
+   *
+   * 翻转分析:
+   *        row
+   *        row end                horizontal
+   *        Row-reverse            vertical
+   *        Row-reverse end        vertical horizontal
+   *
+   *        column
+   *        column-reverse         horizontal
+   *        column end             vertical
+   *        column-reverse  end    vertical horizontal
+   *       // TODO analysis 移除items
+   * */
+  public analysis(modifyList: LayoutItemsInfo = []): AnalysisResult {
+    const items = this.container.items
+    if (!Array.isArray(modifyList)) modifyList = []
+    // modifyList.forEach(item => console.log(item.pos))
+    const modifyItems = modifyList.map(({item}) => item)
+    const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
+    let isSuccess: any = true
+    this.reset()
+    let confirmedList: LayoutItemsInfo = [] // 已经确定位置的列表
+
+    const failed = []
+    const {staticItems, ordinaryItems} = this.sortStatic(remainItem)
+
+    /*---------------------------站位所有静态item----------------------------*/
+    const staticList: LayoutItemsInfo = staticItems.map(item => ({
+      item,
+      nextPos: {...item.pos}
+    }))
+    staticList.forEach((itemInfo) => {
+      const {item, nextPos} = itemInfo
+      this.container.bus.emit("flip", {   // （目的为了占位） 翻转静态item，占位成功后在下面统一翻转回来
+        flipInfo: itemInfo,
+      })
+      const scs = this.isBlank(nextPos)
+      if (scs) {
+        this.mark(nextPos)
+        confirmedList.push(itemInfo)
+      } else {
+        failed.push(item)
+        isSuccess = false
+      }
+    })
+
+    /*--------------------------站位所有要修改的item-------------------------*/
+    if (isSuccess) {
+      modifyList = modifyList.map((itemInfo) => {
+        const {item, nextPos} = itemInfo
+        return {
+          item,
+          nextPos: {
+            w: nextPos.w,
+            h: nextPos.h,
+            x: nextPos.x,
+            y: nextPos.y,
+          }
+        }
+      })
+      for (const modifyInfo of modifyList) {
+        const {nextPos, item} = modifyInfo
+        this.container.bus.emit("flip", {    // （目的为了占位） 将要修改的item让坐标先翻转目的为了在合适方向占位(方向为row,column无需翻转)，在最后统一翻转回来
+          flipInfo: modifyInfo,
+        })
+        if (this.isBlank(nextPos)) {
+          this.mark(nextPos)
+          confirmedList.push(modifyInfo)
+        } else {
+          isSuccess = false // toPos没有位置,程序执行到这里此时该位置上有静态item
+          failed.push(item)
+        }
+      }
+    }
+
+    /*--------------------------剩余所有未执行x,y的Item----------------------------*/
+    const autoLayoutSuccess: LayoutItemsInfo = []
+    if (isSuccess) {
+      for (let i = 0; i < ordinaryItems.length; i++) {   // 处理其他普通非静态item
+        const item = ordinaryItems[i]
+        const sizeWH = item.pos.getComputedCustomPos()
+        const foundPos = this.findGrowBlank(sizeWH)
+        // console.log(foundPos)
+        if (!foundPos) {
+          isSuccess = false
+          failed.push(item)
+          continue
+        }
+        this.mark(<any>foundPos)
+        autoLayoutSuccess.push({
+          item: item,
+          nextPos: foundPos
+        })
+      }
+    }
+
+    const successList: LayoutItemsInfo = confirmedList.concat(autoLayoutSuccess)
+    successList.forEach(itemInfo => {
+      this.container.bus.emit("flip", {
+        flipInfo: itemInfo
+      })
+    })
+    const _this = this
+    return {
+      col: this.col,
+      row: this.row,
+      isSuccess,
+      successInfo: successList,
+      get successItems() {
+        return successList.map(({item}) => item)
+      },
+      failedItems: failed,
+      patch: (handler?) => this.patch(successList, handler),
+      patchSorted(items: { item: Item, nextPos: CustomItemPos }[], handler?: Function) {
+        _this.reset()
+        items.forEach(({item, nextPos}) => {
+          Object.assign(item.pos, nextPos)
+          _this.mark(nextPos)
+          if (typeof handler === 'function') handler(item)
+        })
+      },
+      get sortedItems() {
+        return _this.sortCurrentMatrixItems(this.successItems)
+      }
+    }
+  }
+
+  /**
+   * 派发位置更新到item的pos上
+   * */
+  public patch(itemsInfo: LayoutItemsInfo, handler?: Function) {
+    this.reset()
+    itemsInfo.forEach((info) => {
+      const {item, nextPos} = info
+      Object.assign(item.pos, nextPos)
+      this.mark(nextPos)
+      if (typeof handler === 'function') handler(item)
+    })
+  }
+
+  /**
+   * 垂直镜像翻转某个item或者一组item
+   * */
+  public verticalMirrorFlip(posList: CustomItemPos[] | CustomItemPos) {
+    if (!Array.isArray(posList)) posList = [posList]
+    posList.forEach(pos => {
+      const x = this.col - pos.x - (pos.w - 1) + 1
+      pos.x = x <= 0 ? 1 : x
+    })
+  }
+
+  /**
+   * 水平镜像翻转某个item或者一组item
+   * */
+  public horizontalMirrorFlip(posList: CustomItemPos[] | CustomItemPos) {
+    if (!Array.isArray(posList)) posList = [posList]
+    posList.forEach(pos => {
+      const y = this.row - pos.y - (pos.h - 1) + 1
+      pos.y = y <= 0 ? 1 : y
+    })
   }
 
   /**
@@ -469,38 +472,21 @@ export class LayoutManager extends Finder {
    * 遍历任意方向的矩阵，point1和point2必须是对角点
    * */
   public each(
-    fn: (curRow, curCol, traverseInfo?) => any,
+    fn: (curRowPoint, curColPoint, alignInfo?) => any,
     {
       point1 = this.leftTopPoint,
       point2 = this.rightBottomPoint,
-      direction = this.direction,
-      align = this.align,
     }?: EachOptions = {})
     : void {
-    // console.log(point1,point2)
-    const createTraverseInfo = this.FlexDirection[direction]
-    const traverseInfo = createTraverseInfo(point1, point2)
-    const alignInfo = traverseInfo["start"]
-    const isHorizontal = ['column', 'column-reverse'].includes(this.direction)
-    // console.log(alignInfo)
-    // return
-    rowLabel /*statement label*/ :
-      // Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow)
-      // 解释： startRow小，endRow大时，stepRow为正 ，ABS ((curRow - endRow) - +1) 正数减正数，到0退出循环
-      //       startRow大，endRow小时，stepRow为负 ，ABS (-(curRow - endRow) - -1) 负数减负数，到0退出循环
-      for (let curRow = alignInfo.startRow; Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow); curRow += alignInfo.stepRow) {
-        for (let curCol = alignInfo.startCol; Math.abs(curCol - alignInfo.endCol - alignInfo.stepCol); curCol += alignInfo.stepCol) {
-          /*
-          * 如果是水平方向的布局(上下布局)，此时横向为col，竖向为row
-          * 如果是水平方向的布局(左右布局)，此时竖向为col，横向为row
-          * */
-          const res = isHorizontal ? fn(curCol, curRow, traverseInfo) : fn(curRow, curCol, traverseInfo)
-          if (res) break rowLabel
-        }
-      }
+    this.container.bus.emit('each', {
+      point1,
+      point2,
+      next: (x: number, y: number) => <any>fn && fn.call(null, x, y)
+    })
   }
 }
 
+//--------------------------------------------------------------------------------------------------------
 
 /**
  * 控制变量遍历的方向规则
@@ -516,11 +502,12 @@ export class LayoutManager extends Finder {
  * Math.max(1,3)    3
  * Math.max(10,2)   10
  * */
-export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => DirectionInfoType> = {
+
+export const LayoutDirection: Record<DirectionEnumType, (p1: PointType, p2: PointType) => DirectionInfoType> = {
   /**
    * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
    * */
-  'row': (p1, p2) => {
+  'row': (p1: PointType, p2: PointType): DirectionInfoType => {
     return {
       start: {
         stepCol: 1,
@@ -530,17 +517,17 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.min(p1[0], p2[0]),
         endCol: Math.max(p1[0], p2[0]),
       },
-      // end: {
-      //   stepCol: 1,
-      //   stepRow: -1,
-      //   startRow: Math.max(p1[1], p2[1]),
-      //   endRow: Math.min(p1[1], p2[1]),
-      //   startCol: Math.min(p1[0], p2[0]),
-      //   endCol: Math.max(p1[0], p2[0]),
-      // }
+      end: {
+        stepCol: 1,
+        stepRow: -1,
+        startRow: Math.max(p1[1], p2[1]),
+        endRow: Math.min(p1[1], p2[1]),
+        startCol: Math.min(p1[0], p2[0]),
+        endCol: Math.max(p1[0], p2[0]),
+      }
     }
   },
-  'row-reverse': (p1, p2) => {
+  'row-reverse': (p1: PointType, p2: PointType): DirectionInfoType => {
     return {
       start: {
         stepCol: -1,
@@ -550,21 +537,21 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.max(p1[0], p2[0]),
         endCol: Math.min(p1[0], p2[0]),
       },
-      // end: {
-      //   stepCol: -1,
-      //   stepRow: -1,
-      //   startRow: Math.max(p1[1], p2[1]),
-      //   endRow: Math.min(p1[1], p2[1]),
-      //   startCol: Math.max(p1[0], p2[0]),
-      //   endCol: Math.min(p1[0], p2[0]),
-      // }
+      end: {
+        stepCol: -1,
+        stepRow: -1,
+        startRow: Math.max(p1[1], p2[1]),
+        endRow: Math.min(p1[1], p2[1]),
+        startCol: Math.max(p1[0], p2[0]),
+        endCol: Math.min(p1[0], p2[0]),
+      }
     }
   },
 
   /**
    * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
    * */
-  'column': (p1, p2) => {
+  'column': (p1: PointType, p2: PointType): DirectionInfoType => {
     return {
       start: {
         stepCol: 1,
@@ -574,17 +561,17 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.min(p1[1], p2[1]),
         endCol: Math.max(p1[1], p2[1]),
       },
-      // end: {
-      //   stepCol: 1,
-      //   stepRow: -1,
-      //   startRow: Math.max(p1[0], p2[0]),
-      //   endRow: Math.min(p1[0], p2[0]),
-      //   startCol: Math.min(p1[1], p2[1]),
-      //   endCol: Math.max(p1[1], p2[1]),
-      // }
+      end: {
+        stepCol: 1,
+        stepRow: -1,
+        startRow: Math.max(p1[0], p2[0]),
+        endRow: Math.min(p1[0], p2[0]),
+        startCol: Math.min(p1[1], p2[1]),
+        endCol: Math.max(p1[1], p2[1]),
+      }
     }
   },
-  'column-reverse': (p1, p2) => {
+  'column-reverse': (p1: PointType, p2: PointType): DirectionInfoType => {
     return {
       start: {
         stepCol: -1,
@@ -594,14 +581,29 @@ export const FlexDirection: Record<NonNullable<DirectionEnumType>, (p1, p2) => D
         startCol: Math.max(p1[1], p2[1]),
         endCol: Math.min(p1[1], p2[1]),
       },
-      // end: {
-      //   stepCol: -1,
-      //   stepRow: -1,
-      //   startRow: Math.max(p1[0], p2[0]),
-      //   endRow: Math.min(p1[0], p2[0]),
-      //   startCol: Math.max(p1[1], p2[1]),
-      //   endCol: Math.min(p1[1], p2[1]),
-      // }
+      end: {
+        stepCol: -1,
+        stepRow: -1,
+        startRow: Math.max(p1[0], p2[0]),
+        endRow: Math.min(p1[0], p2[0]),
+        startCol: Math.max(p1[1], p2[1]),
+        endCol: Math.min(p1[1], p2[1]),
+      }
     }
   }
 }
+
+// export const LayoutDirection: Record<DirectionInfoType, (p1, p2) => DirectionInfoType> = {
+//   /**
+//    * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
+//    * */
+//   'row': FlexDirection.row,
+//   'row-reverse': FlexDirection.row,
+//
+//   /**
+//    * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
+//    * */
+//   'column': FlexDirection.column,
+//   'column-reverse': FlexDirection.column
+// }
+

@@ -36,14 +36,14 @@ const container2 = new Container({
       px: 900,
 
       // col: 9,
-      // row: 6,
+      row: 4,
       // margin: [10, 10],
       size: [50, 100],
       exchange: true,
-      direction: 'column-reverse',
-      align: 'end',
+      direction: 'row',
+      align: 'start',
       autoGrow: true,
-      items: fillItemLayoutList(layoutData3, {
+      items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,
         close: true,

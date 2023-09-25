@@ -7,7 +7,6 @@ import {
   directUpdateLayout,
   dragToCrossHair,
   dragToDiagonal,
-  patchResponsiveColOrRow,
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/plugins/common";
@@ -20,7 +19,6 @@ import {definePlugin, tempStore} from "@/global";
 export const ResponsiveLayoutPlugin = definePlugin({
   name: 'ResponsiveLayoutPlugin',
   getConfig(ev: ConfigurationEvent) {
-    patchResponsiveColOrRow(ev)
   },
   exchangeVerification(ev: ItemExchangeEvent) {
     ev.prevent()
@@ -47,6 +45,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
   containerResizing(ev: ItemLayoutEvent) {
     updateLayout(ev)
   },
+
   /**
    * 拖动结束
    * */
@@ -94,7 +93,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     dragToDiagonal(ev)
   },
 
-  dragToLetBottom(ev: ItemDragEvent) {
+  dragToLeftBottom(ev: ItemDragEvent) {
     dragToDiagonal(ev)
   },
 

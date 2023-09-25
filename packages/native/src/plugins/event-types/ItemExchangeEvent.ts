@@ -100,7 +100,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     const {toContainer} = tempStore
     if (!this.newItem || !toContainer) return
     toContainer.addItem(this.newItem)
-    toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
+    // toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     let toPos: CustomItemPos | null = this.newItem.pos
     // console.log('receive', toPos.x, toPos.y)
     this.layoutManager.mark(toPos)

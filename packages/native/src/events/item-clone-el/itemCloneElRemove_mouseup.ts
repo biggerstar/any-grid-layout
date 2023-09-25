@@ -21,7 +21,7 @@ export function itemCloneElRemove_mouseup(_) {
     if (fromItem && fromItem.transition) {
       const transition = <ItemTransitionObject>fromItem.transition
       const containerElOffset = fromItem.container.contentElement.getBoundingClientRect()
-      const baseStyle = {
+      const baseStyle: Partial<CSSStyleDeclaration> = {
         transitionProperty: `${transition.field}`,
         transitionDuration: `${transition.time}ms`,
         width: `${fromItem.nowWidth()}px`,

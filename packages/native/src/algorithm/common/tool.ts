@@ -4,7 +4,7 @@
  * 判断两个item的大小是否相等
  * */
 import {Container, Item} from "@/main";
-import {CustomItemPos} from "@/types";
+import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {tempStore} from "@/global";
 
 
@@ -19,10 +19,10 @@ export function isAnimation(item: Item) {
 }
 
 
-export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>) {
+export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>): LayoutItemInfo {
   return {
     item,
-    pos: {
+    nextPos: {
       ...item.pos,
       ...pos
     }

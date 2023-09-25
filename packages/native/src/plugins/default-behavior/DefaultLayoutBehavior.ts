@@ -21,10 +21,9 @@ export const DefaultLayoutBehavior = definePlugin({
   containerMounted(ev: ItemDragEvent) {
     const {container} = ev
     const {layoutManager: manager} = container
-    // console.log(manager.direction, manager.align)
     autoSetSizeAndMargin(container, true)  // 1.先初始化初始配置
     container.reset()
-    const res = manager.analysis(container.items, null)   // 2. 分析当前布局
+    const res = manager.analysis()   // 2. 分析当前布局
     res.patch()  // 3. 修改当前item位置
     container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
     autoSetSizeAndMargin(container, true)  // 5.根据最终容器大小配置最终margin和size
@@ -34,7 +33,10 @@ export const DefaultLayoutBehavior = definePlugin({
     if (!res.isSuccess) {
       container.bus.emit('error', {
         type: 'ContainerOverflowError',
-        message: "容器溢出或者Item重叠，您设置了固定的col或row且在首次挂载的时候才会出现该错误",
+        message: `容器溢出或者Item重叠:
+        1.您可以检查一下container挂载点元素是否未设置宽或高
+        2.您可以将 autoGrow 设置为 true 来自动撑开容器
+         `,
         from: res
       })
     }

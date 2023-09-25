@@ -9,6 +9,7 @@ import {
   ItemLayoutEvent,
   ItemPosChangeEvent,
   ItemResizeEvent,
+  ResponsiveLayoutPlugin,
   ThrowMessageEvent,
   updateStyle,
 } from '@biggerstar/layout'
@@ -168,7 +169,7 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-// .use(ResponsiveLayoutPlugin)
+  .use(ResponsiveLayoutPlugin)
 
 container2
   .use(plugin)
@@ -178,24 +179,13 @@ container3
 // .use(StreamLayoutPlugin)
 
 
-// container1.mount()
-container2.mount()
-
+container1.mount()
+// container2.mount()
 // container3.mount()
 
 
-
-
-
-
-const manager = container2.layoutManager
-
-// manager.each((curRow, curCol, traverseInfo)=>{
-//   // console.log(curRow,curCol);
-// },{
-//   point2:[12,3],
-//   point1:[0,0],
-// })
-
+container1.layoutManager.each((curRowPoint, curColPoint, alignInfo) => {
+  // console.log(curColPoint,curRowPoint);
+})
 
 

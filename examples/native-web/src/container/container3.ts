@@ -13,6 +13,7 @@ const container3 = new Container({
     size: [60, 50],
     minCol: 2,
     exchange: true,
+    // autoGrow: true,
     items: fillItemLayoutList(layoutData, {
       draggable: true,
       resize: true,

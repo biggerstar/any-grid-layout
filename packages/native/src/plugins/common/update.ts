@@ -47,11 +47,11 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
   container.reset()
-  let res = manager.analysis(items, ev.getModifyItems())
+  let res = manager.analysis(ev.getModifyItems())
   if (!res.isSuccess) return false
+  // if (options.sort) container.items = res.sortedItems
   res.patch()
   ev.patchStyle()
-  if (options.sort) container.items = manager.sortCurrentMatrixItems(ev.items)
   container.updateContainerSizeStyle()
   return true
 }
@@ -65,22 +65,10 @@ export const updateLayout: Function = throttle(directUpdateLayout, 46)
  * 节流更新drag到 +十字线+ 方向的布局
  * */
 export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: Function) => {
+  ev.prevent()
   const {fromItem} = tempStore
   if (!fromItem) return
-  // console.log(111111111111111111)
-  // const isSuccess = ev.tryMoveToBlank()
-  // console.log(isSuccess)
-  // if (isSuccess) {
-  //   ev.patchStyle()
-  //   ev.container.updateContainerSizeStyle()
-  //   return
-  // }
-  // console.log({
-  //   x: ev.startX,
-  //   y: ev.startY
-  // }, ev)
-  ev.prevent()
-  ev.addModifyItem(fromItem,
+  ev.addModifyItem(fromItem,   // 指定修改当前鼠标拖动item的位置
     {
       x: ev.startX,
       y: ev.startY
@@ -89,7 +77,7 @@ export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: 
     ev.findDiffCoverItem(null, (item) => {
       const changePos = callback(item)
       // console.log(changePos)
-      if (changePos && isObject(changePos)) ev.addModifyItem(item, callback(item))  // 添加被当前cloneEl覆盖item的移动方式
+      if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
     })
   }
   directUpdateLayout(ev)
@@ -98,37 +86,18 @@ export const dragToCrossHair: Function = throttle((ev: ItemDragEvent, callback: 
 /**
  * 节流更新drag到 「对角」 方向的布局
  * */
-export const dragToDiagonal: Function = throttle((_: ItemDragEvent) => {
+export const dragToDiagonal: Function = throttle((ev: ItemDragEvent) => {
+  ev.prevent()
   const {toItem, fromItem} = tempStore
-  // const {layoutManager, items} = ev
+  const {layoutManager, items} = ev
   if (!toItem || !fromItem) return
-  // console.log(222222222222222222)
-  // const isSuccess = ev.tryMoveToBlank()
-  // if (isSuccess) {
-  //   ev.patchStyle()
-  //   ev.container.updateContainerSizeStyle()
-  //   return;
-  // }
-  return;
-
-  // ev.prevent()
-  // ev.addModifyItem(fromItem,
-  //   {
-  //     x: ev.startX,
-  //     y: ev.startY
-  //   })
-  // directUpdateLayout(ev)
-  //
-  //
-  // return;
-  // ev.prevent()
-  // layoutManager.move(items, fromItem, toItem)
-  // const isSuccess = directUpdateLayout(ev)
-  // if (!isSuccess) {
-  //   layoutManager.move(items, toItem, fromItem)
-  //   directUpdateLayout(ev)
-  // }
-}, 200)
+  layoutManager.move(items, fromItem, toItem)
+  const isSuccess = directUpdateLayout(ev)
+  if (!isSuccess) {
+    layoutManager.move(items, toItem, fromItem)
+    directUpdateLayout(ev)
+  }
+}, 180)
 
 /**
  * 更新最新resize后的尺寸

@@ -9,8 +9,7 @@ import {
   throttle
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
-import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
-import {ContainerInstantiationOptions, CustomItem, EventBusType, GridPlugin} from "@/types";
+import {ContainerInstantiationOptions, CustomItem, CustomLayoutsOption, EventBusType, GridPlugin} from "@/types";
 import {startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
@@ -19,6 +18,7 @@ import {isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
+import {ContainerGeneralImpl} from "@/main";
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -57,8 +57,8 @@ export class Container {
   public className: string = grid_container_class_name
   public platform: 'native' | 'vue' = 'native'
   public el: HTMLElement | string = ''
-  public global: ContainerGeneralImpl = {} as any
-  public layouts: ContainerGeneralImpl[] = [] as any
+  public global: CustomLayoutsOption = {} as any
+  public layouts: CustomLayoutsOption[] = [] as any
   //----------------内部需要的参数---------------------//
   /**
    * 当前正在使用的布局，为layouts中的某一个适合当前屏幕的布局配置的地址引用
@@ -67,11 +67,10 @@ export class Container {
   public bus: Emitter<EventBusType> = Bus()
   public pluginManager: PluginManager
   public layoutManager: LayoutManager
-  public readonly layout: ContainerGeneralImpl = {} as any
-  public readonly useLayout: ContainerGeneralImpl = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public readonly layout: CustomLayoutsOption = {} as any
+  public readonly useLayout: CustomLayoutsOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   private readonly options: ContainerInstantiationOptions
   public items: Item[] = []
-  public isNesting: boolean = false    // 该Container自身是否[被]嵌套
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public element: HTMLElement   //  container的挂载节点
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
@@ -83,7 +82,7 @@ export class Container {
   // public _VueEvents: object
   //----------------保持状态所用参数---------------------//
   public _mounted: boolean
-  public readonly _default: ContainerGeneralImpl
+  public readonly _default: CustomLayoutsOption
   // private __store__ = tempStore
   public __ownTemp__ = {
     //-----内部可写外部只读变量------//
@@ -163,7 +162,7 @@ export class Container {
    * ......
    * */
   public sequence(): this {
-    this.items = this.layoutManager.sortCurrentMatrixItems(this.items)
+    // this.items = this.layoutManager.sortCurrentMatrixItems(this.items)
     return this
   }
 
@@ -181,7 +180,7 @@ export class Container {
     return !this._getConfig('row')
   }
 
-  private _getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
+  private _getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
     const has = (obj: object, name: string) => obj.hasOwnProperty(name)
     if (has(this.useLayout, name)) return this.useLayout[name]
     if (has(this.layout, name)) return this.layout[name]
@@ -191,7 +190,7 @@ export class Container {
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
-  public getConfig<Name extends keyof ContainerGeneralImpl>(name: Name): Exclude<ContainerGeneralImpl[Name], undefined> {
+  public getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
     let data = this._getConfig(name)
     let ev: ConfigurationEvent
     this.bus.emit('getConfig', {
@@ -204,7 +203,7 @@ export class Container {
   }
 
   /** 将值设置到当前使用的配置信息中 */
-  public setConfig<Name extends keyof ContainerGeneralImpl>(name: Name, data: ContainerGeneralImpl[Name]): void {
+  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name]): void {
     let ev: ConfigurationEvent
     this.bus.emit('setConfig', {
       configName: name,
@@ -229,10 +228,10 @@ export class Container {
   }
 
   /** 手动添加item渲染 */
-  public render(renderCallback: Function) {
+  public render(renderCallback: (item: CustomItem[], layout: CustomLayoutsOption, element: HTMLElement) => void) {
     if (this.element && this.element.clientWidth <= 0) throw new Error('请指定容器宽高')
     if (typeof renderCallback === 'function') {
-      renderCallback.call(this, this.layout.items, this.layout, this.element)
+      renderCallback.call(<object>this, this.layout.items, this.layout, this.element)
     }
     if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
   }
@@ -251,7 +250,7 @@ export class Container {
     //-----------------------容器dom初始化-----------------------//
     if (this.el instanceof Element) this.element = this.el
     if (!this.element) {
-      if (!this.isNesting) this.element = <HTMLElement>document.querySelector(<string>this.el)
+      this.element = <HTMLElement>document.querySelector(<string>this.el)
       if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
     }
     //-----------------容器布局信息初始化与检测--------------------//
