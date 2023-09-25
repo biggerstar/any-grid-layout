@@ -76,10 +76,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const manager = container.layoutManager
     const isBlank = manager.unmark(targetItem.pos).isBlank(securityPos)
     if (!isBlank) {
-      manager.mark(targetItem.pos)  // 如果失败，标记回去
+      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false
     }
-    manager.mark(securityPos)
+    manager.mark(securityPos, targetItem)
     targetItem.pos.x = securityPos.x
     targetItem.pos.y = securityPos.y
     targetItem.updateItemLayout()
@@ -140,13 +140,13 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
     })
     if (!isFinite(minimumArea)) {
-      manager.mark(fromItem.pos) // 如果失败，fromItem.pos位置标记回去
+      manager.mark(fromItem.pos, fromItem) // 如果失败，fromItem.pos位置标记回去
       return false
     }
     if (allBlankRange.length) {
       // console.log(minimumArea,finallyPos)
       this.tryMoveToBlank(fromItem, finallyPos)
-      manager.mark(finallyPos)  // 如果成功，标记新的pos位置
+      manager.mark(finallyPos, fromItem)  // 如果成功，标记新的pos位置
     }
     return true
   }

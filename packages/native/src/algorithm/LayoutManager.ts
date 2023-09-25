@@ -33,8 +33,7 @@ export class LayoutManager extends Finder {
   }
 
   protected _layoutMatrix = []   // 布局矩阵
-  protected place = 0
-  protected placed = 1
+  protected place = null  // Infinity   // Symbol('place')  // 空位符号，所有非0都是被占位
 
   /**
    * 判断该pos是否超出当前的矩阵范围,通常用于静态模式
@@ -205,7 +204,7 @@ export class LayoutManager extends Finder {
       const found = <boolean>this.findBlank(pos)
       if (found) return found
       this.expandLine()
-      console.log('expandLine')
+      // console.log('expandLine')
     }
     return null
   }
@@ -238,7 +237,7 @@ export class LayoutManager extends Finder {
     let isBlank = true
     this.each((curRow, curCol) => {
       const line = this._layoutMatrix[curRow]
-      if (!line || line[curCol] === this.placed) {
+      if (!line || line[curCol] !== this.place) {
         isBlank = false
         return true
       }
@@ -255,10 +254,10 @@ export class LayoutManager extends Finder {
    * @param markSymbol 标记符号
    * @return {CustomItemPos} 传入的pos原样返回
    * */
-  public mark(pos: CustomItemPos | ItemPos, markSymbol?: typeof this.place | typeof this.placed): this {
+  public mark(pos: CustomItemPos | ItemPos, markSymbol: Item): this {
     const {w, h, x, y} = this.toMatrixPos(pos)
     this.each((curRow, curCol) => {
-      this._layoutMatrix[curRow][curCol] = markSymbol !== void 0 ? markSymbol : this.placed
+      this._layoutMatrix[curRow][curCol] = markSymbol
     }, {
       point1: [x, y],
       point2: [x + w - 1, y + h - 1],
@@ -312,7 +311,7 @@ export class LayoutManager extends Finder {
       })
       const scs = this.isBlank(nextPos)
       if (scs) {
-        this.mark(nextPos)
+        this.mark(nextPos, item)
         confirmedList.push(itemInfo)
       } else {
         failed.push(item)
@@ -340,7 +339,7 @@ export class LayoutManager extends Finder {
           flipInfo: modifyInfo,
         })
         if (this.isBlank(nextPos)) {
-          this.mark(nextPos)
+          this.mark(nextPos, item)
           confirmedList.push(modifyInfo)
         } else {
           isSuccess = false // toPos没有位置,程序执行到这里此时该位置上有静态item
@@ -362,7 +361,7 @@ export class LayoutManager extends Finder {
           failed.push(item)
           continue
         }
-        this.mark(<any>foundPos)
+        this.mark(<any>foundPos, item)
         autoLayoutSuccess.push({
           item: item,
           nextPos: foundPos
@@ -376,7 +375,6 @@ export class LayoutManager extends Finder {
         flipInfo: itemInfo
       })
     })
-    const _this = this
     return {
       col: this.col,
       row: this.row,
@@ -387,17 +385,6 @@ export class LayoutManager extends Finder {
       },
       failedItems: failed,
       patch: (handler?) => this.patch(successList, handler),
-      patchSorted(items: { item: Item, nextPos: CustomItemPos }[], handler?: Function) {
-        _this.reset()
-        items.forEach(({item, nextPos}) => {
-          Object.assign(item.pos, nextPos)
-          _this.mark(nextPos)
-          if (typeof handler === 'function') handler(item)
-        })
-      },
-      get sortedItems() {
-        return _this.sortCurrentMatrixItems(this.successItems)
-      }
     }
   }
 
@@ -405,11 +392,23 @@ export class LayoutManager extends Finder {
    * 派发位置更新到item的pos上
    * */
   public patch(itemsInfo: LayoutItemsInfo, handler?: Function) {
+    /*----获取排序之后(未经过镜像)的正确item顺序，交还到container.items中用于其他操作----*/
+    const sortedItems = []
+    this.each((x, y) => {
+      const item: Item | null = this._layoutMatrix[x][y]
+      if (item && !sortedItems.includes(item)) {
+        sortedItems.push(item)
+      }
+    })
+    // console.log(sortedItems)
+    this.container.items = sortedItems
+
+    /*--------------------将最新的item位置同步到item.pos中并标记矩阵------------------*/
     this.reset()
     itemsInfo.forEach((info) => {
       const {item, nextPos} = info
       Object.assign(item.pos, nextPos)
-      this.mark(nextPos)
+      this.mark(nextPos, item)
       if (typeof handler === 'function') handler(item)
     })
   }
@@ -472,7 +471,7 @@ export class LayoutManager extends Finder {
    * 遍历任意方向的矩阵，point1和point2必须是对角点
    * */
   public each(
-    fn: (curRowPoint, curColPoint, alignInfo?) => any,
+    fn: (x, y) => any,
     {
       point1 = this.leftTopPoint,
       point2 = this.rightBottomPoint,

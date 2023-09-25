@@ -103,7 +103,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     // toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     let toPos: CustomItemPos | null = this.newItem.pos
     // console.log('receive', toPos.x, toPos.y)
-    this.layoutManager.mark(toPos)
+    this.layoutManager.mark(toPos,this.newItem)
     this.newItem.mount()
     toContainer.updateContainerSizeStyle()
     if (this.toItem) toContainer.bus.emit('updateLayout')

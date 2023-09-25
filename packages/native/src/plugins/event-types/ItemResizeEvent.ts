@@ -83,10 +83,10 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     const manager = container.layoutManager
     const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
     if (!isBlank) {
-      manager.mark(targetItem.pos)  // 如果失败，标记回去
+      manager.mark(targetItem.pos,targetItem)  // 如果失败，标记回去
       return false
     }
-    manager.mark(targetPos)
+    manager.mark(targetPos,targetItem)
     targetItem.pos.w = targetPos.w
     targetItem.pos.h = targetPos.h
     targetItem.updateItemLayout()

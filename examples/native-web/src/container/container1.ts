@@ -16,8 +16,8 @@ const container1 = new Container({
     // exchange: false,
     autoGrow: true,
     exchange: true,
-    direction: 'column',
-    align: 'start',
+    direction: 'column-reverse',
+    align: 'end',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

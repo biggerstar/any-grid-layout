@@ -5,7 +5,21 @@ import {EachMatrixEvent} from "@/plugins";
 import {PointType} from "@/types";
 
 /**
- * column 情况下，Y轴方向定义col作为主轴，X轴定义成row作为交叉轴
+ * row 情况下，X轴方向作为主轴，Y轴作为交叉轴
+ * */
+function createRowTraverseInfo(p1: PointType, p2: PointType) {
+  return {
+    stepCol: 1,
+    stepRow: 1,
+    startRow: Math.min(p1[1], p2[1]),
+    endRow: Math.max(p1[1], p2[1]),
+    startCol: Math.min(p1[0], p2[0]),
+    endCol: Math.max(p1[0], p2[0]),
+  }
+}
+
+/**
+ * column 情况下，Y轴方向作为主轴，X轴作为交叉轴
  * */
 function createColumnTraverseInfo(p1: PointType, p2: PointType) {
   return {
@@ -19,19 +33,10 @@ function createColumnTraverseInfo(p1: PointType, p2: PointType) {
 }
 
 /**
- * row 情况下，X轴方向定义col作为主轴，Y轴定义成row作为交叉轴
+ * 原理:
+ *    1.先通过某一种算法算出基础布局
+ *    2.通过 horizontalMirrorFlip，verticalMirrorFlip函数翻转矩阵
  * */
-function createRowTraverseInfo(p1: PointType, p2: PointType) {
-  return {
-    stepCol: 1,
-    stepRow: 1,
-    startRow: Math.min(p1[1], p2[1]),
-    endRow: Math.max(p1[1], p2[1]),
-    startCol: Math.min(p1[0], p2[0]),
-    endCol: Math.max(p1[0], p2[0]),
-  }
-}
-
 export const EachMatrixBehavior = definePlugin({
   each(ev: EachMatrixEvent) {
     const isColumn = ['column', 'column-reverse'].includes(ev.direction)

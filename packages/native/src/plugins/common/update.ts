@@ -37,19 +37,15 @@ export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
 /**
  * 立即更新布局
  * */
-export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent, options: { sort?: boolean } = {}): boolean => {
-  const {container, items} = ev
+export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent): boolean => {
+  const {container} = ev
   if (!container._mounted) return false
-  options = Object.assign({
-    sort: true
-  }, options)
   const {layoutManager: manager} = container
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
   container.reset()
   let res = manager.analysis(ev.getModifyItems())
   if (!res.isSuccess) return false
-  // if (options.sort) container.items = res.sortedItems
   res.patch()
   ev.patchStyle()
   container.updateContainerSizeStyle()
@@ -121,7 +117,7 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
   if (isAnimation(fromItem)) return;
   const manager = ev.layoutManager
   manager.move(ev.items, fromItem, toItem)
-  directUpdateLayout(ev, {sort: false})
+  directUpdateLayout(ev)
 }, 80)
 
 

@@ -18,7 +18,7 @@ import {definePlugin, tempStore} from "@/global";
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
   name: 'ResponsiveLayoutPlugin',
-  getConfig(ev: ConfigurationEvent) {
+  getConfig(_: ConfigurationEvent) {
   },
   exchangeVerification(ev: ItemExchangeEvent) {
     ev.prevent()

@@ -25,7 +25,7 @@ import {definePlugin, tempStore} from "@/global";
  * */
 export const StreamLayoutPlugin = definePlugin({
   name: 'StreamLayoutPlugin',
-  getConfig(ev: ConfigurationEvent) {
+  getConfig(_: ConfigurationEvent) {
   },
   exchangeProcess(_: ItemExchangeEvent) {
     const {toContainer, fromItem} = tempStore

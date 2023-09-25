@@ -20,7 +20,6 @@ export type CustomItem = ItemGeneralImpl
 export type CustomItems = ItemGeneralImpl[]
 
 export type BasePosType = 'x' | 'y' | 'w' | 'h'
-export type BaseLineType = 'top' | 'left' | 'bottom' | 'right'
 export type MarginOrSizeDesc = [number | null, number | null]
 
 /** Container 实例化配置选项 */
@@ -285,8 +284,6 @@ export type AnalysisResult = {
    * @param handler 传入最新pos的item作为参数
    * */
   patch: (handler?: (item: Item) => void) => void
-  patchSorted: Function
-  get sortedItems(): Item[]
 }
 
 

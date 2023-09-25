@@ -3,7 +3,7 @@ import {
   BaseEvent,
   CloneElementStyleEvent,
   ContainerSizeChangeEvent,
-  definePlugin,
+  definePlugin, EachMatrixEvent,
   ItemDragEvent,
   ItemExchangeEvent,
   ItemLayoutEvent,
@@ -151,6 +151,12 @@ const plugin = definePlugin({
   exchangeProcess(ev: ItemExchangeEvent) {
   },
   exchangeReceive(ev: ItemExchangeEvent) {
+  },
+  each(ev: EachMatrixEvent) {
+    // ev.prevent()
+  },
+  flip(ev: EachMatrixEvent) {
+    // ev.prevent()
   }
 })
 

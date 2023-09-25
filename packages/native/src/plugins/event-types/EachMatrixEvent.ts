@@ -18,11 +18,9 @@ export class EachMatrixEvent extends BaseEvent {
 
   /**
    * 在emit事件的时候需要对next进行实现
-   * curRow:  col模式下row是上下， column模式下row是左右
-   * curCol:  同上
    *
    * @return {boolean} 如果返回true的时候表示可以退出循环，需要在each钩子里面判断返回值并在true的时候使用break退出
    * */
-  public next: (curRow: number, curCol: number) => true | void
+  public next: (x: number, y: number) => true | void
 }
 

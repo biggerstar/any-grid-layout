@@ -1,7 +1,6 @@
 import {Item} from "@/main";
 import {CustomItemPos, ItemLimitType} from "@/types";
 
-type LayoutItemInfo = Array<{ item: Item, pos: CustomItemPos }>
 
 
 export abstract class Finder {
@@ -135,28 +134,6 @@ export abstract class Finder {
     }
   }
 
-  /**
-   * 获取当前矩阵中横向优先遍历获得的items列表
-   * 比如1 X 1 开始，到 1 X 5
-   * 之后2 X 1 开始，到 2 X 5
-   * ......
-   * */
-  public sortCurrentMatrixItems(items: Item[]) {
-    const sortItems = []
-    for (let y = 1; y <= this.row; y++) {
-      for (let x = 1; x <= this.col; x++) {
-        //------------------------------------
-        for (let index = 0; index < items.length; index++) {
-          const item = items[index]
-          if (x >= item.pos.x && x < (item.pos.x + item.pos.w)
-            && y >= item.pos.y && y < (item.pos.y + item.pos.h)) {
-            if (!sortItems.includes(item)) sortItems.push(item)
-          }
-        }
-      }
-    }
-    return sortItems
-  }
 }
 
 
