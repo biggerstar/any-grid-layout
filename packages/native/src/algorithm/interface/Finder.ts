@@ -2,38 +2,22 @@ import {Item} from "@/main";
 import {CustomItemPos, ItemLimitType} from "@/types";
 
 
-
 export abstract class Finder {
   public abstract get col(): number
 
   public abstract get row(): number
 
-  // /**
-  //  *  找当前矩阵下x,y位置当前存在的item
-  //  *
-  //  *  @return {Item | null}
-  //  * */
-  // public findItemFromXY(items = [], fromX: number, fromY: number): Item | null {
-  //   let pointItem = null
-  //   let lastY = 1
-  //   if (items.length === 0) return null
-  //   for (let i = 0; i < items.length; i++) {
-  //     let item: Item = items[i]
-  //     if (!item) continue
-  //     const {x, y, w, h} = item.pos
-  //     const xItemStart = x
-  //     const yItemStart = y
-  //     const xItemEnd = x + w - 1
-  //     const yItemEnd = y + h - 1
-  //
-  //     if (xItemStart !== fromX) continue
-  //     if (fromY > lastY) fromY = lastY
-  //     if (x => xItemStart && x <= xItemEnd && fromY >= yItemStart && fromY <= yItemEnd) {
-  //       if (fromX === xItemStart && fromY === yItemStart) pointItem = item
-  //     }
-  //   }
-  //   return pointItem
-  // }
+  /**
+   *  找当前矩阵下x,y位置当前存在的item
+   *
+   *  @return {Item | null}
+   * */
+  public findItemFromXY(items = [], fromX: number, fromY: number): Item | void {
+    return items.find(item => {
+      const {x, y, w, h} = item.pos
+      return fromX >= x && fromX <= x + w - 1 && fromY >= y && fromY <= y + h - 1
+    })
+  }
 
   /** 寻找某个指定矩阵范围内包含的所有Item,pos的 x,y,w,h 构成一个域范围;
    *  Item可能不完全都在该指定矩阵范围内落点，只是有一部分落在范围内，该情况也会被查找收集起来

@@ -10,6 +10,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public readonly toItem: Item | null
   public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置
   public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置
+  public toPos: CustomItemPos
+  public toGridItem: Item
 
   constructor(opt) {
     super(opt);
@@ -18,6 +20,12 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const cloneElStartY = this.gridY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1
     this.startX = Math.min(Math.max(1, cloneElStartX), this.col)
     this.startY = Math.min(Math.max(1, cloneElStartY), this.row)
+    this.toPos = {
+      w: this.fromItem.pos.w,
+      h: this.fromItem.pos.h,
+      x: this.startX,
+      y: this.startY,
+    }
   }
 
   /**
@@ -26,16 +34,16 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * @param multipleItemFunc fromItem覆盖目标没有指定onlyOneItemFunc时或者覆盖多个的时候执行的函数，默认为null
    *
    * */
-  public findDiffCoverItem(oneItemFunc: Function | null, multipleItemFunc: Function = null): void {
+  public findDiffCoverItem(oneItemFunc: Function | null, multipleItemFunc: Function = null): Item[] {
     const {fromItem} = tempStore
-    if (!fromItem) return
+    if (!fromItem) return []
     // console.log(x,y);
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, {
       ...fromItem.pos,
       x: this.startX,
       y: this.startY
     })
-    if (!toItemList.length) return
+    if (!toItemList.length) return []
     toItemList = toItemList.filter(item => item !== fromItem)
     if (toItemList.length === 1 && isFunction(oneItemFunc)) {
       (oneItemFunc as Function)(toItemList[0])
@@ -44,6 +52,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
         toItemList.forEach((item) => multipleItemFunc(item))
       }
     }
+    return toItemList
   }
 
   /**
@@ -166,6 +175,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const inOuterContainer = !toContainer && fromItem
     // console.log(X,Y);
     // console.log(x, y);
+
+    if (!this.layoutManager.findItemFromXY(this.items, this.startX, this.startY)) {
+      bus.emit('dragToBlank')
+    }
     if (!inOuterContainer && X !== 0 && Y !== 0) {   // 只有在容器内才触发对角线移动事件
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLeftBottom')

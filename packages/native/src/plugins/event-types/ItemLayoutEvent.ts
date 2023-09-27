@@ -3,7 +3,6 @@ import {Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {assign} from "lodash";
 
 export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item

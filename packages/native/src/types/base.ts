@@ -210,6 +210,7 @@ export type CustomEventOptions = {
   dragOuterRight?(ev: ItemDragEvent): void,
   dragOuterBottom?(ev: ItemDragEvent): void,
   dragOuterLeft?(ev: ItemDragEvent): void,
+  dragToBlank?(ev: ItemDragEvent): void,
 
   //-----------------resize---------------------
   resizing?(ev: ItemResizeEvent): void,

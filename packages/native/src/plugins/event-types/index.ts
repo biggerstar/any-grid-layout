@@ -64,6 +64,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   dragOuterRight: ItemDragEvent,
   dragOuterBottom: ItemDragEvent,
   dragOuterLeft: ItemDragEvent,
+  dragToBlank: ItemDragEvent,
   //--------------resize-----------------
   resizing: ItemResizeEvent,
   resized: ItemResizeEvent,

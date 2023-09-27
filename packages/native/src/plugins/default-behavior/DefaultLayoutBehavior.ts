@@ -78,6 +78,9 @@ export const DefaultLayoutBehavior = definePlugin({
   dragend(_: ItemDragEvent) {
   },
 
+  dragToBlank(_: ItemDragEvent) {
+  },
+
   dragToTop(ev: ItemDragEvent) {
     ev.tryMoveToNearBlank()
   },
