@@ -3,15 +3,10 @@
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {
-  directUpdateLayout,
-  dragToCrossHair,
-  dragToDiagonal,
-  updateLayout,
-  updateResponsiveResizeLayout
-} from "@/plugins/common";
+import {directUpdateLayout, updateLayout} from "@/plugins/common";
 import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
+import {dragToCrossHair, dragToDiagonal, updateResponsiveResizeLayout} from "@/builtin-plugins/common";
 
 /**
  * 响应式布局插件
@@ -29,7 +24,6 @@ export const ResponsiveLayoutPlugin = definePlugin({
       x: ev.toStartX,
       y: ev.toStartY,
     }
-    // console.log(111111111111111111)
     if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
       ev.doExchange()
     } else if (ev.toItem) {
@@ -102,39 +96,27 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   dragToTop(ev: ItemDragEvent) {
-    const {fromItem, toItem} = tempStore
+    const {fromItem} = tempStore
     if (!fromItem) return
-    let call = toItem && !(fromItem.pos.y - toItem.pos.y > toItem.pos.h)  // 到toItem最顶上边界的时候触发
-      ? (item) => ({y: item.pos.y + fromItem.pos.h})  // toItem移动到fromItem下面，距离为fromItem.pos.h
-      : null   // 到了空白位置或者不在toItem边界而在内部(w大于3才会出现)
-    dragToCrossHair(ev, call)
+    dragToCrossHair(ev, (item) => ({y: item.pos.y + fromItem.pos.h}))
   },
 
   dragToRight(ev: ItemDragEvent) {
-    const {fromItem, toItem} = tempStore
+    const {fromItem} = tempStore
     if (!fromItem) return
-    let call = toItem && !(toItem.pos.x - fromItem.pos.x > fromItem.pos.w)
-      ? (item) => ({x: item.pos.x - fromItem.pos.w})
-      : null
-    dragToCrossHair(ev, call)
+    dragToCrossHair(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
   },
 
   dragToBottom(ev: ItemDragEvent) {
-    const {fromItem, toItem} = tempStore
+    const {fromItem} = tempStore
     if (!fromItem) return
-    let call = toItem && !(toItem.pos.y - fromItem.pos.y > fromItem.pos.h)
-      ? (item) => ({y: item.pos.y - fromItem.pos.h})
-      : null
-    dragToCrossHair(ev, call)
+    dragToCrossHair(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
   },
 
   dragToLeft(ev: ItemDragEvent) {
-    const {fromItem, toItem} = tempStore
+    const {fromItem} = tempStore
     if (!fromItem) return
-    let call = toItem && !(fromItem.pos.x - toItem.pos.x > toItem.pos.w)
-      ? (item) => ({x: item.pos.x + fromItem.pos.w})
-      : null
-    dragToCrossHair(ev, call)
+    dragToCrossHair(ev, (item) => ({x: item.pos.x + fromItem.pos.w}))
   },
 
   /*------------------------------------------------------------------*/

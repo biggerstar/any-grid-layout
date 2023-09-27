@@ -38,7 +38,7 @@ export class PluginManager {
     // }
     const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
-    const defaultActionFn: Function = DefaultBehavior[eventName]
+    const defaultActionFn: Function = DefaultBehavior[eventName]   //  [内置用] 在event$之后执行,可被外部插件阻止
     const $$defaultActionFn: Function = DefaultBehavior[`$$${eventName}`]   // [内置用] 在[事件对象实例化之前]前调用,不可被阻止
     const $defaultActionFn: Function = DefaultBehavior[`$${eventName}`]   // [内置用] 在事件对象[所有插件回调前]调用,不可被阻止
     const defaultActionFn$: Function = DefaultBehavior[`${eventName}$`]   // [内置用] 在事件对象[所有插件回调之后]调用,不可被阻止

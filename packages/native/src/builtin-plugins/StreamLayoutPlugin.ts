@@ -5,12 +5,11 @@ import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
   directUpdateLayout,
-  moveToIndexForItems,
   updateLayout,
-  updateResponsiveResizeLayout
 } from "@/plugins/common";
 import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
+import {moveToIndexForItems, updateResponsiveResizeLayout} from "@/builtin-plugins/common";
 
 /*-
 -----------------------------------------------------------------------------------------*/
