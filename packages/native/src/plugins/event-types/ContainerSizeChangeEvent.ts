@@ -17,8 +17,8 @@ export class ContainerSizeChangeEvent extends ItemLayoutEvent {
     const container = this.container
     this.preCol = container.__ownTemp__.preCol
     this.preRow = container.__ownTemp__.preRow
-    this.curCol = container.getConfig("col")
-    this.curRow = container.getConfig("row")
+    this.curCol = this.col
+    this.curRow = this.row
     this.isColChanged = isNumber(this.preCol) && this.preCol !== this.curCol
     this.isRowChanged = isNumber(this.preRow) && this.preRow !== this.curRow
   }

@@ -3,6 +3,7 @@ import {Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
+import {assign} from "lodash";
 
 export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item
@@ -10,8 +11,10 @@ export class ItemLayoutEvent extends BaseEvent {
   public readonly mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
   public readonly lastMousePointX: number | null // 上一个mousePointX位置
   public readonly lastMousePointY: number | null // 上一个mousePointY位置
-  public readonly gridX: number // 当前鼠标限制在容器内的x栅格值
-  public readonly gridY: number // 当前鼠标限制在容器内的y栅格值
+  public readonly col: number // 当前容器的col
+  public readonly row: number // 当前容器的row
+  public readonly gridX: number // 当前鼠标位置限制在容器内的x栅格值
+  public readonly gridY: number // 当前鼠标位置限制在容器内的y栅格值
   public readonly relativeX: number // 当前鼠标距离源容器的真实x栅格值
   public readonly relativeY: number   // 当前鼠标距离源容器的真实y栅格值
   public readonly itemInfo: {  // 源item的信息
@@ -68,6 +71,8 @@ export class ItemLayoutEvent extends BaseEvent {
     this.lastMousePointY = lastMousePointY
     tempStore.lastMousePointX = this.mousePointX
     tempStore.lastMousePointY = this.mousePointY
+    this.col = fromItem.container.getConfig("col")
+    this.row = fromItem.container.getConfig("row")
     this.itemInfo.width = fromItem.nowWidth()
     this.itemInfo.height = fromItem.nowHeight()
     this.itemInfo.minWidth = fromItem.minWidth()
@@ -130,7 +135,7 @@ export class ItemLayoutEvent extends BaseEvent {
     const restrictedItemWidth = this.width
     let curW = this.container.pxToW(restrictedItemWidth) * Math.sign(restrictedItemWidth)
     if (curW < 0) curW = 1
-    const maxW = this.fromItem.container.getConfig("col") - this.fromItem.pos.x + 1
+    const maxW = this.col - this.fromItem.pos.x + 1
     return curW > maxW ? maxW : curW
   }
 
@@ -141,7 +146,7 @@ export class ItemLayoutEvent extends BaseEvent {
     const restrictedItemHeight = this.height
     let curH = this.container.pxToH(restrictedItemHeight) * Math.sign(restrictedItemHeight)
     if (curH < 0) curH = 1
-    const maxH = this.fromItem.container.getConfig("row") - this.fromItem.pos.y + 1
+    const maxH = this.row - this.fromItem.pos.y + 1
     return curH > maxH ? maxH : curH
   }
 
@@ -152,7 +157,7 @@ export class ItemLayoutEvent extends BaseEvent {
     const manager = this.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
       ...this.fromItem.pos,
-      w: this.fromItem.container.getConfig('col') - this.fromItem.pos.x + 1
+      w: this.col - this.fromItem.pos.x + 1
     }, [this.fromItem])
     let minOffsetRight = Infinity
     coverRightItems.forEach((item) => {
@@ -170,7 +175,7 @@ export class ItemLayoutEvent extends BaseEvent {
     const manager = this.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
       ...this.fromItem.pos,
-      h: this.fromItem.container.getConfig('row') - this.fromItem.pos.y + 1
+      h: this.row - this.fromItem.pos.y + 1
     }, [this.fromItem])
 
     let minOffsetBottom = Infinity

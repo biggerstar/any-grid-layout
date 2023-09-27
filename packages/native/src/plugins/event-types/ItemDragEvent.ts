@@ -8,16 +8,16 @@ import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
   public readonly toItem: Item | null
-  public readonly startX: number // 克隆元素当前位于网格左上角相对的栅格X位置
-  public readonly startY: number // 克隆元素当前位于网格左上角相对中的栅格Y位置
+  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置
+  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置
 
   constructor(opt) {
     super(opt);
     this.toItem = tempStore.toItem
     const cloneElStartX = this.gridX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1
-    const cloneElStartY = this.gridY - this.container.pxToW(this.cloneElOffsetMouseTop) + 1
-    this.startX = cloneElStartX < 1 ? 1 : cloneElStartX
-    this.startY = cloneElStartY < 1 ? 1 : cloneElStartY
+    const cloneElStartY = this.gridY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1
+    this.startX = Math.min(Math.max(1, cloneElStartX), this.col)
+    this.startY = Math.min(Math.max(1, cloneElStartY), this.row)
   }
 
   /**
@@ -32,8 +32,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     // console.log(x,y);
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, {
       ...fromItem.pos,
-      x: this.gridX,
-      y: this.gridY
+      x: this.startX,
+      y: this.startY
     })
     if (!toItemList.length) return
     toItemList = toItemList.filter(item => item !== fromItem)
@@ -166,7 +166,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const inOuterContainer = !toContainer && fromItem
     // console.log(X,Y);
     // console.log(x, y);
-    if (X !== 0 && Y !== 0) {
+    if (!inOuterContainer && X !== 0 && Y !== 0) {   // 只有在容器内才触发对角线移动事件
       if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
       else if (X < 0 && Y > 0) bus.emit('dragToLeftBottom')
       else if (X < 0 && Y < 0) bus.emit('dragToLeftTop')

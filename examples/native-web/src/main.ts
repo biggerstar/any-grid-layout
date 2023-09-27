@@ -190,7 +190,7 @@ container1.mount()
 // container3.mount()
 
 
-container1.layoutManager.each((curRowPoint, curColPoint, alignInfo) => {
+container1.layoutManager.each((curRowPoint, curColPoint) => {
   // console.log(curColPoint,curRowPoint);
 })
 
