@@ -3,10 +3,10 @@ import {isNumber} from "is-what";
 
 
 /**
- * 单通道节流,可使用new创建多个通道,不支持参数，只是单纯运行函数
+ * 单通道节流,可使用new创建多个通道,不支持函数参数，只是单纯运行函数
  * */
 export class SingleThrottle {
-  public do: Function
+  public do: (func: () => void) => void
   public wait: number = 320
 
   constructor(wait?: number) {
@@ -16,7 +16,7 @@ export class SingleThrottle {
       let now = new Date().valueOf();
       if (now - old < this.wait) return
       old = now
-      return func.apply(this);
+      return func.apply(<object>this);
     }
   }
 }
@@ -294,4 +294,6 @@ export const singleTouchToCommonEvent = (touchEvent) => {
   return touchEvent
 }
 
-
+export function getClientRect<T extends Element>(el: T): DOMRect {
+  return el.getBoundingClientRect()
+}

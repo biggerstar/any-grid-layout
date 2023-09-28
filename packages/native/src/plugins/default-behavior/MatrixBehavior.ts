@@ -61,20 +61,22 @@ export const MatrixBehavior = definePlugin({
       }
   },
   flip(ev: MatrixEvent) {
+    const layoutManager = ev.container.layoutManager
     if (['row', 'row-reverse'].includes(ev.direction)) {
-      if (ev.direction === 'row-reverse') ev.layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
-      if (ev.align === 'end') ev.layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.direction === 'row-reverse') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.align === 'end') layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
     } else if (['column', 'column-reverse'].includes(ev.direction)) {
-      if (ev.direction === 'column-reverse') ev.layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
-      if (ev.align === 'end') ev.layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.direction === 'column-reverse') layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.align === 'end') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
     }
   },
   expandLine(ev: MatrixEvent) {
+    const layoutManager = ev.container.layoutManager
     const addRow = ['row', 'row-reverse'].includes(ev.direction)
     const addCol = ['column', 'column-reverse'].includes(ev.direction)
     for (let i = 0; i < ev.expandLineNumber; i++) {
-      if (addRow) ev.layoutManager.addRow()
-      else if (addCol) ev.layoutManager.addCol()
+      if (addRow) layoutManager.addRow()
+      else if (addCol) layoutManager.addCol()
     }
   }
 })

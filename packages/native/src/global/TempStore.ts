@@ -50,8 +50,8 @@ class TempStore {
   scrollReactionStatic: 'stop' | 'wait' | 'scroll' = 'stop'  //   鼠标移动到容器边界自动滚动状态
   deviceEventMode: 'mouse' | 'touch' = 'mouse'   //   mouse || touch
   timeOutEvent: any
-  lastMousePointX: number | null
-  lastMousePointY: number | null
+  lastOffsetSelfItemX: number | null   // 上一个itemInfo.selfLeft位置
+  lastOffsetSelfItemY: number | null   // 上一个itemInfo.selfTop位置
   lastResizeW: number | null
   lastResizeH: number | null
   lastDragX: number | null
@@ -62,6 +62,11 @@ class TempStore {
   cloneElScaleMultipleY: number | null  // 克隆元素Y方向的放大倍数
   mousedownResizeStartX: number | null  // 鼠标resize的时候克隆元素固定距离左上角的X位置
   mousedownResizeStartY: number | null  // 鼠标resize的时候克隆元素固定距离左上角的Y位置
+  rectCache: null | {
+    itemRect: DOMRect,
+    containerRect: DOMRect,
+    shadowItemRect?: DOMRect,
+  }
 }
 
 export const tempStore: TempStore = new TempStore()

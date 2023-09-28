@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins";
 import {tempStore} from "@/global";
-import {canExchange, SingleThrottle, throttle, updateStyle} from "@/utils";
+import {canExchange, getClientRect, SingleThrottle, throttle, updateStyle} from "@/utils";
 import {
   grid_clone_el,
   grid_dragging_clone_el,
@@ -55,7 +55,7 @@ const createDraggingClonePosition: Function = throttle(() => {
   newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
   newNode.classList.remove(grid_dragging_source_el)
   fromItem.element.classList.add(grid_dragging_source_el)
-  const {left, top} = sourceEl.getBoundingClientRect()
+  const {left, top} = getClientRect(sourceEl)
   updateStyle({
     pointerEvents: 'none',   // 指定克隆元素不会触发事件成为ev.target值
     transitionProperty: 'none',
@@ -66,7 +66,7 @@ const createDraggingClonePosition: Function = throttle(() => {
   tempStore.cloneElement = newNode
   document.body.appendChild(newNode)    // 直接添加到body中后面定位省心省力
 // 这里使用newNode.offsetHeight无法获得正确宽高，只能使用rect
-  const {width, height} = newNode.getBoundingClientRect()
+  const {width, height} = getClientRect(newNode)
   tempStore.cloneElScaleMultipleX = width / fromItem.nowWidth()
   tempStore.cloneElScaleMultipleY = height / fromItem.nowHeight()
 }, 300)

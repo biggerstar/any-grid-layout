@@ -16,18 +16,28 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
   constructor(opt) {
     super(opt);
-    const {toItem, toContainer, fromItem} = tempStore
-    this.toItem = toItem
-    const cloneElStartX = this.gridX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1
-    const cloneElStartY = this.gridY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1
-    this.startX = Math.min(Math.max(1, cloneElStartX), this.col - fromItem!.pos.w + 1)
-    this.startY = Math.min(Math.max(1, cloneElStartY), this.row - fromItem!.pos.h + 1)
+    const {
+      toItem,
+      toContainer,
+      fromItem,
+    } = tempStore
+    const container = this.container
+    const {offsetLeft, offsetTop, scaleMultipleX, scaleMultipleY} = this.shadowItemInfo
+    const {width, height} = this.itemInfo
+    const cloneElStartWidth = Math.min(Math.max(0, offsetLeft + width * (scaleMultipleX - 1)), this.containerInfo.width)
+    const cloneElStartHeight = Math.min(Math.max(0, offsetTop + height * (scaleMultipleY - 1)), this.containerInfo.height)
+    const hasHalfItemSizeWidth = cloneElStartWidth + (this.size[0] + this.margin[0]) / 2  // Q:为何加上toHalfItemSizeWidth? A:只有克隆元素的边界进入下一个item前往的item空位超过一半的时候才会更变startX
+    const hasHalfItemSizeHeight = cloneElStartHeight + (this.size[1] + this.margin[1]) / 2  // 同上
+    this.startX = Math.min(container.pxToW(hasHalfItemSizeWidth), this.col - fromItem!.pos.w + 1)
+    this.startY = Math.min(container.pxToH(hasHalfItemSizeHeight), this.row - fromItem!.pos.h + 1)
+
     this.toPos = {
       w: this.fromItem.pos.w,
       h: this.fromItem.pos.h,
       x: this.startX,
       y: this.startY,
     }
+    this.toItem = toItem
     this.inOuter = !!(!toContainer && fromItem)
     this.offsetGridX = this.startX - fromItem!.pos.x
     this.offsetGridY = this.startY - fromItem!.pos.y
@@ -112,7 +122,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public tryMoveToNearBlank({radius = 1, maxLen = 8} = {}): boolean {
     const {fromItem} = tempStore
     if (!fromItem) return false
-    const manager = this.layoutManager
+    const manager = this.container.layoutManager
     const isSuccess = this.tryMoveToBlank()
     if (isSuccess) return  // 如果当前位置有空位则直接移动过去，不进行周边空位检测
     //---------------------------开始判定移动到周边空位了逻辑----------------------------------//
@@ -179,7 +189,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const Y = this.offsetGridY
     if (X === 0 && Y === 0) return
     // console.log(X, Y, this.inOuter)
-    const foundItem = this.layoutManager.findItemFromXY(this.items, this.gridX, this.gridY)  // 必须要startX,startY
+    const foundItem = this.container.layoutManager.findItemFromXY(this.items, this.gridX, this.gridY)  // 必须要startX,startY
     if (!this.inOuter && (!foundItem || foundItem === fromItem)) {
       bus.emit('dragToBlank')
     }

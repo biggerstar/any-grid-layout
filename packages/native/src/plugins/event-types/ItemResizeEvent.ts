@@ -2,6 +2,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {tempStore} from "@/global";
+import {isNumber} from "is-what";
 
 /**
  * Item resize事件对象
@@ -18,14 +19,14 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       isResizing,
       isLeftMousedown,
       fromItem,
+      cloneElement,
       mousedownResizeStartX,
       mousedownResizeStartY,
       mousemoveEvent: resizeEv,
     } = tempStore
-    if (!isResizing || !isLeftMousedown) return
-    if (!fromItem || !resizeEv || !isLeftMousedown) return
-    const curW = this.container.pxToW(this.mousePointX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
-    const curH = this.container.pxToH(this.mousePointY)
+    if (!fromItem || !resizeEv || !isResizing || !isLeftMousedown || !cloneElement) return
+    const curW = this.container.pxToW(this.itemInfo.offsetX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
+    const curH = this.container.pxToH(this.itemInfo.offsetY)
     this.w = curW < 1 ? 1 : curW
     this.h = curH < 1 ? 1 : curH
     this.startX = <number>mousedownResizeStartX
@@ -38,20 +39,25 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   public patchResizeDirection() {
     let {
       fromItem,
+      lastOffsetSelfItemX,
+      lastOffsetSelfItemY,
       mousemoveEvent: resizeEv,
     } = tempStore
-    if (!fromItem || !resizeEv) return
+    const {offsetX, offsetY} = this.itemInfo
+    tempStore.lastOffsetSelfItemX = offsetX
+    tempStore.lastOffsetSelfItemY = offsetY
+    if (!fromItem || !resizeEv || !isNumber(lastOffsetSelfItemX) || !isNumber(lastOffsetSelfItemY)) return
     const bus = this.container.bus
-    if (this.mousePointX > this.lastMousePointX) {
+    if (offsetX > lastOffsetSelfItemX) {
       bus.emit('resizeToRight')
     }
-    if (this.mousePointX < this.lastMousePointX) {
+    if (offsetX < lastOffsetSelfItemX) {
       bus.emit('resizeToLeft')
     }
-    if (this.mousePointY > this.lastMousePointY) {
+    if (offsetY > lastOffsetSelfItemY) {
       bus.emit('resizeToBottom')
     }
-    if (this.mousePointY < this.lastMousePointY) {
+    if (offsetY < lastOffsetSelfItemY) {
       bus.emit('resizeToTop')
     }
   }

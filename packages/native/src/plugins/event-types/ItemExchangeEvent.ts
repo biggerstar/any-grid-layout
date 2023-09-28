@@ -5,6 +5,7 @@ import {Container, Item} from "@/main";
 import {CustomItem, CustomItemPos} from "@/types";
 import {analysisCurPositionInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
+import {getClientRect} from "@/utils";
 
 export class ItemExchangeEvent extends ItemDragEvent {
   public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
@@ -41,14 +42,14 @@ export class ItemExchangeEvent extends ItemDragEvent {
     }
     this.mousePos = toPos
     if (!manager.isBlank(toPos)) {
-      this.spacePos = <any>this.layoutManager.findBlank({
+      this.spacePos = <any>this.container.layoutManager.findBlank({
         w: fromItem.pos.w,
         h: fromItem.pos.h,
       })
     }
-    const toContainerRect = toContainer.contentElement.getBoundingClientRect()
-    const cloneElOffsetContainerLeftTopX = this.cloneElRect.left - toContainerRect.left
-    const cloneElOffsetContainerLeftTopY = this.cloneElRect.top - toContainerRect.top
+    const toContainerRect = getClientRect(toContainer.contentElement)
+    const cloneElOffsetContainerLeftTopX = this.shadowItemInfo.left - toContainerRect.left
+    const cloneElOffsetContainerLeftTopY = this.shadowItemInfo.top - toContainerRect.top
     const toStartRelativeX = toContainer.pxToW(cloneElOffsetContainerLeftTopX) * Math.sign(cloneElOffsetContainerLeftTopX)
     const toStartRelativeY = toContainer.pxToH(cloneElOffsetContainerLeftTopY) * Math.sign(cloneElOffsetContainerLeftTopY)
     this.toStartX = toStartRelativeX < 1 ? 1 : toStartRelativeX
@@ -103,7 +104,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     // toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
     let toPos: CustomItemPos | null = this.newItem.pos
     // console.log('receive', toPos.x, toPos.y)
-    this.layoutManager.mark(toPos,this.newItem)
+    this.container.layoutManager.mark(toPos,this.newItem)
     this.newItem.mount()
     toContainer.updateContainerSizeStyle()
     if (this.toItem) toContainer.bus.emit('updateLayout')

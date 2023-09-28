@@ -1,7 +1,7 @@
 import {ItemTransitionObject} from "@/types";
 import {grid_clone_el, grid_dragging_source_el, grid_resizing_source_el} from "@/constant";
 import {tempStore} from "@/global";
-import {updateStyle} from "@/utils";
+import {getClientRect, updateStyle} from "@/utils";
 
 /**
  * 移除当前鼠标操作的clone元素 (drag,resize)
@@ -17,10 +17,9 @@ export function itemCloneElRemove_mouseup(_) {
   //   动画的执行方案来自拖拽指定的Item中transition信息(和Item间交换共用规则)，包括time和field设置都能改变这边回流动画的方式和规则
   for (let i = 0; i < gridCloneEls.length; i++) {
     const gridCloneEl = gridCloneEls[i]
-    // console.log(gridCloneEl.getBoundingClientRect())
     if (fromItem && fromItem.transition) {
       const transition = <ItemTransitionObject>fromItem.transition
-      const containerElOffset = fromItem.container.contentElement.getBoundingClientRect()
+      const containerElOffset = getClientRect(fromItem.container.contentElement)
       const baseStyle: Partial<CSSStyleDeclaration> = {
         transitionProperty: `${transition.field}`,
         transitionDuration: `${transition.time}ms`,

@@ -1,20 +1,16 @@
 import {Container, Item} from "@/main";
 import {CustomEventOptions} from "@/types";
-import {LayoutManager} from "@/algorithm";
-import {PluginManager} from "@/plugins";
 
 export class BaseEvent {
   public name: keyof CustomEventOptions
 
   constructor(options) {
-    Object.assign(<object>this, options || {})
+    Object.assign(<object>this, options || {})   // 合并外部emit发射的参数2对象
   }
 
-  public readonly container: Container
-  public readonly item: Item | null = null
-  public readonly layoutManager: LayoutManager
-  public readonly pluginManager: PluginManager
-  public isPrevent: boolean = false
+  public readonly container: Container  // 当前操作所在的container
+  public readonly item: Item | null = null  // 操作item的时候的目标item
+  public defaultPrevented: boolean = false   // 是否调用了prevent阻止了默认事件
 
   // public shared: object   // 事件组对象流传播共享数据的对象，比如dragging -> dragToXXX -> dragend
 
@@ -22,7 +18,7 @@ export class BaseEvent {
    * 阻止内置的默认行为
    * */
   prevent() {
-    this.isPrevent = true
+    this.defaultPrevented = true
   }
 
   /**

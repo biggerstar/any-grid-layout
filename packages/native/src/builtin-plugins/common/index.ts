@@ -80,7 +80,7 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
   const {fromItem, toItem} = tempStore
   if (!fromItem || !toItem) return
   if (isAnimation(fromItem)) return;
-  const manager = ev.layoutManager
+  const manager = ev.container.layoutManager
   manager.move(ev.items, fromItem, toItem)
   directUpdateLayout(ev)
 }, 80)

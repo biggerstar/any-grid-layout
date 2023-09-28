@@ -116,7 +116,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
       height: `${ev.spaceHeight}px`,
       minHeight: `${ev.itemInfo.minHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
+    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.shadowItemInfo.height)})
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
@@ -127,7 +127,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
       height: `${ev.spaceHeight}px`,
       minHeight: `${ev.itemInfo.minHeight}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.cloneElRect.height)})
+    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.shadowItemInfo.height)})
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
@@ -138,7 +138,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
       width: `${ev.spaceWidth}px`,
       minWidth: `${ev.itemInfo.minWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
+    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.shadowItemInfo.width)})
   },
 
   resizeToRight(ev: ItemResizeEvent) {
@@ -149,7 +149,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
       width: `${ev.spaceWidth}px`,
       minWidth: `${ev.itemInfo.minWidth}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
+    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.shadowItemInfo.width)})
   },
 
   itemSizeChanged() {

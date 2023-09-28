@@ -2,6 +2,7 @@
 
 import {
   debounce,
+  getClientRect,
   getContainerFromElement,
   getItemFromElement,
   merge,
@@ -389,22 +390,22 @@ export class Container {
 
   /** 获取外容器可视范围可容纳的col  */
   public get containerW(): number {
-    return Math.floor(this.element.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    return Math.floor(getClientRect(this.element).width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
   }
 
   /** 获取外容器可视范围可容纳的row */
   public get containerH(): number {
-    return Math.floor(this.element.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    return Math.floor(getClientRect(this.element).height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
   }
 
   /** 获取內容器可视范围可容纳的col  */
   public get contentBoxW(): number {
-    return Math.floor(this.contentElement.getBoundingClientRect().width / (this.getConfig("size")[0] + this.getConfig("margin")[0]))
+    return Math.floor(getClientRect(this.contentElement).width / (this.getConfig("size")[0] + this.getConfig("margin")[0]))
   }
 
   /** 获取内容器可视范围可容纳的row */
   public get contentBoxH(): number {
-    return Math.floor(this.contentElement.getBoundingClientRect().height / (this.getConfig("size")[1] + this.getConfig("margin")[1]))
+    return Math.floor(getClientRect(this.contentElement).height / (this.getConfig("size")[1] + this.getConfig("margin")[1]))
   }
 
   private _init() {

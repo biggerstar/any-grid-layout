@@ -6,6 +6,7 @@
 import {Container, Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {tempStore} from "@/global";
+import {getClientRect} from "@/utils";
 
 
 /**
@@ -41,7 +42,7 @@ export function analysisCurPositionInfo(container: Container): {
   const {mousemoveEvent} = tempStore
   if (!mousemoveEvent) return
   const result: any = {}
-  const {left: containerLeft, top: containerTop} = container.contentElement.getBoundingClientRect()
+  const {left: containerLeft, top: containerTop} = getClientRect(container.contentElement)
   const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
   const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
   const margin = container.getConfig('margin')

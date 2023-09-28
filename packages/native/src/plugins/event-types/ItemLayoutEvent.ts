@@ -1,36 +1,43 @@
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {Item} from "@/main";
-import {CustomItemPos, LayoutItemInfo} from "@/types";
+import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
+import {getClientRect, SingleThrottle} from "@/utils";
+
+const singleThrottle = new SingleThrottle(50)
 
 export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item
-  public readonly mousePointX: number // 当前鼠标距离item左上角的点的X方向距离，可以是负数
-  public readonly mousePointY: number // 当前鼠标距离item左上角的点的Y方向距离，可以是负数
-  public readonly lastMousePointX: number | null // 上一个mousePointX位置
-  public readonly lastMousePointY: number | null // 上一个mousePointY位置
   public readonly col: number // 当前容器的col
   public readonly row: number // 当前容器的row
+  public readonly size: MarginOrSizeDesc // 当前容器的row
+  public readonly margin: MarginOrSizeDesc // 当前容器的row
   public readonly gridX: number // 当前鼠标位置限制在容器内的x栅格值
   public readonly gridY: number // 当前鼠标位置限制在容器内的y栅格值
   public readonly relativeX: number // 当前鼠标距离源容器的真实x栅格值
   public readonly relativeY: number   // 当前鼠标距离源容器的真实y栅格值
-  public readonly itemInfo: {  // 源item的信息
-    width: number // 当前源item元素元素的高
-    height: number // 当前源item元素元素的高
-    minWidth: number  // 和item的minWidth函数的值是一样的，下方同理
+  public containerInfo: DOMRect = <any>{}
+  public readonly itemInfo: DOMRect & {  // 源item的信息
+    minWidth: number      // 和fromItem的minWidth函数的值是一样的，下方同理
     maxWidth: number
     minHeight: number
     maxHeight: number
-  } = {}
-  public readonly offsetTop: number // 当前item左上角的点和container top边界距离
-  public readonly offsetLeft: number // 当前item左上角的点和container left边界距离
-  public readonly offsetRight: number // 当前item左上角的点和container right边界距离
-  public readonly offsetBottom: number // 当前item左上角的点和container bottom边界距离
-  public readonly cloneElRect: DOMRect // 当前clone元素的rect信息
-  public readonly cloneElOffsetMouseLeft: number // 当前鼠标点击位置相对clone元素左上角的left距离
-  public readonly cloneElOffsetMouseTop: number // 当前鼠标点击位置相对clone元素左上角的top距离
+    offsetLeft: number    // fromItem距离当前容器左边界的距离
+    offsetTop: number     // fromItem距离当前容器上边界的距离
+    offsetRight: number   // fromItem距离当前容器右边界的距离
+    offsetBottom: number  // fromItem距离当前容器下边界的距离
+    offsetX: number       // 当前鼠标位置相对clone元素左上角的left距离
+    offsetY: number       // 当前鼠标位置相对clone元素左上角的top距离
+  } = <any>{}
+  public readonly shadowItemInfo: DOMRect & { // 当前clone元素(影子元素)的rect信息
+    offsetLeft: number      // 克隆元素距离当前容器左边界的距离
+    offsetTop: number       // 克隆元素距离当前容器上边界的距离
+    offsetRight: number     // 克隆元素距离当前容器右边界的距离
+    offsetBottom: number    // 克隆元素距离当前容器下边界的距离
+    scaleMultipleX: number  // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
+    scaleMultipleY: number  // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
+  } = <any>{}
   /**
    * 当前要布局使用的items,开发者可以自定义替换Item列表，后面更新将以列表为准
    * 注意：列表中的成员必须是已经挂载在的引用
@@ -48,43 +55,52 @@ export class ItemLayoutEvent extends BaseEvent {
     const {
       fromItem,
       mousemoveEvent,
-      lastMousePointX,
-      lastMousePointY,
       cloneElement,
-      mousedownItemOffsetLeftProportion,
-      mousedownItemOffsetTopProportion,
+      rectCache,
+      cloneElScaleMultipleX = 1,
+      cloneElScaleMultipleY = 1,
     } = tempStore
-    if (!fromItem || !mousemoveEvent) return
-    //--------------------------------------//
+    if (!fromItem || !mousemoveEvent || !cloneElement) return
+    /*------------------ Base Info --------------------*/
     Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))  // 合并 relativeX，relativeY， gridX， gridY
-    const {left, top} = fromItem.element.getBoundingClientRect()
-    const {
-      right: containerRight,
-      bottom: containerBottom,
-    } = this.container.contentElement.getBoundingClientRect()
-    const cloneElRect = (cloneElement || fromItem.element).getBoundingClientRect()
-    this.fromItem = fromItem
-    this.mousePointX = mousemoveEvent.clientX - left
-    this.mousePointY = mousemoveEvent.clientY - top
-    this.lastMousePointX = lastMousePointX
-    this.lastMousePointY = lastMousePointY
-    tempStore.lastMousePointX = this.mousePointX
-    tempStore.lastMousePointY = this.mousePointY
+    const itemRect = rectCache?.itemRect || getClientRect(fromItem.element)
+    const containerRect = rectCache?.containerRect || getClientRect(this.container.contentElement)
+    const shadowItemRect = getClientRect(cloneElement)
+    singleThrottle.do(() => {
+      tempStore.rectCache = {
+        itemRect,
+        containerRect
+      }
+    })
     this.col = fromItem.container.getConfig("col")
     this.row = fromItem.container.getConfig("row")
-    this.itemInfo.width = fromItem.nowWidth()
-    this.itemInfo.height = fromItem.nowHeight()
+    this.size = this.container.getConfig("size")
+    this.margin = this.container.getConfig("margin")
+    this.fromItem = fromItem
+
+    /*-------------- Container Rect -------------------*/
+    this.containerInfo = containerRect
+    /*--------------- ItemInfo Rect -------------------*/
+    this.itemInfo = <any>itemRect
     this.itemInfo.minWidth = fromItem.minWidth()
     this.itemInfo.maxWidth = fromItem.maxWidth()
     this.itemInfo.minHeight = fromItem.minHeight()
     this.itemInfo.maxHeight = fromItem.maxHeight()
-    this.offsetLeft = fromItem.offsetLeft()
-    this.offsetTop = fromItem.offsetTop()
-    this.offsetRight = containerRight - left
-    this.offsetBottom = containerBottom - top
-    this.cloneElRect = cloneElRect
-    this.cloneElOffsetMouseLeft = this.itemInfo.width * mousedownItemOffsetLeftProportion
-    this.cloneElOffsetMouseTop = this.itemInfo.height * mousedownItemOffsetTopProportion
+    this.itemInfo.offsetLeft = fromItem.offsetLeft()
+    this.itemInfo.offsetTop = fromItem.offsetTop()
+    this.itemInfo.offsetRight = containerRect.right - this.itemInfo.right
+    this.itemInfo.offsetBottom = containerRect.bottom - this.itemInfo.bottom
+    this.itemInfo.offsetX = mousemoveEvent.clientX - itemRect.left
+    this.itemInfo.offsetY = mousemoveEvent.clientY - itemRect.top
+
+    /*------------- ShadowItemInfo Rect ----------------*/
+    this.shadowItemInfo = <any>getClientRect((cloneElement || fromItem.element))
+    this.shadowItemInfo.offsetTop = shadowItemRect.top - containerRect.top
+    this.shadowItemInfo.offsetRight = containerRect.right - shadowItemRect.right
+    this.shadowItemInfo.offsetLeft = shadowItemRect.left - containerRect.left
+    this.shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
+    this.shadowItemInfo.scaleMultipleX = cloneElScaleMultipleX
+    this.shadowItemInfo.scaleMultipleY = cloneElScaleMultipleY
   }
 
   /**
@@ -114,7 +130,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 受item.pos中minW,maxW 限制,不会越界container边界的宽度，正常用于响应式布局限制 cloneElement 的宽
    * */
   public get width() {
-    return Math.min(this.mousePointX, this.itemInfo.maxWidth)
+    return Math.min(this.itemInfo.offsetX, this.itemInfo.maxWidth)
   }
 
   /**
@@ -124,7 +140,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 受item.pos中minH,maxH 限制,不会越界container边界的高度，正常用于响应式布局限制 cloneElement 的高
    * */
   public get height() {
-    return Math.min(this.mousePointY, this.itemInfo.maxHeight)
+    return Math.min(this.itemInfo.offsetY, this.itemInfo.maxHeight)
   }
 
   /**
@@ -153,7 +169,7 @@ export class ItemLayoutEvent extends BaseEvent {
    * 距离right方向上最近的可调整距离(包含item的width)
    * */
   get spaceRight(): number {
-    const manager = this.layoutManager
+    const manager = this.container.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
       ...this.fromItem.pos,
       w: this.col - this.fromItem.pos.x + 1
@@ -164,14 +180,14 @@ export class ItemLayoutEvent extends BaseEvent {
       if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
     })
     let spaceRight = minOffsetRight - this.fromItem.offsetLeft()
-    return isFinite(spaceRight) ? spaceRight : this.offsetRight
+    return isFinite(spaceRight) ? spaceRight : this.itemInfo.offsetRight + this.itemInfo.width
   }
 
   /**
    * 距离bottom方向上最近的最大可调整距离(包含item的height)
    * */
   get spaceBottom(): number {
-    const manager = this.layoutManager
+    const manager = this.container.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.items, {
       ...this.fromItem.pos,
       h: this.row - this.fromItem.pos.y + 1
@@ -183,7 +199,7 @@ export class ItemLayoutEvent extends BaseEvent {
       if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
     })
     let spaceBottom = minOffsetBottom - this.fromItem.offsetTop()
-    return isFinite(spaceBottom) ? spaceBottom : this.offsetBottom
+    return isFinite(spaceBottom) ? spaceBottom : this.itemInfo.offsetBottom + this.itemInfo.height
   }
 
   get spaceW(): number {
