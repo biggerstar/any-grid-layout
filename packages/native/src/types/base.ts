@@ -144,7 +144,7 @@ export type CustomEventOptions = {
   updateLayout?(ev: ItemLayoutEvent): void,
 
   /**
-   * 更新克隆元素的尺寸,位置，可以用于跨容器移动同步适配item尺寸
+   * 更新克隆元素的尺寸,移动位置，可以用于跨容器移动同步适配item尺寸
    * */
   updateCloneElementStyle?(ev: CloneElementStyleEvent): void,
 
@@ -195,36 +195,28 @@ export type CustomEventOptions = {
   /** item 尺寸变化 时响应的事件,只有位置变化才触发 */
   itemSizeChanged?(ev: ItemPosChangeEvent): void,
 
-  //------------------drag----------------------
+  //-----------------拖动开始和结束事件-----------------------
   dragging?(ev: ItemDragEvent): void,
   dragend?(ev: ItemDragEvent): void,
+
+  //-----------------拖动到十字线方向的事件---------------------
   dragToTop?(ev: ItemDragEvent): void,
   dragToLeft?(ev: ItemDragEvent): void,
   dragToBottom?(ev: ItemDragEvent): void,
   dragToRight?(ev: ItemDragEvent): void,
-  dragToLeftTop?(ev: ItemDragEvent): void,
-  dragToRightTop?(ev: ItemDragEvent): void,
-  dragToRightBottom?(ev: ItemDragEvent): void,
-  dragToLeftBottom?(ev: ItemDragEvent): void,
-  dragOuterTop?(ev: ItemDragEvent): void,
-  dragOuterRight?(ev: ItemDragEvent): void,
-  dragOuterBottom?(ev: ItemDragEvent): void,
-  dragOuterLeft?(ev: ItemDragEvent): void,
   dragToBlank?(ev: ItemDragEvent): void,
 
-  //-----------------resize---------------------
+  //---------------resize开始和结束事件-------------------
   resizing?(ev: ItemResizeEvent): void,
   resized?(ev: ItemResizeEvent): void,
+
+  //-------------resize到十字线方向的事件------------------
   resizeToTop?(ev: ItemResizeEvent): void,
   resizeToRight?(ev: ItemResizeEvent): void,
   resizeToBottom?(ev: ItemResizeEvent): void,
   resizeToLeft?(ev: ItemResizeEvent): void,
-  resizeOuterTop?(ev: ItemResizeEvent): void,
-  resizeOuterRight?(ev: ItemResizeEvent): void,
-  resizeOuterBottom?(ev: ItemResizeEvent): void,
-  resizeOuterLeft?(ev: ItemResizeEvent): void,
 
-  //------------------close---------------------
+  //------------------close事件---------------------
   closing?(ev: ItemLayoutEvent): void,
   closed?(ev: ItemLayoutEvent): void,
 

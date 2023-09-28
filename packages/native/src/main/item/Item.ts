@@ -234,7 +234,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
    * */
-  public offsetLeft() {
+  public offsetLeft(): number {
     const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] * 2 : 0
     return ((this.pos.x - 1) * this.size[0]) + marginWidth
   }
@@ -242,7 +242,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
    * */
-  public offsetTop() {
+  public offsetTop(): number {
     const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] * 2 : 0
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
   }
@@ -251,7 +251,7 @@ export class Item extends ItemGeneralImpl {
    * @param w 栅格单位
    * @return {number}  获取该Item 当前的宽度
    * */
-  public nowWidth = (w?: number) => {
+  public nowWidth(w?: number): number {
     const nowW = w ? w : this.pos.w
     const marginWidth = nowW > 1 ? (nowW - 1) * this.margin[0] * 2 : 0
     return (nowW * this.size[0]) + marginWidth
@@ -261,7 +261,7 @@ export class Item extends ItemGeneralImpl {
    * @param h 栅格单位
    * @return {number}  获取该Item 当前的高度
    * */
-  public nowHeight = (h?: number) => {
+  public nowHeight(h?: number): number {
     const nowH = h ? h : this.pos.h
     const marginHeight = nowH > 1 ? (nowH - 1) * this.margin[1] * 2 : 0
     return (nowH * this.size[1]) + marginHeight
@@ -270,7 +270,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return  {number}  根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
    * */
-  public minWidth() {
+  public minWidth(): number {
     const marginWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * this.margin[0] * 2 : 0
     return (this.pos.minW * this.size[0]) + marginWidth
   }
@@ -278,7 +278,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
    * */
-  public minHeight = () => {
+  public minHeight(): number {
     const marginHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * this.margin[1] * 2 : 0
     return (this.pos.minH * this.size[1]) + marginHeight
   }
@@ -286,7 +286,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
-  public maxWidth() {
+  public maxWidth(): number {
     if (!isFinite(this.pos.maxW)) return Infinity
     return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0] * 2
   }
@@ -294,7 +294,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
-  public maxHeight = () => {
+  public maxHeight(): number {
     if (!isFinite(this.pos.maxH)) return Infinity
     return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1] * 2
   }

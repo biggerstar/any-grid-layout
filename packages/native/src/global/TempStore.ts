@@ -60,6 +60,11 @@ class TempStore {
   preventResizing: boolean | null
   cloneElScaleMultipleX: number | null  // 克隆元素X方向的放大倍数
   cloneElScaleMultipleY: number | null  // 克隆元素Y方向的放大倍数
+  mousedownResizeStartX: number | null  // 鼠标resize的时候克隆元素固定距离左上角的X位置
+  mousedownResizeStartY: number | null  // 鼠标resize的时候克隆元素固定距离左上角的Y位置
 }
 
 export const tempStore: TempStore = new TempStore()
+
+
+

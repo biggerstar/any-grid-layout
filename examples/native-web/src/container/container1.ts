@@ -14,10 +14,10 @@ const container1 = new Container({
   layouts: {
     from: '来自layout',
     // exchange: false,
-    autoGrow: true,
+    // autoGrow: true,
     exchange: true,
     direction: 'column-reverse',
-    align: 'start',
+    align: 'end',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

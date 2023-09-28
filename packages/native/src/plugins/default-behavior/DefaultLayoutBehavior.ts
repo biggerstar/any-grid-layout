@@ -8,11 +8,12 @@ import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent} from "@/plugins";
+import {GridPlugin} from "@/types";
 
 /**
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
  * */
-export const DefaultLayoutBehavior = definePlugin({
+export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   /**
    * 用于作为主布局算法时，「初次加载」Item到容器时初始化，用于设置容器的大小或其他操作
    * 内置已经实现，支持用户阻止init默认行为自行实现
@@ -97,60 +98,14 @@ export const DefaultLayoutBehavior = definePlugin({
     ev.tryMoveToNearBlank()
   },
 
-  /**
-   * 在container外围X轴left方向移动的事件
-   * */
-  dragOuterLeft(_: ItemDragEvent) {
+  resizing(ev: ItemResizeEvent) {
+    const {fromItem} = tempStore
+    if (!fromItem) return
+    ev.patchResizeDirection()
+    checkItemSizeHasChanged(ev)
   },
 
-  /**
-   * 在container外围X轴right方向移动的事件
-   * */
-  dragOuterRight(_: ItemDragEvent) {
-  },
-
-  /**
-   * 在container外围Y轴top方向移动的事件
-   * */
-  dragOuterTop(_: ItemDragEvent) {
-  },
-
-  /**
-   * 在container外围Y轴bottom方向移动的事件
-   * */
-  dragOuterBottom(_: ItemDragEvent) {
-  },
-
-  dragToLeftTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearBlank()
-  },
-
-  dragToLeftBottom(ev: ItemDragEvent) {
-    ev.tryMoveToNearBlank()
-  },
-
-  dragToRightTop(ev: ItemDragEvent) {
-    ev.tryMoveToNearBlank()
-  },
-
-  dragToRightBottom(ev: ItemDragEvent) {
-    ev.tryMoveToNearBlank()
-  },
-
-  resizeOuterTop() {
-    // console.log('resizeOuterTop')
-  },
-
-  resizeOuterRight() {
-    // console.log('resizeOuterRight')
-  },
-
-  resizeOuterBottom() {
-    // console.log('resizeOuterBottom')
-  },
-
-  resizeOuterLeft() {
-    // console.log('resizeOuterLeft')
+  resized(_: ItemResizeEvent) {
   },
 
   resizeToTop(ev: ItemResizeEvent) {
@@ -197,17 +152,7 @@ export const DefaultLayoutBehavior = definePlugin({
     ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.cloneElRect.width)})
   },
 
-  resizing(ev: ItemResizeEvent) {
-    const {fromItem} = tempStore
-    if (!fromItem) return
-    ev.patchResizeDirection()
-    checkItemSizeHasChanged(ev)
-  },
-
-  resized(_: ItemResizeEvent) {
-  },
-
-  itemSizeChange() {
+  itemSizeChanged() {
     // console.log('itemSizeChange')
   },
 

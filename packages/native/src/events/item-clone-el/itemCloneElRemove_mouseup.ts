@@ -38,7 +38,13 @@ export function itemCloneElRemove_mouseup(_) {
           }, gridCloneEl)
         }, delayUpdateAnimationTime)
       } else if (isResizing) {
-        updateStyle(baseStyle, gridCloneEl)
+        setTimeout(() => {
+          updateStyle({
+            ...baseStyle,
+            left: `${fromItem.offsetLeft()}px`,
+            top: `${fromItem.offsetTop()}px`
+          }, gridCloneEl)
+        })
       }
     }
 

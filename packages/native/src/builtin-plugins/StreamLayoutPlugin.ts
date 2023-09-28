@@ -38,19 +38,19 @@ export const StreamLayoutPlugin = definePlugin({
     directUpdateLayout(ev)
   },
 
-  dragOuterLeft(ev: ItemDragEvent) {
+  dragToOuterLeft(ev: ItemDragEvent) {
     moveToIndexForItems(ev)
   },
 
-  dragOuterRight(ev: ItemDragEvent) {
+  dragToOuterRight(ev: ItemDragEvent) {
     moveToIndexForItems(ev)
   },
 
-  dragOuterTop(ev: ItemDragEvent) {
+  dragToOuterTop(ev: ItemDragEvent) {
     moveToIndexForItems(ev)
   },
 
-  dragOuterBottom(ev: ItemDragEvent) {
+  dragToOuterBottom(ev: ItemDragEvent) {
     moveToIndexForItems(ev)
   },
 
@@ -91,19 +91,19 @@ export const StreamLayoutPlugin = definePlugin({
     directUpdateLayout(ev)
   },
 
-  resizeOuterTop(ev: ItemResizeEvent) {
+  resizeToOuterTop(ev: ItemResizeEvent) {
     updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterRight(ev: ItemResizeEvent) {
+  resizeToOuterRight(ev: ItemResizeEvent) {
     updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterBottom(ev: ItemResizeEvent) {
+  resizeToOuterBottom(ev: ItemResizeEvent) {
     updateResponsiveResizeLayout(ev)
   },
 
-  resizeOuterLeft(ev: ItemResizeEvent) {
+  resizeToOuterLeft(ev: ItemResizeEvent) {
     updateResponsiveResizeLayout(ev)
   },
 

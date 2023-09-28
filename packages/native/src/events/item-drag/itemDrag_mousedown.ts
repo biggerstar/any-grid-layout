@@ -43,11 +43,6 @@ export function itemDrag_mousedown(ev) {
     }
     if (!isAllowDrag) return
   }
-  const fromEl = fromItem.element.getBoundingClientRect()
-  tempStore.mousedownItemWidth = fromItem.nowWidth()
-  tempStore.mousedownItemHeight = fromItem.nowHeight()
-  tempStore.mousedownItemOffsetLeftProportion = (ev.pageX - (fromEl.left + window.scrollX)) / tempStore.mousedownItemWidth
-  tempStore.mousedownItemOffsetTopProportion = (ev.pageY - (fromEl.top + window.scrollY)) / tempStore.mousedownItemHeight
 }
 
 

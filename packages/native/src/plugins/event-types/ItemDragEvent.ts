@@ -8,24 +8,29 @@ import {tempStore} from "@/global";
 
 export class ItemDragEvent extends ItemLayoutEvent {
   public readonly toItem: Item | null
-  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置
-  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置
-  public toPos: CustomItemPos
-  public toGridItem: Item
-
+  public readonly toPos: CustomItemPos
+  public readonly inOuter: boolean   // 鼠标位置是否在容器外部
+  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置,和resize解释一样
+  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置,和resize解释一样
+  public readonly offsetGridX: number // 当前拖动位置相对源item偏移，限制在容器内
+  public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
   constructor(opt) {
     super(opt);
-    this.toItem = tempStore.toItem
+    const {toItem, toContainer, fromItem} = tempStore
+    this.toItem = toItem
     const cloneElStartX = this.gridX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1
     const cloneElStartY = this.gridY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1
-    this.startX = Math.min(Math.max(1, cloneElStartX), this.col)
-    this.startY = Math.min(Math.max(1, cloneElStartY), this.row)
+    this.startX = Math.min(Math.max(1, cloneElStartX), this.col - fromItem!.pos.w + 1)
+    this.startY = Math.min(Math.max(1, cloneElStartY), this.row - fromItem!.pos.h + 1)
     this.toPos = {
       w: this.fromItem.pos.w,
       h: this.fromItem.pos.h,
       x: this.startX,
       y: this.startY,
     }
+    this.inOuter = !!(!toContainer && fromItem)
+    this.offsetGridX = this.startX - fromItem!.pos.x
+    this.offsetGridY = this.startY - fromItem!.pos.y
   }
 
   /**
@@ -75,11 +80,12 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: this.relativeX - this.container.pxToW(this.cloneElOffsetMouseLeft) + 1,
-        y: this.relativeY - this.container.pxToH(this.cloneElOffsetMouseTop) + 1,
+        x: this.startX,
+        y: this.startY,
       }
     const securityPos = createMovableRange(targetItem, targetPos)
-    // console.log(securityPos)
+    if (fromItem && securityPos.x === fromItem.pos.x && securityPos.y === fromItem.pos.y) return true // 如果位置不变则忽略
+    // console.log(securityPos, {...targetItem.pos})
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
@@ -166,30 +172,24 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public patchDragDirection() {
     let {
       fromItem,
-      toContainer
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.startX - fromItem.pos.x   // 当前鼠标cloneEl位于grid X相对源item偏移
-    const Y = this.startY - fromItem.pos.y
-    const inOuterContainer = !toContainer && fromItem
-    // console.log(X,Y);
-    // console.log(x, y);
-
-    if (!this.layoutManager.findItemFromXY(this.items, this.startX, this.startY)) {
+    const X = this.offsetGridX
+    const Y = this.offsetGridY
+    if (X === 0 && Y === 0) return
+    // console.log(X, Y, this.inOuter)
+    const foundItem = this.layoutManager.findItemFromXY(this.items, this.gridX, this.gridY)  // 必须要startX,startY
+    if (!this.inOuter && (!foundItem || foundItem === fromItem)) {
       bus.emit('dragToBlank')
     }
-    if (!inOuterContainer && X !== 0 && Y !== 0) {   // 只有在容器内才触发对角线移动事件
-      if (X > 0 && Y > 0) bus.emit('dragToRightBottom')
-      else if (X < 0 && Y > 0) bus.emit('dragToLeftBottom')
-      else if (X < 0 && Y < 0) bus.emit('dragToLeftTop')
-      else if (X > 0 && Y < 0) bus.emit('dragToRightTop')
-    } else if (X !== 0) {
-      if (X < 0) bus.emit("dragToLeft") || inOuterContainer && bus.emit('dragOuterLeft')
-      if (X > 0) bus.emit("dragToRight") || inOuterContainer && bus.emit('dragOuterRight')
-    } else if (Y !== 0) {
-      if (Y < 0) bus.emit("dragToTop") || inOuterContainer && bus.emit('dragOuterTop')
-      if (Y > 0) bus.emit("dragToBottom") || inOuterContainer && bus.emit('dragOuterBottom')
+    if (X !== 0) {
+      if (X < 0) bus.emit("dragToLeft")
+      else if (X > 0) bus.emit("dragToRight")
+    }
+    if (Y !== 0) {
+      if (Y < 0) bus.emit("dragToTop")
+      else if (Y > 0) bus.emit("dragToBottom")
     }
   }
 }

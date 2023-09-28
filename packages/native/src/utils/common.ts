@@ -7,7 +7,7 @@ import {tempStore} from "@/global";
 /**
  * 获取某个item在container中(默认设定是在空白容器)的安全可移动的范围，该范围不会超出容器
  * */
-export function createMovableRange(fromItem: Item, pos: CustomItemPos) {
+export function createMovableRange(fromItem: Item, pos: CustomItemPos): CustomItemPos {
   const container = fromItem.container
   let {x, y, w, h} = pos
   const maxX = container.getConfig('col') - w + 1

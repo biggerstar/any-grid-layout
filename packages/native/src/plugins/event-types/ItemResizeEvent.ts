@@ -10,13 +10,16 @@ import {tempStore} from "@/global";
 export class ItemResizeEvent extends ItemLayoutEvent {
   public readonly w: number // 当前的占用网格的宽
   public readonly h: number // 当前的占用网格的宽
-
+  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置,和drag解释一样
+  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置,和drag解释一样
   constructor(...args) {
     super(...args);
     const {
       isResizing,
       isLeftMousedown,
       fromItem,
+      mousedownResizeStartX,
+      mousedownResizeStartY,
       mousemoveEvent: resizeEv,
     } = tempStore
     if (!isResizing || !isLeftMousedown) return
@@ -25,10 +28,12 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     const curH = this.container.pxToH(this.mousePointY)
     this.w = curW < 1 ? 1 : curW
     this.h = curH < 1 ? 1 : curH
+    this.startX = <number>mousedownResizeStartX
+    this.startY = <number>mousedownResizeStartY
   }
 
   /**
-   * 派发resize
+   * 派发判定resize方向
    * */
   public patchResizeDirection() {
     let {
@@ -38,20 +43,16 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     if (!fromItem || !resizeEv) return
     const bus = this.container.bus
     if (this.mousePointX > this.lastMousePointX) {
-      bus.emit('resizeToRight')   // resizeOuterRight 的同时 resizeToRight也会触发
-      if (this.mousePointX > this.offsetRight) bus.emit('resizeOuterRight')
+      bus.emit('resizeToRight')
     }
     if (this.mousePointX < this.lastMousePointX) {
       bus.emit('resizeToLeft')
-      if (this.mousePointX < 0 && Math.abs(this.mousePointX) > this.offsetLeft) bus.emit('resizeOuterLeft')
     }
     if (this.mousePointY > this.lastMousePointY) {
       bus.emit('resizeToBottom')
-      if (this.mousePointY > this.offsetBottom) bus.emit('resizeOuterBottom')
     }
     if (this.mousePointY < this.lastMousePointY) {
       bus.emit('resizeToTop')
-      if (this.mousePointY < 0 && Math.abs(this.mousePointY) > this.offsetTop) bus.emit('resizeOuterTop')
     }
   }
 
@@ -83,10 +84,10 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     const manager = container.layoutManager
     const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
     if (!isBlank) {
-      manager.mark(targetItem.pos,targetItem)  // 如果失败，标记回去
+      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false
     }
-    manager.mark(targetPos,targetItem)
+    manager.mark(targetPos, targetItem)
     targetItem.pos.w = targetPos.w
     targetItem.pos.h = targetPos.h
     targetItem.updateItemLayout()

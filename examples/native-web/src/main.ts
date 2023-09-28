@@ -3,13 +3,14 @@ import {
   BaseEvent,
   CloneElementStyleEvent,
   ContainerSizeChangeEvent,
-  definePlugin, EachMatrixEvent,
+  createResponsiveLayoutPlugin,
+  definePlugin,
   ItemDragEvent,
   ItemExchangeEvent,
   ItemLayoutEvent,
   ItemPosChangeEvent,
   ItemResizeEvent,
-  ResponsiveLayoutPlugin,
+  MatrixEvent,
   ThrowMessageEvent,
   updateStyle,
 } from '@biggerstar/layout'
@@ -31,7 +32,7 @@ const plugin = definePlugin({
   warn(ev: ThrowMessageEvent) {
     console.warn(ev.message)
   },
-  updateCloneElementSize(ev: CloneElementStyleEvent) {
+  updateCloneElementStyle(ev: CloneElementStyleEvent) {
     // ev.prevent()
   },
   //-----------------container------------------
@@ -65,10 +66,10 @@ const plugin = definePlugin({
   itemUnmounted(ev: BaseEvent) {
     // console.log('itemUnmounted', ev.item)
   },
-  itemSizeChange(ev: ItemPosChangeEvent) {
+  itemSizeChanged(ev: ItemPosChangeEvent) {
     // console.log(ev);
   },
-  itemPositionChange(ev: ItemPosChangeEvent) {
+  itemPositionChanged(ev: ItemPosChangeEvent) {
     // console.log(ev);
   },
 
@@ -87,24 +88,6 @@ const plugin = definePlugin({
     // ev.prevent()
   },
   dragToLeft(ev: ItemDragEvent) {
-  },
-  dragToLeftTop(ev: ItemDragEvent) {
-  },
-  dragToRightTop(ev: ItemDragEvent) {
-  },
-  dragToRightBottom(ev: ItemDragEvent) {
-    // ev.prevent()
-  },
-  dragToLeftBottom(ev: ItemDragEvent) {
-    // ev.prevent()
-  },
-  dragOuterTop(ev: ItemDragEvent) {
-  },
-  dragOuterRight(ev: ItemDragEvent) {
-  },
-  dragOuterBottom(ev: ItemDragEvent) {
-  },
-  dragOuterLeft(ev: ItemDragEvent) {
   },
 
   //--------------resize-----------------
@@ -127,15 +110,6 @@ const plugin = definePlugin({
   resizeToLeft(ev: ItemResizeEvent) {
     // ev.prevent()
   },
-  resizeOuterTop(ev: ItemResizeEvent) {
-  },
-  resizeOuterRight(ev: ItemResizeEvent) {
-  },
-  resizeOuterBottom(ev: ItemResizeEvent) {
-  },
-  resizeOuterLeft(ev: ItemResizeEvent) {
-  },
-
   //--------------close------------------
   closing(ev: ItemLayoutEvent) {
   },
@@ -143,19 +117,16 @@ const plugin = definePlugin({
   },
 
   //-------------cross-container-exchange-----------
-  exchange(ev: ItemExchangeEvent) {
-    // ev.prevent()
-  },
   exchangeProvide(ev: ItemExchangeEvent) {
   },
   exchangeProcess(ev: ItemExchangeEvent) {
   },
   exchangeReceive(ev: ItemExchangeEvent) {
   },
-  each(ev: EachMatrixEvent) {
+  each(ev: MatrixEvent) {
     // ev.prevent()
   },
-  flip(ev: EachMatrixEvent) {
+  flip(ev: MatrixEvent) {
     // ev.prevent()
   }
 })
@@ -175,14 +146,14 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(ResponsiveLayoutPlugin)
+  .use(createResponsiveLayoutPlugin())
 
 container2
   .use(plugin)
 
 container3
   .use(plugin)
-// .use(StreamLayoutPlugin)
+// .use(createStreamLayoutPlugin())
 
 
 container1.mount()
