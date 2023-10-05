@@ -6,7 +6,7 @@
 import {Container, Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {tempStore} from "@/global";
-import {getClientRect} from "@/utils";
+import {getClientRect, SingleThrottle} from "@/utils";
 
 
 /**
@@ -30,6 +30,8 @@ export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>): La
   }
 }
 
+const singleRectThrottle = new SingleThrottle<{ rect: DOMRect }>()
+
 /**
  * 计算当前鼠标相对container的位置
  * */
@@ -42,7 +44,8 @@ export function analysisCurPositionInfo(container: Container): {
   const {mousemoveEvent} = tempStore
   if (!mousemoveEvent) return
   const result: any = {}
-  const {left: containerLeft, top: containerTop} = getClientRect(container.contentElement)
+  singleRectThrottle.do(() => singleRectThrottle.setCache("rect", getClientRect(container.contentElement, true)), 1024)
+  const {left: containerLeft, top: containerTop} = singleRectThrottle.getCache("rect")
   const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
   const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
   const margin = container.getConfig('margin')

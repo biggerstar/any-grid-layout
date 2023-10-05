@@ -1,10 +1,10 @@
 .grid-container {
   box-sizing: border-box;
+  display: inline-block;
   margin: 0 auto;
   height: auto;
   width: 100%;
   position: relative;
-  display: block;
   /*禁止用户选择文本或元素*/
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -13,10 +13,10 @@
 }
 
 .grid-item {
+  display: inline-block;
+  position: absolute;
   height: 100%;
   width: 100%;
-  display: block;
-  position: absolute;
   /*苹果禁用touch提示  */
   -webkit-touch-callout: none;
   -ms-touch-action: none;

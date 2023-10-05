@@ -7,6 +7,7 @@ import {
   getItemFromElement,
   merge,
   parseItemFromPrototypeChain,
+  SingleThrottle,
   throttle
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
@@ -17,9 +18,14 @@ import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
-import {updateStyle} from "@/utils";
+import {getContainerConfigs, updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
 import {ContainerGeneralImpl} from "@/main";
+
+
+const containerThrottle = new SingleThrottle<{ rect: DOMRect }>()
+const contentBoxThrottle = new SingleThrottle<{ rect: DOMRect }>()
+
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -172,14 +178,14 @@ export class Container {
    * 是否是自动增长col方向的容器
    * */
   public get autoGrowCol() {
-    return !this._getConfig('col')
+    return !this._getConfig('col') && this._getConfig("autoGrow").horizontal
   }
 
   /**
    * 是否是自动增长row方向的容器
    * */
   public get autoGrowRow() {
-    return !this._getConfig('row')
+    return !this._getConfig('row') && this._getConfig("autoGrow").vertical
   }
 
   private _getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
@@ -343,8 +349,9 @@ export class Container {
    * */
   private _trySwitchLayout(): void {
     const useLayout = this.useLayout
-    if (!this.getConfig("px") || !useLayout.px) return
-    if (this.getConfig("px") === useLayout.px) return
+    const px = this._getConfig("px")
+    if (!px || !useLayout.px) return
+    if (px === useLayout.px) return
     if (this.platform === 'native') {
       this.unmount()
       this.clear();
@@ -377,40 +384,46 @@ export class Container {
   /** 计算当前Items所占用的Container宽度  */
   public nowWidth(nowCol?: number): number {
     nowCol = nowCol || this.getConfig("col")
-    const marginWidth = nowCol > 1 ? (nowCol - 1) * this.getConfig("margin")[0] * 2 : 0
-    return (nowCol * this.getConfig("size")[0]) + marginWidth
+    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    const marginWidth = nowCol > 1 ? (nowCol - 1) * margin[0] * 2 : 0
+    return (nowCol * size[0]) + marginWidth
   }
 
   /** 计算当前Items所占用的Container高度   */
   public nowHeight(nowRow?: number): number {
     nowRow = nowRow || this.getConfig("row")
-    const marginHeight = nowRow > 1 ? (nowRow - 1) * this.getConfig("margin")[1] * 2 : 0
-    return (nowRow * this.getConfig("size")[1]) + marginHeight
+    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    const marginHeight = nowRow > 1 ? (nowRow - 1) * margin[1] * 2 : 0
+    return (nowRow * size[1]) + marginHeight
   }
 
   /** 获取外容器可视范围可容纳的col  */
   public get containerW(): number {
-    return Math.floor(getClientRect(this.element).width / (this.getConfig("size")[0] + this.getConfig("margin")[0])) || 1
+    containerThrottle.do(() => containerThrottle.setCache("rect", getClientRect(this.element, true)), 1024)
+    return this.pxToW(containerThrottle.getCache("rect").width, {floor: true})
   }
 
   /** 获取外容器可视范围可容纳的row */
   public get containerH(): number {
-    return Math.floor(getClientRect(this.element).height / (this.getConfig("size")[1] + this.getConfig("margin")[1])) || 1
+    containerThrottle.do(() => containerThrottle.setCache("rect", getClientRect(this.element, true)), 1024)
+    return this.pxToH(containerThrottle.getCache("rect").height, {floor: true})
   }
 
   /** 获取內容器可视范围可容纳的col  */
   public get contentBoxW(): number {
-    return Math.floor(getClientRect(this.contentElement).width / (this.getConfig("size")[0] + this.getConfig("margin")[0]))
+    contentBoxThrottle.do(() => contentBoxThrottle.setCache("rect", getClientRect(this.contentElement, true)), 1024)
+    return this.pxToW(contentBoxThrottle.getCache("rect").width, {floor: true})
   }
 
   /** 获取内容器可视范围可容纳的row */
   public get contentBoxH(): number {
-    return Math.floor(getClientRect(this.contentElement).height / (this.getConfig("size")[1] + this.getConfig("margin")[1]))
+    contentBoxThrottle.do(() => contentBoxThrottle.setCache("rect", getClientRect(this.contentElement, true)), 1024)
+    return this.pxToH(contentBoxThrottle.getCache("rect").height, {floor: true})
   }
 
   private _init() {
     this.initLayoutInfo()
-    let items = this.getConfig('items')
+    let items = getContainerConfigs(this, 'items')
     items.forEach((item) => this.addItem(item, {syncCustomItems: false}))
   }
 
@@ -485,22 +498,46 @@ export class Container {
   }
 
   /**
+   * @param pxNum
+   * @param opt
+   * @param opt.floor 是否往下取整
+   * @param opt.keepSymbol  是否保持符号，比如传入pxNum是负数，返回也是负数
    * @return {number} px像素转栅格单位 w
    * */
-  public pxToW = (pxNum: number) => {
-    const margin = this.getConfig('margin')
-    const size = this.getConfig('size')
-    if (size[0] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
+  public pxToW = (pxNum: number, {floor, keepSymbol}
+    : { floor?: boolean, keepSymbol?: boolean }
+    = {
+    floor: false,
+    keepSymbol: false
+  }) => {
+    const toInteger = floor ? Math.floor : Math.ceil
+    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    let res
+    if (size[0] >= Math.abs(pxNum)) res = 1
+    else res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
+    if (keepSymbol) res = res * Math.sign(pxNum)
+    return res
   }
 
   /**
+   * @param pxNum
+   * @param opt
+   * @param opt.floor 是否往下取整
+   * @param opt.keepSymbol  是否保持符号，比如传入pxNum是负数，返回也是负数
    * @return {number} px像素转栅格单位 h
    * */
-  public pxToH = (pxNum: number) => {
-    const margin = this.getConfig('margin')
-    const size = this.getConfig('size')
-    if (size[1] >= Math.abs(pxNum)) return 1
-    else return Math.ceil(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
+  public pxToH = (pxNum: number, {floor, keepSymbol}
+    : { floor?: boolean, keepSymbol?: boolean }
+    = {
+    floor: false,
+    keepSymbol: false
+  }) => {
+    const toInteger = floor ? Math.floor : Math.ceil
+    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    let res
+    if (size[1] >= Math.abs(pxNum)) res = 1
+    else res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
+    if (keepSymbol) res = res * Math.sign(pxNum)
+    return res
   }
 }

@@ -3,6 +3,8 @@ import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {tempStore} from "@/global";
 import {isNumber} from "is-what";
+import {clamp} from "@/utils";
+import {updateContainerSize} from "@/plugins/common";
 
 /**
  * Item resize事件对象
@@ -11,10 +13,11 @@ import {isNumber} from "is-what";
 export class ItemResizeEvent extends ItemLayoutEvent {
   public readonly w: number // 当前的占用网格的宽
   public readonly h: number // 当前的占用网格的宽
-  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置,和drag解释一样
-  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置,和drag解释一样
-  constructor(...args) {
-    super(...args);
+  public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角的限制在容器内的相对栅格X位置,和drag解释一样
+  public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角的限制在容器内的相对栅格Y位置,和drag解释一样
+
+  constructor(opt) {
+    super(opt);
     const {
       isResizing,
       isLeftMousedown,
@@ -22,15 +25,13 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       cloneElement,
       mousedownResizeStartX,
       mousedownResizeStartY,
-      mousemoveEvent: resizeEv,
+      mousemoveEvent,
     } = tempStore
-    if (!fromItem || !resizeEv || !isResizing || !isLeftMousedown || !cloneElement) return
-    const curW = this.container.pxToW(this.itemInfo.offsetX) // 这里非精确计算，差了多col时一个margin的距离，影响不大
-    const curH = this.container.pxToH(this.itemInfo.offsetY)
-    this.w = curW < 1 ? 1 : curW
-    this.h = curH < 1 ? 1 : curH
-    this.startX = <number>mousedownResizeStartX
-    this.startY = <number>mousedownResizeStartY
+    if (!fromItem || !mousemoveEvent || !isResizing || !isLeftMousedown || !cloneElement) return
+    this.w = clamp(this.container.pxToW(this.itemInfo.offsetX, {keepSymbol: true}), 1, Infinity)
+    this.h = clamp(this.container.pxToH(this.itemInfo.offsetY, {keepSymbol: true}), 1, Infinity)
+    this.startGridX = <number>mousedownResizeStartX
+    this.startGridY = <number>mousedownResizeStartY
   }
 
   /**
@@ -82,13 +83,26 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        w: Math.min(this.w, this.spaceW),
-        h: Math.min(this.h, this.spaceH),
+        w: this.w,
+        h: this.h,
       }
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
-    const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
+    // if (targetPos.x + targetPos.w - 1 >= manager.col) {   // 若col溢出当前容器则自动调整
+    //   targetPos.w = targetItem.pos.w = manager.col - targetPos.x + 1
+    // }
+    // if (targetPos.y + targetPos.h - 1 >= manager.row) {   // 若row溢出当前容器则自动调整
+    //   targetPos.h = targetItem.pos.h = manager.row - targetPos.y + 1
+    // }
+
+    manager.unmark(targetItem.pos)
+    manager.expandLineForPos(targetPos)
+    // if(ev.inOuter && w >=4)debugger
+    // console.log(findPos)
+
+    updateContainerSize()
+    const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位
     if (!isBlank) {
       manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false

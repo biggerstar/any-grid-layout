@@ -19,6 +19,20 @@ export class LayoutManager extends Finder {
     return this._layoutMatrix.length || 1
   }
 
+  /**
+   * 最小的矩阵尺寸是container容器盒子的尺寸
+   * */
+  public get minCol(): number {
+    return this.container.containerW
+  }
+
+  /**
+   * 最小的矩阵尺寸是container容器盒子的尺寸
+   * */
+  public get minRow(): number {
+    return this.container.containerH
+  }
+
   protected _layoutMatrix = []   // 布局矩阵
   protected place = null  // Infinity   // Symbol('place')  // 空位符号，所有非0都是被占位
 
@@ -150,45 +164,116 @@ export class LayoutManager extends Finder {
   }
 
   /**
-   * @param {Number} num  添加一行
+   * @param {Number} num  添加或删除num列
+   * @param force  遇到num为负数时是否强制删除某一行
    * */
-  public addRow = (num: number = 1) => {
-    for (let i = 0; num && i < num; i++) {
-      this._layoutMatrix.push(new Array(this.col).fill(this.place))
+  public changeCol(num: number, force: boolean = false) {
+    const isSlice = num && num < 0   // 是否开启删除
+    if (isSlice) num = Math.max(this.minCol - this.col, num)   // 负数，限制最少为容器col宽度
+    const matrix = this._layoutMatrix
+    const row = this.row
+    let maxColindex = this.col - 1
+
+    const removeCol = () => {  // 删除一整列
+      for (let i = 0; i < row; i++) {
+        matrix[i].pop()
+      }
     }
+
+    const addCol = () => {  // 添加一整列
+      for (let i = 0; i < row; i++) {
+        matrix[i].push(this.place)
+      }
+    }
+    const hasLastColItemEmpty = () => {  // 检查列末是否无任何占用
+      let isEmpty = true
+      for (let i = 0; i < row; i++) {
+        const line: any[] = matrix[i]
+        // console.log(line.length)
+        if (line[line.length - 1] !== this.place) {
+          isEmpty = false
+          break
+        }
+      }
+      return isEmpty
+    }
+
+    for (let j = maxColindex; num && j > maxColindex - Math.abs(num); j--) {
+      /* 增加一行操作 */
+      if (!isSlice) {
+        addCol()    // 添加的num为整数则添加一列
+        continue
+      }
+      /* 删除一行操作 */
+      if (force) removeCol()   // 如果为force直接删除一列
+      else if (hasLastColItemEmpty()) removeCol()
+    }
+    // console.log(matrix[0].length);
+
   }
 
   /**
-   * @param {Number} num  添加一列
+   * @param {Number} num  添加或删除num行
+   * @param force  遇到num为负数时是否强制删除某一列
    * */
-  public addCol = (num: number = 1) => {
-    for (let i = 0; i < this._layoutMatrix.length; i++) {  // 遍历row
-      for (let j = 0; num && j < num; j++) {     // 往col添加指定num个默认值
-        this._layoutMatrix[i].push(this.place)
+  public changeRow = (num: number, force: boolean = false) => {
+    const isSlice = num && num < 0   // 是否开启删除
+    if (isSlice) num = Math.max(this.minRow - this.row, num)   // 负数，限制最少为容器row宽度
+    const matrix = this._layoutMatrix
+    for (let i = 0; num && i < Math.abs(num); i++) {
+      /* 增加一行操作 */
+      if (!isSlice) {
+        matrix.push(new Array(this.col).fill(this.place))
+        continue
+      }
+      /* 删除一行操作 */
+      if (force) matrix.pop()
+      else {
+        const line: any[] = matrix[matrix.length - 1]
+        if (line.every(node => node === this.place)) matrix.pop()    // 如果整行都为空则直接删除
+        else break
       }
     }
   }
 
   /**
-   * @param num   要拓展交叉轴end方向的行数
+   * @param pos   拓展矩阵大小到适合pos大小放置的尺寸
    * */
-  public expandLine(num: number = 1): boolean {
-    if (!this.container.getConfig("autoGrow")) return
-    this.container.bus.emit("expandLine", {
-      expandLineNumber: num
+  public expandLineForPos(pos: CustomItemPos): void {
+    this.expandLine({
+      colLen: pos.x + pos.w - 1 - this.col,
+      rowLen: pos.y + pos.h - 1 - this.row,
     })
+  }
+
+  /**
+   * @param num 要拓展的行列数
+   * */
+  public expandLine({rowLen, colLen}: { rowLen?: number, colLen?: number } = {rowLen: 0, colLen: 0}): void {
+    const oldCol = this.col
+    const oldRow = this.row
+    colLen = Math.max(this.minCol - oldCol, colLen)
+    if (colLen !== 0) this.container.bus.emit("changeColBefore", {changeLen: colLen})
+
+    rowLen = Math.max(this.minRow - oldRow, rowLen)
+    if (rowLen !== 0) this.container.bus.emit("changeRowBefore", {changeLen: rowLen})
+
+    const newCol = this.col
+    const newRow = this.row
+    if (oldCol !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - oldCol})
+    if (oldRow !== newRow) this.container.bus.emit("changeRow", {changeLen: newRow - oldRow})
+
   }
 
   /**
    * 寻找往交叉轴方向自动增长的合适pos
    * */
-  public findGrowBlank(pos: { w: number, h: number }) {
+  public findGrowBlank(pos: CustomItemPos) {
     let cont = 20   // 最多expand添加二十行供于检测
     while (cont--) {
       const found = <boolean>this.findBlank(pos)
       if (found) return found
-      this.expandLine()
-      // console.log('expandLine')
+      this.expandLineForPos(pos)
     }
     return null
   }
@@ -198,8 +283,9 @@ export class LayoutManager extends Finder {
    * @param pos
    * @return {CustomItemPos | null} 找到空位返回一个新的pos，找不到返回null
    * */
-  public findBlank(pos: { w: number, h: number }): CustomItemPos | null {
+  public findBlank(pos: CustomItemPos): CustomItemPos | null {
     let resPos = null
+    if (this.isStaticPos(pos)) return this.isBlank(pos) ? pos : null
     this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
       const tryPos = {
         w: pos.w,
@@ -241,7 +327,8 @@ export class LayoutManager extends Finder {
   public mark(pos: CustomItemPos | ItemPos, markSymbol: Item): this {
     const {w, h, x, y} = this.toMatrixPos(pos)
     this.each((curRow, curCol) => {
-      this._layoutMatrix[curRow][curCol] = markSymbol
+      const line = this._layoutMatrix[curRow]
+      if (line) line[curCol] = markSymbol
     }, {
       point1: [x, y],
       point2: [x + w - 1, y + h - 1],

@@ -260,9 +260,25 @@ export type CustomEventOptions = {
   flip?(ev: MatrixEvent): void;
 
   /**
-   * 指定在溢出的时候如何增加行，需要指定 autoGrow 配置为 true 才会触发
+   * 指定在溢出的时候如何增加列，需要指定 autoGrow 配置才会触发
    * */
-  expandLine?(ev: MatrixEvent): void;
+  changeColBefore?(ev: MatrixEvent): void;
+
+  /**
+   * 指定在溢出的时候如何增加行，需要指定 autoGrow 配置才会触发
+   * */
+
+  changeRowBefore?(ev: MatrixEvent): void;
+
+  /**
+   * changeColBefore事件中如果为矩阵对象进行列数变化，则会触发事件
+   * */
+  changeCol?(ev: MatrixEvent): void;
+
+  /**
+   * changeRowBefore事件中如果为矩阵对象进行行数变化，则会触发事件
+   * */
+  changeRow?(ev: MatrixEvent): void;
 }
 
 export type AnalysisResult = {

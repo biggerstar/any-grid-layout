@@ -2,7 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemPositionHasChanged, checkItemSizeHasChanged} from "@/plugins/common";
+import {checkItemPositionHasChanged, checkItemSizeHasChanged, updateContainerSize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
@@ -36,7 +36,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
         type: 'ContainerOverflowError',
         message: `容器溢出或者Item重叠:
         1.您可以检查一下container挂载点元素是否未设置宽或高
-        2.您可以将 autoGrow 设置为 true 来自动撑开容器
+        2.您可以将 autoGrow 设置来自动撑开容器
          `,
         from: res
       })
@@ -79,28 +79,35 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   dragend(_: ItemDragEvent) {
   },
 
+  dragend$(_: ItemDragEvent) {
+    updateContainerSize()
+  },
+
   dragToBlank(_: ItemDragEvent) {
   },
 
   dragToTop(ev: ItemDragEvent) {
+    // console.log('dragToTop')
     ev.tryMoveToNearBlank()
   },
 
   dragToBottom(ev: ItemDragEvent) {
+    // console.log('dragToBottom')
     ev.tryMoveToNearBlank()
   },
 
   dragToLeft(ev: ItemDragEvent) {
+    // console.log('dragToLeft')
     ev.tryMoveToNearBlank()
   },
 
   dragToRight(ev: ItemDragEvent) {
+    // console.log('dragToRight')
     ev.tryMoveToNearBlank()
   },
 
   resizing(ev: ItemResizeEvent) {
-    const {fromItem} = tempStore
-    if (!fromItem) return
+    if (!tempStore.fromItem) return
     ev.patchResizeDirection()
     checkItemSizeHasChanged(ev)
   },
@@ -108,15 +115,18 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   resized(_: ItemResizeEvent) {
   },
 
+  resized$(_: ItemResizeEvent) {
+    updateContainerSize()
+  },
+
   resizeToTop(ev: ItemResizeEvent) {
     // console.log('resizeToTop')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      height: `${ev.spaceHeight}px`,
-      minHeight: `${ev.itemInfo.minHeight}px`,
+      height: `${Math.min(ev.spaceInfo.clampHeight, ev.fromItem.spaceBottom())}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.shadowItemInfo.height)})
+    ev.tryChangeSize(fromItem, {h: ev.h})
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
@@ -124,10 +134,9 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      height: `${ev.spaceHeight}px`,
-      minHeight: `${ev.itemInfo.minHeight}px`,
+      height: `${Math.min(ev.spaceInfo.clampHeight, ev.fromItem.spaceBottom())}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.container.pxToH(ev.shadowItemInfo.height)})
+    ev.tryChangeSize(fromItem, {h: ev.h})
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
@@ -135,10 +144,9 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      width: `${ev.spaceWidth}px`,
-      minWidth: `${ev.itemInfo.minWidth}px`,
+      width: `${Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight())}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.shadowItemInfo.width)})
+    ev.tryChangeSize(fromItem, {w: ev.w})
   },
 
   resizeToRight(ev: ItemResizeEvent) {
@@ -146,14 +154,13 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
     updateStyle({
-      width: `${ev.spaceWidth}px`,
-      minWidth: `${ev.itemInfo.minWidth}px`,
+      width: `${Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight())}px`,
     }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.container.pxToW(ev.shadowItemInfo.width)})
+    ev.tryChangeSize(fromItem, {w: ev.w})
   },
 
   itemSizeChanged() {
-    // console.log('itemSizeChange')
+    // console.log('itemSizeChanged')
   },
 
   closing(_: ItemLayoutEvent) {
@@ -165,6 +172,10 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   },
 
   closed(_: ItemLayoutEvent) {
+  },
+
+  closed$(_: ItemLayoutEvent) {
+    updateContainerSize()
   },
 
   /**

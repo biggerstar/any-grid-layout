@@ -55,6 +55,10 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
  * */
 export const updateLayout: Function = throttle(directUpdateLayout, 46)
 
-
-
+/**
+ * 更新适合当前容器的容器大小
+ * */
+export function updateContainerSize() {
+  tempStore.fromContainer?.updateContainerSizeStyle?.()
+}
 

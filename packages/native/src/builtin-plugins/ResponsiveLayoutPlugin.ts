@@ -4,11 +4,11 @@ import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {directUpdateLayout, updateLayout} from "@/plugins/common";
-import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
+import {ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 import {
-  dragToCrossHair,
   throttleUpdateResponsiveResizeLayout,
+  updateResponsiveDragLayout,
   updateResponsiveResizeLayout
 } from "@/builtin-plugins/common";
 
@@ -17,8 +17,6 @@ import {
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
   name: 'ResponsiveLayoutPlugin',
-  getConfig(_: ConfigurationEvent) {
-  },
   exchangeVerification(ev: ItemExchangeEvent) {
     ev.prevent()
     if (!ev.fromItem) return
@@ -49,7 +47,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    dragToCrossHair(ev, (item) => ({y: item.pos.y + fromItem.pos.h}))
+    updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y + fromItem.pos.h}))
   },
 
   dragToRight(ev: ItemDragEvent) {
@@ -57,21 +55,21 @@ export const ResponsiveLayoutPlugin = definePlugin({
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    dragToCrossHair(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
+    updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
   },
 
   dragToBottom(ev: ItemDragEvent) {
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    dragToCrossHair(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
+    updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
   },
 
   dragToLeft(ev: ItemDragEvent) {
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    dragToCrossHair(ev, (item) => ({x: item.pos.x + fromItem.pos.w}))
+    updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x + fromItem.pos.w}))
   },
 
   /*------------------------------------------------------------------*/

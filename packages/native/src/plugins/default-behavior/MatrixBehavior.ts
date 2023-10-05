@@ -70,13 +70,24 @@ export const MatrixBehavior = definePlugin({
       if (ev.align === 'end') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
     }
   },
-  expandLine(ev: MatrixEvent) {
-    const layoutManager = ev.container.layoutManager
-    const addRow = ['row', 'row-reverse'].includes(ev.direction)
-    const addCol = ['column', 'column-reverse'].includes(ev.direction)
-    for (let i = 0; i < ev.expandLineNumber; i++) {
-      if (addRow) layoutManager.addRow()
-      else if (addCol) layoutManager.addCol()
-    }
+  changeColBefore(ev: MatrixEvent) {
+    console.log('changeColBefore', ev.changeLen)
+    const container = ev.container
+    if (container.autoGrowCol && ev.changeLen) container.layoutManager.changeCol(ev.changeLen)
+  },
+  changeRowBefore(ev: MatrixEvent) {
+    console.log('changeRowBefore', ev.changeLen)
+    const container = ev.container
+    if (container.autoGrowRow && ev.changeLen) container.layoutManager.changeRow(ev.changeLen)
+  },
+  changeCol(_: MatrixEvent) {
+  },
+  changeRow(_: MatrixEvent) {
   }
 })
+
+
+
+
+
+

@@ -1,4 +1,3 @@
-import {Sync} from "@/utils/Sync";
 import {Container} from "@/main/container/Container";
 import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
@@ -12,7 +11,7 @@ import {
   grid_item_resizable_handle,
   grid_item_resize_text
 } from "@/constant";
-import {updateStyle} from "@/utils";
+import {getContainerConfigs, updateStyle} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -45,14 +44,14 @@ export class Item extends ItemGeneralImpl {
    * Item间距 [左右, 上下]
    * */
   public get margin(): MarginOrSizeDesc {  //
-    return this.container.getConfig('margin') as MarginOrSizeDesc
+    return getContainerConfigs(this.container, "margin")
   }
 
   /**
    * Item宽高 [宽度, 高度]
    * */
   public get size(): MarginOrSizeDesc {  //
-    return this.container.getConfig('size') as MarginOrSizeDesc
+    return getContainerConfigs(this.container, "size")
   }
 
   //----------------------------------------------------------
@@ -124,35 +123,32 @@ export class Item extends ItemGeneralImpl {
    * 渲染, 直接渲染添加到 Container 中
    * */
   public mount() {
-    const _mountedFun = () => {
-      if (this._mounted) return
-      if (this.container.platform === 'native') {
-        this.element = document.createElement(this.tagName)
-        if (isString(this.el)) {
-          this.contentElement = <HTMLElement>document.querySelector(this.el)
-        } else if (this.el) {
-          this.contentElement = this.el.isConnected ? <HTMLElement>document.adoptNode(this.el) : <HTMLElement>this.el
-        }
-        if (!this.contentElement) this.contentElement = document.createElement("div")
-        this.contentElement.classList.add(grid_item_content)
-        if (this.id && isString(this.id)) this.contentElement.id = this.id
-        this.element.appendChild(this.contentElement)
-        this.container.contentElement.appendChild(this.element)
+    if (this._mounted) return
+    if (this.container.platform === 'native') {
+      this.element = document.createElement(this.tagName)
+      if (isString(this.el)) {
+        this.contentElement = <HTMLElement>document.querySelector(this.el)
+      } else if (this.el) {
+        this.contentElement = this.el.isConnected ? <HTMLElement>document.adoptNode(this.el) : <HTMLElement>this.el
       }
-      this.element.classList.add(this.className)
-      this.classList = Array.from(this.element.classList)
-      this.updateItemLayout()
-      //--------------开启编辑和动画------------------
-      this._handleResize(this.resize)
-      this._closeBtn(this.close)
-      this.animation(this.transition)
-      //--------------------------------------------
-      this.element['_gridItem_'] = this
-      this.element['_isGridItem_'] = true
-      this._mounted = true
-      this.container.bus.emit('itemMounted', {item: this})
+      if (!this.contentElement) this.contentElement = document.createElement("div")
+      this.contentElement.classList.add(grid_item_content)
+      if (this.id && isString(this.id)) this.contentElement.id = this.id
+      this.element.appendChild(this.contentElement)
+      this.container.contentElement.appendChild(this.element)
     }
-    _mountedFun()
+    this.element.classList.add(this.className)
+    this.classList = Array.from(this.element.classList)
+    this.updateItemLayout()
+    //--------------开启编辑和动画------------------
+    this._handleResize(this.resize)
+    this._closeBtn(this.close)
+    this.animation(this.transition)
+    //--------------------------------------------
+    this.element['_gridItem_'] = this
+    this.element['_isGridItem_'] = true
+    this._mounted = true
+    this.container.bus.emit('itemMounted', {item: this})
   }
 
 
@@ -190,25 +186,19 @@ export class Item extends ItemGeneralImpl {
   public animation(transition) {
     if (typeof transition !== "object") {
       this.container.bus.emit('warn', {
-        message: '参数应该是对象形式{ time: Number, field: String }'
+        message: '参数应该是对象形式{ time: number, field: string }'
       })
       return
     }
-    Sync.run({
-      func: () => {
-        const style = <CSSStyleDeclaration>{}
-        if (transition.time > 0) {
-          style.transitionProperty = transition.field
-          style.transitionDuration = transition.time + 'ms'
-          style.transitionTimingFunction = 'ease-out'
-        } else if (transition.time === 0) {
-          style.transition = 'none'
-        }
-        updateStyle(style, this.element)
-      },
-      rule: () => this.__temp__.isDelayLoadAnimation
-    })
-    this.__temp__.isDelayLoadAnimation = true
+    const style = <CSSStyleDeclaration>{}
+    if (transition.time > 0) {
+      style.transitionProperty = transition.field
+      style.transitionDuration = transition.time + 'ms'
+      style.transitionTimingFunction = 'ease-out'
+    } else if (transition.time === 0) {
+      style.transition = 'none'
+    }
+    updateStyle(style, this.element)
   }
 
 
@@ -245,6 +235,22 @@ export class Item extends ItemGeneralImpl {
   public offsetTop(): number {
     const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] * 2 : 0
     return ((this.pos.y - 1) * this.size[1]) + marginHeight
+  }
+
+  /**
+   * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
+   * */
+  public offsetRight(): number {
+    const col = this.container.getConfig("col")
+    return (col - this.pos.x - this.pos.w + 1) * (this.size[0] + this.margin[0] * 2)
+  }
+
+  /**
+   * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
+   * */
+  public offsetBottom(): number {
+    const row = this.container.getConfig("row")
+    return (row - this.pos.y - this.pos.h + 1) * (this.size[1] + this.margin[1] * 2)
   }
 
   /**
@@ -300,30 +306,61 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
+   * 距离right方向上最近的可调整距离(包含item的width)
+   * */
+  public spaceRight(): number {
+    const manager = this.container.layoutManager
+    const coverRightItems = manager.findCoverItemsFromPosition(this.container.items, {
+      ...this.pos,
+      w: this.container.getConfig("col") - this.pos.x + 1
+    }, [this])
+    let minOffsetRight = Infinity
+    coverRightItems.forEach((item) => {
+      const offsetRight = item.offsetLeft()
+      if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
+    })
+    return minOffsetRight - this.offsetLeft()
+  }
+
+  /**
+   * 距离bottom方向上最近的最大可调整距离(包含item的height)
+   * */
+  public spaceBottom(): number {
+    const manager = this.container.layoutManager
+    const coverRightItems = manager.findCoverItemsFromPosition(this.container.items, {
+      ...this.pos,
+      h: this.container.getConfig("row") - this.pos.y + 1
+    }, [this])
+    let minOffsetBottom = Infinity
+    coverRightItems.forEach((item) => {
+      const offsetBottom = item.offsetTop()
+      if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
+    })
+    return minOffsetBottom - this.offsetTop()
+  }
+
+  /**
    * 手动生成resize元素，可以将resize字段设置成false
    * q: 如何自定义resize按钮?
    * a: Item元素包裹下，创建一个包含class名为grid-item-resizable-handle的元素即可，用户点击该元素将会被判定为resize动作
    * */
   private _handleResize(isResize = false) {
-    const handleResizeFunc = () => {
-      if (isResize && !this._resizeTabEl) {
-        const handleResizeEls = this.element.querySelectorAll('.' + grid_item_resizable_handle)
-        if (handleResizeEls.length > 0) return;
-        const resizeTabEl = document.createElement('span')
-        resizeTabEl.innerHTML = grid_item_resize_text
-        this.element.appendChild(resizeTabEl)
-        resizeTabEl.classList.add(grid_item_resizable_handle)
-        this._resizeTabEl = resizeTabEl
-      } else if (this.element && !isResize) {
-        for (let i = 0; i < this.element.children.length; i++) {
-          const node = this.element.children[i]
-          if (node.className.includes(grid_item_resizable_handle)) {
-            this.element.removeChild(node)
-          }
+    if (isResize && !this._resizeTabEl) {
+      const handleResizeEls = this.element.querySelectorAll('.' + grid_item_resizable_handle)
+      if (handleResizeEls.length > 0) return;
+      const resizeTabEl = document.createElement('span')
+      resizeTabEl.innerHTML = grid_item_resize_text
+      this.element.appendChild(resizeTabEl)
+      resizeTabEl.classList.add(grid_item_resizable_handle)
+      this._resizeTabEl = resizeTabEl
+    } else if (this.element && !isResize) {
+      for (let i = 0; i < this.element.children.length; i++) {
+        const node = this.element.children[i]
+        if (node.className.includes(grid_item_resizable_handle)) {
+          this.element.removeChild(node)
         }
       }
     }
-    this.element ? handleResizeFunc() : Sync.run(handleResizeFunc)
   }
 
   /**
@@ -332,24 +369,21 @@ export class Item extends ItemGeneralImpl {
    * a: Item元素包裹下，创建一个包含class名为grid-item-close-handle的元素即可，用户点击该元素将会被判定为close动作
    * */
   private _closeBtn(isDisplayBtn = false) {
-    const closeBtnFunc = () => {
-      if (isDisplayBtn && !this._closeEl) {
-        const _closeEl = document.createElement('div')
-        this._closeEl = _closeEl
-        _closeEl.classList.add(grid_item_close_btn)
-        _closeEl.innerHTML = grid_item_close_text
-        this.element.appendChild(_closeEl)
-      }
-      if (this._closeEl && !isDisplayBtn) {
-        for (let i = 0; i < this.element.children.length; i++) {
-          const node = this.element.children[i]
-          if (node.className.includes(grid_item_close_btn)) {
-            this.element.removeChild(node)
-          }
+    if (isDisplayBtn && !this._closeEl) {
+      const _closeEl = document.createElement('div')
+      this._closeEl = _closeEl
+      _closeEl.classList.add(grid_item_close_btn)
+      _closeEl.innerHTML = grid_item_close_text
+      this.element.appendChild(_closeEl)
+    }
+    if (this._closeEl && !isDisplayBtn) {
+      for (let i = 0; i < this.element.children.length; i++) {
+        const node = this.element.children[i]
+        if (node.className.includes(grid_item_close_btn)) {
+          this.element.removeChild(node)
         }
       }
     }
-    this.element ? closeBtnFunc() : Sync.run(closeBtnFunc)
   }
 }
 

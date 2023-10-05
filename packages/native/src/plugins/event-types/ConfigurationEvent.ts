@@ -61,7 +61,9 @@ export class ConfigurationEvent extends BaseEvent {
     //-------------------如果不是动态的row，则以当前containerH为准------------------//
     if (!data) {  // 未指定row自动设置
       const smartRow = this.smart.smartRow
+      // console.log(smartRow)
       const containerH = this.containerH
+      // console.log(containerH)
       if (!container._mounted) data = Math.max(smartRow, containerH)
       else data = Math.max(smartRow, containerH)  // 同上
     }

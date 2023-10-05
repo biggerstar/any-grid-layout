@@ -1,6 +1,7 @@
 import {merge} from "@/utils/tool";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 import {CustomItemPos} from "@/types";
+import {isNumber} from "is-what";
 
 export class ItemPos extends ItemPosGeneralImpl {
   public i?: number
@@ -32,7 +33,11 @@ export class ItemPos extends ItemPosGeneralImpl {
     const _default = this._default
 
     const _tempPos = {}  // 用于部分无法设置到用户pos上的状态保留对象，在get的时候能获取
-    const getCurPos = () => _customPos || {}  // 防止用户外部直接替换原本pos引用
+    const getCurPos = () => _customPos || {}  // 防止直接替换原本用户外部pos引用
+    const getCurPosValue = (k) => {
+      const curCustomPos = getCurPos()
+      return curCustomPos.hasOwnProperty(k) ? curCustomPos[k] : (_tempPos[k] || _default?.[k])
+    }
     const get = (k: keyof ItemPosGeneralImpl) => {
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
       if (k === 'w') return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minW, self.maxW)
@@ -40,8 +45,11 @@ export class ItemPos extends ItemPosGeneralImpl {
       if (k === 'h') {
         return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minH, self.maxH)
       }
-      const curCustomPos = getCurPos()
-      return curCustomPos.hasOwnProperty(k) ? curCustomPos[k] : (_tempPos[k] || _default?.[k])
+      if (k === 'x' || k === 'y') {
+        const val = getCurPosValue(k)
+        return isNumber(val) ? Math.max(1, val) : val
+      }
+      return getCurPosValue(k)
     }
     const set = (k: keyof ItemPosGeneralImpl, v: any) => {
       // /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */

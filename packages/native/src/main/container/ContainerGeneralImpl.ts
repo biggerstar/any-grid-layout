@@ -108,7 +108,15 @@ export class ContainerGeneralImpl {
   /**
    * 是否在响应布局的交叉轴方向上自动拓展矩阵大小
    * */
-  autoGrow?: boolean = false
+  autoGrow?: {
+    // 垂直方向
+    vertical?: boolean
+    // 水平方向
+    horizontal?: boolean
+  } = {
+    vertical: false,
+    horizontal: false
+  }
   /**
    * 对dragging或者resizing的元素进行配置
    * */

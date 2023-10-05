@@ -128,7 +128,8 @@ const plugin = definePlugin({
   },
   flip(ev: MatrixEvent) {
     // ev.prevent()
-  }
+  },
+
 })
 
 
@@ -146,7 +147,7 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(createResponsiveLayoutPlugin())
+  // .use(createResponsiveLayoutPlugin())
 
 container2
   .use(plugin)
@@ -164,5 +165,15 @@ container1.mount()
 container1.layoutManager.each((curRowPoint, curColPoint) => {
   // console.log(curColPoint,curRowPoint);
 })
+
+
+// console.log(container1.items[2],container1.items[2].spaceRight());
+// console.log(container1.items[3],container1.items[3].spaceRight());
+// console.log(container1.items[4],container1.items[4].spaceRight());
+
+
+
+
+
 
 

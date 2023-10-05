@@ -1,5 +1,7 @@
-import {CustomItemPos} from "@/types";
-import {Item} from "@/main";
+// noinspection JSUnusedGlobalSymbols
+
+import {CustomItemPos, CustomLayoutsOption} from "@/types";
+import {Container, Item} from "@/main";
 import {getKebabCase} from "@/utils/tool";
 import {tempStore} from "@/global";
 
@@ -47,3 +49,31 @@ export function canExchange() {
     && toContainer.getConfig('exchange')
     && fromContainer.getConfig('exchange')
 }
+
+
+/**
+ * 批量获取container的配置信息，不会发起getContainer事件
+ * */
+export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name): Exclude<CustomLayoutsOption[Name], undefined>
+export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[]): Record<Name, any>
+export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(
+  container: Container,
+  nameInfo: Name[] | Name
+): any {
+  let result
+  //@ts-ignore
+  const _getConfig = (name) => container._getConfig.call(container, name)
+  if (!Array.isArray(nameInfo)) {
+    result = _getConfig(nameInfo)
+  } else {
+    result = {};
+    (nameInfo as []).forEach(name => result[name] = _getConfig(name))
+  }
+  return result
+}
+
+
+
+
+
+

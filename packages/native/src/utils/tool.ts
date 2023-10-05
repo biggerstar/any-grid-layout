@@ -1,23 +1,35 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {Container, Item} from "@/main";
 import {isNumber} from "is-what";
 
 
 /**
  * 单通道节流,可使用new创建多个通道,不支持函数参数，只是单纯运行函数
+ * 第一次运行do会直接先运行一次函数
  * */
-export class SingleThrottle {
-  public do: (func: () => void) => void
+export class SingleThrottle<T extends Record<any, any>> {
+  public do: (func: () => void, wait?: number) => void
   public wait: number = 320
+  public cache: T & {} = {}
 
   constructor(wait?: number) {
     if (isNumber(wait) && wait > 0) this.wait = wait
     let old = 0;
-    this.do = (func) => {
+    this.do = (func, wait) => {
       let now = new Date().valueOf();
-      if (now - old < this.wait) return
+      if (now - old < (wait || this.wait)) return
       old = now
       return func.apply(<object>this);
     }
+  }
+
+  getCache(name: keyof T) {
+    return this.cache[name]
+  }
+
+  setCache(name: keyof T, data: any) {
+    this.cache[name] = data
   }
 }
 
@@ -25,7 +37,7 @@ export class SingleThrottle {
 /**
  * 节流
  * */
-export function throttle(func: Function, wait: number = 350): () => any {  // 全局共用节流函数通道：返回的是函数，记得再执行
+export function throttle<T extends Function>(func: T, wait: number = 350): () => ReturnType<T> {  // 全局共用节流函数通道：返回的是函数，记得再执行
   let self
   let old = 0;
   return function () {
@@ -294,6 +306,21 @@ export const singleTouchToCommonEvent = (touchEvent) => {
   return touchEvent
 }
 
-export function getClientRect<T extends Element>(el: T): DOMRect {
-  return el.getBoundingClientRect()
+export function getClientRect<T extends Element>(el: T, clone: boolean = false): DOMRect {
+  let rect: {} = el.getBoundingClientRect()
+  let rectObj: Record<any, any> = {}
+  if (clone) {
+    for (const k in rect) {
+      rectObj[k] = rect[k]
+    }
+  }
+  delete rectObj.toJSON
+  return (clone ? rectObj : rect) as DOMRect
+}
+
+/**
+ * 限制数字在某个范围内
+ * */
+export function clamp(num: number, min: number, max: number): number {
+  return Math.min(Math.max(num, min), max)
 }

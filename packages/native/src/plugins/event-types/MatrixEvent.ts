@@ -13,11 +13,6 @@ export class MatrixEvent extends BaseEvent {
   public readonly align: string = ''
 
   /**
-   * 和getConfig获取的键值一致，正常是获取外部用户实例化传入的配置信息
-   * */
-  public readonly autoGrow: boolean
-
-  /**
    * 构成当前要遍历的坐标点，和point2构成一个小矩阵，正常只是一块小区域而非整个大矩阵
    * */
   public readonly point1: PointType | null
@@ -34,17 +29,19 @@ export class MatrixEvent extends BaseEvent {
   public readonly flipInfo: LayoutItemInfo
 
   /**
-   * expandLine 事件专用:
-   * 如果当前容器溢出的话需要拓展的行数或列数，需手动实现
-   * 可直接调用 layoutManager.addRow  layoutManager.addCol 进行添加
+   * 如果当前容器溢出的话需要拓展的行数，需手动实现
    * */
-  public readonly expandLineNumber: number | null
+  public readonly changeLen: number | null
+
+  /**
+   * 如果当前容器溢出的话需要拓展的列数，需手动实现
+   * */
+  public readonly expandRowNumber: number | null
 
   constructor(opt) {
     super(opt);
     this.direction = <any>this.container.getConfig('direction')
     this.align = <any>this.container.getConfig('align')
-    this.autoGrow = this.container.getConfig('autoGrow')
   }
 
   /**

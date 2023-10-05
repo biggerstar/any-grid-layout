@@ -22,6 +22,9 @@ const createResizingCloneElSize: Function = throttle(() => {
     fromContainer,
   } = tempStore
   if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
+  const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
+  finallyRemoveEls.forEach(node => node.remove())   // 防止高频点击
+
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
   newNode.classList.add(grid_clone_el, grid_resizing_clone_el)
   newNode.classList.remove(grid_resizing_source_el)
@@ -49,7 +52,8 @@ const createDraggingClonePosition: Function = throttle(() => {
   if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
   if (cloneElement) return
   const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
-  if (finallyRemoveEls.length) return;
+  finallyRemoveEls.forEach(node => node.remove())   // 防止高频点击
+
   const sourceEl = fromItem.element
   const newNode = <HTMLElement>sourceEl.cloneNode(true)
   newNode.classList.add(grid_clone_el, grid_dragging_clone_el)

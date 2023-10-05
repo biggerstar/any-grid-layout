@@ -2,45 +2,46 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {isFunction} from "is-what";
 import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
-import {createMovableRange, spiralTraversal} from "@/utils";
+import {clamp, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
+import {updateContainerSize} from "@/plugins/common";
 
 
 export class ItemDragEvent extends ItemLayoutEvent {
   public readonly toItem: Item | null
   public readonly toPos: CustomItemPos
-  public readonly inOuter: boolean   // 鼠标位置是否在容器外部
-  public readonly startX: number // 克隆元素左上角位于当前网格容器左上角相对的栅格X位置,和resize解释一样
-  public readonly startY: number // 克隆元素左上角位于当前网格容器左上角相对中的栅格Y位置,和resize解释一样
+  public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格X位置,和resize解释一样
+  public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格Y位置,和resize解释一样
   public readonly offsetGridX: number // 当前拖动位置相对源item偏移，限制在容器内
   public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
+  public readonly offsetRelativeX: number // 当前拖动位置相对源item偏移
+  public readonly offsetRelativeY: number // 当前拖动位置相对源item偏移
   constructor(opt) {
     super(opt);
     const {
       toItem,
-      toContainer,
       fromItem,
     } = tempStore
     const container = this.container
     const {offsetLeft, offsetTop, scaleMultipleX, scaleMultipleY} = this.shadowItemInfo
     const {width, height} = this.itemInfo
-    const cloneElStartWidth = Math.min(Math.max(0, offsetLeft + width * (scaleMultipleX - 1)), this.containerInfo.width)
-    const cloneElStartHeight = Math.min(Math.max(0, offsetTop + height * (scaleMultipleY - 1)), this.containerInfo.height)
+    const cloneElStartWidth = clamp(offsetLeft + width * (scaleMultipleX - 1), 0, this.containerInfo.width)
+    const cloneElStartHeight = clamp(offsetTop + height * (scaleMultipleY - 1), 0, this.containerInfo.height)
     const hasHalfItemSizeWidth = cloneElStartWidth + (this.size[0] + this.margin[0]) / 2  // Q:为何加上toHalfItemSizeWidth? A:只有克隆元素的边界进入下一个item前往的item空位超过一半的时候才会更变startX
     const hasHalfItemSizeHeight = cloneElStartHeight + (this.size[1] + this.margin[1]) / 2  // 同上
-    this.startX = Math.min(container.pxToW(hasHalfItemSizeWidth), this.col - fromItem!.pos.w + 1)
-    this.startY = Math.min(container.pxToH(hasHalfItemSizeHeight), this.row - fromItem!.pos.h + 1)
-
+    this.startGridX = clamp(container.pxToW(hasHalfItemSizeWidth), 1, this.col - fromItem!.pos.w + 1)
+    this.startGridY = clamp(container.pxToH(hasHalfItemSizeHeight), 1, this.row - fromItem!.pos.h + 1)
     this.toPos = {
       w: this.fromItem.pos.w,
       h: this.fromItem.pos.h,
-      x: this.startX,
-      y: this.startY,
+      x: this.startGridX,
+      y: this.startGridY,
     }
     this.toItem = toItem
-    this.inOuter = !!(!toContainer && fromItem)
-    this.offsetGridX = this.startX - fromItem!.pos.x
-    this.offsetGridY = this.startY - fromItem!.pos.y
+    this.offsetGridX = this.startGridX - fromItem!.pos.x
+    this.offsetGridY = this.startGridY - fromItem!.pos.y
+    this.offsetRelativeX = this.relativeX - fromItem!.pos.x
+    this.offsetRelativeY = this.relativeY - fromItem!.pos.y
   }
 
   /**
@@ -55,8 +56,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     // console.log(x,y);
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, {
       ...fromItem.pos,
-      x: this.startX,
-      y: this.startY
+      x: this.startGridX,
+      y: this.startGridY
     })
     if (!toItemList.length) return []
     toItemList = toItemList.filter(item => item !== fromItem)
@@ -90,24 +91,24 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: this.startX,
-        y: this.startY,
+        x: this.relativeX,
+        y: this.relativeY,
       }
-    const securityPos = createMovableRange(targetItem, targetPos)
-    if (fromItem && securityPos.x === fromItem.pos.x && securityPos.y === fromItem.pos.y) return true // 如果位置不变则忽略
-    // console.log(securityPos, {...targetItem.pos})
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
-    const isBlank = manager.unmark(targetItem.pos).isBlank(securityPos)
+    manager.expandLineForPos(targetPos)
+    if (fromItem && targetPos.x === fromItem.pos.x && targetPos.y === fromItem.pos.y) return true // 如果位置不变则忽略
+    const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
     if (!isBlank) {
       manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false
     }
-    manager.mark(securityPos, targetItem)
-    targetItem.pos.x = securityPos.x
-    targetItem.pos.y = securityPos.y
+    manager.mark(targetPos, targetItem)
+    targetItem.pos.x = targetPos.x
+    targetItem.pos.y = targetPos.y
     targetItem.updateItemLayout()
+    updateContainerSize()
     return true
   }
 
@@ -155,8 +156,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     let minimumArea = Infinity
     let finallyPos = fromItem.pos  // 如果没找到则不变
     allBlankRange.forEach(range => {
-      const W = Math.abs(this.gridX - range.x) + 1
-      const H = Math.abs(this.gridY - range.y) + 1
+      const W = Math.abs(this.relativeX - range.x) + 1
+      const H = Math.abs(this.relativeY - range.y) + 1
       const area = W * H   // 求最小面积
       if (area <= minimumArea) {  // 最后一个是fromItem，保证前面所有计算后的最小面积等于当前fromItem面积，此时不会进行改变位置
         minimumArea = area
@@ -185,9 +186,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.offsetGridX
-    const Y = this.offsetGridY
+    const X = this.offsetRelativeX
+    const Y = this.offsetRelativeY
     if (X === 0 && Y === 0) return
+    // console.log(111111111111111111)
     // console.log(X, Y, this.inOuter)
     const foundItem = this.container.layoutManager.findItemFromXY(this.items, this.gridX, this.gridY)  // 必须要startX,startY
     if (!this.inOuter && (!foundItem || foundItem === fromItem)) {

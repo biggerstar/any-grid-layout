@@ -1,10 +1,12 @@
 import {Container, Item} from "@/main";
 import {CustomEventOptions} from "@/types";
+import {tempStore} from "@/global";
 
 export class BaseEvent {
-  public name: keyof CustomEventOptions
+  public readonly name: keyof CustomEventOptions
 
   constructor(options) {
+    this.item = tempStore.fromItem
     Object.assign(<object>this, options || {})   // 合并外部emit发射的参数2对象
   }
 

@@ -7,7 +7,8 @@ import {
   cursor_mousedown,
   cursor_mousemove,
   cursor_mouseup,
-  endWork_mouseup, itemCloneEl_mousemove,
+  endWork_mouseup,
+  itemCloneEl_mousemove,
   itemClose_mouseup,
   itemDrag_mousedown,
   itemResize_mousedown,
@@ -43,14 +44,14 @@ export function allMousemove(ev) {
   startMove_mousemove(ev)
   /* cursor */
   cursor_mousemove(ev)
+  /* itemCloneEl */
+  itemCloneEl_mousemove(ev)  // 必须在前面先创建克隆元素
   /* crossContainer */
   crossContainer_mousemove(ev)
   /* ItemResize */
   itemResize_mousemove(ev)
   /* itemDrag */
   itemDrag_mousemove(ev)
-  /* itemCloneEl */
-  itemCloneEl_mousemove(ev)
 }
 
 export function allMouseup(ev) {
@@ -77,17 +78,17 @@ export function startGlobalEvent() {
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
   //mouseenter该事件监听在静态布局模式下必要，解决了拖拽以超慢进入另一个容器mousemove未触发进入事件导致源容器成员未卸载,新容器未挂载问题
   // 这四个事件原本委托在Container上，但是单个Item编辑的时候会造成不生效，所以就挂document上了
-  document.addEventListener('mousedown', allMousedown)
+  document.addEventListener('mousedown', allMousedown, {passive: true})
   document.addEventListener('touchstart', allMousedown, {passive: false})
 
   document.addEventListener('dragstart', prevent.false)
   document.addEventListener('selectstart', prevent.defaultAndFalse, false)
   //
   // //-------------------------------原来的必须挂dom上的事件-----------------------------//
-  document.addEventListener('mousemove', allMousemove)
+  document.addEventListener('mousemove', allMousemove, {passive: true})
   document.addEventListener('touchmove', allMousemove, {passive: false})
   //
-  document.addEventListener('mouseup', allMouseup)
+  document.addEventListener('mouseup', allMouseup, {passive: true})
   document.addEventListener('touchend', allMouseup, {passive: false})
   running = true
 }
