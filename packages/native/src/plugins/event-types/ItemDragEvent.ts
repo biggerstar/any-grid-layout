@@ -81,9 +81,13 @@ export class ItemDragEvent extends ItemLayoutEvent {
    * @return {boolean} 是否移动成功
    * */
   public tryMoveToBlank(item?: Item, pos?: Partial<Pick<CustomItemPos, 'x' | 'y'>>): boolean {
-    let {fromItem} = tempStore
+    let {fromItem, mousedownItemOffsetLeftProportion: PrL, mousedownItemOffsetTopProportion: PrT} = tempStore
     const targetItem = item || fromItem
     if (!targetItem) return false
+    const {container, itemInfo, shadowItemInfo, relativeX, relativeY} = this
+    const manager = container.layoutManager
+    const mouseDownPosW = container.pxToW(itemInfo.width * PrL * shadowItemInfo.scaleMultipleX) - 1
+    const mouseDownPosH = container.pxToH(itemInfo.height * PrT * shadowItemInfo.scaleMultipleY) - 1
     const targetPos = pos
       ? {
         ...targetItem.pos,
@@ -91,12 +95,11 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        x: this.relativeX,
-        y: this.relativeY,
+        x: Math.max(1, relativeX - mouseDownPosW),
+        y: Math.max(1, relativeY - mouseDownPosH)
       }
+    if (targetPos.x === targetItem.pos.x && targetPos.y === targetItem.pos.y) return true
     //-------------------------------------
-    const container = this.container
-    const manager = container.layoutManager
     manager.expandLineForPos(targetPos)
     if (fromItem && targetPos.x === fromItem.pos.x && targetPos.y === fromItem.pos.y) return true // 如果位置不变则忽略
     const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)

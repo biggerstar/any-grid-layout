@@ -71,12 +71,12 @@ export const MatrixBehavior = definePlugin({
     }
   },
   changeColBefore(ev: MatrixEvent) {
-    console.log('changeColBefore', ev.changeLen)
+    // console.log('changeColBefore', ev.changeLen)
     const container = ev.container
     if (container.autoGrowCol && ev.changeLen) container.layoutManager.changeCol(ev.changeLen)
   },
   changeRowBefore(ev: MatrixEvent) {
-    console.log('changeRowBefore', ev.changeLen)
+    // console.log('changeRowBefore', ev.changeLen)
     const container = ev.container
     if (container.autoGrowRow && ev.changeLen) container.layoutManager.changeRow(ev.changeLen)
   },

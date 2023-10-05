@@ -12,7 +12,8 @@ export class LayoutManager extends Finder {
   public container: Container
 
   public get col(): number {
-    return this._layoutMatrix?.[0]?.length || 1
+    const minCol = Math.min.apply(null, this._layoutMatrix.map(line => line.length))
+    return minCol || 1
   }
 
   public get row(): number {
@@ -33,7 +34,7 @@ export class LayoutManager extends Finder {
     return this.container.containerH
   }
 
-  protected _layoutMatrix = []   // 布局矩阵
+  protected _layoutMatrix: Array<Array<Item | null>> = []   // 布局矩阵
   protected place = null  // Infinity   // Symbol('place')  // 空位符号，所有非0都是被占位
 
   /**
@@ -139,6 +140,7 @@ export class LayoutManager extends Finder {
     const y = pos.y - 1 <= 0 ? 0 : pos.y - 1
     if (isNaN(x) || isNaN(y) || !isFinite(x) || !isFinite(y)) {
       console.error('[any-grid-layout] 请为x 或 y指定一个正整数', pos)
+      // throw new Error('')
     }
     return {
       w: pos.w,
@@ -167,16 +169,18 @@ export class LayoutManager extends Finder {
    * @param {Number} num  添加或删除num列
    * @param force  遇到num为负数时是否强制删除某一行
    * */
-  public changeCol(num: number, force: boolean = false) {
+  public changeCol(num: number | 'auto', force: boolean = false) {
+    const row = this.row
+    if (num === 'auto' || num === void 0) num = (this.col - 1) * -1
     const isSlice = num && num < 0   // 是否开启删除
     if (isSlice) num = Math.max(this.minCol - this.col, num)   // 负数，限制最少为容器col宽度
+    // console.log(isSlice, num, maxColindex)
     const matrix = this._layoutMatrix
-    const row = this.row
-    let maxColindex = this.col - 1
-
     const removeCol = () => {  // 删除一整列
+      let colindex = this.col - 1
       for (let i = 0; i < row; i++) {
-        matrix[i].pop()
+        const line = matrix[i]
+        line.splice(colindex, line.length - colindex)
       }
     }
 
@@ -187,29 +191,26 @@ export class LayoutManager extends Finder {
     }
     const hasLastColItemEmpty = () => {  // 检查列末是否无任何占用
       let isEmpty = true
+      let colindex = this.col - 1
       for (let i = 0; i < row; i++) {
         const line: any[] = matrix[i]
-        // console.log(line.length)
-        if (line[line.length - 1] !== this.place) {
+        if (line[colindex] !== this.place) {
           isEmpty = false
           break
         }
       }
       return isEmpty
     }
-
-    for (let j = maxColindex; num && j > maxColindex - Math.abs(num); j--) {
+    for (let j = 0; j < Math.abs(num); j++) {
       /* 增加一行操作 */
       if (!isSlice) {
-        addCol()    // 添加的num为整数则添加一列
+        addCol()    // 添加的num为正整数则添加一列
         continue
       }
       /* 删除一行操作 */
       if (force) removeCol()   // 如果为force直接删除一列
-      else if (hasLastColItemEmpty()) removeCol()
+      else if (hasLastColItemEmpty()) removeCol()   // 否则检查是否整列都为空，都为空则删除该列
     }
-    // console.log(matrix[0].length);
-
   }
 
   /**
@@ -252,16 +253,16 @@ export class LayoutManager extends Finder {
   public expandLine({rowLen, colLen}: { rowLen?: number, colLen?: number } = {rowLen: 0, colLen: 0}): void {
     const oldCol = this.col
     const oldRow = this.row
+    rowLen = Math.max(this.minRow - oldRow, rowLen)
+    if (rowLen !== 0) this.container.bus.emit("changeRowBefore", {changeLen: rowLen})
     colLen = Math.max(this.minCol - oldCol, colLen)
     if (colLen !== 0) this.container.bus.emit("changeColBefore", {changeLen: colLen})
 
-    rowLen = Math.max(this.minRow - oldRow, rowLen)
-    if (rowLen !== 0) this.container.bus.emit("changeRowBefore", {changeLen: rowLen})
-
+    //--------------------------------------------------------------------------------
     const newCol = this.col
     const newRow = this.row
-    if (oldCol !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - oldCol})
     if (oldRow !== newRow) this.container.bus.emit("changeRow", {changeLen: newRow - oldRow})
+    if (oldCol !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - oldCol})
 
   }
 
@@ -348,7 +349,6 @@ export class LayoutManager extends Finder {
   public analysis(modifyList: LayoutItemsInfo = []): AnalysisResult {
     const items = this.container.items
     if (!Array.isArray(modifyList)) modifyList = []
-    // modifyList.forEach(item => console.log(item.pos))
     const modifyItems = modifyList.map(({item}) => item)
     const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
     let isSuccess: any = true

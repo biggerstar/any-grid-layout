@@ -79,7 +79,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   dragend(_: ItemDragEvent) {
   },
 
-  dragend$(_: ItemDragEvent) {
+  dragend$(ev: ItemDragEvent) {
+    ev.container.layoutManager.changeCol('auto')
     updateContainerSize()
   },
 

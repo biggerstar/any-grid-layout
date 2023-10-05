@@ -118,8 +118,8 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetRight = containerRect.right - shadowItemRect.right
     shadowItemInfo.offsetLeft = shadowItemRect.left - containerRect.left
     shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
-    shadowItemInfo.scaleMultipleX = cloneElScaleMultipleX
-    shadowItemInfo.scaleMultipleY = cloneElScaleMultipleY
+    shadowItemInfo.scaleMultipleX = Number(cloneElScaleMultipleX.toFixed(2))
+    shadowItemInfo.scaleMultipleY = Number(cloneElScaleMultipleY.toFixed(2))
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
