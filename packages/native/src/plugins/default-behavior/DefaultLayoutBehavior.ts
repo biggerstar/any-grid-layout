@@ -4,7 +4,7 @@ import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {checkItemPositionHasChanged, checkItemSizeHasChanged, updateContainerSize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {updateStyle} from "@/utils";
+import {getContainerConfigs, updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent} from "@/plugins";
@@ -23,7 +23,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {container} = ev
     const {layoutManager: manager} = container
     autoSetSizeAndMargin(container, true)  // 1.先初始化初始配置
-    container.reset()
+    container.reset(container.getConfig('col'), container.getConfig('row'))
     const res = manager.analysis()   // 2. 分析当前布局
     res.patch()  // 3. 修改当前item位置
     container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
@@ -36,7 +36,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
         type: 'ContainerOverflowError',
         message: `容器溢出或者Item重叠:
         1.您可以检查一下container挂载点元素是否未设置宽或高
-        2.您可以将 autoGrow 设置来自动撑开容器
+        2.您可以配置 autoGrow 来自动撑开容器
          `,
         from: res
       })
@@ -80,7 +80,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   },
 
   dragend$(ev: ItemDragEvent) {
-    ev.container.layoutManager.changeCol('auto')
+    ev.container.layoutManager.changeCol()
     updateContainerSize()
   },
 
@@ -154,6 +154,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     // console.log('resizeToRight')
     const {fromItem, cloneElement} = tempStore
     if (!fromItem || !cloneElement) return
+    // console.log(Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight()))
     updateStyle({
       width: `${Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight())}px`,
     }, cloneElement)

@@ -337,3 +337,5 @@ export type EachMiddlewareType = {
   startCol: number,
   endCol: number,
 }
+
+export type ExpandLineOptType = { len: number, force: boolean }

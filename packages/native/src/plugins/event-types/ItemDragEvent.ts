@@ -14,8 +14,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格Y位置,和resize解释一样
   public readonly offsetGridX: number // 当前拖动位置相对源item偏移，限制在容器内
   public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
-  public readonly offsetRelativeX: number // 当前拖动位置相对源item偏移
-  public readonly offsetRelativeY: number // 当前拖动位置相对源item偏移
+
   constructor(opt) {
     super(opt);
     const {
@@ -40,8 +39,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
     this.toItem = toItem
     this.offsetGridX = this.startGridX - fromItem!.pos.x
     this.offsetGridY = this.startGridY - fromItem!.pos.y
-    this.offsetRelativeX = this.relativeX - fromItem!.pos.x
-    this.offsetRelativeY = this.relativeY - fromItem!.pos.y
   }
 
   /**
@@ -189,8 +186,9 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.offsetRelativeX
-    const Y = this.offsetRelativeY
+    const X = this.shadowItemInfo.offsetRelativeX - 1
+    const Y = this.shadowItemInfo.offsetRelativeY - 1
+
     if (X === 0 && Y === 0) return
     // console.log(111111111111111111)
     // console.log(X, Y, this.inOuter)

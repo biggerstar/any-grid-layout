@@ -46,7 +46,7 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   if (!res.isSuccess) return false
   res.patch()
   ev.patchStyle()
-  container.updateContainerSizeStyle()
+  updateContainerSize()
   return true
 }
 

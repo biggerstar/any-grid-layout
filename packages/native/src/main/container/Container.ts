@@ -164,17 +164,6 @@ export class Container {
   }
 
   /**
-   * 获取当前矩阵中横向优先遍历获得的items列表
-   * 比如1 X 1 开始，到 1 X 5
-   * 之后2 X 1 开始，到 2 X 5
-   * ......
-   * */
-  public sequence(): this {
-    // this.items = this.layoutManager.sortCurrentMatrixItems(this.items)
-    return this
-  }
-
-  /**
    * 是否是自动增长col方向的容器
    * */
   public get autoGrowCol() {
@@ -213,6 +202,7 @@ export class Container {
   /** 将值设置到当前使用的配置信息中 */
   public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name]): void {
     let ev: ConfigurationEvent
+    if (['col', 'row'].includes(name)) this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
     this.bus.emit('setConfig', {
       configName: name,
       configData: data,
@@ -265,7 +255,6 @@ export class Container {
     this._init()
     this.bus.emit('containerMountBefore')
     this._createGridContainerBox()
-    this.sequence()
     //-------------------------其他操作--------------------------//
     this.parentItem = parseItemFromPrototypeChain(this.element)
     if (this.parentItem) this.parentItem.container.childContainer.push(this)
@@ -488,8 +477,8 @@ export class Container {
   }
 
   /** 清除重置布局矩阵 */
-  public reset(): void {
-    this.layoutManager.reset(this.getConfig('col'), this.getConfig('row'))
+  public reset(col?: number, row?: number): void {
+    this.layoutManager.reset(col, row)
   }
 
   /** 清除所有Items */

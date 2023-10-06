@@ -89,17 +89,10 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
-    // if (targetPos.x + targetPos.w - 1 >= manager.col) {   // 若col溢出当前容器则自动调整
-    //   targetPos.w = targetItem.pos.w = manager.col - targetPos.x + 1
-    // }
-    // if (targetPos.y + targetPos.h - 1 >= manager.row) {   // 若row溢出当前容器则自动调整
-    //   targetPos.h = targetItem.pos.h = manager.row - targetPos.y + 1
-    // }
-
+    targetPos.w = clamp(targetPos.w, targetItem.pos.minW, targetItem.pos.maxW)
+    targetPos.h = clamp(targetPos.h, targetItem.pos.minH, targetItem.pos.maxH)
     manager.unmark(targetItem.pos)
     manager.expandLineForPos(targetPos)
-    // if(ev.inOuter && w >=4)debugger
-    // console.log(findPos)
 
     updateContainerSize()
     const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位

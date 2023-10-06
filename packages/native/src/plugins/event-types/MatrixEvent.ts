@@ -34,6 +34,11 @@ export class MatrixEvent extends BaseEvent {
   public readonly changeLen: number | null
 
   /**
+   * 是否要求强制改变行列数的布尔标记
+   * */
+  public readonly force: boolean
+
+  /**
    * 如果当前容器溢出的话需要拓展的列数，需手动实现
    * */
   public readonly expandRowNumber: number | null
@@ -42,6 +47,7 @@ export class MatrixEvent extends BaseEvent {
     super(opt);
     this.direction = <any>this.container.getConfig('direction')
     this.align = <any>this.container.getConfig('align')
+    this.force = false
   }
 
   /**

@@ -222,7 +222,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
+   * @return  根据当前自身的this.pos 生成当前Item 距离容器左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetLeft(): number {
     const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] * 2 : 0
@@ -230,7 +230,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
+   * @return  根据当前自身的this.pos 生成当前Item 距离容器顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetTop(): number {
     const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] * 2 : 0
@@ -238,7 +238,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成当前Item 距离父元素左边的距离, Item左边框 ---->  父元素左边框
+   * @return  根据当前自身的this.pos 生成当前Item 距离容器左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetRight(): number {
     const col = this.container.getConfig("col")
@@ -246,7 +246,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   /**
-   * @return  根据当前自身的this.pos 生成当前Item 距离父元素顶部边的距离, Item上边框 ---->  父元素上边框
+   * @return  根据当前自身的this.pos 生成当前Item 距离容器顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetBottom(): number {
     const row = this.container.getConfig("row")
@@ -292,7 +292,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
-  public maxWidth(): number {
+  public maxWidth(): number | typeof Infinity {
     if (!isFinite(this.pos.maxW)) return Infinity
     return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0] * 2
   }
@@ -300,7 +300,7 @@ export class Item extends ItemGeneralImpl {
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
-  public maxHeight(): number {
+  public maxHeight(): number | typeof Infinity {
     if (!isFinite(this.pos.maxH)) return Infinity
     return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1] * 2
   }
@@ -308,35 +308,45 @@ export class Item extends ItemGeneralImpl {
   /**
    * 距离right方向上最近的可调整距离(包含item的width)
    * */
-  public spaceRight(): number {
+  public spaceRight(): number | typeof Infinity {
+    const {size, margin} = getContainerConfigs(this.container, ['size', 'margin'])
     const manager = this.container.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.container.items, {
       ...this.pos,
       w: this.container.getConfig("col") - this.pos.x + 1
     }, [this])
-    let minOffsetRight = Infinity
+    if (!coverRightItems.length && this.container.autoGrowCol) return Infinity
+    let minOffsetRight = this.offsetRight()
     coverRightItems.forEach((item) => {
-      const offsetRight = item.offsetLeft()
+      const offsetCol = item.pos.x - (this.pos.x + this.pos.w - 1) - 1
+      let offsetRight
+      if (offsetCol === 0) offsetRight = margin[0] * 2
+      else offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
       if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
     })
-    return minOffsetRight - this.offsetLeft()
+    return minOffsetRight + this.nowWidth()
   }
 
   /**
    * 距离bottom方向上最近的最大可调整距离(包含item的height)
    * */
-  public spaceBottom(): number {
+  public spaceBottom(): number | typeof Infinity {
+    const {size, margin} = getContainerConfigs(this.container, ['size', 'margin'])
     const manager = this.container.layoutManager
-    const coverRightItems = manager.findCoverItemsFromPosition(this.container.items, {
+    const coverBottomItems = manager.findCoverItemsFromPosition(this.container.items, {
       ...this.pos,
       h: this.container.getConfig("row") - this.pos.y + 1
     }, [this])
-    let minOffsetBottom = Infinity
-    coverRightItems.forEach((item) => {
-      const offsetBottom = item.offsetTop()
+    if (!coverBottomItems.length && this.container.autoGrowRow) return Infinity
+    let minOffsetBottom = this.offsetBottom()
+    coverBottomItems.forEach((item) => {
+      const offsetRow = item.pos.y - (this.pos.y + this.pos.h - 1) - 1
+      let offsetBottom
+      if (offsetRow === 0) offsetBottom = margin[1] * 2
+      else offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
       if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
     })
-    return minOffsetBottom - this.offsetTop()
+    return minOffsetBottom + this.nowHeight()
   }
 
   /**

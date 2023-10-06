@@ -33,6 +33,8 @@ export class ItemLayoutEvent extends BaseEvent {
     offsetY: number       // 当前鼠标位置相对clone元素左上角的top距离
   }
   public readonly shadowItemInfo: DOMRect & { // 当前clone元素(影子元素)的rect信息
+    offsetRelativeX: number   // 当前拖动位置相对源item偏移
+    offsetRelativeY: number   // 当前拖动位置相对源item偏移
     offsetLeft: number        // 克隆元素距离当前容器左边界的距离
     offsetTop: number         // 克隆元素距离当前容器上边界的距离
     offsetRight: number       // 克隆元素距离当前容器右边界的距离
@@ -71,8 +73,8 @@ export class ItemLayoutEvent extends BaseEvent {
       mousemoveEvent,
       cloneElement,
       toContainer,
-      cloneElScaleMultipleX = 1,
-      cloneElScaleMultipleY = 1,
+      cloneElScaleMultipleX,
+      cloneElScaleMultipleY,
     } = tempStore
     if (!fromItem || !mousemoveEvent || !cloneElement) return
     const container = this.container
@@ -118,8 +120,10 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetRight = containerRect.right - shadowItemRect.right
     shadowItemInfo.offsetLeft = shadowItemRect.left - containerRect.left
     shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
-    shadowItemInfo.scaleMultipleX = Number(cloneElScaleMultipleX.toFixed(2))
-    shadowItemInfo.scaleMultipleY = Number(cloneElScaleMultipleY.toFixed(2))
+    shadowItemInfo.scaleMultipleX = (cloneElScaleMultipleX || 1)
+    shadowItemInfo.scaleMultipleY = (cloneElScaleMultipleY || 1)
+    shadowItemInfo.offsetRelativeX = this.relativeX - fromItem!.pos.x + 1
+    shadowItemInfo.offsetRelativeY = this.relativeY - fromItem!.pos.y + 1
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}

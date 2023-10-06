@@ -1,7 +1,8 @@
 import {Item} from "@/main/item/Item";
-import {AnalysisResult, BasePosType, CustomItemPos, EachOptions, LayoutItemsInfo} from "@/types";
+import {AnalysisResult, BasePosType, CustomItemPos, EachOptions, ExpandLineOptType, LayoutItemsInfo} from "@/types";
 import {Container, ItemPos} from "@/main";
 import {Finder} from "@/algorithm/interface/Finder";
+import {isNumber, isObject} from "is-what";
 
 /**
  * 布局算法管理器,单独工具类，不和container关联
@@ -13,11 +14,11 @@ export class LayoutManager extends Finder {
 
   public get col(): number {
     const minCol = Math.min.apply(null, this._layoutMatrix.map(line => line.length))
-    return minCol || 1
+    return Math.max(minCol, 1)
   }
 
   public get row(): number {
-    return this._layoutMatrix.length || 1
+    return Math.max(this._layoutMatrix.length, 1)
   }
 
   /**
@@ -166,12 +167,14 @@ export class LayoutManager extends Finder {
   }
 
   /**
-   * @param {Number} num  添加或删除num列
-   * @param force  遇到num为负数时是否强制删除某一行
+   * @param {Number|'auto'} num  添加或删除num列,设置成 'auto' 的情况下会删除col方向所有空白列,默认不传参数为 'auto'
+   * @param force  遇到num为负数时是否强制删除某一行，正常用于响应式等高频变化无关持久占位的布局
    * */
-  public changeCol(num: number | 'auto', force: boolean = false) {
+  public changeCol(num?: number | 'auto', force: boolean = false) {
     const row = this.row
-    if (num === 'auto' || num === void 0) num = (this.col - 1) * -1
+    const col = this.col
+    if (!num) num = 'auto'
+    if (num === 'auto' || num === void 0) num = (this.col - 1) * -1  // 设置成要删除最大的空白列的col列数，下方运算后最少保留minCol列数
     const isSlice = num && num < 0   // 是否开启删除
     if (isSlice) num = Math.max(this.minCol - this.col, num)   // 负数，限制最少为容器col宽度
     // console.log(isSlice, num, maxColindex)
@@ -211,15 +214,21 @@ export class LayoutManager extends Finder {
       if (force) removeCol()   // 如果为force直接删除一列
       else if (hasLastColItemEmpty()) removeCol()   // 否则检查是否整列都为空，都为空则删除该列
     }
+
+    const newCol = this.col
+    if (col !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - col})
   }
 
   /**
-   * @param {Number} num  添加或删除num行
-   * @param force  遇到num为负数时是否强制删除某一列
+   * @param {Number|'auto'} num  添加或删除num行,设置成 'auto' 的情况下会删除col方向所有空白行,默认不传参数为 'auto'
+   * @param force  遇到num为负数时是否强制删除某一列，正常用于响应式等高频变化无关持久占位的布局
    * */
-  public changeRow = (num: number, force: boolean = false) => {
+  public changeRow = (num?: number | 'auto', force: boolean = false) => {
+    if (!num) num = 'auto'
+    const row = this.row
+    if (num === 'auto' || num === void 0) num = (row - 1) * -1  // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
     const isSlice = num && num < 0   // 是否开启删除
-    if (isSlice) num = Math.max(this.minRow - this.row, num)   // 负数，限制最少为容器row宽度
+    if (isSlice) num = Math.max(this.minRow - row, num)   // 负数，限制最少为容器row宽度
     const matrix = this._layoutMatrix
     for (let i = 0; num && i < Math.abs(num); i++) {
       /* 增加一行操作 */
@@ -235,35 +244,75 @@ export class LayoutManager extends Finder {
         else break
       }
     }
+    const newRow = this.row
+    if (row !== newRow) this.container.bus.emit("changeRow", {changeLen: newRow - row})
   }
 
   /**
    * @param pos   拓展矩阵大小到适合pos大小放置的尺寸
+   * @param opt
+   * @param opt.col.force 是否强制改变行列无视是否还存在item占位,正常用于响应式等高频变化无关持久占位的布局
+   * @param opt.row.force 同上
    * */
-  public expandLineForPos(pos: CustomItemPos): void {
+  public expandLineForPos(pos: CustomItemPos, opt: {
+    col?: Pick<ExpandLineOptType, 'force'>,
+    row?: Pick<ExpandLineOptType, 'force'>,
+  } = {}): void {
     this.expandLine({
-      colLen: pos.x + pos.w - 1 - this.col,
-      rowLen: pos.y + pos.h - 1 - this.row,
+      col: {
+        len: pos.x + pos.w - 1 - this.col,
+        force: !!opt.col?.force
+      },
+    })
+    this.expandLine({
+      row: {
+        len: pos.y + pos.h - 1 - this.row,
+        force: !!opt.row?.force
+      },
     })
   }
 
   /**
-   * @param num 要拓展的行列数
+   * @param opt
+   * @param opt.col {Number} 改变的列数量
+   * @param opt.row {Number} 改变的行数量
+   * @param opt.col.force {Boolean} 是否强制改变行列无视是否还存在item占位,正常用于响应式等高频变化无关持久占位的布局
+   * @param opt.col.len   {Number}  改变的行列数量
+   * @param opt.row.force {Boolean} 同上
+   * @param opt.row.len   {Number}  同上
    * */
-  public expandLine({rowLen, colLen}: { rowLen?: number, colLen?: number } = {rowLen: 0, colLen: 0}): void {
-    const oldCol = this.col
-    const oldRow = this.row
-    rowLen = Math.max(this.minRow - oldRow, rowLen)
-    if (rowLen !== 0) this.container.bus.emit("changeRowBefore", {changeLen: rowLen})
-    colLen = Math.max(this.minCol - oldCol, colLen)
-    if (colLen !== 0) this.container.bus.emit("changeColBefore", {changeLen: colLen})
+  public expandLine(
+    opt: {
+      row?: number | Partial<ExpandLineOptType>,
+      col?: number | Partial<ExpandLineOptType>
+    } = {})
+    : void {
+    const {col, row} = opt
+    // console.log({rowLen, colLen})
+    //------------------------参数归一化-----------------------------
+    let colOpt: Partial<ExpandLineOptType>
+    let rowOpt: Partial<ExpandLineOptType>
+    if (isObject(col)) colOpt = col
+    else colOpt = {len: isNumber(col) ? col : 0}
+    if (!colOpt.hasOwnProperty('force')) colOpt.force = false
+    //--------
+    if (isObject(row)) rowOpt = row
+    else rowOpt = {len: isNumber(row) ? row : 0}
+    if (!rowOpt.hasOwnProperty('force')) rowOpt.force = false
+    //-------------------------------------------------------------
+    const curCol = this.col
+    const curRow = this.row
+    const rowLen = Math.max(this.minRow - curRow /* 最多删除计算差值的行数 */, <number>rowOpt.len)
+    if (rowLen && rowLen !== 0 && this.container.autoGrowRow) this.container.bus.emit("changeRowBefore", {
+      changeLen: rowLen || 1,
+      force: rowOpt.force
+    })
 
-    //--------------------------------------------------------------------------------
-    const newCol = this.col
-    const newRow = this.row
-    if (oldRow !== newRow) this.container.bus.emit("changeRow", {changeLen: newRow - oldRow})
-    if (oldCol !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - oldCol})
-
+    const colLen = Math.max(this.minCol - curCol /* 同上 */, <number>colOpt.len)
+    if (colLen && colLen !== 0 && this.container.autoGrowCol) this.container.bus.emit("changeColBefore", {
+      changeLen: colLen || 1,
+      force: colOpt.force
+    })
   }
 
   /**

@@ -1,7 +1,7 @@
 import {ItemDragEvent, ItemResizeEvent} from "@/plugins";
 import {tempStore} from "@/global";
 import {directUpdateLayout} from "@/plugins/common";
-import {throttle} from "@/utils";
+import {clamp, throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
 import {isAnimation} from "@/algorithm/common/tool";
 
@@ -9,13 +9,27 @@ import {isAnimation} from "@/algorithm/common/tool";
  * 更新最新resize后的尺寸
  * */
 export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
+  ev.prevent()
   const fromItem = tempStore.fromItem || ev.fromItem
-  ev.addModifyItem(fromItem, {
+  const container = ev.container
+  const manager = container.layoutManager
+  const toPos = {
     x: ev.startGridX,
     y: ev.startGridY,
-    w: ev.spaceInfo.clampW,
-    h: ev.spaceInfo.clampH,
-  })
+    w: clamp(ev.shadowItemInfo.offsetRelativeX, fromItem.pos.minW, fromItem.pos.maxW),
+    h: clamp(ev.shadowItemInfo.offsetRelativeY, fromItem.pos.minH, fromItem.pos.maxH),
+  }
+  // console.log(ev.shadowItemInfo.offsetRelativeX,ev.shadowItemInfo.offsetRelativeY)
+  console.log(toPos.w, toPos.h)
+  ev.addModifyItem(fromItem, toPos)
+
+  if (toPos.x + toPos.w - 1 > ev.col) {
+    manager.expandLineForPos(toPos, {col: {force: true}})
+  }
+  if (toPos.y + toPos.h - 1 > ev.row) {
+    manager.expandLineForPos(toPos, {row: {force: true}})
+  }
+
   directUpdateLayout(ev)
 }
 
@@ -29,16 +43,22 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
   const {fromItem} = tempStore
   if (!fromItem || !isFunction(callback)) return
   //--------------------------------------------------------------------
+  const toPos = {
+    ...fromItem.pos,
+    x: ev.startGridX,
+    y: ev.startGridY
+  }
+  ev.addModifyItem(fromItem, toPos) // 指定修改当前鼠标拖动item的位置
   ev.findDiffCoverItem(null, (item) => {
     const changePos = callback(item)
     // console.log(changePos)
     if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
   })
-  ev.addModifyItem(fromItem,   // 指定修改当前鼠标拖动item的位置
-    {
-      x: ev.startGridX,
-      y: ev.startGridY
-    })
+  const manager = ev.container.layoutManager
+  manager.expandLineForPos(toPos, {
+    col: {force: true},
+    row: {force: true}
+  })
   directUpdateLayout(ev)
 }, 45)
 
