@@ -95,6 +95,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
         x: Math.max(1, relativeX - mouseDownPosW),
         y: Math.max(1, relativeY - mouseDownPosH)
       }
+    // console.log(relativeX,mouseDownPosW)
+    // console.log(targetPos.x, targetItem.pos.x)
     if (targetPos.x === targetItem.pos.x && targetPos.y === targetItem.pos.y) return true
     //-------------------------------------
     manager.expandLineForPos(targetPos)
@@ -186,9 +188,9 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.shadowItemInfo.offsetRelativeX - 1
-    const Y = this.shadowItemInfo.offsetRelativeY - 1
-
+    const X = this.shadowItemInfo.offsetRelativeX - fromItem.container.pxToW(this.itemInfo.offsetClickWidth)
+    const Y = this.shadowItemInfo.offsetRelativeY - fromItem.container.pxToH(this.itemInfo.offsetClickHeight)
+    // console.log(X, Y)
     if (X === 0 && Y === 0) return
     // console.log(111111111111111111)
     // console.log(X, Y, this.inOuter)

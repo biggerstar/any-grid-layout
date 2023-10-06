@@ -1,5 +1,5 @@
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {throttle} from "@/utils";
+import {throttle, updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins";
@@ -61,4 +61,38 @@ export const updateLayout: Function = throttle(directUpdateLayout, 46)
 export function updateContainerSize() {
   tempStore.fromContainer?.updateContainerSizeStyle?.()
 }
+
+/**
+ * 更新水平方向的item克隆元素尺寸和尝试更新源item的大小
+ * */
+export function updateHorizontalResize(ev: ItemResizeEvent) {
+  const {fromItem, cloneElement} = tempStore
+  if (!fromItem || !cloneElement) return
+  const width = Math.min(ev.spaceInfo.clampWidth, ev.spaceInfo.spaceRight)
+  updateStyle({
+    width: `${width}px`,
+  }, cloneElement)
+  ev.tryChangeSize(fromItem, {w: ev.container.pxToW(width)})
+}
+
+/**
+ * 更新垂直方向的item克隆元素尺寸和尝试更新源item的大小
+ * */
+export function updateVerticalResize(ev: ItemResizeEvent) {
+  const {fromItem, cloneElement} = tempStore
+  if (!fromItem || !cloneElement) return
+  const height = Math.min(ev.spaceInfo.clampHeight, ev.spaceInfo.spaceBottom)
+  updateStyle({
+    height: `${height}px`,
+  }, cloneElement)
+  ev.tryChangeSize(fromItem, {h: ev.container.pxToH(height)})
+}
+
+
+
+
+
+
+
+
 

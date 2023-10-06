@@ -19,17 +19,13 @@ export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
     w: clamp(ev.shadowItemInfo.offsetRelativeX, fromItem.pos.minW, fromItem.pos.maxW),
     h: clamp(ev.shadowItemInfo.offsetRelativeY, fromItem.pos.minH, fromItem.pos.maxH),
   }
-  // console.log(ev.shadowItemInfo.offsetRelativeX,ev.shadowItemInfo.offsetRelativeY)
-  console.log(toPos.w, toPos.h)
+  if (fromItem.pos.w === toPos.w && fromItem.pos.h === toPos.h) return
+
+  manager.expandLineForPos(toPos)
+  // if (toPos.x + toPos.w - 1 > ev.col) manager.expandLineForPos(toPos, {col: {force: true}})
+  // if (toPos.y + toPos.h - 1 > ev.row) manager.expandLineForPos(toPos, {row: {force: true}})
+
   ev.addModifyItem(fromItem, toPos)
-
-  if (toPos.x + toPos.w - 1 > ev.col) {
-    manager.expandLineForPos(toPos, {col: {force: true}})
-  }
-  if (toPos.y + toPos.h - 1 > ev.row) {
-    manager.expandLineForPos(toPos, {row: {force: true}})
-  }
-
   directUpdateLayout(ev)
 }
 

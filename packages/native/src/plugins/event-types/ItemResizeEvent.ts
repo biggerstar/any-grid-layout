@@ -32,6 +32,8 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     this.h = clamp(this.container.pxToH(this.itemInfo.offsetY, {keepSymbol: true}), 1, Infinity)
     this.startGridX = <number>mousedownResizeStartX
     this.startGridY = <number>mousedownResizeStartY
+    this.spaceInfo.spaceRight = this.fromItem.spaceRight()
+    this.spaceInfo.spaceBottom = this.fromItem.spaceBottom()
   }
 
   /**
@@ -83,18 +85,21 @@ export class ItemResizeEvent extends ItemLayoutEvent {
       }
       : {
         ...targetItem.pos,
-        w: this.w,
-        h: this.h,
+        w: this.shadowItemInfo.offsetRelativeX,
+        h: this.shadowItemInfo.offsetRelativeY,
       }
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
     targetPos.w = clamp(targetPos.w, targetItem.pos.minW, targetItem.pos.maxW)
     targetPos.h = clamp(targetPos.h, targetItem.pos.minH, targetItem.pos.maxH)
+    updateContainerSize()   // 必须在判断两个pos是否相等之前
+    if (targetItem.pos.w === targetPos.w && targetItem.pos.h === targetPos.h) return
+    
+    //-------------------------------------
     manager.unmark(targetItem.pos)
     manager.expandLineForPos(targetPos)
 
-    updateContainerSize()
     const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位
     if (!isBlank) {
       manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去

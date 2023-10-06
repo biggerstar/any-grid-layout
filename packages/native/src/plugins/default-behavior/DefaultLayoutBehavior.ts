@@ -2,9 +2,14 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {checkItemPositionHasChanged, checkItemSizeHasChanged, updateContainerSize} from "@/plugins/common";
+import {
+  checkItemPositionHasChanged,
+  checkItemSizeHasChanged,
+  updateContainerSize,
+  updateHorizontalResize,
+  updateVerticalResize
+} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {getContainerConfigs, updateStyle} from "@/utils";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent} from "@/plugins";
@@ -122,43 +127,22 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
 
   resizeToTop(ev: ItemResizeEvent) {
     // console.log('resizeToTop')
-    const {fromItem, cloneElement} = tempStore
-    if (!fromItem || !cloneElement) return
-    updateStyle({
-      height: `${Math.min(ev.spaceInfo.clampHeight, ev.fromItem.spaceBottom())}px`,
-    }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.h})
+    updateVerticalResize(ev)
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
     // console.log('resizeToBottom')
-    const {fromItem, cloneElement} = tempStore
-    if (!fromItem || !cloneElement) return
-    updateStyle({
-      height: `${Math.min(ev.spaceInfo.clampHeight, ev.fromItem.spaceBottom())}px`,
-    }, cloneElement)
-    ev.tryChangeSize(fromItem, {h: ev.h})
+    updateVerticalResize(ev)
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
     // console.log('resizeToLeft')
-    const {fromItem, cloneElement} = tempStore
-    if (!fromItem || !cloneElement) return
-    updateStyle({
-      width: `${Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight())}px`,
-    }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.w})
+    updateHorizontalResize(ev)
   },
 
   resizeToRight(ev: ItemResizeEvent) {
     // console.log('resizeToRight')
-    const {fromItem, cloneElement} = tempStore
-    if (!fromItem || !cloneElement) return
-    // console.log(Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight()))
-    updateStyle({
-      width: `${Math.min(ev.spaceInfo.clampWidth, ev.fromItem.spaceRight())}px`,
-    }, cloneElement)
-    ev.tryChangeSize(fromItem, {w: ev.w})
+    updateHorizontalResize(ev)
   },
 
   itemSizeChanged() {

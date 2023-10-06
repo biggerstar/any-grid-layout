@@ -25,20 +25,22 @@ export class ItemLayoutEvent extends BaseEvent {
     maxWidth: number
     minHeight: number
     maxHeight: number
-    offsetLeft: number    // fromItem距离当前容器左边界的距离
-    offsetTop: number     // fromItem距离当前容器上边界的距离
-    offsetRight: number   // fromItem距离当前容器右边界的距离
-    offsetBottom: number  // fromItem距离当前容器下边界的距离
-    offsetX: number       // 当前鼠标位置相对clone元素左上角的left距离
-    offsetY: number       // 当前鼠标位置相对clone元素左上角的top距离
+    offsetLeft: number         // fromItem距离当前容器左边界的距离
+    offsetTop: number          // fromItem距离当前容器上边界的距离
+    offsetRight: number        // fromItem距离当前容器右边界的距离
+    offsetBottom: number       // fromItem距离当前容器下边界的距离
+    offsetX: number            // 当前鼠标位置相对clone元素左上角的left距离
+    offsetY: number            // 当前鼠标位置相对clone元素左上角的top距离
+    offsetClickWidth: number   // 鼠标首次点击位置距离clone元素左上角距离
+    offsetClickHeight: number  // 鼠标首次点击位置距离clone元素左上角距离
   }
   public readonly shadowItemInfo: DOMRect & { // 当前clone元素(影子元素)的rect信息
-    offsetRelativeX: number   // 当前拖动位置相对源item偏移
-    offsetRelativeY: number   // 当前拖动位置相对源item偏移
     offsetLeft: number        // 克隆元素距离当前容器左边界的距离
     offsetTop: number         // 克隆元素距离当前容器上边界的距离
     offsetRight: number       // 克隆元素距离当前容器右边界的距离
     offsetBottom: number      // 克隆元素距离当前容器下边界的距离
+    offsetRelativeX: number   // 当前拖动位置相对源item偏移
+    offsetRelativeY: number   // 当前拖动位置相对源item偏移
     scaleMultipleX: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
     scaleMultipleY: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
   }
@@ -48,10 +50,8 @@ export class ItemLayoutEvent extends BaseEvent {
     clampHeight: number       // 受限制的当前克隆元素的实时高度，受 itemInfo.maxHeight 限制
     clampW: number            // 受限制的当前克隆元素的实时网格单位宽度，受 itemInfo.clampWidth 限制
     clampH: number            // 受限制的当前克隆元素的实时网格单位高度，受 itemInfo.clampHeight 限制
-    // spaceWidth: number        // 受限制的当前克隆元素的实时宽度，受 item.spaceWidth() 限制
-    // spaceHeight: number       // 受限制的当前克隆元素的实时高度，受 item.spaceHeight() 限制
-    // spaceRight: number        // 距离right方向上最近的可调整距离(包含item的width)
-    // spaceBottom: number       // 距离bottom方向上最近的最大可调整距离(包含item的height)
+    spaceRight: number        // 距离right方向上最近的可调整距离(包含item的width)
+    spaceBottom: number       // 距离bottom方向上最近的最大可调整距离(包含item的height)
   }
 
   /**
@@ -75,6 +75,8 @@ export class ItemLayoutEvent extends BaseEvent {
       toContainer,
       cloneElScaleMultipleX,
       cloneElScaleMultipleY,
+      mousedownItemOffsetTopProportion: PT,
+      mousedownItemOffsetLeftProportion: PL
     } = tempStore
     if (!fromItem || !mousemoveEvent || !cloneElement) return
     const container = this.container
@@ -113,6 +115,8 @@ export class ItemLayoutEvent extends BaseEvent {
     itemInfo.offsetLeft = fromItem.offsetLeft()
     itemInfo.offsetX = mousemoveEvent.clientX - itemRect.left
     itemInfo.offsetY = mousemoveEvent.clientY - itemRect.top
+    itemInfo.offsetClickWidth = itemInfo.width * PT
+    itemInfo.offsetClickHeight = itemInfo.height * PL
 
     /*------------- ShadowItemInfo Rect ----------------*/
     const shadowItemInfo: ItemLayoutEvent["shadowItemInfo"] = this.shadowItemInfo = <any>shadowItemRect || getClientRect(fromItem.element)

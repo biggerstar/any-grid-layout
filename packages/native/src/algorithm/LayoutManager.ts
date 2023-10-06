@@ -283,22 +283,24 @@ export class LayoutManager extends Finder {
    * */
   public expandLine(
     opt: {
-      row?: number | Partial<ExpandLineOptType>,
-      col?: number | Partial<ExpandLineOptType>
+      row?: number | typeof NaN | Partial<ExpandLineOptType>,
+      col?: number | typeof NaN | Partial<ExpandLineOptType>
     } = {})
     : void {
     const {col, row} = opt
-    // console.log({rowLen, colLen})
     //------------------------参数归一化-----------------------------
     let colOpt: Partial<ExpandLineOptType>
     let rowOpt: Partial<ExpandLineOptType>
     if (isObject(col)) colOpt = col
-    else colOpt = {len: isNumber(col) ? col : 0}
+    else colOpt = {len: col}
     if (!colOpt.hasOwnProperty('force')) colOpt.force = false
+    if (isNumber(colOpt.len) && (isNaN(colOpt.len)) || !isNumber(colOpt.len)) colOpt.len = 0
     //--------
     if (isObject(row)) rowOpt = row
-    else rowOpt = {len: isNumber(row) ? row : 0}
+    else rowOpt = {len: row}
     if (!rowOpt.hasOwnProperty('force')) rowOpt.force = false
+    if (isNumber(rowOpt.len) && (isNaN(rowOpt.len)) || !isNumber(rowOpt.len)) rowOpt.len = 0
+
     //-------------------------------------------------------------
     const curCol = this.col
     const curRow = this.row
