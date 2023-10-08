@@ -1,10 +1,7 @@
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {Item} from "@/main";
-import {CustomItemPos} from "@/types";
 import {tempStore} from "@/global";
 import {isNumber} from "is-what";
 import {clamp} from "@/utils";
-import {updateContainerSize} from "@/plugins/common";
 
 /**
  * Item resize事件对象
@@ -63,52 +60,5 @@ export class ItemResizeEvent extends ItemLayoutEvent {
     if (offsetY < lastOffsetSelfItemY) {
       bus.emit('resizeToTop')
     }
-  }
-
-  /**
-   * 尝试更新当前Item的大小
-   * 其他Item静止,只会更新一个Item
-   * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
-   * @param item？ 当前要移动的item
-   * @param pos  当前移动到新位置的pos
-   * */
-  public tryChangeSize(item?: Item, pos?: Partial<Pick<CustomItemPos, 'w' | 'h'>>): boolean {
-    let {
-      fromItem,
-    } = tempStore
-    const targetItem = item || fromItem
-    if (!targetItem) return false
-    const targetPos = pos
-      ? {
-        ...targetItem.pos,
-        ...pos
-      }
-      : {
-        ...targetItem.pos,
-        w: this.shadowItemInfo.offsetRelativeX,
-        h: this.shadowItemInfo.offsetRelativeY,
-      }
-    //-------------------------------------
-    const container = this.container
-    const manager = container.layoutManager
-    targetPos.w = clamp(targetPos.w, targetItem.pos.minW, targetItem.pos.maxW)
-    targetPos.h = clamp(targetPos.h, targetItem.pos.minH, targetItem.pos.maxH)
-    updateContainerSize()   // 必须在判断两个pos是否相等之前
-    if (targetItem.pos.w === targetPos.w && targetItem.pos.h === targetPos.h) return
-    
-    //-------------------------------------
-    manager.unmark(targetItem.pos)
-    manager.expandLineForPos(targetPos)
-
-    const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位
-    if (!isBlank) {
-      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
-      return false
-    }
-    manager.mark(targetPos, targetItem)
-    targetItem.pos.w = targetPos.w
-    targetItem.pos.h = targetPos.h
-    targetItem.updateItemLayout()
-    return true
   }
 }

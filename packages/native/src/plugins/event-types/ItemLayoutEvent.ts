@@ -4,6 +4,7 @@ import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 import {clamp, getClientRect, getContainerConfigs, SingleThrottle} from "@/utils";
+import {updateContainerSize} from "@/plugins/common";
 
 const singleRectThrottle = new SingleThrottle<{ itemRect: DOMRect, containerRect: DOMRect }>()
 const singleShadowRectThrottle = new SingleThrottle<{ shadowItemRect: DOMRect }>()
@@ -14,10 +15,10 @@ export class ItemLayoutEvent extends BaseEvent {
   public readonly row: number // 当前容器的row
   public readonly size: MarginOrSizeDesc // 当前容器的row
   public readonly margin: MarginOrSizeDesc // 当前容器的row
-  public readonly gridX: number // 当前鼠标位置以容器左上角为准限制在容器内的x栅格值
-  public readonly gridY: number // 当前鼠标位置以容器左上角为准限制在容器内的y栅格值
-  public readonly relativeX: number   // 当前鼠标以容器左上角为准距离源容器的真实x栅格值
-  public readonly relativeY: number   // 当前鼠标以容器左上角为准距离源容器的真实y栅格值
+  public readonly gridX: number // 当前[鼠标位置]以容器左上角为准限制在容器内的x栅格值
+  public readonly gridY: number // 当前[鼠标位置]以容器左上角为准限制在容器内的y栅格值
+  public readonly relativeX: number   // 当前[鼠标位置]以容器左上角为准距离源容器的真实x栅格值
+  public readonly relativeY: number   // 当前[鼠标位置]以容器左上角为准距离源容器的真实y栅格值
   public readonly containerInfo: DOMRect
   public readonly inOuter: boolean   // 鼠标指针位置是否在容器外部
   public readonly itemInfo: DOMRect & {  // 源item的信息
@@ -39,8 +40,8 @@ export class ItemLayoutEvent extends BaseEvent {
     offsetTop: number         // 克隆元素距离当前容器上边界的距离
     offsetRight: number       // 克隆元素距离当前容器右边界的距离
     offsetBottom: number      // 克隆元素距离当前容器下边界的距离
-    offsetRelativeX: number   // 当前拖动位置相对源item偏移
-    offsetRelativeY: number   // 当前拖动位置相对源item偏移
+    offsetRelativeW: number   // 当前拖动位置相对源item偏移
+    offsetRelativeH: number   // 当前拖动位置相对源item偏移
     scaleMultipleX: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
     scaleMultipleY: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
   }
@@ -126,8 +127,8 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
     shadowItemInfo.scaleMultipleX = (cloneElScaleMultipleX || 1)
     shadowItemInfo.scaleMultipleY = (cloneElScaleMultipleY || 1)
-    shadowItemInfo.offsetRelativeX = this.relativeX - fromItem!.pos.x + 1
-    shadowItemInfo.offsetRelativeY = this.relativeY - fromItem!.pos.y + 1
+    shadowItemInfo.offsetRelativeW = this.relativeX - fromItem!.pos.x + 1
+    shadowItemInfo.offsetRelativeH = this.relativeY - fromItem!.pos.y + 1
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
@@ -167,4 +168,52 @@ export class ItemLayoutEvent extends BaseEvent {
     this._modifyItems = []
     return _items
   }
+
+  /**
+   * 尝试更新当前Item的大小或   TODO: 位置
+   * 其他Item静止,只会更新一个Item
+   * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
+   * @param item？ 当前要移动的item
+   * @param pos  当前移动到新位置的pos
+   * */
+  public tryChangeStyle(item?: Item, pos?: Partial<Pick<CustomItemPos, 'w' | 'h'>>): boolean {
+    let {
+      fromItem,
+    } = tempStore
+    const targetItem = item || fromItem
+    if (!targetItem) return false
+    const targetPos = pos
+      ? {
+        ...targetItem.pos,
+        ...pos
+      }
+      : {
+        ...targetItem.pos,
+        w: this.shadowItemInfo.offsetRelativeW,
+        h: this.shadowItemInfo.offsetRelativeH,
+      }
+    //-------------------------------------
+    const container = this.container
+    const manager = container.layoutManager
+    targetPos.w = clamp(targetPos.w, targetItem.pos.minW, targetItem.pos.maxW)
+    targetPos.h = clamp(targetPos.h, targetItem.pos.minH, targetItem.pos.maxH)
+    updateContainerSize()   // 必须在判断两个pos是否相等之前
+
+    if (targetItem.pos.w === targetPos.w && targetItem.pos.h === targetPos.h) return false
+    //-------------------------------------
+    manager.unmark(targetItem.pos)
+    manager.expandLineForPos(targetPos)
+
+    const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位
+    if (!isBlank) {
+      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
+      return false
+    }
+    manager.mark(targetPos, targetItem)
+    targetItem.pos.w = targetPos.w
+    targetItem.pos.h = targetPos.h
+    targetItem.updateItemLayout()
+    return true
+  }
 }
+

@@ -83,6 +83,7 @@ export type ContainerInstantiationOptions = {
    * 当前的全局布局配置，该配置最终会和layouts中不同px下的配置合并作为最终使用的配置
    * */
   global?: CustomLayoutsOption,
+  plugins?: GridPlugin[],
 }
 
 
@@ -115,6 +116,7 @@ export type GridPlugin = CustomEventOptions & {
   /** 插件版本 */
   version?: string | number,
 } | ((app: Container) => void)
+
 
 export type CustomEventOptions = {
   //------------------throw-message--------------
@@ -260,25 +262,14 @@ export type CustomEventOptions = {
   flip?(ev: MatrixEvent): void;
 
   /**
-   * 指定在溢出的时候如何增加列，需要指定 autoGrow 配置才会触发
+   * 每个事件触发开始时都会执行的钩子
    * */
-  changeColBefore?(ev: MatrixEvent): void;
+  every?(ev: BaseEvent & Record<any, any>): void;
 
   /**
-   * 指定在溢出的时候如何增加行，需要指定 autoGrow 配置才会触发
+   * 每个事件触发结束时都会执行的钩子
    * */
-
-  changeRowBefore?(ev: MatrixEvent): void;
-
-  /**
-   * changeColBefore事件中如果为矩阵对象进行列数变化，则会触发事件
-   * */
-  changeCol?(ev: MatrixEvent): void;
-
-  /**
-   * changeRowBefore事件中如果为矩阵对象进行行数变化，则会触发事件
-   * */
-  changeRow?(ev: MatrixEvent): void;
+  everyDone?(ev: BaseEvent & Record<any, any>): void;
 }
 
 export type AnalysisResult = {

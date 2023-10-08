@@ -12,6 +12,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public readonly toPos: CustomItemPos
   public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格X位置,和resize解释一样
   public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格Y位置,和resize解释一样
+  public readonly startRelativeX: number // 克隆元素左上角位于当前网格容器左上角相对在容器内的栅格Y位置,和resize解释一样
+  public readonly startRelativeY: number // 克隆元素左上角位于当前网格容器左上角相对在容器内的栅格Y位置,和resize解释一样
   public readonly offsetGridX: number // 当前拖动位置相对源item偏移，限制在容器内
   public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
 
@@ -24,12 +26,14 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const container = this.container
     const {offsetLeft, offsetTop, scaleMultipleX, scaleMultipleY} = this.shadowItemInfo
     const {width, height} = this.itemInfo
-    const cloneElStartWidth = clamp(offsetLeft + width * (scaleMultipleX - 1), 0, this.containerInfo.width)
-    const cloneElStartHeight = clamp(offsetTop + height * (scaleMultipleY - 1), 0, this.containerInfo.height)
+    const cloneElStartWidth = Math.max(0, offsetLeft + width * (scaleMultipleX - 1))
+    const cloneElStartHeight = Math.max(0, offsetTop + height * (scaleMultipleY - 1))
     const hasHalfItemSizeWidth = cloneElStartWidth + (this.size[0] + this.margin[0]) / 2  // Q:为何加上toHalfItemSizeWidth? A:只有克隆元素的边界进入下一个item前往的item空位超过一半的时候才会更变startX
     const hasHalfItemSizeHeight = cloneElStartHeight + (this.size[1] + this.margin[1]) / 2  // 同上
-    this.startGridX = clamp(container.pxToW(hasHalfItemSizeWidth), 1, this.col - fromItem!.pos.w + 1)
-    this.startGridY = clamp(container.pxToH(hasHalfItemSizeHeight), 1, this.row - fromItem!.pos.h + 1)
+    this.startRelativeX = clamp(container.pxToW(hasHalfItemSizeWidth), 1, Infinity)
+    this.startRelativeY = clamp(container.pxToH(hasHalfItemSizeHeight), 1, Infinity)
+    this.startGridX = clamp(this.startRelativeX, 1, this.col - fromItem!.pos.w + 1)
+    this.startGridY = clamp(this.startRelativeY, 1, this.row - fromItem!.pos.h + 1)
     this.toPos = {
       w: this.fromItem.pos.w,
       h: this.fromItem.pos.h,
@@ -50,12 +54,14 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public findDiffCoverItem(oneItemFunc: Function | null, multipleItemFunc: Function = null): Item[] {
     const {fromItem} = tempStore
     if (!fromItem) return []
-    // console.log(x,y);
-    let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, {
-      ...fromItem.pos,
-      x: this.startGridX,
-      y: this.startGridY
-    })
+    const findPos = {
+      w: Math.abs(this.fromItem.pos.x - this.startGridX) + fromItem.pos.w,
+      h: Math.abs(this.fromItem.pos.y - this.startGridY) + fromItem.pos.h,
+      x: Math.min(this.startGridX, <number>fromItem.pos.x),
+      y: Math.min(this.startGridY, <number>fromItem.pos.y)
+    }
+    let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, findPos, [fromItem])
+
     if (!toItemList.length) return []
     toItemList = toItemList.filter(item => item !== fromItem)
     if (toItemList.length === 1 && isFunction(oneItemFunc)) {
@@ -188,8 +194,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.shadowItemInfo.offsetRelativeX - fromItem.container.pxToW(this.itemInfo.offsetClickWidth)
-    const Y = this.shadowItemInfo.offsetRelativeY - fromItem.container.pxToH(this.itemInfo.offsetClickHeight)
+    const X = this.shadowItemInfo.offsetRelativeW - fromItem.container.pxToW(this.itemInfo.offsetClickWidth)
+    const Y = this.shadowItemInfo.offsetRelativeH - fromItem.container.pxToH(this.itemInfo.offsetClickHeight)
     // console.log(X, Y)
     if (X === 0 && Y === 0) return
     // console.log(111111111111111111)
@@ -202,6 +208,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
       if (X < 0) bus.emit("dragToLeft")
       else if (X > 0) bus.emit("dragToRight")
     }
+
     if (Y !== 0) {
       if (Y < 0) bus.emit("dragToTop")
       else if (Y > 0) bus.emit("dragToBottom")

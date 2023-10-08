@@ -106,7 +106,8 @@ export class Container {
     if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
-    this.layoutManager.container = this
+    this.layoutManager.container = this;
+    (options.plugins || []).forEach(plugin => this.pluginManager.use(plugin))
     let resOption = options
     this.bus.emit('config', {
       options: options,
@@ -167,28 +168,21 @@ export class Container {
    * 是否是自动增长col方向的容器
    * */
   public get autoGrowCol() {
-    return !this._getConfig('col') && this._getConfig("autoGrow").horizontal
+    const {col, autoGrow} = getContainerConfigs(this, ["col", "autoGrow"])
+    return !col && autoGrow.horizontal
   }
 
   /**
    * 是否是自动增长row方向的容器
    * */
   public get autoGrowRow() {
-    return !this._getConfig('row') && this._getConfig("autoGrow").vertical
-  }
-
-  private _getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
-    const has = (obj: object, name: string) => obj.hasOwnProperty(name)
-    if (has(this.useLayout, name)) return this.useLayout[name]
-    if (has(this.layout, name)) return this.layout[name]
-    if (has(this.global, name)) return this.global[name]
-    if (has(this._default, name)) return this._default[name]
-    return void 0
+    const {row, autoGrow} = getContainerConfigs(this, ["row", "autoGrow"])
+    return !row && autoGrow.vertical
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
-    let data = this._getConfig(name)
+    let data = getContainerConfigs(this, name)
     let ev: ConfigurationEvent
     this.bus.emit('getConfig', {
       configName: name,
@@ -200,7 +194,7 @@ export class Container {
   }
 
   /** 将值设置到当前使用的配置信息中 */
-  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name]): void {
+  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name],): void {
     let ev: ConfigurationEvent
     if (['col', 'row'].includes(name)) this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
     this.bus.emit('setConfig', {
@@ -338,7 +332,7 @@ export class Container {
    * */
   private _trySwitchLayout(): void {
     const useLayout = this.useLayout
-    const px = this._getConfig("px")
+    const px = getContainerConfigs(this, 'px')
     if (!px || !useLayout.px) return
     if (px === useLayout.px) return
     if (this.platform === 'native') {

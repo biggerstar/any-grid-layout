@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins";
 import {tempStore} from "@/global";
-import {canExchange, getClientRect, SingleThrottle, throttle, updateStyle} from "@/utils";
+import {canExchange, getClientRect, getContainerConfigs, SingleThrottle, throttle, updateStyle} from "@/utils";
 import {
   grid_clone_el,
   grid_dragging_clone_el,
@@ -100,7 +100,7 @@ const _updateLocation: Function = () => {
   let nextWidth, nextHeight
   const targetContainer = toContainer || fromContainer
   const exchange = canExchange()
-  const {adaption, keepBaseSize} = targetContainer.getConfig('cloneElement')
+  const {adaption, keepBaseSize} = getContainerConfigs(targetContainer, 'cloneElement')
 
   nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
   nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')

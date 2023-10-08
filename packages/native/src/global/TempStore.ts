@@ -56,8 +56,8 @@ class TempStore {
   lastResizeH: number | null
   lastDragX: number | null
   lastDragY: number | null
-  preventDragging: boolean | null
-  preventResizing: boolean | null
+  preventedDragging: boolean | null   // 是否阻止了dragging 事件标记，如果阻止了便不会执行dragend
+  preventedResizing: boolean | null    // 是否阻止了resizing 事件标记，如果阻止了便不会执行resized
   cloneElScaleMultipleX: number | null  // 克隆元素X方向的放大倍数
   cloneElScaleMultipleY: number | null  // 克隆元素Y方向的放大倍数
   mousedownResizeStartX: number | null  // 鼠标resize的时候克隆元素固定距离左上角的X位置

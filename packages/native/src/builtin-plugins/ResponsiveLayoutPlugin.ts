@@ -3,20 +3,31 @@
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {directUpdateLayout, updateLayout} from "@/plugins/common";
-import {ItemExchangeEvent} from "@/plugins";
+import {BaseEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 import {
-  throttleUpdateResponsiveResizeLayout,
+  directUpdateLayout,
+  updateLayout,
   updateResponsiveDragLayout,
   updateResponsiveResizeLayout
 } from "@/builtin-plugins/common";
+import {getContainerConfigs} from "@/utils";
 
 /**
  * 响应式布局插件
  * */
 export const ResponsiveLayoutPlugin = definePlugin({
   name: 'ResponsiveLayoutPlugin',
+  containerMountBefore(ev: BaseEvent) {
+    const {autoGrow, direction} = getContainerConfigs(ev.container, ["autoGrow", 'direction'])
+    if (autoGrow.vertical && autoGrow.horizontal) {
+      if (direction.includes('row')) autoGrow.horizontal = false
+      if (direction.includes('column')) autoGrow.vertical = false
+      ev.container.bus.emit("warn", {
+        message: `[${this.name}] autoGrow 的 horizontal 和 vertical 配置不建议都设置为true,已自动修改为只保留一边自动增长`
+      })
+    }
+  },
   exchangeVerification(ev: ItemExchangeEvent) {
     ev.prevent()
     if (!ev.fromItem) return
@@ -44,9 +55,11 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   dragToTop(ev: ItemDragEvent) {
+    // console.log('dragToTop')
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
+    if (fromItem.pos.y <= 1) return
     updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y + fromItem.pos.h}))
   },
 
@@ -55,20 +68,25 @@ export const ResponsiveLayoutPlugin = definePlugin({
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
+    if (fromItem.pos.x + fromItem.pos.w - 1 >= ev.col) return
     updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
   },
 
   dragToBottom(ev: ItemDragEvent) {
+    // console.log('dragToBottom')
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
+    if (fromItem.pos.y + fromItem.pos.h - 1 >= ev.row) return
     updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
   },
 
   dragToLeft(ev: ItemDragEvent) {
+    // console.log('dragToLeft')
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
+    if (fromItem.pos.x <= 1) return
     updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x + fromItem.pos.w}))
   },
 
@@ -79,19 +97,19 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   resizeToTop(ev: ItemResizeEvent) {
-    throttleUpdateResponsiveResizeLayout(ev)
+    updateResponsiveResizeLayout(ev)
   },
 
   resizeToBottom(ev: ItemResizeEvent) {
-    throttleUpdateResponsiveResizeLayout(ev)
+    updateResponsiveResizeLayout(ev)
   },
 
   resizeToLeft(ev: ItemResizeEvent) {
-    throttleUpdateResponsiveResizeLayout(ev)
+    updateResponsiveResizeLayout(ev)
   },
 
   resizeToRight(ev: ItemResizeEvent) {
-    throttleUpdateResponsiveResizeLayout(ev)
+    updateResponsiveResizeLayout(ev)
   },
 
   closed(ev: ItemLayoutEvent) {

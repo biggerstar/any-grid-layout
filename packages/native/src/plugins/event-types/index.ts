@@ -75,8 +75,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //--------------each------------------
   each: MatrixEvent,
   flip: MatrixEvent,
-  changeColBefore: MatrixEvent,
-  changeRowBefore: MatrixEvent,
-  changeCol: MatrixEvent,
-  changeRow: MatrixEvent,
+  //--------------every------------------
+  every:BaseEvent,
+  everyDone:BaseEvent,
 }

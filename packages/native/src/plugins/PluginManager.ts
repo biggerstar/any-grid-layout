@@ -3,7 +3,6 @@ import {isFunction, isObject} from 'is-what'
 import * as AllDefaultBehavior from "@/plugins/default-behavior";
 import {EventMap} from './event-types'
 import {CustomEventOptions, GridPlugin} from "@/types";
-import {tempStore} from "@/global";
 
 let DefaultBehavior = {}
 for (const name in AllDefaultBehavior) {
@@ -12,12 +11,16 @@ for (const name in AllDefaultBehavior) {
 
 /**
  * 插件管理器
+ *    外部插件事件:
+ *       defaultActionFn     外部插件的事件
+ *       every               任何事件都会执行，在用户插件执行之前被调用
+ *       everyDone           任何事件都会执行，在用户插件执行之后被调用
  *
- * 内置事件:
- *    $$defaultActionFn   [内置用] 在[事件对象实例化之前]前调用,不可被阻止
- *    $defaultActionFn    [内置用] 在事件对象[所有插件回调前]调用,不可被阻止
- *    defaultActionFn$    [内置用] 在事件对象[所有插件回调之后]调用,不可被阻止
- *    defaultActionFn$$   [内置用] 默认事件被执行后调用,不可被阻止
+ *    内置事件:
+ *       $$defaultActionFn   [内置用] 在[事件对象实例化之前]前调用,不可被阻止
+ *       $defaultActionFn    [内置用] 在事件对象[所有插件回调前]调用,不可被阻止
+ *       defaultActionFn$    [内置用] 在事件对象[所有插件回调之后]调用,不可被阻止
+ *       defaultActionFn$$   [内置用] 默认事件被执行后调用,不可被阻止
  * */
 export class PluginManager {
   public container: Container
@@ -33,11 +36,13 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options: Record<any, any> = {}) {
-    // if (!['getConfig', 'setConfig', 'dragging', 'updateCloneElementStyle', 'each', 'flip', 'dragToBlank'].includes(eventName)) {
+    // if (!['getConfig', 'setConfig', 'dragging', 'resizing', 'updateCloneElementStyle', 'each', 'flip', 'dragToBlank'].includes(eventName)) {
     //   console.log(eventName)
     // }
     const container = this.container
     const GEvent = EventMap[eventName] || EventMap['*']
+    const every: Function = DefaultBehavior['every']
+    const everyDone: Function = DefaultBehavior['everyDone']
     const defaultActionFn: Function = DefaultBehavior[eventName]   //  [内置用] 在event$之后执行,可被外部插件阻止
     const $$defaultActionFn: Function = DefaultBehavior[`$$${eventName}`]   // [内置用] 在[事件对象实例化之前]前调用,不可被阻止
     const $defaultActionFn: Function = DefaultBehavior[`$${eventName}`]   // [内置用] 在事件对象[所有插件回调前]调用,不可被阻止
@@ -52,7 +57,7 @@ export class PluginManager {
       default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
     })
     const eventCallback: Function = options.callback
-    if (eventCallback) delete options.eventCallback
+    eventCallback && delete options.eventCallback
 
     // 合并外部传入配置到ev对象中，
     Object.assign(ev, options)
@@ -61,32 +66,40 @@ export class PluginManager {
     Object.keys(ev).forEach(name => ev[name] === void 0 ? ev[name] = null : void 0)
 
     // 插件执行之前的内置事件，不可被用户插件阻止
-    if (isFunction($defaultActionFn)) $defaultActionFn.call(null, ev)
+    isFunction($defaultActionFn) && $defaultActionFn.call(null, ev)
+
+    // 为所有事件触发，不可被用户插件阻止
+    isFunction(every) && every.call(null, ev)
 
     // 执行用户插件
     this.plugins.forEach((plugin) => {
       const callFunc: Function = <any>plugin[eventName]
+      // 为所有用户插件事件触发every事件，不可被用户插件阻止
+      if (isFunction(every)) every.call(plugin, ev)
+
+      // 为所有用户插件事件触发，支持被用户插件阻止
       if (isFunction(callFunc)) callFunc.call(plugin, ev)
     })
 
     // 插件执行之后的内置事件，不可被用户插件阻止
-    if (isFunction(defaultActionFn$)) defaultActionFn$.call(null, ev)
+    isFunction(defaultActionFn$) && defaultActionFn$.call(null, ev)
 
     // 最后执行默认行为函数
-    if (!ev.defaultPrevented && isFunction(ev.default)) {
+    if (!ev.prevented && isFunction(ev.default)) {
       (ev.default || defaultActionFn)?.call(null, ev)  // 内置的插件没有this
     }
 
     // 默认函数执行之后的内置事件，不可被用户插件阻止
-    if (isFunction(defaultActionFn$$)) defaultActionFn$$.call(null, ev)
+    isFunction(defaultActionFn$$) && defaultActionFn$$.call(null, ev)
+
+    // 为所有用户插件事件触发，不可被用户插件阻止
+    this.plugins.forEach(plugin => isFunction(everyDone) && everyDone.call(plugin, ev))
+
+    // 为所有事件触发，不可被用户插件阻止
+    isFunction(everyDone) && everyDone.call(null, ev)
 
     // 如果外部有指定emit的callback函数回调，将最终ev回调的回调函数
-    if (isFunction(eventCallback)) eventCallback.call(null, ev)
-
-    if (ev.defaultPrevented) {
-      if (eventName === 'dragging') tempStore.preventDragging = true
-      if (eventName === 'resizing') tempStore.preventResizing = true
-    }
+    isFunction(eventCallback) && eventCallback.call(null, ev)
   }
 
   /**

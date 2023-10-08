@@ -52,17 +52,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
    * container盒子大小改变
    * */
   $containerResizing(ev: ContainerSizeChangeEvent) {
-    const {isColChanged, isRowChanged, curCol, curRow} = ev
-    const container = ev.container
-    if (isColChanged || isRowChanged) container.bus.emit('containerSizeChanged')
-    if (isColChanged) {
-      container.bus.emit('colChanged')
-      container.__ownTemp__.preCol = curCol
-    }
-    if (isRowChanged) {
-      container.bus.emit('rowChanged')
-      container.__ownTemp__.preRow = curRow
-    }
+    if (ev.isColChanged || ev.isRowChanged) ev.container.bus.emit('containerSizeChanged')
   },
 
   containerResizing(ev: ContainerSizeChangeEvent) {
@@ -85,8 +75,10 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   },
 
   dragend$(ev: ItemDragEvent) {
-    ev.container.layoutManager.changeCol()
     updateContainerSize()
+    const manager = ev.container.layoutManager
+    manager.changeCol()
+    manager.changeRow()
   },
 
   dragToBlank(_: ItemDragEvent) {
@@ -121,8 +113,11 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   resized(_: ItemResizeEvent) {
   },
 
-  resized$(_: ItemResizeEvent) {
+  resized$(ev: ItemResizeEvent) {
     updateContainerSize()
+    const manager = ev.container.layoutManager
+    manager.changeCol()
+    manager.changeRow()
   },
 
   resizeToTop(ev: ItemResizeEvent) {

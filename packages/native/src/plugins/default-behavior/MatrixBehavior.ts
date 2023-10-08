@@ -80,10 +80,6 @@ export const MatrixBehavior = definePlugin({
     const container = ev.container
     if (container.autoGrowRow && ev.changeLen) container.layoutManager.changeRow(ev.changeLen, ev.force)
   },
-  changeCol(_: MatrixEvent) {
-  },
-  changeRow(_: MatrixEvent) {
-  }
 })
 
 

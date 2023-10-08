@@ -1,8 +1,5 @@
-import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {throttle, updateStyle} from "@/utils";
-import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
+import {updateStyle} from "@/utils";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {ItemLayoutEvent} from "@/plugins";
 import {tempStore} from "@/global";
 
 
@@ -33,29 +30,6 @@ export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
 }
 
 /**
- * 立即更新布局
- * */
-export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent): boolean => {
-  const {container} = ev
-  if (!container._mounted) return false
-  const {layoutManager: manager} = container
-  autoSetSizeAndMargin(container, true)
-  //-------------------------------------------------------------//
-  container.reset()
-  let res = manager.analysis(ev.getModifyItems())
-  if (!res.isSuccess) return false
-  res.patch()
-  ev.patchStyle()
-  updateContainerSize()
-  return true
-}
-
-/**
- * 节流更新布局的函数
- * */
-export const updateLayout: Function = throttle(directUpdateLayout, 46)
-
-/**
  * 更新适合当前容器的容器大小
  * */
 export function updateContainerSize() {
@@ -72,7 +46,7 @@ export function updateHorizontalResize(ev: ItemResizeEvent) {
   updateStyle({
     width: `${width}px`,
   }, cloneElement)
-  ev.tryChangeSize(fromItem, {w: ev.container.pxToW(width)})
+  ev.tryChangeStyle(fromItem, {w: ev.container.pxToW(width)})
 }
 
 /**
@@ -85,14 +59,6 @@ export function updateVerticalResize(ev: ItemResizeEvent) {
   updateStyle({
     height: `${height}px`,
   }, cloneElement)
-  ev.tryChangeSize(fromItem, {h: ev.container.pxToH(height)})
+  ev.tryChangeStyle(fromItem, {h: ev.container.pxToH(height)})
 }
-
-
-
-
-
-
-
-
 

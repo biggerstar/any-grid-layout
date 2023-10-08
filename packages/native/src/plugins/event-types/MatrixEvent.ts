@@ -1,5 +1,6 @@
 import {BaseEvent} from "@/plugins";
 import {LayoutItemInfo, PointType} from "@/types";
+import {getContainerConfigs} from "@/utils";
 
 export class MatrixEvent extends BaseEvent {
   /**
@@ -45,8 +46,9 @@ export class MatrixEvent extends BaseEvent {
 
   constructor(opt) {
     super(opt);
-    this.direction = <any>this.container.getConfig('direction')
-    this.align = <any>this.container.getConfig('align')
+    const {align, direction} = getContainerConfigs(this.container, ["direction", 'align'])
+    this.direction = direction
+    this.align = align
     this.force = false
   }
 

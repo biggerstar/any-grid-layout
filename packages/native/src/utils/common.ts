@@ -50,30 +50,37 @@ export function canExchange() {
     && fromContainer.getConfig('exchange')
 }
 
+/**
+ * 获取container中的配置
+ * */
+export const _getConfig = (container, name) => {
+  const has = (obj: object, name: string) => obj.hasOwnProperty(name)
+  if (has(container.useLayout, name)) return container.useLayout[name]
+  if (has(container.layout, name)) return container.layout[name]
+  if (has(container.global, name)) return container.global[name]
+  if (has(container._default, name)) return container._default[name]
+  return void 0
+}
 
 /**
  * 批量获取container的配置信息，不会发起getContainer事件
  * */
-export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name): Exclude<CustomLayoutsOption[Name], undefined>
-export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[]): Record<Name, any>
+export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name)
+  : Exclude<CustomLayoutsOption[Name], undefined>
+export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[])
+  : { [Key in Name]: CustomLayoutsOption[Key] }
 export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(
   container: Container,
   nameInfo: Name[] | Name
 ): any {
   let result
   //@ts-ignore
-  const _getConfig = (name) => container._getConfig.call(container, name)
   if (!Array.isArray(nameInfo)) {
-    result = _getConfig(nameInfo)
+    result = _getConfig(container, nameInfo)
   } else {
     result = {};
-    (nameInfo as []).forEach(name => result[name] = _getConfig(name))
+    (nameInfo as []).forEach(name => result[name] = _getConfig(container, name))
   }
   return result
 }
-
-
-
-
-
 

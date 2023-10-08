@@ -172,7 +172,6 @@ export class LayoutManager extends Finder {
    * */
   public changeCol(num?: number | 'auto', force: boolean = false) {
     const row = this.row
-    const col = this.col
     if (!num) num = 'auto'
     if (num === 'auto' || num === void 0) num = (this.col - 1) * -1  // 设置成要删除最大的空白列的col列数，下方运算后最少保留minCol列数
     const isSlice = num && num < 0   // 是否开启删除
@@ -214,9 +213,6 @@ export class LayoutManager extends Finder {
       if (force) removeCol()   // 如果为force直接删除一列
       else if (hasLastColItemEmpty()) removeCol()   // 否则检查是否整列都为空，都为空则删除该列
     }
-
-    const newCol = this.col
-    if (col !== newCol) this.container.bus.emit("changeCol", {changeLen: newCol - col})
   }
 
   /**
@@ -244,8 +240,6 @@ export class LayoutManager extends Finder {
         else break
       }
     }
-    const newRow = this.row
-    if (row !== newRow) this.container.bus.emit("changeRow", {changeLen: newRow - row})
   }
 
   /**
@@ -263,8 +257,6 @@ export class LayoutManager extends Finder {
         len: pos.x + pos.w - 1 - this.col,
         force: !!opt.col?.force
       },
-    })
-    this.expandLine({
       row: {
         len: pos.y + pos.h - 1 - this.row,
         force: !!opt.row?.force
@@ -305,16 +297,16 @@ export class LayoutManager extends Finder {
     const curCol = this.col
     const curRow = this.row
     const rowLen = Math.max(this.minRow - curRow /* 最多删除计算差值的行数 */, <number>rowOpt.len)
-    if (rowLen && rowLen !== 0 && this.container.autoGrowRow) this.container.bus.emit("changeRowBefore", {
-      changeLen: rowLen || 1,
-      force: rowOpt.force
-    })
+    if (rowLen && rowLen !== 0 && this.container.autoGrowRow) {
+      // console.log('change rowLen', rowLen)
+      this.container.layoutManager.changeRow(rowLen, rowOpt.force)
+    }
 
     const colLen = Math.max(this.minCol - curCol /* 同上 */, <number>colOpt.len)
-    if (colLen && colLen !== 0 && this.container.autoGrowCol) this.container.bus.emit("changeColBefore", {
-      changeLen: colLen || 1,
-      force: colOpt.force
-    })
+    if (colLen && colLen !== 0 && this.container.autoGrowCol) {
+      // console.log('change colLen', colLen)
+      this.container.layoutManager.changeCol(colLen, colOpt.force)
+    }
   }
 
   /**
@@ -325,7 +317,7 @@ export class LayoutManager extends Finder {
     while (cont--) {
       const found = <boolean>this.findBlank(pos)
       if (found) return found
-      this.expandLineForPos(pos)
+      this.expandLine({col: 1, row: 1})
     }
     return null
   }

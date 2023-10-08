@@ -24,7 +24,7 @@ export abstract class Finder {
    *  若传入pos可设定w = 1, h = 1, 这样可以直接查某个点的item
    *
    *  @param items 在该Items列表中查找
-   *  @param pos  x坐标
+   *  @param pos  x坐标, 任意 x,y,w,h 其中一个或多个
    *  @param excludes  排除列表
    *  @return {Item[]}
    * */

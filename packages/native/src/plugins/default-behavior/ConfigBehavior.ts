@@ -2,6 +2,7 @@
 
 import {definePlugin} from "@/global";
 import {ConfigurationEvent} from "@/plugins";
+import {getContainerConfigs} from "@/utils";
 
 export const ConfigBehavior = definePlugin({
   $getConfig(ev: ConfigurationEvent) {
@@ -16,12 +17,12 @@ export const ConfigBehavior = definePlugin({
     let {configName, configData} = ev
     //-----------------------------Col限制确定---------------------------------//
     if (configName === 'col') {
-      const curMinCol = ev.container.getConfig('minCol')
+      const curMinCol = getContainerConfigs(ev.container,"minCol")
       if (curMinCol && configData < curMinCol) ev.configData = curMinCol
     }
     //-----------------------------Row限制确定---------------------------------//
     if (configName === 'row') {
-      const curMinRow = ev.container.getConfig('minRow')
+      const curMinRow =  getContainerConfigs(ev.container,"minRow")
       if (curMinRow && configData < curMinRow) ev.configData = curMinRow
       // console.log(ev.configData)
     }
