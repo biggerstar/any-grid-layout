@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Container, Item} from "@/main";
-import {isNumber} from "is-what";
+import {isFunction, isNumber} from "is-what";
 
 
 /**
@@ -10,6 +10,7 @@ import {isNumber} from "is-what";
  * */
 export class SingleThrottle<T extends Record<any, any>> {
   public do: (func: () => void, wait?: number) => void
+  public rules: (() => boolean)[] = []
   public wait: number = 320
   public cache: T & {} = {}
 
@@ -17,18 +18,33 @@ export class SingleThrottle<T extends Record<any, any>> {
     if (isNumber(wait) && wait > 0) this.wait = wait
     let old = 0;
     this.do = (func, wait) => {
+      const isDirectExec = this.rules.length && this.rules.some(rule => rule())
       let now = new Date().valueOf();
-      if (now - old < (wait || this.wait)) return
+      if (!isDirectExec && now - old < (wait || this.wait)) return
       old = now
-      return func.apply(<object>this);
+      return func.apply(<object>this)
     }
   }
 
-  getCache(name: keyof T) {
+  /**
+   * 直接运行函数
+   * */
+  public direct(func: Function) {
+    this.do(func, 0)
+  }
+
+  /**
+   * 添加规则，每次需要符合所有规则(都返回true)才开启节流, 如果没添加任何规则直接默认开启节流
+   * */
+  public addRules(rule: Function) {
+    isFunction(rule) && this.rules.push(rule)
+  }
+
+  public getCache(name: keyof T) {
     return this.cache[name]
   }
 
-  setCache(name: keyof T, data: any) {
+  public setCache(name: keyof T, data: any) {
     this.cache[name] = data
   }
 }

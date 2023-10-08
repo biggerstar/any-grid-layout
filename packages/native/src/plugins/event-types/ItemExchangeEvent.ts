@@ -81,6 +81,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
    * */
   public createNewItem(newItemOptions: CustomItem): Item {
     const newItemIns = new Item(newItemOptions)
+    // console.log(this.container);
     newItemIns.pos.x = this.toStartX
     newItemIns.pos.y = this.toStartY
     // console.log(this.toStartX, this.toStartY)
@@ -101,10 +102,9 @@ export class ItemExchangeEvent extends ItemDragEvent {
     const {toContainer} = tempStore
     if (!this.newItem || !toContainer) return
     toContainer.addItem(this.newItem)
-    // toContainer.items = this.layoutManager.sortCurrentMatrixItems(toContainer.items)
-    let toPos: CustomItemPos | null = this.newItem.pos
+    let toPos: CustomItemPos = this.newItem.pos
     // console.log('receive', toPos.x, toPos.y)
-    this.container.layoutManager.mark(toPos,this.newItem)
+    toContainer.layoutManager.mark(toPos, this.newItem)
     this.newItem.mount()
     toContainer.updateContainerSizeStyle()
     if (this.toItem) toContainer.bus.emit('updateLayout')

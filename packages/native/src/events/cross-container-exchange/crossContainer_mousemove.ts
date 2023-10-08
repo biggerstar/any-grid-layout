@@ -21,6 +21,5 @@ export const crossContainer_mousemove: Function = throttle((_) => {
     || (toItem && fromContainer.parentItem === toItem)
     || !canExchange()
   ) return
-
   toContainer.bus.emit('exchangeVerification')  // crossTarget如果移除成功，之后在该事件移除源fromItem
 }, 30)

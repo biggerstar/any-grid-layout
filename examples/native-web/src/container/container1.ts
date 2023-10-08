@@ -19,9 +19,9 @@ const container1 = new Container({
       horizontal: false
     },
     exchange: true,
-    // direction: 'column-reverse',
-    direction: 'row-reverse',
-    align: 'end',
+    direction: 'column',
+    // direction: 'row-reverse',
+    align: 'start',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

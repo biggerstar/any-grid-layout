@@ -101,7 +101,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
         x: Math.max(1, relativeX - mouseDownPosW),
         y: Math.max(1, relativeY - mouseDownPosH)
       }
-    // console.log(relativeX,mouseDownPosW)
     // console.log(targetPos.x, targetItem.pos.x)
     if (targetPos.x === targetItem.pos.x && targetPos.y === targetItem.pos.y) return true
     //-------------------------------------

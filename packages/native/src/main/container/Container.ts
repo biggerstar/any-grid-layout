@@ -18,14 +18,14 @@ import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
-import {getContainerConfigs, updateStyle} from "@/utils";
+import {getContainerConfigs, singleThrottleCrossContainerRule, updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
 import {ContainerGeneralImpl} from "@/main";
 
-
 const containerThrottle = new SingleThrottle<{ rect: DOMRect }>()
 const contentBoxThrottle = new SingleThrottle<{ rect: DOMRect }>()
-
+containerThrottle.addRules(singleThrottleCrossContainerRule)
+contentBoxThrottle.addRules(singleThrottleCrossContainerRule)
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document

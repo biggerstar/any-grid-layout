@@ -34,15 +34,17 @@ const container2 = new Container({
     // },
     {
       px: 900,
-
       // col: 9,
-      row: 4,
+      // row: 4,
       // margin: [10, 10],
       size: [50, 100],
       exchange: true,
       direction: 'row',
       align: 'start',
-      autoGrow: true,
+      autoGrow: {
+        vertical:true,
+        horizontal:true
+      },
       items: fillItemLayoutList(layoutData11, {
         draggable: true,
         resize: true,

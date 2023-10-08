@@ -15,29 +15,26 @@ export const itemExchangeBehavior = definePlugin({
       x: ev.toStartX,
       y: ev.toStartY,
     }
-    console.log(ev.toContainer.layoutManager.isBlank(toPos))
     if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
       ev.doExchange()
     }
   },
 
   exchangeVerification$$(ev: ItemExchangeEvent) {
-    if (ev.isExchange) ev.fromContainer.bus.emit('exchangeProvide')
+    ev.isExchange && ev.fromContainer.bus.emit('exchangeProvide')
   },
 
   /**
-   * 一旦exchangeVerification验证通过，跨容器移动过程便不可阻止，只能在事件里面更改要新添加的item信息
+   * 一旦exchangeVerification验证通过，跨容器移动过程便不可阻止，只能在 exchangeProvide 或 exchangeReceive 事件里面更改要新添加的item信息
    * */
   exchangeProvide$$(ev: ItemExchangeEvent) {
-    if (!ev.fromItem) return
-    if (ev.newItem) return
+    if (!ev.fromItem || ev.newItem) return
     const gridItemContent = ev.fromItem.element.querySelector(`.${grid_item_content}`)
     const newOptions = {
       ...ev.fromItem.customOptions,
       el: gridItemContent,
     }
     ev.provideItem(ev.createNewItem(newOptions))
-    // console.log(ev.newItem);
     ev.toContainer.bus.emit('exchangeReceive')
   },
 

@@ -37,11 +37,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
       x: ev.toStartX,
       y: ev.toStartY,
     }
-    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
-      ev.doExchange()
-    } else if (ev.toItem) {
-      // console.log(ev.toItem)
-      console.log(tempStore.fromContainer, tempStore.toContainer);
+    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos) || ev.toItem) {
       ev.doExchange()
     }
   },

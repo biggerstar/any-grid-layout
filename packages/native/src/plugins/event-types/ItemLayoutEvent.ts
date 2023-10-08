@@ -3,11 +3,13 @@ import {Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
 import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {clamp, getClientRect, getContainerConfigs, SingleThrottle} from "@/utils";
+import {clamp, getClientRect, getContainerConfigs, SingleThrottle, singleThrottleCrossContainerRule} from "@/utils";
 import {updateContainerSize} from "@/plugins/common";
 
 const singleRectThrottle = new SingleThrottle<{ itemRect: DOMRect, containerRect: DOMRect }>()
 const singleShadowRectThrottle = new SingleThrottle<{ shadowItemRect: DOMRect }>()
+singleRectThrottle.addRules(singleThrottleCrossContainerRule)
+singleShadowRectThrottle.addRules(singleThrottleCrossContainerRule)
 
 export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item
