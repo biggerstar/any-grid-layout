@@ -1,6 +1,7 @@
 import {updateStyle} from "@/utils";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {tempStore} from "@/global";
+import {Container} from "@/main";
 
 
 /**
@@ -32,8 +33,8 @@ export const checkItemPositionHasChanged: Function = (_: ItemResizeEvent) => {
 /**
  * 更新适合当前容器的容器大小
  * */
-export function updateContainerSize() {
-  tempStore.fromContainer?.updateContainerSizeStyle?.()
+export function updateContainerSize(container?: Container) {
+  (container || tempStore.fromContainer)?.updateContainerSizeStyle?.()
 }
 
 /**
@@ -46,7 +47,7 @@ export function updateHorizontalResize(ev: ItemResizeEvent) {
   updateStyle({
     width: `${width}px`,
   }, cloneElement)
-  ev.tryChangeStyle(fromItem, {w: ev.container.pxToW(width)})
+  ev.setItemPos(fromItem, {w: ev.container.pxToW(width)})
 }
 
 /**
@@ -59,6 +60,6 @@ export function updateVerticalResize(ev: ItemResizeEvent) {
   updateStyle({
     height: `${height}px`,
   }, cloneElement)
-  ev.tryChangeStyle(fromItem, {h: ev.container.pxToH(height)})
+  ev.setItemPos(fromItem, {h: ev.container.pxToH(height)})
 }
 

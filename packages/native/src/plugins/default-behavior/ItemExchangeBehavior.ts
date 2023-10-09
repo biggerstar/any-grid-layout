@@ -3,6 +3,7 @@
 import {definePlugin, tempStore} from "@/global";
 import {grid_dragging_source_el, grid_item_content} from "@/constant";
 import {ItemExchangeEvent} from "@/plugins/event-types/ItemExchangeEvent";
+import {STRect} from "@/global/singleThrottle";
 
 export const itemExchangeBehavior = definePlugin({
   /**
@@ -38,12 +39,27 @@ export const itemExchangeBehavior = definePlugin({
     ev.toContainer.bus.emit('exchangeReceive')
   },
 
-  exchangeReceive$(ev: ItemExchangeEvent) {
+  exchangeReceive$$(ev: ItemExchangeEvent) {
     ev.receiveNewItem()
     ev.removeSourceItem()
     if (ev.newItem) ev.newItem.element.classList.add(grid_dragging_source_el)
+    ev.fromContainer.layoutManager.trim({
+      row: {head: true},
+      col: {head: true},
+    })
     tempStore.fromContainer = ev.toContainer
     tempStore.fromItem = ev.newItem
     tempStore.newItem = null
+    STRect.update("fromItem", true)
+    STRect.update("shadow", true)
+    STRect.update("containerContent", true)
   },
 })
+
+
+
+
+
+
+
+

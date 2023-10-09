@@ -1,9 +1,10 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {definePlugin, tempStore} from "@/global";
-import {BaseEvent} from "@/plugins";
+import {BaseEvent, ContainerSizeChangeEvent} from "@/plugins";
 import {isNumber} from "is-what";
 import {CustomEventOptions} from "@/types";
+import {updateContainerSize} from "@/plugins/common";
 
 const excludeNames: (keyof CustomEventOptions)[] = [
   'config',
@@ -41,5 +42,11 @@ export const EveryBehavior = definePlugin({
         ct.__ownTemp__.preRow = row
       }
     }
+  },
+  colChanged(ev: ContainerSizeChangeEvent) {
+    updateContainerSize(ev.container)
+  },
+  rowChanged(ev: ContainerSizeChangeEvent) {
+    updateContainerSize(ev.container)
   }
 })

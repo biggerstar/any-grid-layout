@@ -31,9 +31,9 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
   const {fromItem} = tempStore
   if (!fromItem || !isFunction(callback)) return
   //--------------------------------------------------------------------
+  const manager = ev.container.layoutManager
   const {autoGrowCol, autoGrowRow} = ev.container
   const toPos = {
-    ...fromItem.pos,
     x: autoGrowCol ? ev.startRelativeX : ev.startGridX,
     y: autoGrowRow ? ev.startRelativeY : ev.startGridY,
   }
@@ -42,14 +42,17 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
     const changePos = callback(item)
     if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
   })
-  const manager = ev.container.layoutManager
   if (autoGrowRow || autoGrowCol) {
-    manager.expandLineForPos(toPos, {
-      col: {force: true},
-      row: {force: true}
-    })
+    if (autoGrowRow && ev.shadowItemInfo.offsetRelativeH < 0) manager.trimRow(0, {head: true})
+    if (autoGrowCol && ev.shadowItemInfo.offsetRelativeW < 0) manager.trimCol(0, {head: true})
+    ev.setItemPos(fromItem, toPos)
   }
-  directUpdateLayout(ev)
+  const isSuccess = directUpdateLayout(ev)
+  if (!isSuccess && ev.toItem && !ev.inOuter) {  // 如果是斜角，符合某条件直接移动到该位置
+    const {offsetRelativeW, offsetRelativeH} = ev.shadowItemInfo
+    if (Math.abs(offsetRelativeW) > 2 && Math.abs(offsetRelativeH) > 2) ev.addModifyItem(fromItem, toPos)
+    directUpdateLayout(ev)
+  }
 }, 45)
 
 

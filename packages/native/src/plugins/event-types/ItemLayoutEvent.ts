@@ -1,15 +1,11 @@
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
-import {analysisCurPositionInfo, createModifyPosInfo} from "@/algorithm/common/tool";
+import {analysisCurLocationInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
-import {clamp, getClientRect, getContainerConfigs, SingleThrottle, singleThrottleCrossContainerRule} from "@/utils";
-import {updateContainerSize} from "@/plugins/common";
+import {clamp, getClientRect, getContainerConfigs, merge} from "@/utils";
+import {STRect} from "@/global/singleThrottle";
 
-const singleRectThrottle = new SingleThrottle<{ itemRect: DOMRect, containerRect: DOMRect }>()
-const singleShadowRectThrottle = new SingleThrottle<{ shadowItemRect: DOMRect }>()
-singleRectThrottle.addRules(singleThrottleCrossContainerRule)
-singleShadowRectThrottle.addRules(singleThrottleCrossContainerRule)
 
 export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item
@@ -84,17 +80,11 @@ export class ItemLayoutEvent extends BaseEvent {
     if (!fromItem || !mousemoveEvent || !cloneElement) return
     const container = this.container
     /*------------------ Base Info --------------------*/
-    Object.assign(<object>this, analysisCurPositionInfo(fromItem.container))  // 合并 relativeX，relativeY， gridX， gridY
-    singleRectThrottle.do(() => {  // 节流获取rect减少回流的可能，itemRect，containerRect是比较固定的元素，变化不大
-      singleRectThrottle.setCache("itemRect", getClientRect(fromItem.element, true))
-      singleRectThrottle.setCache("containerRect", getClientRect(container.contentElement, true))
-    }, 1024)
-    singleShadowRectThrottle.do(() => {
-      singleShadowRectThrottle.setCache("shadowItemRect", getClientRect(cloneElement, true))
-    }, 67)
-    const itemRect = singleRectThrottle.getCache("itemRect")
-    const containerRect = singleRectThrottle.getCache("containerRect")
-    const shadowItemRect = singleShadowRectThrottle.getCache('shadowItemRect')
+    merge(this, analysisCurLocationInfo(fromItem.container)) // 合并 relativeX，relativeY， gridX， gridY
+
+    const itemRect = STRect.getCache("fromItem")
+    const containerRect = STRect.getCache("containerContent")
+    const shadowItemRect = STRect.getCache('shadow')
     const {size, margin} = getContainerConfigs(fromItem.container, ["size", "margin"])
     this.col = container.getConfig("col")
     this.row = container.getConfig("row")
@@ -129,8 +119,13 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
     shadowItemInfo.scaleMultipleX = (cloneElScaleMultipleX || 1)
     shadowItemInfo.scaleMultipleY = (cloneElScaleMultipleY || 1)
-    shadowItemInfo.offsetRelativeW = this.relativeX - fromItem!.pos.x + 1
-    shadowItemInfo.offsetRelativeH = this.relativeY - fromItem!.pos.y + 1
+    const offsetRelativeW = this.relativeX - fromItem!.pos.x
+    const offsetRelativeH = this.relativeY - fromItem!.pos.y
+    shadowItemInfo.offsetRelativeW = (Math.abs(offsetRelativeW) + fromItem.pos.w - 1) * Math.sign(offsetRelativeW)
+    shadowItemInfo.offsetRelativeH = (Math.abs(offsetRelativeH) + fromItem.pos.h - 1) * Math.sign(offsetRelativeH)
+
+    // console.log(this.relativeX, this.relativeY)
+    // console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
@@ -138,14 +133,7 @@ export class ItemLayoutEvent extends BaseEvent {
     spaceInfo.clampHeight = clamp(itemInfo.offsetY, itemInfo.minHeight, itemInfo.maxHeight)
     spaceInfo.clampW = container.pxToW(spaceInfo.clampWidth)
     spaceInfo.clampH = container.pxToW(spaceInfo.clampHeight)
-    // spaceInfo.spaceRight = fromItem.spaceRight()
-    // spaceInfo.spaceBottom = fromItem.spaceBottom()
-    // spaceInfo.spaceWidth = Math.min(spaceInfo.spaceRight, spaceInfo.clampWidth)
-    // spaceInfo.spaceHeight = Math.min(spaceInfo.spaceBottom, spaceInfo.clampHeight)
-    // console.log(this.spaceInfo.restrictedWidth, this.spaceInfo.restrictedHeight)
   }
-
-  //--------------------------------------------字段定义结束分割线------------------------------------------------
 
   /**
    * 派发Items的样式更新
@@ -172,48 +160,47 @@ export class ItemLayoutEvent extends BaseEvent {
   }
 
   /**
-   * 尝试更新当前Item的大小或   TODO: 位置
+   * 尝试更新当前Item的大小或位置
    * 其他Item静止,只会更新一个Item
    * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
    * @param item？ 当前要移动的item
    * @param pos  当前移动到新位置的pos
    * */
-  public tryChangeStyle(item?: Item, pos?: Partial<Pick<CustomItemPos, 'w' | 'h'>>): boolean {
+  public setItemPos(item: Item, pos: Partial<Pick<CustomItemPos, 'w' | 'h' | 'x' | 'y'>>): boolean {
     let {
       fromItem,
     } = tempStore
     const targetItem = item || fromItem
     if (!targetItem) return false
-    const targetPos = pos
-      ? {
-        ...targetItem.pos,
-        ...pos
-      }
-      : {
-        ...targetItem.pos,
-        w: this.shadowItemInfo.offsetRelativeW,
-        h: this.shadowItemInfo.offsetRelativeH,
-      }
+    const targetItemPos = targetItem.pos
+    const targetPos = {
+      ...targetItemPos,
+      ...pos
+    }
     //-------------------------------------
     const container = this.container
     const manager = container.layoutManager
-    targetPos.w = clamp(targetPos.w, targetItem.pos.minW, targetItem.pos.maxW)
-    targetPos.h = clamp(targetPos.h, targetItem.pos.minH, targetItem.pos.maxH)
-    updateContainerSize()   // 必须在判断两个pos是否相等之前
+    targetPos.w = clamp(targetPos.w, targetItemPos.minW, targetItemPos.maxW) // 若传入w，则为传入的w进行范围限制
+    targetPos.h = clamp(targetPos.h, targetItemPos.minH, targetItemPos.maxH) // 若传入h，则为传入的h进行范围限制
 
-    if (targetItem.pos.w === targetPos.w && targetItem.pos.h === targetPos.h) return false
+    if (targetItemPos.w === targetPos.w
+      && targetItemPos.h === targetPos.h
+      && targetItemPos.x === targetPos.x
+      && targetItemPos.y === targetPos.y) return true
     //-------------------------------------
-    manager.unmark(targetItem.pos)
+    // console.log(targetPos)
     manager.expandLineForPos(targetPos)
+    const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)   // 先移除原本标记再看是否有空位
 
-    const isBlank = manager.isBlank(targetPos)   // 先移除原本标记再看是否有空位
     if (!isBlank) {
       manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false
     }
     manager.mark(targetPos, targetItem)
-    targetItem.pos.w = targetPos.w
-    targetItem.pos.h = targetPos.h
+    targetItemPos.w = targetPos.w
+    targetItemPos.h = targetPos.h
+    targetItemPos.x = targetPos.x
+    targetItemPos.y = targetPos.y
     targetItem.updateItemLayout()
     return true
   }

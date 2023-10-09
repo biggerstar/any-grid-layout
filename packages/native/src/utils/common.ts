@@ -84,7 +84,4 @@ export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(
   return result
 }
 
-export const singleThrottleCrossContainerRule = () => {  // 用于跨容器后获取到及时更新新容器缓存
-  const {fromContainer, toContainer} = tempStore
-  return fromContainer && toContainer && fromContainer === toContainer
-}
+

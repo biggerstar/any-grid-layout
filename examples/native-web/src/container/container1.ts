@@ -15,13 +15,15 @@ const container1 = new Container({
     from: '来自layout',
     // exchange: false,
     autoGrow: {
-      vertical: false,
-      horizontal: false
+      // vertical: false,
+      // horizontal: false
+      vertical: true,
+      horizontal: true
     },
     exchange: true,
     direction: 'column',
     // direction: 'row-reverse',
-    align: 'start',
+    align: 'end',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins";
 import {tempStore} from "@/global";
-import {canExchange, getClientRect, getContainerConfigs, SingleThrottle, throttle, updateStyle} from "@/utils";
+import {canExchange, getClientRect, getContainerConfigs, throttle, updateStyle} from "@/utils";
 import {
   grid_clone_el,
   grid_dragging_clone_el,
@@ -8,6 +8,7 @@ import {
   grid_resizing_clone_el,
   grid_resizing_source_el
 } from "@/constant";
+import {SingleThrottle} from "@/utils/SingleThrottle";
 
 /**
  * [resizing] 创建resize的克隆元素

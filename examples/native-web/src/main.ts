@@ -147,10 +147,11 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(createResponsiveLayoutPlugin())
+  // .use(createResponsiveLayoutPlugin())
 
 container2
   .use(plugin)
+  // .use(createResponsiveLayoutPlugin())
 
 container3
   .use(plugin)

@@ -13,7 +13,7 @@ export class LayoutManager extends Finder {
   public container: Container
 
   public get col(): number {
-    const minCol = Math.min.apply(null, this._layoutMatrix.map(line => line.length))
+    const minCol = Math.max.apply(null, this._layoutMatrix.map(line => line.length))
     return Math.max(minCol, 1)
   }
 
@@ -167,6 +167,135 @@ export class LayoutManager extends Finder {
   }
 
   /**
+   * 裁剪整个矩阵的所有空白行和列
+   *
+   * @param opt
+   * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
+   * @param opt.col     裁剪的列数，默认为0
+   * @param opt.row     裁剪的行数，默认为0
+   * */
+  public trim(
+    opt: {
+      row?: {
+        len?: number,
+        head?: boolean,
+      },
+      col?: {
+        len?: number,
+        head?: boolean,
+      }
+    } = {
+      row: {
+        len: 0,
+        head: false
+      }, col: {
+        len: 0,
+        head: false
+      }
+    }
+  ) {
+    const {row, col} = opt
+    this.trimRow(row?.len, row)
+    this.trimCol(col?.len, col)
+  }
+
+  /**
+   * 裁剪矩阵空白列
+   * 情况1: 传入具体数字裁剪顺序规则，     裁剪末尾空白列 ==>  裁剪起始空白列 ==> 裁剪末尾非空白列，会影响到 (num - 空白列) 数量的已占位的末尾列
+   * 情况2: 未传入任何数字或者传入0的话则， 裁剪末尾空白列 ==>  裁剪起始空白列 ， 不会影响到已占位的任何列
+   *
+   * @param {number} num 指定删除列数量
+   * @param opt
+   * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
+   * */
+  public trimCol(num: number = 0, opt: { head?: boolean } = {}) {
+    if (num < 0) return
+    const force = num > 0
+    if (num === 0) num = this.col - this.minCol
+    for (let i = 0; i < num; i++) {
+      let colindex = this.col - 1
+      if (this.hasEmptyCol(colindex)) this.removeCol(colindex)
+      else if (opt.head && this.hasEmptyCol(0)) this.removeCol(0)   // 只适用于响应式，需要在响应式插件进行添加相关逻辑
+      else if (force) this.removeCol()
+      else break
+    }
+  }
+
+  /**
+   * 裁剪矩阵空白列
+   * 情况1: 传入具体数字裁剪顺序规则，     裁剪末尾空白行 ==>  裁剪起始空白行 ==> 裁剪末尾非空白行，会影响到 (num - 空白行) 数量的已占位的末尾行
+   * 情况2: 未传入任何数字或者传入0的话则， 裁剪末尾空白行 ==>  裁剪起始空白行 ， 不会影响到已占位的任何行
+   *
+   * @param {number} num 指定删除行数量
+   * @param opt
+   * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
+   * */
+  public trimRow(num: number = 0, opt: { head?: boolean } = {}) {
+    if (num < 0) return
+    const force = num > 0
+    if (num === 0) num = this.row - this.minRow
+    for (let i = 0; i < num; i++) {
+      let rowindex = this.row - 1
+      if (this.hasEmptyRow(rowindex)) this.removeRow(rowindex)
+      else if (opt.head && this.hasEmptyRow(0)) this.removeRow(0)    // 只适用于响应式，需要在响应式插件进行添加相关逻辑
+      else if (force) this.removeRow()
+      else break
+    }
+  }
+
+  /**
+   * 删除一整列
+   * @param {number} index 删除的col index，默认最后一列
+   * */
+  public removeCol = (index?: number) => {
+    if (!isNumber(index)) index = this.col - 1
+    const row = this.row
+    for (let i = 0; i < row; i++) {
+      this._layoutMatrix[i].splice(index, 1)
+    }
+  }
+
+  public notEqualLastCol() {
+    return !this._layoutMatrix.every(line => line.length === this._layoutMatrix[0].length)
+  }
+
+  /**
+   * 删除一整行
+   * @param {number} index 删除的row index，默认最后一行
+   * */
+  public removeRow = (index?: number) => {
+    if (!isNumber(index)) index = this.row - 1
+    this._layoutMatrix.splice(index, 1)
+  }
+
+
+  /**
+   * 检查某一列是否无任何占位
+   * */
+  public hasEmptyCol = (index: number) => {
+    const row = this.row
+    let isEmpty = true
+    const matrix = this._layoutMatrix
+    for (let i = 0; i < row; i++) {
+      const line: any[] = matrix[i]
+      if (line[index] !== this.place) {
+        isEmpty = false
+        break
+      }
+    }
+    return isEmpty
+  }
+
+  /**
+   * 检查某一行是否无任何占位
+   * */
+  public hasEmptyRow(index: number) {
+    const line = this._layoutMatrix[index]
+    if (!Array.isArray(line)) return false
+    return line.every(node => node === this.place)
+  }
+
+  /**
    * @param {Number|'auto'} num  添加或删除num列,设置成 'auto' 的情况下会删除col方向所有空白列,默认不传参数为 'auto'
    * @param force  遇到num为负数时是否强制删除某一行，正常用于响应式等高频变化无关持久占位的布局
    * */
@@ -178,31 +307,13 @@ export class LayoutManager extends Finder {
     if (isSlice) num = Math.max(this.minCol - this.col, num)   // 负数，限制最少为容器col宽度
     // console.log(isSlice, num, maxColindex)
     const matrix = this._layoutMatrix
-    const removeCol = () => {  // 删除一整列
-      let colindex = this.col - 1
-      for (let i = 0; i < row; i++) {
-        const line = matrix[i]
-        line.splice(colindex, line.length - colindex)
-      }
-    }
 
     const addCol = () => {  // 添加一整列
       for (let i = 0; i < row; i++) {
         matrix[i].push(this.place)
       }
     }
-    const hasLastColItemEmpty = () => {  // 检查列末是否无任何占用
-      let isEmpty = true
-      let colindex = this.col - 1
-      for (let i = 0; i < row; i++) {
-        const line: any[] = matrix[i]
-        if (line[colindex] !== this.place) {
-          isEmpty = false
-          break
-        }
-      }
-      return isEmpty
-    }
+
     for (let j = 0; j < Math.abs(num); j++) {
       /* 增加一行操作 */
       if (!isSlice) {
@@ -210,8 +321,7 @@ export class LayoutManager extends Finder {
         continue
       }
       /* 删除一行操作 */
-      if (force) removeCol()   // 如果为force直接删除一列
-      else if (hasLastColItemEmpty()) removeCol()   // 否则检查是否整列都为空，都为空则删除该列
+      force ? /* 如果为force直接删除一列 */ this.trimCol(1) : /* 否则自动检查是否整列都为空，都为空则删除该列 */this.trimCol()
     }
   }
 
@@ -222,23 +332,19 @@ export class LayoutManager extends Finder {
   public changeRow = (num?: number | 'auto', force: boolean = false) => {
     if (!num) num = 'auto'
     const row = this.row
-    if (num === 'auto' || num === void 0) num = (row - 1) * -1  // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
+    const isAuto = num === 'auto'
+    if (isAuto || num === void 0) num = (row - 1) * -1  // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
     const isSlice = num && num < 0   // 是否开启删除
-    if (isSlice) num = Math.max(this.minRow - row, num)   // 负数，限制最少为容器row宽度
+    if (isSlice) num = Math.max(this.minRow - row, <number>num)   // 负数，限制最少为容器row宽度
     const matrix = this._layoutMatrix
-    for (let i = 0; num && i < Math.abs(num); i++) {
+    for (let i = 0; num && i < Math.abs(<number>num); i++) {
       /* 增加一行操作 */
       if (!isSlice) {
         matrix.push(new Array(this.col).fill(this.place))
         continue
       }
       /* 删除一行操作 */
-      if (force) matrix.pop()
-      else {
-        const line: any[] = matrix[matrix.length - 1]
-        if (line.every(node => node === this.place)) matrix.pop()    // 如果整行都为空则直接删除
-        else break
-      }
+      force ? this.trimRow(1) : this.trimRow()
     }
   }
 
@@ -369,10 +475,11 @@ export class LayoutManager extends Finder {
    * @return {CustomItemPos} 传入的pos原样返回
    * */
   public mark(pos: CustomItemPos | ItemPos, markSymbol: Item): this {
+    if (pos.x + pos.w - 1 > this.col || pos.y + pos.h - 1 > this.row) return this
     const {w, h, x, y} = this.toMatrixPos(pos)
     this.each((curRow, curCol) => {
-      const line = this._layoutMatrix[curRow]
-      if (line) line[curCol] = markSymbol
+      this._layoutMatrix[curRow][curCol] = markSymbol
+      if (this.notEqualLastCol()) debugger
     }, {
       point1: [x, y],
       point2: [x + w - 1, y + h - 1],
@@ -381,7 +488,9 @@ export class LayoutManager extends Finder {
   }
 
   public unmark(pos: CustomItemPos): this {
-    this.mark(pos, this.place)
+    if (pos.x + pos.w - 1 <= this.col && pos.y + pos.h - 1 <= this.row) {
+      this.mark(pos, this.place)
+    }
     return this
   }
 

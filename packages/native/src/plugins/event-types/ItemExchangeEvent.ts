@@ -3,7 +3,7 @@
 import {ItemDragEvent} from "@/plugins";
 import {Container, Item} from "@/main";
 import {CustomItem, CustomItemPos} from "@/types";
-import {analysisCurPositionInfo} from "@/algorithm/common/tool";
+import {analysisCurLocationInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 import {getClientRect} from "@/utils";
 
@@ -28,7 +28,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     this.toContainer = <Container>toContainer
     if (!toContainer || !fromItem) return
     this.isExchange = false
-    const res = analysisCurPositionInfo(toContainer)
+    const res = analysisCurLocationInfo(toContainer)
     this.toItem = toItem
     this.newItem = newItem
     this.toGridX = res.gridX
@@ -106,7 +106,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
     // console.log('receive', toPos.x, toPos.y)
     toContainer.layoutManager.mark(toPos, this.newItem)
     this.newItem.mount()
-    toContainer.updateContainerSizeStyle()
     if (this.toItem) toContainer.bus.emit('updateLayout')
+    setTimeout(() => toContainer.updateContainerSizeStyle())
   }
 }

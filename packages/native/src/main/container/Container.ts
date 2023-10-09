@@ -2,12 +2,10 @@
 
 import {
   debounce,
-  getClientRect,
   getContainerFromElement,
   getItemFromElement,
   merge,
   parseItemFromPrototypeChain,
-  SingleThrottle,
   throttle
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
@@ -18,14 +16,11 @@ import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
-import {getContainerConfigs, singleThrottleCrossContainerRule, updateStyle} from "@/utils";
+import {getContainerConfigs, updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
 import {ContainerGeneralImpl} from "@/main";
+import {STRect} from "@/global/singleThrottle";
 
-const containerThrottle = new SingleThrottle<{ rect: DOMRect }>()
-const contentBoxThrottle = new SingleThrottle<{ rect: DOMRect }>()
-containerThrottle.addRules(singleThrottleCrossContainerRule)
-contentBoxThrottle.addRules(singleThrottleCrossContainerRule)
 
 /**
  * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -382,26 +377,22 @@ export class Container {
 
   /** 获取外容器可视范围可容纳的col  */
   public get containerW(): number {
-    containerThrottle.do(() => containerThrottle.setCache("rect", getClientRect(this.element, true)), 1024)
-    return this.pxToW(containerThrottle.getCache("rect").width, {floor: true})
+    return this.pxToW(STRect.getCache("containerIns", this.element).width, {floor: true})
   }
 
   /** 获取外容器可视范围可容纳的row */
   public get containerH(): number {
-    containerThrottle.do(() => containerThrottle.setCache("rect", getClientRect(this.element, true)), 1024)
-    return this.pxToH(containerThrottle.getCache("rect").height, {floor: true})
+    return this.pxToH(STRect.getCache("containerIns", this.element).height, {floor: true})
   }
 
   /** 获取內容器可视范围可容纳的col  */
   public get contentBoxW(): number {
-    contentBoxThrottle.do(() => contentBoxThrottle.setCache("rect", getClientRect(this.contentElement, true)), 1024)
-    return this.pxToW(contentBoxThrottle.getCache("rect").width, {floor: true})
+    return this.pxToW(STRect.getCache("containerContent", this.contentElement).width, {floor: true})
   }
 
   /** 获取内容器可视范围可容纳的row */
   public get contentBoxH(): number {
-    contentBoxThrottle.do(() => contentBoxThrottle.setCache("rect", getClientRect(this.contentElement, true)), 1024)
-    return this.pxToH(contentBoxThrottle.getCache("rect").height, {floor: true})
+    return this.pxToH(STRect.getCache("containerContent", this.contentElement).height, {floor: true})
   }
 
   private _init() {

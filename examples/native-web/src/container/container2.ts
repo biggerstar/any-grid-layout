@@ -40,7 +40,7 @@ const container2 = new Container({
       size: [50, 100],
       exchange: true,
       direction: 'row',
-      align: 'start',
+      align: 'end',
       autoGrow: {
         vertical:true,
         horizontal:true

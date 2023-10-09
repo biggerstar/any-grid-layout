@@ -4,7 +4,6 @@ import {Item} from "@/main";
 import {CustomItemPos} from "@/types";
 import {clamp, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
-import {updateContainerSize} from "@/plugins/common";
 
 
 export class ItemDragEvent extends ItemLayoutEvent {
@@ -61,7 +60,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
       y: Math.min(this.startGridY, <number>fromItem.pos.y)
     }
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, findPos, [fromItem])
-
     if (!toItemList.length) return []
     toItemList = toItemList.filter(item => item !== fromItem)
     if (toItemList.length === 1 && isFunction(oneItemFunc)) {
@@ -72,51 +70,6 @@ export class ItemDragEvent extends ItemLayoutEvent {
       }
     }
     return toItemList
-  }
-
-  /**
-   * 其他Item静止，快速更新拖动Item到当前鼠标合适空白位置上
-   * 只会更新一个Item
-   * 如果不传入任何参数，则使用fromItem 或 relativeX，relativeY生成的pos
-   * @param item？ 当前要移动的item
-   * @param pos  当前移动到新位置的pos
-   *
-   * @return {boolean} 是否移动成功
-   * */
-  public tryMoveToBlank(item?: Item, pos?: Partial<Pick<CustomItemPos, 'x' | 'y'>>): boolean {
-    let {fromItem, mousedownItemOffsetLeftProportion: PrL, mousedownItemOffsetTopProportion: PrT} = tempStore
-    const targetItem = item || fromItem
-    if (!targetItem) return false
-    const {container, itemInfo, shadowItemInfo, relativeX, relativeY} = this
-    const manager = container.layoutManager
-    const mouseDownPosW = container.pxToW(itemInfo.width * PrL * shadowItemInfo.scaleMultipleX) - 1
-    const mouseDownPosH = container.pxToH(itemInfo.height * PrT * shadowItemInfo.scaleMultipleY) - 1
-    const targetPos = pos
-      ? {
-        ...targetItem.pos,
-        ...pos
-      }
-      : {
-        ...targetItem.pos,
-        x: Math.max(1, relativeX - mouseDownPosW),
-        y: Math.max(1, relativeY - mouseDownPosH)
-      }
-    // console.log(targetPos.x, targetItem.pos.x)
-    if (targetPos.x === targetItem.pos.x && targetPos.y === targetItem.pos.y) return true
-    //-------------------------------------
-    manager.expandLineForPos(targetPos)
-    if (fromItem && targetPos.x === fromItem.pos.x && targetPos.y === fromItem.pos.y) return true // 如果位置不变则忽略
-    const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)
-    if (!isBlank) {
-      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
-      return false
-    }
-    manager.mark(targetPos, targetItem)
-    targetItem.pos.x = targetPos.x
-    targetItem.pos.y = targetPos.y
-    targetItem.updateItemLayout()
-    updateContainerSize()
-    return true
   }
 
   /**
@@ -131,7 +84,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
     const {fromItem} = tempStore
     if (!fromItem) return false
     const manager = this.container.layoutManager
-    const isSuccess = this.tryMoveToBlank()
+    const isSuccess = this.setItemPos(fromItem, {
+      x: this.startRelativeX,
+      y: this.startRelativeY,
+    })
     if (isSuccess) return  // 如果当前位置有空位则直接移动过去，不进行周边空位检测
     //---------------------------开始判定移动到周边空位了逻辑----------------------------------//
     const rangeMinX = this.gridX - fromItem.pos.w * radius
@@ -178,7 +134,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
     }
     if (allBlankRange.length) {
       // console.log(minimumArea,finallyPos)
-      this.tryMoveToBlank(fromItem, finallyPos)
+      this.setItemPos(fromItem, finallyPos)
       manager.mark(finallyPos, fromItem)  // 如果成功，标记新的pos位置
     }
     return true
