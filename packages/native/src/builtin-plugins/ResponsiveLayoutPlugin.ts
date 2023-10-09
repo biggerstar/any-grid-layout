@@ -28,17 +28,21 @@ export const ResponsiveLayoutPlugin = definePlugin({
       })
     }
   },
+
   exchangeVerification(ev: ItemExchangeEvent) {
     ev.prevent()
     if (!ev.fromItem) return
-    const toPos = {
-      w: ev.fromItem.pos.w,
-      h: ev.fromItem.pos.h,
-      x: ev.toStartX,
-      y: ev.toStartY,
-    }
-    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos) || ev.toItem) {
+    if (ev.container.autoGrowCol || ev.container.autoGrowRow) {
       ev.doExchange()
+    }
+  },
+
+  exchangeReceive(ev: ItemExchangeEvent) {
+    if (ev.newItem) {
+      ev.addModifyItem(ev.newItem, {
+        x: ev.toStartX,
+        y: ev.toStartY,
+      })
     }
   },
 
@@ -64,7 +68,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    if (fromItem.pos.x + fromItem.pos.w - 1 >= ev.col) return
+    if (fromItem.pos.x + fromItem.pos.w - 1 >= ev.col && !ev.container.autoGrowCol) return
     updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
   },
 
@@ -73,7 +77,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
     ev.prevent()
     const {fromItem} = tempStore
     if (!fromItem) return
-    if (fromItem.pos.y + fromItem.pos.h - 1 >= ev.row) return
+    if (fromItem.pos.y + fromItem.pos.h - 1 >= ev.row && !ev.container.autoGrowRow) return
     updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
   },
 

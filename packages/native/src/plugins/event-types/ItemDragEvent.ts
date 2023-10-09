@@ -80,7 +80,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
    *
    * @return {boolean} 是否移动成功
    * */
-  public tryMoveToNearBlank({radius = 1, maxLen = 8} = {}): boolean {
+  public autoMoveToNearBlank({radius = 1, maxLen = 8} = {}): boolean {
     const {fromItem} = tempStore
     if (!fromItem) return false
     const manager = this.container.layoutManager

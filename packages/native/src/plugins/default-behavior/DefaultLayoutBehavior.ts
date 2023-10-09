@@ -85,22 +85,22 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
 
   dragToTop(ev: ItemDragEvent) {
     // console.log('dragToTop')
-    ev.tryMoveToNearBlank()
+    ev.autoMoveToNearBlank()
   },
 
   dragToBottom(ev: ItemDragEvent) {
     // console.log('dragToBottom')
-    ev.tryMoveToNearBlank()
+    ev.autoMoveToNearBlank()
   },
 
   dragToLeft(ev: ItemDragEvent) {
     // console.log('dragToLeft')
-    ev.tryMoveToNearBlank()
+    ev.autoMoveToNearBlank()
   },
 
   dragToRight(ev: ItemDragEvent) {
     // console.log('dragToRight')
-    ev.tryMoveToNearBlank()
+    ev.autoMoveToNearBlank()
   },
 
   resizing(ev: ItemResizeEvent) {

@@ -195,14 +195,15 @@ export class ItemLayoutEvent extends BaseEvent {
     if (!isBlank) {
       manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
       return false
+    } else {
+      manager.mark(targetPos, targetItem)
+      targetItemPos.w = targetPos.w
+      targetItemPos.h = targetPos.h
+      targetItemPos.x = targetPos.x
+      targetItemPos.y = targetPos.y
+      targetItem.updateItemLayout()
+      return true
     }
-    manager.mark(targetPos, targetItem)
-    targetItemPos.w = targetPos.w
-    targetItemPos.h = targetPos.h
-    targetItemPos.x = targetPos.x
-    targetItemPos.y = targetPos.y
-    targetItem.updateItemLayout()
-    return true
   }
 }
 
