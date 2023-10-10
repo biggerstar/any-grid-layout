@@ -31,10 +31,10 @@ export class Item extends ItemGeneralImpl {
   public pos: ItemPos
   //----------------保持状态所用参数---------------------//
   public customOptions: ItemGeneralImpl
-  public readonly _default: ItemGeneralImpl
+  private readonly _default: ItemGeneralImpl
   private _mounted: boolean = false
-  private _resizeTabEl?: HTMLElement
-  private _closeEl?: HTMLElement
+  private _resizeTabEl: HTMLElement | null
+  private _closeEl: HTMLElement | null
   public __temp__: Record<any, any> = {
     isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
   }
@@ -363,13 +363,9 @@ export class Item extends ItemGeneralImpl {
       this.element.appendChild(resizeTabEl)
       resizeTabEl.classList.add(grid_item_resizable_handle)
       this._resizeTabEl = resizeTabEl
-    } else if (this.element && !isResize) {
-      for (let i = 0; i < this.element.children.length; i++) {
-        const node = this.element.children[i]
-        if (node.className.includes(grid_item_resizable_handle)) {
-          this.element.removeChild(node)
-        }
-      }
+    } else if (this._resizeTabEl && !isResize) {
+      this._resizeTabEl.parentElement.removeChild(this._resizeTabEl)
+      this._resizeTabEl = null
     }
   }
 
@@ -387,12 +383,9 @@ export class Item extends ItemGeneralImpl {
       this.element.appendChild(_closeEl)
     }
     if (this._closeEl && !isDisplayBtn) {
-      for (let i = 0; i < this.element.children.length; i++) {
-        const node = this.element.children[i]
-        if (node.className.includes(grid_item_close_btn)) {
-          this.element.removeChild(node)
-        }
-      }
+      // this._closeEl.remove()
+      this._closeEl.parentElement.removeChild(this._closeEl)
+      this._closeEl = null
     }
   }
 }
