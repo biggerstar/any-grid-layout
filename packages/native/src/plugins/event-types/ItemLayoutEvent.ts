@@ -38,8 +38,8 @@ export class ItemLayoutEvent extends BaseEvent {
     offsetTop: number         // 克隆元素距离当前容器上边界的距离
     offsetRight: number       // 克隆元素距离当前容器右边界的距离
     offsetBottom: number      // 克隆元素距离当前容器下边界的距离
-    offsetRelativeW: number   // 当前拖动位置相对源item偏移
-    offsetRelativeH: number   // 当前拖动位置相对源item偏移
+    offsetRelativeW: number   // 当前鼠标指针拖动位置相对源item偏移
+    offsetRelativeH: number   // 当前鼠标指针拖动位置相对源item偏移
     scaleMultipleX: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
     scaleMultipleY: number    // 克隆元素当前相对源item的缩放倍数，正常是使用了transform转换，默认为1倍表示无缩放
   }
@@ -119,13 +119,15 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetBottom = containerRect.bottom - shadowItemRect.bottom
     shadowItemInfo.scaleMultipleX = (cloneElScaleMultipleX || 1)
     shadowItemInfo.scaleMultipleY = (cloneElScaleMultipleY || 1)
-    const offsetRelativeW = this.relativeX - fromItem!.pos.x
-    const offsetRelativeH = this.relativeY - fromItem!.pos.y
-    shadowItemInfo.offsetRelativeW = (Math.abs(offsetRelativeW) + fromItem.pos.w - 1) * Math.sign(offsetRelativeW)
-    shadowItemInfo.offsetRelativeH = (Math.abs(offsetRelativeH) + fromItem.pos.h - 1) * Math.sign(offsetRelativeH)
+    shadowItemInfo.offsetRelativeW = this.relativeX - fromItem!.pos.x
+    shadowItemInfo.offsetRelativeH = this.relativeY - fromItem!.pos.y
 
+    // shadowItemInfo.offsetRelativeW = (Math.abs(offsetRelativeW) - fromItem.pos.w + 1) * Math.sign(offsetRelativeW)
+    // shadowItemInfo.offsetRelativeH = (Math.abs(offsetRelativeH) - fromItem.pos.h + 1) * Math.sign(offsetRelativeH)
+
+    // console.log(offsetRelativeW,offsetRelativeH)
     // console.log(this.relativeX, this.relativeY)
-    // console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
+    console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
