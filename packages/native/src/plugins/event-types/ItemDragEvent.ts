@@ -60,6 +60,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
       y: Math.min(this.startGridY, <number>fromItem.pos.y)
     }
     let toItemList = this.container.layoutManager.findCoverItemsFromPosition(this.items, findPos, [fromItem])
+    // console.log(toItemList)
     if (!toItemList.length) return []
     toItemList = toItemList.filter(item => item !== fromItem)
     if (toItemList.length === 1 && isFunction(oneItemFunc)) {
@@ -119,8 +120,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     let minimumArea = Infinity
     let finallyPos = fromItem.pos  // 如果没找到则不变
     allBlankRange.forEach(range => {
-      const W = Math.abs(this.relativeX - range.x) + 1
-      const H = Math.abs(this.relativeY - range.y) + 1
+      const W = Math.abs(Math.abs(this.relativeX) - range.x) + 1
+      const H = Math.abs(Math.abs(this.relativeY) - range.y) + 1
       const area = W * H   // 求最小面积
       if (area <= minimumArea) {  // 最后一个是fromItem，保证前面所有计算后的最小面积等于当前fromItem面积，此时不会进行改变位置
         minimumArea = area
@@ -149,8 +150,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.shadowItemInfo.offsetRelativeW - fromItem.container.pxToW(this.itemInfo.offsetClickWidth)
-    const Y = this.shadowItemInfo.offsetRelativeH - fromItem.container.pxToH(this.itemInfo.offsetClickHeight)
+    const X = this.shadowItemInfo.offsetRelativeW
+    const Y = this.shadowItemInfo.offsetRelativeH
     // console.log(X, Y)
     if (X === 0 && Y === 0) return
     // console.log(111111111111111111)

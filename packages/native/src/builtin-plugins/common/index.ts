@@ -30,30 +30,44 @@ export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
 export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent, callback: Function) => {
   const {fromItem} = tempStore
   if (!fromItem || !isFunction(callback)) return
+  // console.log(ev.name)
   //--------------------------------------------------------------------
   const manager = ev.container.layoutManager
   const {autoGrowCol, autoGrowRow} = ev.container
   const toPos = {
+    ...fromItem.pos,
     x: autoGrowCol ? ev.startRelativeX : ev.startGridX,
     y: autoGrowRow ? ev.startRelativeY : ev.startGridY,
   }
+  // console.log(toPos)
   ev.addModifyItem(fromItem, toPos) // 指定修改当前鼠标拖动item的位置
   ev.findDiffCoverItem(null, (item) => {
     const changePos = callback(item)
     if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
   })
-  if (autoGrowRow || autoGrowCol) {
-    if (autoGrowRow && ev.shadowItemInfo.offsetRelativeH < 0) manager.trimRow(0, {head: true})
-    if (autoGrowCol && ev.shadowItemInfo.offsetRelativeW < 0) manager.trimCol(0, {head: true})
-    ev.setItemPos(fromItem, toPos)
-  }
+  // console.log(items)
+  const {offsetRelativeW, offsetRelativeH} = ev.shadowItemInfo
+
+  manager.expandLineForPos(toPos, {
+    row: {force: true},
+    col: {force: true}
+  })
+
   const isSuccess = directUpdateLayout(ev)
-  if (!isSuccess && ev.toItem && !ev.inOuter) {  // 如果是斜角，符合某条件直接移动到该位置
-    const {offsetRelativeW, offsetRelativeH} = ev.shadowItemInfo
-    if (Math.abs(offsetRelativeW) > 2 && Math.abs(offsetRelativeH) > 2) ev.addModifyItem(fromItem, toPos)
-    directUpdateLayout(ev)
+  // console.log(isSuccess)
+  if (!isSuccess) {
+    if (ev.toItem && !ev.inOuter) {  // 如果是斜角，符合某条件直接移动到该位置
+      // console.log(offsetRelativeW, offsetRelativeH)
+      if (Math.abs(offsetRelativeW) > 2 && Math.abs(offsetRelativeH) > 2) {
+        ev.addModifyItem(fromItem, toPos)
+      }
+      directUpdateLayout(ev)
+    } else if (autoGrowRow || autoGrowCol) {
+      ev.setItemPos(fromItem, toPos)
+    }
   }
-}, 45)
+
+}, 66)
 
 
 /**
@@ -83,7 +97,7 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   if (!res.isSuccess) return false
   res.patch()
   ev.patchStyle()
-  updateContainerSize()
+  updateContainerSize(container)
   return true
 }
 

@@ -170,9 +170,10 @@ export class LayoutManager extends Finder {
    * 裁剪整个矩阵的所有空白行和列
    *
    * @param opt
-   * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
-   * @param opt.col     裁剪的列数，默认为0
-   * @param opt.row     裁剪的行数，默认为0
+   * @param opt.col.len      裁剪的列数，默认为0，慎用
+   * @param opt.col.head     是否允许删除矩阵头部，正常只用于响应式
+   * @param opt.row.len      裁剪的行数，默认为0，慎用
+   * @param opt.row.head     是否允许删除矩阵头部，正常只用于响应式
    * */
   public trim(
     opt: {
@@ -358,13 +359,22 @@ export class LayoutManager extends Finder {
     col?: Pick<ExpandLineOptType, 'force'>,
     row?: Pick<ExpandLineOptType, 'force'>,
   } = {}): void {
+    const colLen = pos.x + pos.w - 1 - this.col
+    const rowLen = pos.y + pos.h - 1 - this.row
+    if (isNaN(colLen) || isNaN(rowLen)) {
+      this.container.bus.emit("error", {
+        type: 'ExpandLineForPosError',
+        message: 'pos应该包含x,y,w,h',
+        from: arguments
+      })
+    }
     this.expandLine({
       col: {
-        len: pos.x + pos.w - 1 - this.col,
+        len: colLen,
         force: !!opt.col?.force
       },
       row: {
-        len: pos.y + pos.h - 1 - this.row,
+        len: rowLen,
         force: !!opt.row?.force
       },
     })

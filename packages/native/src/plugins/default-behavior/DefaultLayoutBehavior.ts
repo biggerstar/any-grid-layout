@@ -5,6 +5,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {
   checkItemPositionHasChanged,
   checkItemSizeHasChanged,
+  updateContainerSize,
   updateHorizontalResize,
   updateVerticalResize
 } from "@/plugins/common";
@@ -77,7 +78,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   dragend(_: ItemDragEvent) {
   },
 
-  dragend$(_: ItemDragEvent) {
+  dragend$(ev: ItemDragEvent) {
+    updateContainerSize(ev.container)
   },
 
   dragToBlank(_: ItemDragEvent) {
@@ -111,6 +113,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
 
   $resized(ev: ItemResizeEvent) {
     ev.container.layoutManager.trim()
+    updateContainerSize(ev.container)
   },
 
   resized(_: ItemResizeEvent) {
@@ -154,7 +157,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   closed(_: ItemLayoutEvent) {
   },
 
-  closed$(_: ItemLayoutEvent) {
+  closed$(ev: ItemLayoutEvent) {
+    ev.container.layoutManager.trim()
   },
 
   /**

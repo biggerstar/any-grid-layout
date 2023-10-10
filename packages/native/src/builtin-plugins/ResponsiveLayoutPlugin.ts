@@ -51,6 +51,11 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   dragend(ev: ItemDragEvent) {
+    directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
+    ev.container.layoutManager.trim({
+      row: {head: true},
+      col: {head: true},
+    })
     directUpdateLayout(ev)
   },
 
