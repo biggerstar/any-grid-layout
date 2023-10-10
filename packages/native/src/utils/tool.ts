@@ -45,7 +45,7 @@ export function capitalizeFirstLetter(string) {
 }
 
 /**
- * 深度克隆对象
+ * 深度克隆对象,支持克隆数组
  * */
 export const cloneDeep = (obj: Record<any, any>) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
   let objClone = Array.isArray(obj) ? [] : {};

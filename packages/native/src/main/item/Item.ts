@@ -3,7 +3,7 @@ import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
-import {isString} from "is-what";
+import {isObject, isString} from "is-what";
 import {
   grid_item_close_btn,
   grid_item_close_text,
@@ -11,7 +11,7 @@ import {
   grid_item_resizable_handle,
   grid_item_resize_text
 } from "@/constant";
-import {getContainerConfigs, updateStyle} from "@/utils";
+import {cloneDeep, getContainerConfigs, updateStyle} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
@@ -76,10 +76,15 @@ export class Item extends ItemGeneralImpl {
     const pos = new ItemPos(itemOption.pos)
     const get = (k: keyof ItemGeneralImpl) => {
       if (k === 'pos') return pos
-      return _customOptions.hasOwnProperty(k) ? _customOptions[k] : _default[k]
+      return _customOptions.hasOwnProperty(k)
+        ? _customOptions[k]
+        : isObject(_default[k])
+          ? cloneDeep(_default[k])
+          : _default[k]
     }
     const set = (k: keyof ItemGeneralImpl, v: any) => {
       if (k === 'pos') return  // 不允许更改pos
+      !equal(v, _default[k]) ? _customOptions[k] = v : null
       !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
     }
 
@@ -106,14 +111,14 @@ export class Item extends ItemGeneralImpl {
       transition: {
         get: () => get('transition'),
         set(v) {
-          const transition = get('transition')
+          const transition = v === true ? {...self._default.transition} : get('transition')
           if (v === false) transition['time'] = 0
           if (typeof v === 'number') transition['time'] = v
           if (typeof v === 'object') {
             if (v.time && v.time !== transition['time']) transition['time'] = v.time
             if (v.field && v.field !== transition['field']) transition['field'] = v.field
           }
-          self.animation(transition)
+          self._animation(transition)
         }
       },
     })
@@ -143,7 +148,7 @@ export class Item extends ItemGeneralImpl {
     //--------------开启编辑和动画------------------
     this._handleResize(this.resize)
     this._closeBtn(this.close)
-    this.animation(this.transition)
+    this._animation(this.transition)
     //--------------------------------------------
     this.element['_gridItem_'] = this
     this.element['_isGridItem_'] = true
@@ -183,7 +188,7 @@ export class Item extends ItemGeneralImpl {
    * 对该Item开启位置变化过渡动画
    * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
    * */
-  public animation(transition) {
+  private _animation(transition) {
     if (typeof transition !== "object") {
       this.container.bus.emit('warn', {
         message: '参数应该是对象形式{ time: number, field: string }'
@@ -191,14 +196,16 @@ export class Item extends ItemGeneralImpl {
       return
     }
     const style = <CSSStyleDeclaration>{}
+    if (transition === true) transition = {...this._default.transition}
     if (transition.time > 0) {
-      style.transitionProperty = transition.field
-      style.transitionDuration = transition.time + 'ms'
+      style.transition = 'unset'
       style.transitionTimingFunction = 'ease-out'
+      style.transitionDuration = transition.time + 'ms'
+      style.transitionProperty = transition.field
     } else if (transition.time === 0) {
       style.transition = 'none'
     }
-    updateStyle(style, this.element)
+    updateStyle(style, this.element, false)
   }
 
 
