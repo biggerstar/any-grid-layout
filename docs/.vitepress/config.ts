@@ -2,6 +2,7 @@ import {defineConfig} from 'vitepress'
 import sidebarGuide from './config/sidebar-guide'
 import sidebarExample from './config/sidebar-example'
 import nav from './config/nav'
+import viteConfig from './config/vite'
 
 export default defineConfig({
   title: 'Any-Grid-Layout',
@@ -29,5 +30,6 @@ export default defineConfig({
       prev: '上一页',
       next: '下一页'
     }
-  }
+  },
+  vite: viteConfig
 })

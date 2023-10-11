@@ -38,6 +38,7 @@ export const layoutData: CustomItems = [
 
 ```javascript
 import {Container,Item,fillItemLayoutList} from '@biggerstar/layout'
+import '@biggerstar/layout/dist/default-style.css'  // 必须导入该css
 
 const container = new Container({
   el: '#container',

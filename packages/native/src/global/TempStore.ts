@@ -52,10 +52,10 @@ class TempStore {
   timeOutEvent: any
   lastOffsetSelfItemX: number | null   // 上一个itemInfo.selfLeft位置
   lastOffsetSelfItemY: number | null   // 上一个itemInfo.selfTop位置
-  lastResizeW: number | null
-  lastResizeH: number | null
-  lastDragX: number | null
-  lastDragY: number | null
+  lastPosW: number | null
+  lastPosH: number | null
+  lastPosX: number | null
+  lastPosY: number | null
   preventedDragging: boolean | null   // 是否阻止了dragging 事件标记，如果阻止了便不会执行dragend
   preventedResizing: boolean | null    // 是否阻止了resizing 事件标记，如果阻止了便不会执行resized
   cloneElScaleMultipleX: number | null  // 克隆元素X方向的放大倍数

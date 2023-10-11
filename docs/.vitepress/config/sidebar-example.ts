@@ -6,7 +6,7 @@ export default <DefaultTheme.SidebarItem[]>[
     collapsed: false,
     items: [
       {
-        text: '基本',
+        text: '基本演示',
         link: '/example/basic'
       },
     ]

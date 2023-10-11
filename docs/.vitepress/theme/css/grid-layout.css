@@ -1,10 +1,48 @@
-/* Container的默认样式,定义宽高会被忽略 */
 .grid-container {
   border-radius: 10px;
-  background-color: skyblue;
+  background-color: #dbdede;
+  margin: auto;
 }
 
 /* 所有Item的默认样式,定义宽高会被忽略 */
 .grid-item {
   background-color: rgb(148, 145, 145);
+}
+
+/* 拖动(drag)时克隆出来跟随鼠标移动的对应元素 */
+.grid-dragging-clone-el {
+  opacity: 0.8;
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+/* 点击进行拖动(drag)的来源元素，也就是容器内的Item，正在拖动时候的样式*/
+.grid-dragging-source-el {
+  opacity: 0.3;
+}
+
+/* 重置大小(resize)时克隆出来跟随鼠标移动的对应元素 */
+.grid-resizing-clone-el {
+  background-color: red;
+}
+
+/* 点击进行重置大小(resize)的来源元素，也就是容器内的Item，正在拖动时候的样式*/
+.grid-resizing-source-el {
+  opacity: 0.3;
+}
+
+/* 重置大小(resize)按钮样式 */
+.grid-item-resizable-handle {
+  font-size: 1.1rem;
+  color: #0596c2;
+}
+
+/* 关闭Item按钮的样式 */
+.grid-item-close-btn {
+  background-color: skyblue;
+}
+
+/* 点击Item按钮的样式 */
+.grid-item-close-btn-active {
+  background-color: blue;
 }

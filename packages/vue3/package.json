@@ -45,7 +45,7 @@
   ],
   "dependencies": {
     "pinia": "^2.1.6",
-    "@biggerstar/layout": "workspace:0.0.31-Beta"
+    "@biggerstar/layout": "workspace:*"
 
   }
 }

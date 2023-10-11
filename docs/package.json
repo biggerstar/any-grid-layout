@@ -1,16 +1,18 @@
 {
-  "name": "@biggerstar/native-web",
-  "private": true,
+  "name": "any-grid-layout-docs",
   "version": "0.0.31-Beta",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@biggerstar/layout": "workspace:*"
+  },
   "author": "biggerstar",
   "license": "GPL-3.0-or-later",
   "description": "",
   "eslintIgnore": [
     "dist"
-  ],
-  "dependencies": {
-    "@biggerstar/layout": "workspace:*"
-  }
+  ]
 }

@@ -1,9 +1,9 @@
 {
   "name": "@biggerstar/layout",
-  "version": "0.0.31-Beta",
+  "version": "0.0.33-Beta",
   "type": "module",
   "scripts": {
-    "release": "npm run -s build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
+    "release": "vite-run build && git commit -am $npm_package_version && git tag $npm_package_version && git push --tags "
   },
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",

@@ -17,7 +17,7 @@ export default defineViteRunConfig({
     'examples/*',
   ],
   targets: {
-    'native': {
+    native: {
       dev: [
         ['build_lib', 'watch_lib', 'es_lib', 'sourcemap'],
         ['build_lib', 'es_lib', 'types']
