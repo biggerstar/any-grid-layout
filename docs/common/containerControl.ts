@@ -78,10 +78,58 @@ export const createContainerControl = (container: Container) => {
         container.updateLayout()
       }
     },
+    direction: {
+      type: 'select',
+      text: '主轴方向',
+      value: 'row',
+      options: [
+        {
+          label: 'row',
+          value: 'row'
+        },
+        {
+          label: 'row-reverse',
+          value: 'row-reverse'
+        },
+        {
+          label: 'column',
+          value: 'column'
+        },
+        {
+          label: 'column-reverse',
+          value: 'column-reverse'
+        },
+      ],
+      handler: (value) => {
+        container.setConfig("direction", value)
+        container.remount()
+      }
+    },
+
+    align: {
+      type: 'select',
+      text: '排列位置',
+      value: 'start',
+      options: [
+        {
+          label: 'start',
+          value: 'start'
+        },
+        {
+          label: 'end',
+          value: 'end'
+        },
+      ],
+      handler: (value: 'start' | 'end') => {
+        container.setConfig("align", value)
+        container.remount()
+      }
+    },
+
     addItem: {
       type: 'button',
       text: '',
-      value: '添加一个Item',
+      value: '试试添加一个Item吧',
       handler: (ev: number) => {
         console.log(ev)
         const item = container.addItem({
@@ -98,6 +146,22 @@ export const createContainerControl = (container: Container) => {
           item.mount()
           container.updateLayout()
         }
+      }
+    },
+    mount: {
+      type: 'button',
+      text: '',
+      value: '挂载容器',
+      handler: () => {
+        container.mount()
+      }
+    },
+    unmount: {
+      type: 'button',
+      text: '',
+      value: '卸载容器',
+      handler: () => {
+        container.unmount()
       }
     },
   }

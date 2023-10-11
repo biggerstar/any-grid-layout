@@ -2,6 +2,7 @@ import {
   BaseEvent,
   ContainerSizeChangeEvent,
   definePlugin,
+  GridClickEvent,
   ItemDragEvent,
   ItemLayoutEvent,
   ItemPosChangeEvent,
@@ -20,6 +21,9 @@ export const createLogController = () => {
         type,
         log: logText
       })
+    },
+    reset() {
+      log.logList = []
     }
   })
   return log
@@ -80,6 +84,9 @@ export const createLogPlugin = (logController: ReturnType<typeof createLogContro
     rowChanged(ev: ContainerSizeChangeEvent) {
       logController.add('row-changed', `oldRow ${ev.oldRow} -> curRow ${ev.curRow}`)
     },
+    click(ev: GridClickEvent) {
+      logController.add('click', `点击目标为 ${ev.type}, 点击意图 ${ev.action ? ev.action : '无'}`)
+    }
   })
 }
 
