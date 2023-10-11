@@ -21,6 +21,7 @@ import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
+import {itemClick_mousedown} from "@/events/other/itemClick_mousedown";
 
 export function allMousedown(ev) {
   /* cursor */
@@ -35,6 +36,8 @@ export function allMousedown(ev) {
   itemClose_mousedown(ev)
   /* itemDrag */
   itemDrag_mousedown(ev)  // drag必须在后面，前面没有被其他操作方式(handleMethod)接管则默认是drag
+  /* click event */
+  itemClick_mousedown(ev)
 }
 
 export function allMousemove(ev) {

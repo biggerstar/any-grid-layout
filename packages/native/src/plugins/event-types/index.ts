@@ -5,7 +5,7 @@ import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {CloneElementStyleEvent, InitOptionsEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
+import {CloneElementStyleEvent, GridClickEvent, InitOptionsEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
 import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 
@@ -21,6 +21,7 @@ export * from './ConfigurationEvent'
 export * from './CloneElementStyleEvent'
 export * from './InitOptionsEvent'
 export * from './MatrixEvent'
+export * from './GridClickEvent'
 
 
 export const EventMap: EventMapType<CustomEventOptions> = {
@@ -78,4 +79,6 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //--------------every------------------
   every:BaseEvent,
   everyDone:BaseEvent,
+  //--------------click------------------
+  click:GridClickEvent,
 }

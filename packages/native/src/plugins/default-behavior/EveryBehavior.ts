@@ -42,11 +42,5 @@ export const EveryBehavior = definePlugin({
         ct.__ownTemp__.preRow = row
       }
     }
-  },
-  colChanged(ev: ContainerSizeChangeEvent) {
-    updateContainerSize(ev.container)
-  },
-  rowChanged(ev: ContainerSizeChangeEvent) {
-    updateContainerSize(ev.container)
   }
 })
