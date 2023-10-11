@@ -25,10 +25,10 @@ export function autoSetSizeAndMargin(container, isSetConfig: boolean = false): {
     marginY,
   } = curLayout
 
-  margin[0] = marginX || margin[0] || marginY   // 优先获取 marginX，没定义的话再获取margin[0]，如果还没定义的话直接看marginY是否定义并获取
-  margin[1] = marginY || margin[1] || marginX
-  size[0] = sizeWidth || size[0] || sizeHeight
-  size[1] = sizeHeight || size[1] || sizeWidth
+  margin[0] = Math.max(marginX || margin[0] || marginY, 0)   // 优先获取 marginX，没定义的话再获取margin[0]，如果还没定义的话直接看marginY是否定义并获取
+  margin[1] = Math.max(marginY || margin[1] || marginX, 0)
+  size[0] = Math.max(sizeWidth || size[0] || sizeHeight, 0)
+  size[1] = Math.max(sizeHeight || size[1] || sizeWidth, 0)
   if (!margin[0] && !margin[1] && !size[0] && !size[1] && !col && !row) {
     throw new Error('您必须指定:\nmargin，size，col，row\n其中一个才能生成布局')
   }
