@@ -413,7 +413,7 @@ export class Container {
   private _init() {
     this.initLayoutInfo()
     let items = getContainerConfigs(this, 'items')
-    items.forEach((item) => this.addItem(item, {syncCustomItems: false}))
+    items.forEach((item) => this.addItem(item, {syncCustomItems: false, addForce: true}))
   }
 
   /**
@@ -448,14 +448,21 @@ export class Container {
    * @param itemOptions
    * @param options
    * @param options.syncCustomItems  同步到用户的items配置中
+   * @param options.addForce         不管是否能添加成功，强制添加到items列表中，慎用
    * @param options.findBlank        是否查找自动追加到合适的空白位置,否则直接添加不会影响到item.pos的值
    *                                 在您首次挂载(首次挂载会自动找空位)后，如果您要添加新item且没指定x,y时
    *                                 此时pos的默认是 x = 1,y = 1，您如果没指定x,y则建议开启该选项自动找到空位
    *
    * @return {Item | null} 成功返回Item，失败返回 null
    * */
-  public addItem(itemOptions: CustomItem | Item, options: { syncCustomItems?: boolean, findBlank?: boolean } = {}): Item | void {   //  html收集的元素和js生成添加的成员都使用该方法添加
-    const {syncCustomItems = true, findBlank = false} = options
+  public addItem(itemOptions: CustomItem | Item, options: { addForce?: boolean, syncCustomItems?: boolean, findBlank?: boolean } = {}): Item | void {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    const {syncCustomItems = true, findBlank = false, addForce = false} = options
+    if (!this._mounted && !addForce) {
+      this.bus.emit('error', {
+        message: `Container未挂载`
+      })
+      return
+    }
     let item = <Item>itemOptions
     let customOpt = itemOptions
     if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
