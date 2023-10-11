@@ -191,11 +191,8 @@ export type CustomEventOptions = {
   /** Item成功卸载事件 */
   itemUnmounted?(ev: BaseEvent): void,
 
-  /** item 位置变化 时响应的事件,只有位置变化才触发 */
-  itemPositionChanged?(ev: ItemPosChangeEvent): void
-
-  /** item 尺寸变化 时响应的事件,只有位置变化才触发 */
-  itemSizeChanged?(ev: ItemPosChangeEvent): void,
+  /** item 位置变化 或  尺寸变化 时响应的事件,pos变化才触发 */
+  itemPosChanged?(ev: ItemPosChangeEvent): void
 
   //-----------------拖动开始和结束事件-----------------------
   dragging?(ev: ItemDragEvent): void,

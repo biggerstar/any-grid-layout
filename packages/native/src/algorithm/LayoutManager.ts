@@ -196,8 +196,8 @@ export class LayoutManager extends Finder {
     }
   ) {
     const {row, col} = opt
-    this.trimRow(row?.len, row)
-    this.trimCol(col?.len, col)
+    this.trimRow(row?.len || 0, row)
+    this.trimCol(col?.len || 0, col)
   }
 
   /**
@@ -210,6 +210,7 @@ export class LayoutManager extends Finder {
    * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
    * */
   public trimCol(num: number = 0, opt: { head?: boolean } = {}) {
+    if (!this.container.autoGrowCol) return
     if (num < 0) return
     const force = num > 0
     if (num === 0) num = this.col - this.minCol
@@ -232,6 +233,7 @@ export class LayoutManager extends Finder {
    * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
    * */
   public trimRow(num: number = 0, opt: { head?: boolean } = {}) {
+    if (!this.container.autoGrowRow) return
     if (num < 0) return
     const force = num > 0
     if (num === 0) num = this.row - this.minRow
