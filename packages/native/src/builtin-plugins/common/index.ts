@@ -2,7 +2,6 @@ import {ItemDragEvent, ItemLayoutEvent, ItemResizeEvent} from "@/plugins";
 import {tempStore} from "@/global";
 import {clamp, throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
-import {isAnimation} from "@/algorithm/common/tool";
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {updateContainerSize} from "@/plugins/common";
 
@@ -70,18 +69,6 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
 
 }, 66)
 
-
-/**
- * 拖动Item到Items列表中的toItem的索引位置
- * */
-export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
-  const {fromItem, toItem} = tempStore
-  if (!fromItem || !toItem) return
-  if (isAnimation(fromItem)) return;
-  const manager = ev.container.layoutManager
-  manager.move(ev.items, fromItem, toItem)
-  directUpdateLayout(ev)
-}, 80)
 
 /**
  * 立即更新布局

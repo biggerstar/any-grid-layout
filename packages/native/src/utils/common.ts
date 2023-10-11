@@ -29,14 +29,21 @@ export function createMovableRange(fromItem: Item, pos: CustomItemPos): CustomIt
 /**
  * 通过cssText的方式更新某个dom元素的样式
  * */
-export function updateStyle(
-  style: Partial<CSSStyleDeclaration> & { [ket: string]: any },
-  element: HTMLElement,
+export function updateStyle<EL extends HTMLElement>(
+  style: Partial<CSSStyleDeclaration> & { [ket: string]: any } = {},
+  element: EL,
+  cssTextMode: boolean = true
 ) {
   if (Object.keys(style).length === 0 || !element) return
-  let cssText = ''
-  Object.keys(style).forEach((key) => cssText = `${cssText} ${getKebabCase(key)}:${style[key]}; `)
-  element.style.cssText = element.style.cssText + ';' + cssText
+  if (cssTextMode) {
+    let cssText = ''
+    Object.keys(style).forEach((key) => cssText = `${cssText} ${getKebabCase(key)}:${style[key]}; `)
+    element.style.cssText = element.style.cssText + ';' + cssText
+  } else {
+    for (const cssName in style) {
+      element.style[cssName] = style[cssName]
+    }
+  }
 }
 
 /**

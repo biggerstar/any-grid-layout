@@ -45,7 +45,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
   }
 
   /**
-   * 在某个item的基础上创建其要修改的pos信息
+   * 创建被fromItem所覆盖的item在下次变动时新的的pos信息
    * @param oneItemFunc fromItem覆盖目标只需要操作一个的时候执行的函数，如果存在多个取第一个，默认为null
    * @param multipleItemFunc fromItem覆盖目标没有指定onlyOneItemFunc时或者覆盖多个的时候执行的函数，默认为null
    *

@@ -184,31 +184,6 @@ export class Item extends ItemGeneralImpl {
     this.container.removeItem(this)
   }
 
-  /**
-   * 对该Item开启位置变化过渡动画
-   * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
-   * */
-  private _animation(transition) {
-    if (typeof transition !== "object") {
-      this.container.bus.emit('warn', {
-        message: '参数应该是对象形式{ time: number, field: string }'
-      })
-      return
-    }
-    const style = <CSSStyleDeclaration>{}
-    if (transition === true) transition = {...this._default.transition}
-    if (transition.time > 0) {
-      style.transition = 'unset'
-      style.transitionTimingFunction = 'ease-out'
-      style.transitionDuration = transition.time + 'ms'
-      style.transitionProperty = transition.field
-    } else if (transition.time === 0) {
-      style.transition = 'none'
-    }
-    updateStyle(style, this.element, false)
-  }
-
-
   /** 根据 pos的最新数据 立即更新当前Item在容器中的位置 */
   public updateItemLayout() {
     //   三种布局方案，都能实现grid布局，性能最好的是定位法 //
@@ -394,6 +369,30 @@ export class Item extends ItemGeneralImpl {
       this._closeEl.parentElement.removeChild(this._closeEl)
       this._closeEl = null
     }
+  }
+
+  /**
+   * 对该Item开启位置变化过渡动画
+   * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
+   * */
+  private _animation(transition) {
+    if (typeof transition !== "object") {
+      this.container.bus.emit('warn', {
+        message: '参数应该是对象形式{ time: number, field: string }'
+      })
+      return
+    }
+    const style = <CSSStyleDeclaration>{}
+    if (transition === true) transition = {...this._default.transition}
+    if (transition.time > 0) {
+      style.transition = 'unset'
+      style.transitionTimingFunction = 'ease-out'
+      style.transitionDuration = transition.time + 'ms'
+      style.transitionProperty = transition.field
+    } else if (transition.time === 0) {
+      style.transition = 'none'
+    }
+    updateStyle(style, this.element, false)
   }
 }
 

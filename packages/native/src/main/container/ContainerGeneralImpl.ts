@@ -32,7 +32,7 @@ export class ContainerGeneralImpl {
   /** 成员大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
   size?: MarginOrSizeDesc = [null, null]
 
-  /** 成员宽度
+  /** 成员宽度  TODO  合并到size配置对象 比如 {sizeWidth，sizeHeight}  或者  [xx,xx] ,margin也进行改造
    *  sizeWidth优先级大于 size[0],在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
    * */
   sizeWidth?: number | null = null

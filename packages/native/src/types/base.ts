@@ -12,7 +12,7 @@ import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChang
 import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
 import {Container} from "@/main";
 import {InitOptionsEvent} from "@/plugins/event-types/InitOptionsEvent";
-import {CloneElementStyleEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
+import {CloneElementStyleEvent, GridClickEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -270,6 +270,11 @@ export type CustomEventOptions = {
    * 每个事件触发结束时都会执行的钩子
    * */
   everyDone?(ev: BaseEvent & Record<any, any>): void;
+
+  /**
+   * 点击容器或者item触发的事件
+   * */
+  click?(ev: GridClickEvent): void;
 }
 
 export type AnalysisResult = {

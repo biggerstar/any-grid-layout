@@ -16,6 +16,7 @@ import {ContainerSizeChangeEvent} from "@/plugins";
 import {GridPlugin} from "@/types";
 
 /**
+ * TODO refactor 弃用flip翻转， 布局方向由 position的 left top right bottom控制，可以紧贴边界更符合直观
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
  * */
 export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
@@ -168,6 +169,10 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
    * ev.event 开发者如果传入customEv则会替代默认ev事件对象，customEv应当包含修改过后的items或者使用addModifyItem添加过要修改的成员
    * */
   updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
+    const container = ev.container
+    autoSetSizeAndMargin(container)
+    updateContainerSize(container)
+    container.items.forEach(item => item.updateItemLayout())
   }
 })
 

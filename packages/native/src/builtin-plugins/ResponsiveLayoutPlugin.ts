@@ -126,6 +126,7 @@ export const ResponsiveLayoutPlugin = definePlugin({
   },
 
   updateLayout(ev: ItemLayoutEvent) {
+    ev.prevent()
     directUpdateLayout(<any>ev['event'] || ev)
   },
 })

@@ -122,12 +122,9 @@ export class ItemLayoutEvent extends BaseEvent {
     shadowItemInfo.offsetRelativeW = this.relativeX - fromItem!.pos.x
     shadowItemInfo.offsetRelativeH = this.relativeY - fromItem!.pos.y
 
-    // shadowItemInfo.offsetRelativeW = (Math.abs(offsetRelativeW) - fromItem.pos.w + 1) * Math.sign(offsetRelativeW)
-    // shadowItemInfo.offsetRelativeH = (Math.abs(offsetRelativeH) - fromItem.pos.h + 1) * Math.sign(offsetRelativeH)
-
     // console.log(offsetRelativeW,offsetRelativeH)
     // console.log(this.relativeX, this.relativeY)
-    console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
+    // console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
 
     /*------------- spaceInfo ----------------*/
     const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
@@ -186,7 +183,7 @@ export class ItemLayoutEvent extends BaseEvent {
     if (targetItemPos.w === targetPos.w
       && targetItemPos.h === targetPos.h
       && targetItemPos.x === targetPos.x
-      && targetItemPos.y === targetPos.y) return true
+      && targetItemPos.y === targetPos.y) return true   // pos 没变化则直接不进行修改
     //-------------------------------------
     // console.log(targetPos)
     manager.expandLineForPos(targetPos)

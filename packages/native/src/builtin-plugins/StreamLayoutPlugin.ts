@@ -7,10 +7,23 @@ import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
 import {
   directUpdateLayout,
-  moveToIndexForItems,
   updateLayout,
   updateResponsiveResizeLayout
 } from "@/builtin-plugins/common";
+import {throttle} from "@/utils";
+import {isAnimation} from "@/algorithm/common/tool";
+
+/**
+ * 拖动Item到Items列表中的toItem的索引位置
+ * */
+export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
+  const {fromItem, toItem} = tempStore
+  if (!fromItem || !toItem) return
+  if (isAnimation(fromItem)) return;
+  const manager = ev.container.layoutManager
+  manager.move(ev.items, fromItem, toItem)
+  directUpdateLayout(ev)
+}, 80)
 
 /*-
 -----------------------------------------------------------------------------------------*/
@@ -128,6 +141,7 @@ export const StreamLayoutPlugin = definePlugin({
     directUpdateLayout(ev)
   },
   updateLayout(ev: ItemLayoutEvent) {
+    ev.prevent()
     directUpdateLayout(ev)
   }
 })
