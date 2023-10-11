@@ -448,15 +448,36 @@ export class Container {
    * @param itemOptions
    * @param options
    * @param options.syncCustomItems  同步到用户的items配置中
+   * @param options.findBlank        是否查找自动追加到合适的空白位置,否则直接添加不会影响到item.pos的值
+   *                                 在您首次挂载(首次挂载会自动找空位)后，如果您要添加新item且没指定x,y时
+   *                                 此时pos的默认是 x = 1,y = 1，您如果没指定x,y则建议开启该选项自动找到空位
+   *
+   * @return {Item | null} 成功返回Item，失败返回 null
    * */
-  public addItem(itemOptions: CustomItem | Item, options: { syncCustomItems?: boolean } = {}): Item {   //  html收集的元素和js生成添加的成员都使用该方法添加
-    const {syncCustomItems = true} = options
+  public addItem(itemOptions: CustomItem | Item, options: { syncCustomItems?: boolean, findBlank?: boolean } = {}): Item | void {   //  html收集的元素和js生成添加的成员都使用该方法添加
+    const {syncCustomItems = true, findBlank = false} = options
     let item = <Item>itemOptions
     let customOpt = itemOptions
     if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
     else item = new Item(customOpt)
     if (syncCustomItems) this.layout.items.push(customOpt)
     // console.log(item === itemOptions)
+    if (findBlank && itemOptions.pos) {
+      const manager = this.layoutManager
+      const isGrow = this.autoGrowRow || this.autoGrowCol
+      const findBlankFn = isGrow ? manager.findGrowBlank : manager.findBlank
+      let foundPos = findBlankFn.call(manager, itemOptions.pos)
+      if (!foundPos) {
+        this.bus.emit('error', {
+          type: 'ContainerOverflowError',
+          message: `addItem 时容器溢出: 您可以配置 autoGrow 来自动撑开容器`,
+          from: item
+        })
+        return
+      }
+      Object.assign(item.pos, foundPos)
+      manager.mark(item.pos, item)
+    }
     item.customOptions = customOpt
     item.container = this
     item.parentElement = this.contentElement
@@ -466,14 +487,21 @@ export class Container {
     return item
   }
 
-  /** 在items列表中移除指定Item引用 */
-  public removeItem(removeItem) {
+  /**
+   * 在items列表中移除指定Item引用
+   *
+   * @return {Item | null} 移除成功返回Item，失败返回 null
+   * */
+  public removeItem(removeItem): Item | null {
+    let target = null
     for (let i = 0; i < this.items.length; i++) {
       if (removeItem === this.items[i]) {
         this.items.splice(i, 1)
+        target = removeItem
         break
       }
     }
+    return target
   }
 
   /** 清除重置布局矩阵 */
