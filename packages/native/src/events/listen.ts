@@ -41,6 +41,7 @@ export function allMousedown(ev) {
 }
 
 export function allMousemove(ev) {
+  ev.stopPropagation()
   /* compatible */
   compatible_touchmove_mousemove(ev)
   /* start init */

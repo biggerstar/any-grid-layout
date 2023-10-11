@@ -44,8 +44,10 @@ export class ConfigurationEvent extends BaseEvent {
     if (!data) {  // 未指定col自动设置
       const smartCol = this.smart.smartCol
       const containerW = this.containerW
+      let matrixCol = -Infinity
+      if (!container.autoGrowCol) matrixCol = container.layoutManager.col
       if (!container._mounted) data = Math.max(smartCol, containerW)
-      else data = Math.max(smartCol, containerW)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
+      else data = Math.max(smartCol, containerW, matrixCol)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
     }
     // console.log('col',data)
     return data
@@ -64,8 +66,10 @@ export class ConfigurationEvent extends BaseEvent {
       // console.log(smartRow)
       const containerH = this.containerH
       // console.log(containerH)
+      let matrixRow = -Infinity
+      if (!container.autoGrowRow) matrixRow = container.layoutManager.row
       if (!container._mounted) data = Math.max(smartRow, containerH)
-      else data = Math.max(smartRow, containerH)  // 同上
+      else data = Math.max(smartRow, containerH, matrixRow)  // 同上
     }
     // console.log('row',data,container)
     return data

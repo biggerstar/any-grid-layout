@@ -40,8 +40,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   containerMountBefore: BaseEvent,
   containerMounted: ItemLayoutEvent,
   containerUnmounted: BaseEvent,
-  containerResizing: ContainerSizeChangeEvent,
-  containerSizeChanged: ContainerSizeChangeEvent,
+  containerResizing: BaseEvent,
   colChanged: ContainerSizeChangeEvent,
   rowChanged: ContainerSizeChangeEvent,
   //-------------------item---------------------

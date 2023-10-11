@@ -6,7 +6,7 @@ import {updateContainerSize, updateHorizontalResize, updateVerticalResize} from 
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
-import {ContainerSizeChangeEvent} from "@/plugins";
+import {BaseEvent} from "@/plugins";
 import {GridPlugin} from "@/types";
 
 /**
@@ -43,17 +43,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     }
   },
 
-  /**
-   * container盒子大小改变
-   * */
-  $containerResizing(ev: ContainerSizeChangeEvent) {
-    if (ev.isColChanged || ev.isRowChanged) ev.container.bus.emit('containerSizeChanged')
-  },
-
-  containerResizing(ev: ContainerSizeChangeEvent) {
-    autoSetSizeAndMargin(ev.container, true)
-    ev.patchStyle()
-    ev.container.updateContainerSizeStyle()
+  containerResizing(ev: BaseEvent) {
+    ev.container.bus.emit("updateLayout")
   },
 
   /**

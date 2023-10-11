@@ -120,8 +120,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     let minimumArea = Infinity
     let finallyPos = fromItem.pos  // 如果没找到则不变
     allBlankRange.forEach(range => {
-      const W = Math.abs(Math.abs(this.relativeX) - range.x) + 1
-      const H = Math.abs(Math.abs(this.relativeY) - range.y) + 1
+      const W = Math.abs(this.relativeX - range.x) + 1
+      const H = Math.abs(this.relativeY - range.y) + 1
       const area = W * H   // 求最小面积
       if (area <= minimumArea) {  // 最后一个是fromItem，保证前面所有计算后的最小面积等于当前fromItem面积，此时不会进行改变位置
         minimumArea = area
@@ -134,7 +134,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
       return false
     }
     if (allBlankRange.length) {
-      // console.log(minimumArea,finallyPos)
+      // console.log(minimumArea, finallyPos)
       this.setItemPos(fromItem, finallyPos)
       manager.mark(finallyPos, fromItem)  // 如果成功，标记新的pos位置
     }

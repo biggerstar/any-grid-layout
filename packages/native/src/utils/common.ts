@@ -2,7 +2,7 @@
 
 import {CustomItemPos, CustomLayoutsOption} from "@/types";
 import {Container, Item} from "@/main";
-import {getKebabCase} from "@/utils/tool";
+import {cloneDeep, getKebabCase} from "@/utils/tool";
 import {tempStore} from "@/global";
 
 
@@ -65,7 +65,7 @@ export const _getConfig = (container, name) => {
   if (has(container.useLayout, name)) return container.useLayout[name]
   if (has(container.layout, name)) return container.layout[name]
   if (has(container.global, name)) return container.global[name]
-  if (has(container._default, name)) return container._default[name]
+  if (has(container._default, name)) return cloneDeep(container._default[name])
   return void 0
 }
 

@@ -168,12 +168,7 @@ export type CustomEventOptions = {
   containerUnmounted?(ev: BaseEvent): void,
 
   /** Container dom盒子大小改变 */
-  containerResizing?(ev: ContainerSizeChangeEvent): void,
-
-  /**
-   * 容器(.grid-container类)col或者row大小改变触发的事件
-   */
-  containerSizeChanged?(ev: ContainerSizeChangeEvent): void,
+  containerResizing?(ev: BaseEvent): void,
 
   /** col列数改变 */
   colChanged?(ev: ContainerSizeChangeEvent): void,

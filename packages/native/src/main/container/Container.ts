@@ -14,12 +14,13 @@ import {startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
-import {isObject, isString} from "is-what";
+import {isNumber, isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {getContainerConfigs, updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
 import {ContainerGeneralImpl} from "@/main";
 import {STRect} from "@/global/singleThrottle";
+import deepmerge from "deepmerge";
 
 
 /**
@@ -86,10 +87,10 @@ export class Container {
   public _mounted: boolean
   public readonly _default: CustomLayoutsOption
   // private __store__ = tempStore
-  public __ownTemp__ = {
+  public readonly __ownTemp__ = {
     //-----内部可写外部只读变量------//
-    preCol: void 0,   // 容器大小改变之前的col
-    preRow: void 0,   // 容器大小改变之前的row
+    oldCol: void 0,   // 容器大小改变之前的col
+    oldRow: void 0,   // 容器大小改变之前的row
     observers: {
       resize: void 0,
       mutation: void 0,
@@ -188,8 +189,12 @@ export class Container {
     return data
   }
 
-  /** 将值设置到当前使用的配置信息中 */
-  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name],): void {
+  /**
+   * ！！！ 暂时未支持值为对象形式的配置，如需对象配置请使用container.layout进行修改设置
+   * 将值设置到当前使用的配置信息中,只是临时设置
+   * sync 是否同步到用户配置，转成非临时配置，建议您使用container.layout获取用户配置对象直接修改替代该操作
+   * */
+  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name], sync: boolean = false): void {
     let ev: ConfigurationEvent
     if (['col', 'row'].includes(name)) this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
     this.bus.emit('setConfig', {
@@ -198,7 +203,12 @@ export class Container {
       callback: (e: ConfigurationEvent) => ev = e
     })
     if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
-    this.useLayout[name] = data
+    const mergeConfig = (name: string, to: object, from: any) => {
+      if (isObject(to[name]) && isObject(from)) deepmerge(to[name], from, {clone: true})
+      else to[name] = from
+    }
+    if (sync) mergeConfig(name, this.layout, data)
+    else mergeConfig(name, this.useLayout, data)
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
@@ -248,8 +258,8 @@ export class Container {
     this.parentItem = parseItemFromPrototypeChain(this.element)
     if (this.parentItem) this.parentItem.container.childContainer.push(this)
     this.parent = this.parentItem?.container || null
-    this.__ownTemp__.preCol = this.getConfig("col")
-    this.__ownTemp__.preRow = this.getConfig("row")
+    this.__ownTemp__.oldCol = this.getConfig("col")
+    this.__ownTemp__.oldRow = this.getConfig("row")
     this._observer_()
     this.updateContainerSizeStyle()
     this._mounted = true
@@ -338,25 +348,30 @@ export class Container {
   }
 
   /**
-   * 使用css class 或者 Item的对应name, 或者 Element元素 找到该对应的Item，并返回所有符合条件的Item
+   * 使用css class 或者 Item的对应name, 或者 Element元素 或者 item.i的值 找到该对应的Item，并返回所有符合条件的Item
    * name的值在创建 Item的时候可以传入 或者直接在标签属性上使用name键值，在这边也能获取到
-   * @param { String,Element } nameOrClassOrElement  宽度 高度 是栅格的倍数
+   * @param { String,Element } nameOrClassOrElementOrIndex
    * @return {Array} 所有符合条件的Item
    * */
-  public find(nameOrClassOrElement: string | HTMLElement): Item[] {
+  public find(nameOrClassOrElementOrIndex: string | number | HTMLElement): Item[] {
+    const identity = nameOrClassOrElementOrIndex
     return this.items.filter((item) => {
-      return item.name === nameOrClassOrElement
-        || item.element === nameOrClassOrElement
-        || isString(nameOrClassOrElement) && item.classList.includes(nameOrClassOrElement)
+      return isNumber(identity) && item.i === identity
+        || isString(identity) && item.name === identity
+        || item.element === identity
+        || isString(identity) && item.classList.includes(identity)
     })
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
   public updateContainerSizeStyle({col, row} = {}): void {
+    const {oldRow, oldCol} = this.__ownTemp__
+    if (oldRow === row && oldCol === col) return
     updateStyle({
       width: `${this.nowWidth(col)}px`,
       height: `${this.nowHeight(row)}px`,
     }, this.contentElement)
+    STRect.update("containerContent", true, this.contentElement)
   }
 
   /** 计算当前Items所占用的Container宽度  */
@@ -513,5 +528,12 @@ export class Container {
     else res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
     if (keepSymbol) res = res * Math.sign(pxNum)
     return res
+  }
+
+  /**
+   * 更新当前布局，由布局插件实现
+   * */
+  public updateLayout() {
+    this.bus.emit("updateLayout")
   }
 }

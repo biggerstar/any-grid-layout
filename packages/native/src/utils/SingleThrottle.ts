@@ -10,8 +10,8 @@ import {throttle} from "@/utils/tool";
 export class SingleThrottle<T extends Record<any, any>> {
   public do: (func: () => void, wait?: number) => void
   public rules: (() => boolean)[] = []
-  public updateMethods: Record<keyof T, (...args: any[]) => any> = {}     // 包装后的节流函数
-  public _updateMethods: Record<keyof T, (...args: any[]) => any> = {}    // 直接更新的原函数
+  private updateMethods: Record<keyof T, (...args: any[]) => any> = {}     // 包装后的节流函数
+  private _updateMethods: Record<keyof T, (...args: any[]) => any> = {}    // 直接更新的原函数
   public wait: number = 320
   public cache: T & {} = {}
 
