@@ -2,13 +2,7 @@
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {
-  checkItemPositionHasChanged,
-  checkItemSizeHasChanged,
-  updateContainerSize,
-  updateHorizontalResize,
-  updateVerticalResize
-} from "@/plugins/common";
+import {updateContainerSize, updateHorizontalResize, updateVerticalResize} from "@/plugins/common";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
@@ -69,7 +63,6 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {fromContainer, toContainer} = tempStore
     if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
     ev.patchDragDirection()
-    checkItemPositionHasChanged()
   },
 
   $dragend(ev: ItemDragEvent) {
@@ -109,7 +102,6 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   resizing(ev: ItemResizeEvent) {
     if (!tempStore.fromItem) return
     ev.patchResizeDirection()
-    checkItemSizeHasChanged(ev)
   },
 
   $resized(ev: ItemResizeEvent) {
@@ -143,8 +135,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     updateHorizontalResize(ev)
   },
 
-  itemSizeChanged() {
-    // console.log('itemSizeChanged')
+  itemPosChanged() {
+    // console.log('itemPosChanged')
   },
 
   closing(_: ItemLayoutEvent) {

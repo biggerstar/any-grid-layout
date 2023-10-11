@@ -48,8 +48,7 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   addItemSuccess: BaseEvent,
   itemMounted: BaseEvent,
   itemUnmounted: BaseEvent,
-  itemSizeChanged: ItemPosChangeEvent,
-  itemPositionChanged: ItemPosChangeEvent,
+  itemPosChanged: ItemPosChangeEvent,
   //--------------drag-------------------
   dragging: ItemDragEvent,
   dragend: ItemDragEvent,

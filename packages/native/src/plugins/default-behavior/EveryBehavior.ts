@@ -1,10 +1,9 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {definePlugin, tempStore} from "@/global";
-import {BaseEvent, ContainerSizeChangeEvent} from "@/plugins";
+import {BaseEvent} from "@/plugins";
 import {isNumber} from "is-what";
 import {CustomEventOptions} from "@/types";
-import {updateContainerSize} from "@/plugins/common";
 
 const excludeNames: (keyof CustomEventOptions)[] = [
   'config',
@@ -40,6 +39,19 @@ export const EveryBehavior = definePlugin({
       if (isRowChanged) {
         ct.bus.emit('rowChanged')
         ct.__ownTemp__.preRow = row
+      }
+    }
+
+    /*------------------检测是否改变了pos-------------------------*/
+    const {fromItem, lastPosX, lastPosY, lastPosW, lastPosH} = tempStore
+    if (fromItem) {
+      if (
+        fromItem.pos.x !== lastPosX
+        || fromItem.pos.y !== lastPosY
+        || fromItem.pos.w !== lastPosW
+        || fromItem.pos.h !== lastPosH
+      ) {
+        fromItem.container.bus.emit('itemPosChanged')
       }
     }
   }
