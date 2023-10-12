@@ -46,6 +46,7 @@ export const createContainerControl = (container: Container) => {
       type: 'input-number',
       text: '宽度',
       value: 80,
+      min: 0,
       handler: (value: number) => {
         container.layout.sizeWidth = value
         container.updateLayout()
@@ -55,6 +56,7 @@ export const createContainerControl = (container: Container) => {
       type: 'input-number',
       text: '高度',
       value: 50,
+      min: 0,
       handler: (value: number) => {
         container.layout.sizeHeight = value
         container.updateLayout()
@@ -64,6 +66,7 @@ export const createContainerControl = (container: Container) => {
       type: 'input-number',
       text: '横向间距',
       value: 5,
+      min: 0,
       handler: (value: number) => {
         container.layout.marginX = value
         container.updateLayout()
@@ -73,6 +76,7 @@ export const createContainerControl = (container: Container) => {
       type: 'input-number',
       text: '纵向间距',
       value: 5,
+      min: 0,
       handler: (value: number) => {
         container.layout.marginY = value
         container.updateLayout()
@@ -131,7 +135,7 @@ export const createContainerControl = (container: Container) => {
       text: '',
       value: '试试添加一个Item吧',
       handler: (ev: number) => {
-        console.log(ev)
+        // console.log(ev)
         const item = container.addItem({
           pos: {
             w: 1,

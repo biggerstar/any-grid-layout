@@ -32,10 +32,10 @@ export const createLogController = () => {
 export const createLogPlugin = (logController: ReturnType<typeof createLogController>) => {
   return definePlugin({
     warn(ev: ThrowMessageEvent) {
-      logController.add('warn', ev.message)
+      logController.add('warn', `[${ev.type}] ${ev.message}`)
     },
     error(ev: ThrowMessageEvent) {
-      logController.add('error', ev.message)
+      logController.add('error', `[${ev.type}] ${ev.message}`)
     },
     containerMounted(ev: BaseEvent) {
       let selector = ev.container.el

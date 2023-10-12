@@ -6,8 +6,18 @@ export default <DefaultTheme.SidebarItem[]>[
     collapsed: false,
     items: [
       {
-        text: '基本演示',
+        text: '默认布局演示',
         link: '/example/basic'
+      },
+    ]
+  },
+  {
+    text: '插件',
+    collapsed: false,
+    items: [
+      {
+        text: '响应式布局插件',
+        link: '/example/responsive'
       },
     ]
   },

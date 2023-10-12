@@ -2,7 +2,7 @@
   <div style="height: auto" v-if="showPresentation">
     <div class="control-panel">
       <a-collapse :default-active-key="['1','2']" :bordered="true">
-        <a-collapse-item header="控制面板" key="1">
+        <a-collapse-item v-if="Object.keys(props.controlOptions).length" header="控制面板" key="1">
           <div class="container-control-panel">
             <div class="item" v-for="(info,index) in containerControlMap" :key="index">
               <a-space>
@@ -46,7 +46,7 @@
             </div>
           </div>
         </a-collapse-item>
-        <a-collapse-item header="日志显示" key="2">
+        <a-collapse-item v-if="props.logController || props.showPosDetail" header="日志显示" key="2">
           <div class="items-control-panel">
             <div class="item" style="width: 50%" v-if=" showPosDetail">
               <a-space>
@@ -70,7 +70,7 @@
                 </div>
               </a-scrollbar>
             </div>
-            <div class="item" style="width: 50%;  ">
+            <div v-if="props.logController" class="item" style="width: 50%;">
               <div
                 class="font-bolder"
                 style="display: flex; justify-content: flex-end; margin-bottom: 10px"
@@ -93,8 +93,6 @@
 <script setup lang="ts">
 import {computed, nextTick, onMounted, reactive, ref} from "vue";
 import {Container, GridClickEvent} from '@biggerstar/layout'
-import '@biggerstar/layout/dist/default-style.css'
-import '../theme/css/grid-layout.css'
 import {isNumber} from "is-what";
 import Console from "./Console.vue";
 import {createLogController} from "../../common/printLogPlugin";
@@ -120,7 +118,7 @@ const props = defineProps({
   },
   logController: {
     type: Object,
-    default: createLogController()
+    default: null
   }
 })
 
@@ -158,7 +156,7 @@ const createItemsPosDetailControlMap = () => {
 
 let itemsPosDetailControlMap: ReturnType<typeof createItemsPosDetailControlMap>
 
-const log = props.logController
+const log = props.logController || createLogController()
 
 onMounted(() => {
   showPresentation.value = true

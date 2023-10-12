@@ -12,13 +12,11 @@
 
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref} from "vue";
-import {layoutData} from "../store/layout";
-import {Container, fillItemLayoutList} from '@biggerstar/layout'
-import '@biggerstar/layout/dist/default-style.css'
-import '../theme/css/grid-layout.css'
 import Presentation from "./Presentation.vue";
-import {createLogController, createLogPlugin} from "../../common/printLogPlugin";
-import {createContainerControl} from "../../common/containerControl";
+import {Container, createResponsiveLayoutPlugin, fillItemLayoutList} from "@biggerstar/layout";
+import {layoutData} from "../store/layout.js";
+import {createLogController, createLogPlugin} from "../../common/printLogPlugin.js";
+import {createContainerControl} from "../../common/containerControl.js";
 
 const showPresentation = ref(false)
 const presentationRef = ref<Presentation>()
@@ -43,6 +41,7 @@ let container: Container = new Container({
 let logController = createLogController()
 const containerControlOpt = createContainerControl(container)
 onMounted(() => {
+  container.use(createResponsiveLayoutPlugin())
   container.use(createLogPlugin(logController))
   showPresentation.value = true
   console.log(container)
@@ -52,7 +51,9 @@ onUnmounted(() => {
   container.unmount()
 })
 
+
 </script>
 
 <style scoped>
+
 </style>
