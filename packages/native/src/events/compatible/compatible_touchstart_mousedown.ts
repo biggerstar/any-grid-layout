@@ -11,7 +11,6 @@ export function compatible_touchstart_mousedown(ev) {
   tempStore.mousedownEvent = ev
   //----------------------------------------------------
   if (ev.touches) {
-    if (ev.stopPropagation) ev.stopPropagation()
     tempStore.deviceEventMode = 'touch'
     ev = singleTouchToCommonEvent(ev)
   } else tempStore.deviceEventMode = 'mouse'

@@ -257,6 +257,7 @@ export class Container {
     this.__ownTemp__.oldCol = this.getConfig("col")
     this.__ownTemp__.oldRow = this.getConfig("row")
     this._observer_()
+    this.bus.emit("updateLayout")
     this.updateContainerSizeStyle()
     this._mounted = true
   }

@@ -43,7 +43,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     }
   },
 
-  containerResizing(ev: BaseEvent) {
+  containerResizing(ev: ItemLayoutEvent) {
     ev.container.bus.emit("updateLayout")
   },
 
