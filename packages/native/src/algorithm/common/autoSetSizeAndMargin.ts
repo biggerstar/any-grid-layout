@@ -30,8 +30,11 @@ export function autoSetSizeAndMargin(container, isSetConfig: boolean = false): {
   margin[1] = getFirstNumber(marginY, margin[1])
   size[0] = getFirstNumber(sizeWidth, size[0])
   size[1] = getFirstNumber(sizeHeight, size[1])
-  if (!margin[0] && !margin[1] && !size[0] && !size[1] && !col && !row) {
-    throw new Error('您必须指定:\nmargin，size，col，row\n其中一个才能生成布局')
+  if (!margin[0] && !size[0] && !col) {
+    throw new Error('您必须指定:\nmarginX，sizeWidth, col\n其中一个才能生成布局')
+  }
+  if (!margin[1] && !size[1] && !row) {
+    throw new Error('您必须指定:\nmarginY，sizeHeight，row\n其中一个才能生成布局')
   }
 //----------------------------------------------------//
   const sizeColInfo = autoComputeSizeInfo(col, containerWidth, size[0], margin[0], ratioCol)

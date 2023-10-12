@@ -235,31 +235,34 @@ export class Container {
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   public mount(): void {
-    if (this._mounted) return this.bus.emit('error', {
-      type: 'RepeatedContainerMounting',
-      message: '重复挂载容器被阻止',
-      from: this,
-    })
-    //-----------------------容器dom初始化-----------------------//
-    if (this.el instanceof Element) this.element = this.el
-    if (!this.element) {
-      this.element = <HTMLElement>document.querySelector(<string>this.el)
-      if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+    const mountFn = ()=> {
+      if (this._mounted) return this.bus.emit('error', {
+        type: 'RepeatedContainerMounting',
+        message: '重复挂载容器被阻止',
+        from: this,
+      })
+      //-----------------------容器dom初始化-----------------------//
+      if (this.el instanceof Element) this.element = this.el
+      if (!this.element) {
+        this.element = <HTMLElement>document.querySelector(<string>this.el)
+        if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+      }
+      //-----------------容器布局信息初始化与检测--------------------//
+      this._init()
+      this.bus.emit('containerMountBefore')
+      this._createGridContainerBox()
+      //-------------------------其他操作--------------------------//
+      this.parentItem = parseItemFromPrototypeChain(this.element)
+      if (this.parentItem) this.parentItem.container.childContainer.push(this)
+      this.parent = this.parentItem?.container || null
+      this.__ownTemp__.oldCol = this.getConfig("col")
+      this.__ownTemp__.oldRow = this.getConfig("row")
+      this._observer_()
+      this.bus.emit("updateLayout")
+      this.updateContainerSizeStyle()
+      this._mounted = true
     }
-    //-----------------容器布局信息初始化与检测--------------------//
-    this._init()
-    this.bus.emit('containerMountBefore')
-    this._createGridContainerBox()
-    //-------------------------其他操作--------------------------//
-    this.parentItem = parseItemFromPrototypeChain(this.element)
-    if (this.parentItem) this.parentItem.container.childContainer.push(this)
-    this.parent = this.parentItem?.container || null
-    this.__ownTemp__.oldCol = this.getConfig("col")
-    this.__ownTemp__.oldRow = this.getConfig("row")
-    this._observer_()
-    this.bus.emit("updateLayout")
-    this.updateContainerSizeStyle()
-    this._mounted = true
+    mountFn()
   }
 
   /**

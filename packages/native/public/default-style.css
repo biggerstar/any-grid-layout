@@ -2,8 +2,8 @@
   box-sizing: border-box;
   display: inline-block;
   margin: 0 auto;
-  height: auto;
   width: 100%;
+  height: 100%;
   position: relative;
   /*禁止用户选择文本或元素*/
   -moz-user-select: none;
