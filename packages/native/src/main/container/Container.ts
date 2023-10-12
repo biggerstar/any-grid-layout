@@ -1,6 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {
+  cloneDeep,
   debounce,
   getContainerFromElement,
   getItemFromElement,
@@ -117,6 +118,7 @@ export class Container {
     this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
     startGlobalEvent()
+    this.initLayoutInfo()
   }
 
   private _define() {
@@ -139,17 +141,11 @@ export class Container {
             break
           }
           return layoutItem
-        },
-        set(_: any) {
-          // debugger
         }
       },
       useLayout: {
         get() {
           return useLayout
-        },
-        set(_: any) {
-          // debugger
         }
       },
     })
@@ -411,7 +407,6 @@ export class Container {
   }
 
   private _init() {
-    this.initLayoutInfo()
     let items = getContainerConfigs(this, 'items')
     items.forEach((item) => this.addItem(item, {syncCustomItems: false, addForce: true}))
   }
@@ -438,7 +433,7 @@ export class Container {
         return a.px - b.px
       })
     }
-    this.layouts = JSON.parse(JSON.stringify(layoutInfo))    // items 可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
+    this.layouts = cloneDeep(layoutInfo)   // items 可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
     // console.log(layoutInfo);
   }
 
@@ -459,6 +454,7 @@ export class Container {
     const {syncCustomItems = true, findBlank = false, addForce = false} = options
     if (!this._mounted && !addForce) {
       this.bus.emit('error', {
+        type: 'ContainerNotMounted',
         message: `Container未挂载`
       })
       return
