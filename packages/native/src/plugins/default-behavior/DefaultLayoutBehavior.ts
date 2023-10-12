@@ -25,7 +25,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     autoSetSizeAndMargin(container, true)  // 1.先初始化初始配置
     container.reset(container.getConfig('col'), container.getConfig('row'))
     const res = manager.analysis()   // 2. 分析当前布局
-    res.patch()  // 3. 修改当前item位置
+    res.patch()                      // 3. 修改当前item位置
     container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
     autoSetSizeAndMargin(container, true)  // 5.根据最终容器大小配置最终margin和size
     container.items = res.successItems

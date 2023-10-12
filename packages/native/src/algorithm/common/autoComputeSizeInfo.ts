@@ -1,3 +1,5 @@
+import {isNumber} from "is-what";
+
 /**
  * 自动计算 margin，size 并设置到container上
  * @param direction {Number}  col | row 的值
@@ -7,6 +9,9 @@
  * @param ratio {Number} set custom ratio value, default value from container built-in param
  * */
 export function autoComputeSizeInfo(direction, containerBoxLen, size = null, margin = null, ratio) {
+  if (isNumber(size) && size < 0) size = 0
+  if (isNumber(margin) && margin < 0) margin = 0
+
   if (direction) {   //  col指定通常是执行静态布局，主算 size 和 margin
     if (size === null && margin === null) {   // 自动分配size和margin
       if (parseInt(direction.toString()) === 1) {
