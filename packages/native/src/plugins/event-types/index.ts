@@ -39,8 +39,8 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   //-----------------container------------------
   containerMountBefore: BaseEvent,
   containerMounted: ItemLayoutEvent,
-  containerUnmounted: BaseEvent,
-  containerResizing: BaseEvent,
+  containerUnmounted: ItemLayoutEvent,
+  containerResizing: ContainerSizeChangeEvent,
   colChanged: ContainerSizeChangeEvent,
   rowChanged: ContainerSizeChangeEvent,
   //-------------------item---------------------
@@ -75,8 +75,8 @@ export const EventMap: EventMapType<CustomEventOptions> = {
   each: MatrixEvent,
   flip: MatrixEvent,
   //--------------every------------------
-  every:BaseEvent,
-  everyDone:BaseEvent,
+  every: BaseEvent,
+  everyDone: BaseEvent,
   //--------------click------------------
-  click:GridClickEvent,
+  click: GridClickEvent,
 }

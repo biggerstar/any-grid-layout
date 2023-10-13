@@ -1,4 +1,3 @@
-import {prevent} from "@/events/common";
 import {
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,

@@ -125,6 +125,7 @@ export class LayoutManager extends Finder {
   public reset(col?: number, row?: number) {
     col = col || this.col
     row = row || this.row
+    this._layoutMatrix = []
     for (let i = 0; i < row; i++) {
       this._layoutMatrix[i] = []
       for (let j = 0; j < col; j++) {
@@ -431,11 +432,15 @@ export class LayoutManager extends Finder {
    * 寻找往交叉轴方向自动增长的合适pos
    * */
   public findGrowBlank(pos: CustomItemPos) {
-    let cont = 20   // 最多expand添加二十行供于检测
+    const {autoGrowCol, autoGrowRow} = this.container
+    let cont = 20   // 一次最多expand添加二十行供于检测
     while (cont--) {
       const found = <boolean>this.findBlank(pos)
       if (found) return found
-      this.expandLine({col: 1, row: 1})
+      this.expandLine({
+        col: autoGrowCol ? 1 : 0,
+        row: autoGrowRow ? 1 : 0
+      })
     }
     return null
   }

@@ -28,7 +28,13 @@ export const OtherEventBehavior = definePlugin({
   colChanged(ev: ContainerSizeChangeEvent) {
     updateContainerSize(ev.container)
   },
+  colChanged$$(ev: ContainerSizeChangeEvent) {
+    ev.container.__ownTemp__.oldCol = ev.curCol
+  },
   rowChanged(ev: ContainerSizeChangeEvent) {
     updateContainerSize(ev.container)
+  },
+  rowChanged$$(ev: ContainerSizeChangeEvent) {
+    ev.container.__ownTemp__.oldRow = ev.curRow
   }
 })

@@ -6,8 +6,8 @@ import {updateContainerSize, updateHorizontalResize, updateVerticalResize} from 
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
-import {BaseEvent} from "@/plugins";
 import {GridPlugin} from "@/types";
+import {ContainerSizeChangeEvent} from "@/plugins";
 
 /**
  * TODO refactor 弃用flip翻转， 布局方向由 position的 left top right bottom控制，可以紧贴边界更符合直观
@@ -43,7 +43,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     }
   },
 
-  containerResizing(ev: ItemLayoutEvent) {
+  containerResizing(ev: ContainerSizeChangeEvent) {
     ev.container.bus.emit("updateLayout")
   },
 

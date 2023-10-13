@@ -20,7 +20,7 @@ import {grid_container_class_name} from "@/constant";
 import {getContainerConfigs, updateStyle} from "@/utils";
 import {ConfigurationEvent} from "@/plugins";
 import {ContainerGeneralImpl} from "@/main";
-import {STRect} from "@/global/singleThrottle";
+import {createSTRect} from "@/global/singleThrottle";
 import deepmerge from "deepmerge";
 
 
@@ -80,6 +80,7 @@ export class Container {
   public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public parentItem: Item | null = null
   public parent: Container | null = null
+  public STRect: ReturnType<typeof createSTRect>
   // //----------------vue 支持---------------------//
   // // TODO 后面在vue的layout模块使用declare module进行声明合并
   // public vue: any
@@ -209,6 +210,7 @@ export class Container {
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
   private _createGridContainerBox = () => {
+    this.bus.emit('containerMountBefore')
     this.contentElement = document.createElement('div')
     this.contentElement['_gridContainer_'] = this
     this.contentElement['_isGridContainer_'] = true
@@ -235,7 +237,7 @@ export class Container {
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   public mount(): void {
-    const mountFn = ()=> {
+    const mountFn = () => {
       if (this._mounted) return this.bus.emit('error', {
         type: 'RepeatedContainerMounting',
         message: '重复挂载容器被阻止',
@@ -248,8 +250,8 @@ export class Container {
         if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
       }
       //-----------------容器布局信息初始化与检测--------------------//
+      this.STRect = createSTRect(this)
       this._init()
-      this.bus.emit('containerMountBefore')
       this._createGridContainerBox()
       //-------------------------其他操作--------------------------//
       this.parentItem = parseItemFromPrototypeChain(this.element)
@@ -371,7 +373,7 @@ export class Container {
       width: `${this.nowWidth(col)}px`,
       height: `${this.nowHeight(row)}px`,
     }, this.contentElement)
-    STRect.update("containerContent", true, this.contentElement)
+    this.STRect.update("containerContent", true)
   }
 
   /** 计算当前Items所占用的Container宽度  */
@@ -392,22 +394,22 @@ export class Container {
 
   /** 获取外容器可视范围可容纳的col  */
   public get containerW(): number {
-    return this.pxToW(STRect.getCache("containerIns", this.element).width, {floor: true})
+    return this.pxToW(this.STRect.getCache("containerIns").width, {floor: true}) || 1
   }
 
   /** 获取外容器可视范围可容纳的row */
   public get containerH(): number {
-    return this.pxToH(STRect.getCache("containerIns", this.element).height, {floor: true})
+    return this.pxToH(this.STRect.getCache("containerIns").height, {floor: true}) || 1
   }
 
   /** 获取內容器可视范围可容纳的col  */
   public get contentBoxW(): number {
-    return this.pxToW(STRect.getCache("containerContent", this.contentElement).width, {floor: true})
+    return this.pxToW(this.STRect.getCache("containerContent").width, {floor: true}) || 1
   }
 
   /** 获取内容器可视范围可容纳的row */
   public get contentBoxH(): number {
-    return this.pxToH(STRect.getCache("containerContent", this.contentElement).height, {floor: true})
+    return this.pxToH(this.STRect.getCache("containerContent").height, {floor: true}) || 1
   }
 
   private _init() {

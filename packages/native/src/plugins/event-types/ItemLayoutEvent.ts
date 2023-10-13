@@ -4,7 +4,6 @@ import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
 import {analysisCurLocationInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 import {clamp, getClientRect, getContainerConfigs, merge} from "@/utils";
-import {STRect} from "@/global/singleThrottle";
 
 
 export class ItemLayoutEvent extends BaseEvent {
@@ -82,9 +81,9 @@ export class ItemLayoutEvent extends BaseEvent {
     /*------------------ Base Info --------------------*/
     merge(this, analysisCurLocationInfo(fromItem.container)) // 合并 relativeX，relativeY， gridX， gridY
 
-    const itemRect = STRect.getCache("fromItem")
-    const containerRect = STRect.getCache("containerContent")
-    const shadowItemRect = STRect.getCache('shadow')
+    const itemRect = container.STRect.getCache("fromItem")
+    const containerRect = container.STRect.getCache("containerContent")
+    const shadowItemRect = container.STRect.getCache('shadow')
     const {size, margin} = getContainerConfigs(fromItem.container, ["size", "margin"])
     this.col = container.getConfig("col")
     this.row = container.getConfig("row")

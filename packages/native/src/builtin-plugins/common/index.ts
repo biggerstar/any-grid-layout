@@ -71,7 +71,7 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
 
 
 /**
- * 立即更新布局
+ * [响应式]立即更新布局
  * */
 export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent): boolean => {
   const {container} = ev
@@ -84,7 +84,7 @@ export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLay
   // console.log(res.isSuccess)
   if (!res.isSuccess) return false
   res.patch()
-  ev.patchStyle()
+  container.items.forEach((item) => item.updateItemLayout())
   updateContainerSize(container)
   return true
 }

@@ -1,9 +1,11 @@
-import {ItemLayoutEvent} from "@/plugins";
+import {BaseEvent} from "@/plugins";
 
 /**
  * container大小改变事件对象
  * */
-export class ContainerSizeChangeEvent extends ItemLayoutEvent {
+export class ContainerSizeChangeEvent extends BaseEvent {
+  public readonly col: number
+  public readonly row: number
   public readonly isColChanged: boolean
   public readonly isRowChanged: boolean
   public readonly oldCol?: number
@@ -14,6 +16,8 @@ export class ContainerSizeChangeEvent extends ItemLayoutEvent {
   constructor(opt) {
     super(opt);
     const container = this.container
+    this.col = container.getConfig("col")
+    this.row = container.getConfig("row")
     const temp = container.__ownTemp__
     this.oldCol = temp.oldCol
     this.oldRow = temp.oldRow

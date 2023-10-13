@@ -1,6 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Container, Item} from "@/main";
+import {isNumber} from "is-what";
 
 
 /**
@@ -125,6 +126,11 @@ export function getKebabCase(str: string) {
     return '-' + i.toLowerCase();
   })
 }
+
+/**
+ * 获取传入args参数中第一个是数字类型的值并返回该值
+ * */
+export const getFirstNumber = (...args) => args.find(val => isNumber(val))
 
 /**
  * 从一个新的对象合并到另一个原有对象中且 [ 只合并原有存在对象中的值 ],参数位置和Object.assign一样
