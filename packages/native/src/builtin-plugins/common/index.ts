@@ -1,4 +1,4 @@
-import {ItemDragEvent, ItemLayoutEvent, ItemResizeEvent} from "@/plugins";
+import {BaseEvent, ItemDragEvent, ItemLayoutEvent, ItemResizeEvent} from "@/plugins";
 import {tempStore} from "@/global";
 import {clamp, throttle} from "@/utils";
 import {isFunction, isObject} from "is-what";
@@ -13,10 +13,9 @@ export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
   const toPos = {
     x: ev.startGridX,
     y: ev.startGridY,
-    w: Math.min(clamp(Math.abs(ev.shadowItemInfo.offsetRelativeW) + 1, fromItem.pos.minW, fromItem.pos.maxW), ev.col - fromItem.pos.x + 1),
-    h: Math.min(clamp(Math.abs(ev.shadowItemInfo.offsetRelativeH) + 1, fromItem.pos.minH, fromItem.pos.maxH), ev.row - fromItem.pos.y + 1),
+    w: Math.min(clamp(Math.max(ev.shadowItemInfo.offsetRelativeW, 0) + 1, fromItem.pos.minW, fromItem.pos.maxW), ev.col - fromItem.pos.x + 1),
+    h: Math.min(clamp(Math.max(ev.shadowItemInfo.offsetRelativeH, 0) + 1, fromItem.pos.minH, fromItem.pos.maxH), ev.row - fromItem.pos.y + 1),
   }
-  // console.log(toPos)
   if (fromItem.pos.w !== toPos.w || fromItem.pos.h !== toPos.h) {
     ev.addModifyItem(fromItem, toPos)
     directUpdateLayout(ev)
@@ -73,14 +72,16 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
 /**
  * [响应式]立即更新布局
  * */
-export const directUpdateLayout = (ev: ItemDragEvent | ItemResizeEvent | ItemLayoutEvent): boolean => {
+export const directUpdateLayout = (ev: BaseEvent | ItemLayoutEvent): boolean => {
   const {container} = ev
   if (!container._mounted) return false
   const {layoutManager: manager} = container
   autoSetSizeAndMargin(container, true)
   //-------------------------------------------------------------//
   container.reset()
-  let res = manager.analysis(ev.getModifyItems())
+  const getModifyItemsFn: Function = ev['getModifyItems']
+  const modifyList = isFunction(getModifyItemsFn) ? getModifyItemsFn.call(ev) : []
+  let res = manager.analysis(modifyList)
   // console.log(res.isSuccess)
   if (!res.isSuccess) return false
   res.patch()

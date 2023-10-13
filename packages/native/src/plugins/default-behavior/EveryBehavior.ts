@@ -5,13 +5,23 @@ import {BaseEvent} from "@/plugins";
 import {isNumber} from "is-what";
 import {CustomEventOptions} from "@/types";
 
+/**
+ * 排除暂时不会运行every，everyDone的事件，单纯为了少量性能优化，excludeNames可根据实际情况修改而非固定
+ * */
 const excludeNames: (keyof CustomEventOptions)[] = [
   'config',
   "configResolved",
+  "containerMountBefore",
+  "containerMounted",
+  "containerUnmounted",
+  "addItemSuccess",
+  "getConfig",
+  "setConfig",
+  "each",
 ]
 
 /**
- * every 事件无任何$前缀或后缀等衍生事件
+ * every 相关事件无任何$前缀或后缀等衍生事件
  * */
 export const EveryBehavior = definePlugin({
   every(_: BaseEvent & Record<any, any>) {
@@ -25,7 +35,7 @@ export const EveryBehavior = definePlugin({
       tempStore.preventedResizing = ev.name === 'resizing'
     }
     /*-------------检测本次事件之后是否改变了col或者row------------*/
-    if (ev.name === 'itemPosChanged') {  // 只有当pos位置发生变化
+    if (!['colChanged', 'rowChanged'].includes(ev.name)) {  // 只有当pos位置发生变化
       const temp = container.__ownTemp__
       const {oldCol, oldRow} = temp
       const col = container.getConfig("col")
@@ -33,13 +43,11 @@ export const EveryBehavior = definePlugin({
       if (isNumber(oldCol) && isNumber(oldRow) && isNumber(col) && isNumber(row)) {
         const isColChanged = oldCol !== col
         const isRowChanged = oldRow !== row
-        if (ev.name !== 'colChanged' && isColChanged) {
+        if (isColChanged) {
           bus.emit('colChanged')
-          temp.oldCol = col
         }
-        if (ev.name !== 'rowChanged' && isRowChanged) {
+        if (isRowChanged) {
           bus.emit('rowChanged')
-          temp.oldRow = row
         }
       }
     }

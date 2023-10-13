@@ -54,7 +54,7 @@ export class PluginManager {
     const ev = new (<any>GEvent)({
       name: eventName,
       container: container,
-      default: (...args) => isFunction(defaultActionFn) && defaultActionFn(...args),   // 默认行为函数，执行该函数可执行默认行为
+      default: ($ev) => isFunction(defaultActionFn) && defaultActionFn.call(null, ($ev || ev)),   // 默认行为函数，执行该函数可执行默认行为
     })
     const eventCallback: Function = options.callback
     eventCallback && delete options.eventCallback

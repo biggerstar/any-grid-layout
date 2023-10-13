@@ -3,15 +3,10 @@
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {BaseEvent, ItemExchangeEvent} from "@/plugins";
+import {BaseEvent, ContainerSizeChangeEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
-import {
-  directUpdateLayout,
-  updateLayout,
-  updateResponsiveDragLayout,
-  updateResponsiveResizeLayout
-} from "@/builtin-plugins/common";
-import {debounce, getContainerConfigs, throttle} from "@/utils";
+import {directUpdateLayout, updateResponsiveDragLayout, updateResponsiveResizeLayout} from "@/builtin-plugins/common";
+import {getContainerConfigs} from "@/utils";
 
 /**
  * 响应式布局插件
@@ -19,12 +14,10 @@ import {debounce, getContainerConfigs, throttle} from "@/utils";
 export const ResponsiveLayoutPlugin = definePlugin({
   name: 'ResponsiveLayoutPlugin',
   containerMountBefore(ev: BaseEvent) {
-    const {autoGrow, direction} = getContainerConfigs(ev.container, ["autoGrow", 'direction'])
-    if (autoGrow.vertical && autoGrow.horizontal) {
-      if (direction.includes('row')) autoGrow.horizontal = false
-      if (direction.includes('column')) autoGrow.vertical = false
+    const {autoGrow, col, row} = getContainerConfigs(ev.container, ["autoGrow", "col", 'row'])
+    if (!col && !row && autoGrow.horizontal && autoGrow.vertical) {  // 如果col和row都没设置，则只选一边允许增长
       ev.container.bus.emit("warn", {
-        message: `[${this.name}] autoGrow 的 horizontal 和 vertical 配置不建议都设置为true,已自动修改为只保留一边自动增长`
+        message: `[${this.name}] autoGrow 的 horizontal 和 vertical 配置不建议都设置为true,建议只保留一边自动增长`
       })
     }
   },
@@ -46,8 +39,16 @@ export const ResponsiveLayoutPlugin = definePlugin({
     }
   },
 
-  containerResizing(ev: ItemLayoutEvent) {
-    updateLayout(ev)
+  containerResizing(ev: ContainerSizeChangeEvent) {
+    ev.prevent()
+    const container = ev.container
+    const manager = container.layoutManager
+    manager.reset(container.containerW, container.containerH)
+    const isSuccess = directUpdateLayout(ev)
+    if (!isSuccess) {   // 如果本次矩阵大小调整失败，则恢复回滚恢复原来的矩阵保证所有的源Item不会溢出
+      // 重置矩阵，矩阵最终情况的值将都为null，但是在响应式情况下无关紧要
+      manager.reset(ev.col || container.getConfig("col"), ev.row || container.getConfig("row"))
+    }
   },
 
   dragend(ev: ItemDragEvent) {

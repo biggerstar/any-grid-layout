@@ -49,9 +49,9 @@ export const itemExchangeBehavior = definePlugin({
     tempStore.fromContainer = ev.toContainer
     tempStore.fromItem = ev.newItem
     tempStore.newItem = null
-    ev.container.STRect.update("fromItem", true)
-    ev.container.STRect.update("shadow", true)
-    ev.container.STRect.update("containerContent", true)
+    ev.container.STRect.update("fromItem")
+    ev.container.STRect.update("shadow")
+    ev.container.STRect.update("containerContent")
   },
 })
 

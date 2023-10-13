@@ -56,16 +56,16 @@ export class SingleThrottle<T extends Record<any, any>> {
    * @param args 传入 addUpdateMethod 所添加回调函数参数的的变量
    * */
   public getCache<Name extends keyof T>(name: Name, ...args: any[]): T[Name] {
-    return this.update(name, false, ...args)
+    return this.update(name, true, ...args)
   }
 
   /**
    * @param name 名称
-   * @param direct 是否直接更新
+   * @param getCache 是否获取并返回缓存
    * @param args
    * */
-  public update<Name extends keyof T>(name: Name, direct: boolean = false, ...args): T[Name] {
-    const fn: Function = direct ? this._updateMethods[name] : this.updateMethods[name]
+  public update<Name extends keyof T>(name: Name, getCache: boolean = false, ...args): T[Name] {
+    const fn: Function = getCache ? this.updateMethods[name] : this._updateMethods[name]
     let data = fn.apply(null, args)
     return !data ? this.cache[name] : this.cache[name] = data
   }

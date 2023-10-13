@@ -43,6 +43,12 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     }
   },
 
+  $containerResizing(ev: ContainerSizeChangeEvent) {
+    const STRect = ev.container.STRect
+    STRect.update("containerIns")
+    STRect.update("containerContent")
+  },
+
   containerResizing(ev: ContainerSizeChangeEvent) {
     ev.container.bus.emit("updateLayout")
   },
@@ -153,7 +159,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
    * */
   updateLayout(ev: ItemDragEvent | ItemResizeEvent) {
     const container = ev.container
-    autoSetSizeAndMargin(container,true)
+    autoSetSizeAndMargin(container, true)
     updateContainerSize(container)
     container.items.forEach(item => item.updateItemLayout())
   }

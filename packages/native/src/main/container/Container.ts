@@ -373,7 +373,7 @@ export class Container {
       width: `${this.nowWidth(col)}px`,
       height: `${this.nowHeight(row)}px`,
     }, this.contentElement)
-    this.STRect.update("containerContent", true)
+    this.STRect.update("containerContent")
   }
 
   /** 计算当前Items所占用的Container宽度  */
