@@ -3,26 +3,27 @@
 import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {ConfigurationEvent, ItemExchangeEvent} from "@/plugins";
+import {BaseEvent, ContainerSizeChangeEvent, ItemExchangeEvent} from "@/plugins";
 import {definePlugin, tempStore} from "@/global";
-import {
-  directUpdateLayout,
-  updateLayout,
-  updateResponsiveResizeLayout
-} from "@/builtin-plugins/common";
-import {throttle} from "@/utils";
-import {isAnimation} from "@/algorithm/common/tool";
+import {directUpdateLayout, updateResponsiveResizeLayout} from "@/builtin-plugins/common";
+import {getContainerConfigs, throttle} from "@/utils";
+import {isAnimating} from "@/algorithm/common/tool";
 
 /**
- * 拖动Item到Items列表中的toItem的索引位置
+ * 拖动Item到Items列表中的toItem的索引位置,拖动过程中保持有序
+ * TODO 还有很大优化空间,比如拖动到容器外或空白处会出现一些问题
  * */
 export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
-  const {fromItem, toItem} = tempStore
-  if (!fromItem || !toItem) return
-  if (isAnimation(fromItem)) return;
-  const manager = ev.container.layoutManager
-  manager.move(ev.items, fromItem, toItem)
-  directUpdateLayout(ev)
+  const {fromItem} = tempStore
+  if (!fromItem) return
+  if (isAnimating(fromItem)) return
+  const container = ev.container
+  const manager = container.layoutManager
+  const toItem = manager.findItemFromXY(ev.items, ev.startGridX, ev.startGridY)
+  if (toItem && toItem !== fromItem) {
+    manager.move(ev.items, fromItem, toItem)
+    directUpdateLayout(ev)
+  }
 }, 80)
 
 /*-
@@ -38,50 +39,50 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
  * */
 export const StreamLayoutPlugin = definePlugin({
   name: 'StreamLayoutPlugin',
-  getConfig(_: ConfigurationEvent) {
-  },
-  exchangeProcess(_: ItemExchangeEvent) {
-    const {toContainer, fromItem} = tempStore
-    if (!toContainer || !fromItem) return
-  },
-  containerResizing(ev: ItemLayoutEvent) {
-    updateLayout(ev)
+  containerMountBefore(ev: BaseEvent) {
+    const {autoGrow, col, row} = getContainerConfigs(ev.container, ["autoGrow", "col", 'row'])
+    if (!col && !row && autoGrow.horizontal && autoGrow.vertical) {  // 如果col和row都没设置，则只选一边允许增长
+      ev.container.bus.emit("warn", {
+        message: `[${this.name}] autoGrow 的 horizontal 和 vertical 配置不建议都设置为true,建议只保留一边自动增长`
+      })
+    }
   },
 
+  exchangeVerification(ev: ItemExchangeEvent) {
+    ev.prevent()
+    if (!ev.fromItem) return
+    if (ev.container.autoGrowCol || ev.container.autoGrowRow) {
+      ev.doExchange()
+    }
+  },
+
+  exchangeReceive(ev: ItemExchangeEvent) {
+    if (ev.newItem) {
+      ev.addModifyItem(ev.newItem, {
+        x: ev.toStartX,
+        y: ev.toStartY,
+      })
+    }
+  },
+
+  containerResizing(ev: ContainerSizeChangeEvent) {
+    ev.prevent()
+    const container = ev.container
+    const manager = container.layoutManager
+    manager.reset(container.containerW, container.containerH)
+    const isSuccess = directUpdateLayout(ev)
+    if (!isSuccess) {   // 如果本次矩阵大小调整失败，则恢复回滚恢复原来的矩阵保证所有的源Item不会溢出
+      // 重置矩阵，矩阵最终情况的值将都为null，但是在响应式情况下无关紧要
+      manager.reset(ev.col || container.getConfig("col"), ev.row || container.getConfig("row"))
+    }
+  },
   dragend(ev: ItemDragEvent) {
+    directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
+    ev.container.layoutManager.trim({
+      row: {head: true},
+      col: {head: true},
+    })
     directUpdateLayout(ev)
-  },
-
-  dragToOuterLeft(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToOuterRight(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToOuterTop(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToOuterBottom(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToLeftTop(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToLeftBottom(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToRightTop(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
-  },
-
-  dragToRightBottom(ev: ItemDragEvent) {
-    moveToIndexForItems(ev)
   },
 
   dragToTop(ev: ItemDragEvent) {
@@ -102,23 +103,12 @@ export const StreamLayoutPlugin = definePlugin({
 
   /*------------------------------------------------------------------*/
   resized(ev: ItemResizeEvent) {
+    directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
+    ev.container.layoutManager.trim({
+      row: {head: true},
+      col: {head: true},
+    })
     directUpdateLayout(ev)
-  },
-
-  resizeToOuterTop(ev: ItemResizeEvent) {
-    updateResponsiveResizeLayout(ev)
-  },
-
-  resizeToOuterRight(ev: ItemResizeEvent) {
-    updateResponsiveResizeLayout(ev)
-  },
-
-  resizeToOuterBottom(ev: ItemResizeEvent) {
-    updateResponsiveResizeLayout(ev)
-  },
-
-  resizeToOuterLeft(ev: ItemResizeEvent) {
-    updateResponsiveResizeLayout(ev)
   },
 
   resizeToTop(ev: ItemResizeEvent) {

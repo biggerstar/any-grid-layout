@@ -55,10 +55,16 @@ export const MatrixBehavior = definePlugin({
     Label /*statement label*/ :
       for (let curRow = alignInfo.startRow; Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow); curRow += alignInfo.stepRow) {
         for (let curCol = alignInfo.startCol; Math.abs(curCol - alignInfo.endCol - alignInfo.stepCol); curCol += alignInfo.stepCol) {
-          const res = isColumn ? ev.next(curCol, curRow) : ev.next(curRow, curCol)
-          if (res) break Label
+          const isBreak = isColumn ? ev.next(curCol, curRow) : ev.next(curRow, curCol)
+          if (isBreak) break Label
         }
       }
+  },
+  each$$(ev: MatrixEvent) {
+    const manager = ev.container.layoutManager
+    if (manager.col >= 200 || manager.row >= 200) {
+      throw new Error('矩阵大小超限，可能是您阻止了each默认自定义遍历算法且未进行实现')
+    }
   },
   flip(ev: MatrixEvent) {
     const layoutManager = ev.container.layoutManager
@@ -69,16 +75,6 @@ export const MatrixBehavior = definePlugin({
       if (ev.direction === 'column-reverse') layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
       if (ev.align === 'end') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
     }
-  },
-  changeColBefore(ev: MatrixEvent) {
-    console.log('changeColBefore', ev.changeLen)
-    const container = ev.container
-    if (container.autoGrowCol && ev.changeLen) container.layoutManager.changeCol(ev.changeLen, ev.force)
-  },
-  changeRowBefore(ev: MatrixEvent) {
-    console.log('changeRowBefore', ev.changeLen)
-    const container = ev.container
-    if (container.autoGrowRow && ev.changeLen) container.layoutManager.changeRow(ev.changeLen, ev.force)
   },
 })
 

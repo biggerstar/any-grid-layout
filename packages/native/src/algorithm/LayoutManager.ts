@@ -622,8 +622,8 @@ export class LayoutManager extends Finder {
   public patch(itemsInfo: LayoutItemsInfo, handler?: Function) {
     /*----获取排序之后(未经过镜像)的正确item顺序，交还到container.items中用于其他操作----*/
     const sortedItems = []
-    this.each((x, y) => {
-      const item: Item | null = this._layoutMatrix[x][y]
+    this.each((row, col) => {
+      const item: Item | null = this._layoutMatrix[row][col]
       if (item && !sortedItems.includes(item)) {
         sortedItems.push(item)
       }

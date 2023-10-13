@@ -84,35 +84,36 @@ export function mergeDeep(target, source) {
 /**
  * 螺旋遍历矩阵数组,使用回调手动处理
  * */
-export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: number, col: number, val: any) => void) {
+export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: number, col: number, val: any) => any) {
   if (matrix.length === 0) return []
   let rows = matrix.length
   let columns = matrix[0].length
   let top = 0, bottom = rows - 1, left = 0, right = columns - 1
   let direction = 0
-
+  let isBreak = false
   while (top <= bottom && left <= right) {
     if (direction === 0) { // 向右遍历
       for (let i = left; i <= right; i++) {
-        callback(top, i, matrix[top][i])
+        isBreak = callback(top, i, matrix[top][i])
       }
       top++
     } else if (direction === 1) { // 向下遍历
       for (let i = top; i <= bottom; i++) {
-        callback(i, right, matrix[i][right])
+        isBreak = callback(i, right, matrix[i][right])
       }
       right--
     } else if (direction === 2) { // 向左遍历
       for (let i = right; i >= left; i--) {
-        callback(bottom, i, matrix[bottom][i])
+        isBreak = callback(bottom, i, matrix[bottom][i])
       }
       bottom--
     } else if (direction === 3) { // 向上遍历
       for (let i = bottom; i >= top; i--) {
-        callback(i, left, matrix[i][left])
+        isBreak = callback(i, left, matrix[i][left])
       }
       left++
     }
+    if (isBreak) break
     direction = (direction + 1) % 4  // 改变方向
   }
 }

@@ -11,7 +11,7 @@ import {tempStore} from "@/global";
 /**
  * 检测是否正在动画中,少用，容易回流
  * */
-export function isAnimation(item: Item) {
+export function isAnimating(item: Item) {
   return Math.abs(
     item.offsetLeft() - item.element.offsetLeft
     || item.offsetTop() - item.element.offsetTop

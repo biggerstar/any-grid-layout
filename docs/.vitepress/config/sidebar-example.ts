@@ -13,6 +13,10 @@ export default <DefaultTheme.SidebarItem[]>[
         text: '动态尺寸',
         link: '/example/automatic'
       },
+      {
+        text: '自定义布局算法',
+        link: '/example/customLayoutAlgo'
+      },
     ]
   },
   {
@@ -22,6 +26,10 @@ export default <DefaultTheme.SidebarItem[]>[
       {
         text: '响应式布局插件',
         link: '/example/responsive'
+      },
+      {
+        text: '流式布局插件',
+        link: '/example/stream'
       },
     ]
   },
