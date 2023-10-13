@@ -1,4 +1,4 @@
-## Container配置
+## Container实例化配置
 
 ### el
 
@@ -23,7 +23,7 @@
 
   Container在文档中默认的类名,可以由外部传入该字段重新自定义
 
----
+
 
 ### global
 
@@ -39,6 +39,9 @@
 
 详见 [layouts](layouts.md)
 
-### events
+### plugins
 
-详见 [Events](events.md)
+- type: `GridPlugin[]`
+- required: `false`
+-
+详见 [plugins](plugins.md)

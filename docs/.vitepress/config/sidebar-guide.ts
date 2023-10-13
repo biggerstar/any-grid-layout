@@ -32,8 +32,8 @@ export default <DefaultTheme.SidebarItem[]>[
         link: '/guide/layouts'
       },
       {
-        text: 'Events',
-        link: '/guide/events'
+        text: 'Plugins',
+        link: '/guide/plugins'
       },
     ]
   },

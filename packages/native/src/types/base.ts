@@ -120,17 +120,19 @@ export type GridPlugin = CustomEventOptions & {
 
 export type CustomEventOptions = {
   //------------------throw-message--------------
-  /** 所有非阻断式错误都能在这里接受处理,如果未设定该函数取接受异常将直接将错误抛出到控制台
-   *  如果没有使用该函数接受错误，框架则会直接使用 new Error抛出 */
+  /**
+   * 所有框架错误都会在这里接收，您可以通过ev.prevent()进行阻止框架抛出错误
+   *  */
   error?(ev: ThrowMessageEvent): void,
 
-  /** 所有非阻断式警告都能在这里接受处理,如果未设定该函数取接受异常将直接将警告抛出到控制台
-   *  如果没有使用该函数接受错误，框架则会直接使用抛出warn */
+  /**
+   * 所有框架警告都会在这里接收，您可以通过ev.prevent()进行阻止框架抛出警告
+   * */
   warn?(ev: ThrowMessageEvent): void,
 
   //--------------------other--------------------
   /**
-   * @default 初始化载入item成员并挂载
+   * @default 用户传入的配置信息
    * */
   config?(ev: InitOptionsEvent): void,
 
@@ -140,7 +142,7 @@ export type CustomEventOptions = {
   configResolved?(ev: InitOptionsEvent): void,
 
   /**
-   * 发起一次更新，内置默认事件无任何行为，由当前使用的插件自行实现更新逻辑
+   * 发起一次更新，由当前使用的布局插件自行实现更新逻辑
    * @default 无
    * */
   updateLayout?(ev: ItemLayoutEvent): void,

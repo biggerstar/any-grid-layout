@@ -7,7 +7,7 @@ export default <DefaultTheme.NavItem[]>[
     activeMatch: '/guide/installation'
   },
   {
-    text: '演示',
+    text: '在线演示',
     link: '/example/basic',
     activeMatch: '/example/basic',
   },

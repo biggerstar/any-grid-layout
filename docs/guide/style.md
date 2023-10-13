@@ -4,7 +4,9 @@
 
 请注意：
 Item成员在布局后无任何样式，您需要编写以下基础样式才会显示内容
-
+```javascript
+import '@biggerstar/layout/dist/default-style.css'
+```
 ```css
 /* Container的默认样式,定义宽高会被忽略 */
 .grid-container {

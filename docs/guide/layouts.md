@@ -38,21 +38,15 @@ const container = new Container({
   使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,
   假设px=1024表示Container宽度1024像素以下执行该布局方案
 
-### layouts.responsive
+### layouts.autoGrow
 
-- type: `boolean`
+- type: `   autoGrow: { vertical: boolean, horizontal: boolean }`
 - required: `false`
-- default: `false`
+- default `{ vertical: false, horizontal: false }`
 
-  默认为static静态布局,值等于true为响应式布局
-
-### layouts.layoutMode
-
-- type: `'default' | 'exchange' | 'stream'`
-- required: `false`
-- default: `default`
-
-  default(上下交换左右流式) || exchange(两两交换) || stream(左部压缩排列)
+  <br/>响应式下resize和drag是否自动撑开容器
+  <br/>`vertical` 允许自动撑开垂直方向的容器
+  <br/>`horizontal` 允许自动撑开水平方向的容器
 
 ### layouts.col
 
@@ -140,7 +134,7 @@ const container = new Container({
 
   最小列数
 
-### layouts.maxCol
+### layouts.maxCol(`* Future`)
 
 - type: `null | number`
 - required: `false`
@@ -156,7 +150,7 @@ const container = new Container({
 
   最小行数，只是限制外层容器高度，实际行数超出部分会出现滚动条
 
-### layouts.maxRow
+### layouts.maxRow(`* Future`)
 
 - type: `null | number`
 - required: `false`
@@ -203,69 +197,3 @@ const container = new Container({
 
   触屏下长按多久响应拖拽事件,默认360ms
 
-### layouts.scrollWaitTime
-
-- type: `number`
-- required: `false`
-- default `800`
-
-  当Item移动到容器边缘，等待多久进行自动滚动,默认`800ms`
-
-### layouts.scrollSpeedX
-
-- type: `number | null`
-- required: `false`
-- default `36`
-
-  当Item移动到容器边缘，自动滚动每`36ms`的X轴速度,单位是`px`,默认为null
-
-### layouts.scrollSpeedY
-
-- type: `number | null`
-- required: `false`
-- default `36`
-
-  当Item移动到容器边缘，自动滚动每`36ms`的Y轴速度,单位是`px`,默认为null
-
-### layouts.resizeReactionDelay
-
-- type: `number`
-- required: `false`
-- default `50`
-- unit `ms`
-
-  当Container元素大小改变时检测是否切换其他符合`px`限制的layout所用的时间间隔
-
-### layouts.autoScrollPage
-
-- type: `boolean`
-- required: `false`
-- default `true`
-
-  长按container的空白处是否能拖拽进行滑动容器
-
-### layouts.nestedOutExchange
-
-- type: `boolean`
-- required: `false`
-- default `false`
-
-  如果是嵌套页面，从嵌套页面里面拖动出来Item是否立即允许该被嵌套的容器参与响应布局,true是允许，false是不允许
-
-### layouts.sensitivity  `beta`
-
-- type: `number`
-- required: `false`
-- default `0.45`
-- max `1`
-- min `0`
-
-  不太稳定,不建议使用
-
-### layouts.autoGrowRow `beta`
-
-- type: `boolean`
-- required: `false`
-- default `false`
-
-  响应式下resize和drag是否自动撑开容器

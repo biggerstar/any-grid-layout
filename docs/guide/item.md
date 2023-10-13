@@ -87,21 +87,6 @@
 - default `true`
   是否让Item在脱离Items覆盖区域的时候跟随鼠标实时移动，比如鼠标在Container空白区域或者在Container外部
 
-### dragOut
-
-- type: `boolean`
-- required: `false`
-- default `true`
-
-  是否可以将Item拖动到容器外
-
-### resizeOut
-
-- type: `boolean`
-- required: `false`
-- default `false`
-
-  是否可以将Item在resize的时候被resize的clone元素覆盖到容器外
 
 ### transition
 

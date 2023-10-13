@@ -1,4 +1,3 @@
-
 ## 定义您的第一个布局
 
 ### 初始数据
@@ -6,26 +5,18 @@
 ```javascript
 export const layoutData: CustomItems = [
   {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1, minH: 1, maxW: 2, maxH: 4}},
+  {pos: {w: 3, h: 3}},
   {pos: {w: 1, h: 1}},
-  {pos: {w: 1, h: 2, x: 2, y: 1}, static: true, draggable: false},
-  {pos: {w: 2, h: 1}},
-  {pos: {w: 2, h: 1}},
-  {pos: {w: 2, h: 2, x: 1, y: 2}, static: true, resize: false},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 1}},
   {pos: {w: 2, h: 2}},
-  {pos: {w: 2, h: 2}},
-  {pos: {w: 2, h: 2}},
-  {pos: {w: 2, h: 1}},
-  {pos: {w: 2, h: 1}},
-  {pos: {w: 2, h: 1}},
-  {pos: {w: 1, h: 1}},
-  {pos: {w: 1, h: 1}},
-  {pos: {w: 1, h: 1}},
-
-  {pos: {w: 4, h: 3}},
-  {pos: {w: 2, h: 3}},
-  {pos: {w: 2, h: 3}},
-  {pos: {w: 4, h: 3}},
-  {pos: {w: 1, h: 3}},
 ]
 
 ```
@@ -48,5 +39,6 @@ const container = new Container({
     size: [120, 80],
   },
 })
+container.mount()
 
 ```
