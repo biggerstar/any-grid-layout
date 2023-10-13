@@ -1,7 +1,7 @@
 <template>
   <div style="height: auto" v-if="showPresentation">
     <div class="control-panel">
-      <a-collapse :default-active-key="['1','2']" :bordered="true">
+      <a-collapse :default-active-key="['1','3']" :bordered="true">
         <a-collapse-item v-if="Object.keys(props.controlOptions).length" header="控制面板" key="1">
           <div class="container-control-panel">
             <div class="item" v-for="(info,index) in containerControlMap" :key="index">
@@ -46,7 +46,19 @@
             </div>
           </div>
         </a-collapse-item>
-        <a-collapse-item v-if="props.logController || props.showPosDetail" header="日志显示" key="2">
+        <a-collapse-item v-if="props.showContainerDetail" header="当前容器使用配置显示" key="2">
+          <div class="items-options-view">
+            <div>
+              <a-button @click="containerDetail.handler">
+                {{!containerDetail.showItemsDetail ? '显示Items详情': '隐藏Items详情' }}
+              </a-button>
+            </div>
+            <a-scrollbar style="min-height: 200px; max-height: 360px; overflow: auto">
+              <pre>{{ containerDetail.text }}</pre>
+            </a-scrollbar>
+          </div>
+        </a-collapse-item>
+        <a-collapse-item v-if="props.logController || props.showPosDetail" header="日志显示" key="3">
           <div class="items-control-panel">
             <div class="item" style="width: 50%" v-if=" showPosDetail">
               <a-space>
@@ -70,7 +82,7 @@
                 </div>
               </a-scrollbar>
             </div>
-            <div v-if="props.logController" class="item" style="width: 50%;">
+            <div class="item" v-if="props.logController" style="width: 50%;">
               <div
                 class="font-bolder"
                 style="display: flex; justify-content: flex-end; margin-bottom: 10px"
@@ -86,13 +98,16 @@
       </a-collapse>
 
     </div>
-    <div :id="props.container.el.substring(1)" class="basic-container" style="margin-top: 50px"></div>
+    <div v-if="props.showContainer" :id="props.container.el.substring(1)" class="basic-container"
+         style="margin-top: 50px"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, nextTick, onMounted, reactive, ref} from "vue";
-import {Container, GridClickEvent} from '@biggerstar/layout'
+import {computed, nextTick, onMounted, reactive, ref, watch} from "vue";
+import {cloneDeep, Container, GridClickEvent} from '@biggerstar/layout'
+import '@biggerstar/layout/dist/default-style.css'
+import '../theme/css/grid-layout.css'
 import {isNumber} from "is-what";
 import Console from "./Console.vue";
 import {createLogController} from "../../common/printLogPlugin";
@@ -103,6 +118,19 @@ const props = defineProps({
     type: String,
     default: 'container'
   },
+  container: {
+    type: Container,
+    default: {},
+    required: true
+  },
+  showContainer: {
+    type: Boolean,
+    default: true,
+  },
+  showContainerDetail: {
+    type: Boolean,
+    default: false,
+  },
   showPosDetail: {
     type: Boolean,
     default: false
@@ -110,11 +138,6 @@ const props = defineProps({
   controlOptions: {
     type: Object,
     default: {}
-  },
-  container: {
-    type: Container,
-    default: {},
-    required: true
   },
   logController: {
     type: Object,
@@ -129,6 +152,20 @@ const showPresentation = ref<boolean>(false)
 const viewDetailBox = ref<HTMLElement>()
 let container: Container = props.container
 const containerControlMap = reactive(props.controlOptions)
+const containerDetail = reactive({
+  text: '',
+  showItemsDetail: false,
+  handler(){
+    containerDetail.showItemsDetail =!containerDetail.showItemsDetail
+    updateContainerDetail()
+  }
+})
+
+function updateContainerDetail() {
+  const configObj: any = Object.assign(cloneDeep(container.layout), cloneDeep(container.layout))
+  if (!containerDetail.showItemsDetail) delete configObj['items']
+  containerDetail.text = JSON.stringify(configObj, null, 4)
+}
 
 const createItemsPosDetailControlMap = () => {
   return reactive({
@@ -171,10 +208,15 @@ onMounted(() => {
     },
   })
   nextTick(() => {
-    container.mount()
+    props.showContainer && container.mount()
     itemsPosDetailControlMap = createItemsPosDetailControlMap()
+    updateContainerDetail()
     showPosDetail.value = props.showPosDetail
   })
+})
+
+watch(props, () => {
+  updateContainerDetail()
 })
 
 </script>

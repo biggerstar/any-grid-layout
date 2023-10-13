@@ -5,6 +5,7 @@
     ref="presentationRef"
     :control-options="containerControlOpt"
     :container="container"
+    :show-container-detail="true"
     :show-pos-detail='true'
     :log-controller="logController"
   ></Presentation>

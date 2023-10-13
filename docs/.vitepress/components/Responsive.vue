@@ -5,6 +5,7 @@
     ref="presentationRef"
     :control-options="containerControlOpt"
     :container="container"
+    :show-container-detail="true"
     :show-pos-detail='true'
     :log-controller="logController"
   ></Presentation>
@@ -25,7 +26,7 @@ let container: Container = new Container({
   layouts: {
     autoGrow: {
       vertical: true,
-      horizontal: true,
+      // horizontal: true,
     },
     // direction: 'row',
     // align: 'start',

@@ -9,6 +9,10 @@ export default <DefaultTheme.SidebarItem[]>[
         text: '默认布局演示',
         link: '/example/basic'
       },
+      {
+        text: '动态尺寸',
+        link: '/example/automatic'
+      },
     ]
   },
   {

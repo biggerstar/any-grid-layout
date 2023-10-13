@@ -29,7 +29,7 @@ export const createContainerControl = (container: Container) => {
     autoGrowX: {
       type: 'switch',
       text: '横向容器拓展',
-      active: true,
+      active: false,
       handler: (status: boolean) => {
         container.layout.autoGrow.horizontal = status
       }
