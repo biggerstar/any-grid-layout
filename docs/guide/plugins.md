@@ -1,3 +1,5 @@
+# plugins
+
 ## 插件使用示例
 
 ### 方式1
@@ -342,6 +344,6 @@ container.use(function(ins:Container)=>{
 
 - `ContainerNotMounted` ： container未挂载
 
-- `ItemAlreadyRemove` ： item已经被移除
+- `ItemAlreadyRemoved` ： item已经被移除
 
 

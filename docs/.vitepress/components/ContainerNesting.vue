@@ -78,5 +78,7 @@ onMounted(() => {
   margin: 50px 0;
   width: 80%;
   min-height: 300px;
+  z-index: 1;
+  position: relative;
 }
 </style>

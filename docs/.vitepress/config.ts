@@ -5,9 +5,10 @@ import nav from './config/nav'
 import viteConfig from './config/vite'
 
 export default defineConfig({
-  base:'/any-grid-layout/',
+  base: '/any-grid-layout/',
   title: 'Any-Grid-Layout',
-  description: 'Just playing around.',
+  titleTemplate: '多功能栅格布局',
+  description: '多功能栅格布局',
   head: [],
   themeConfig: {
     logo: '/logo.webp',

@@ -1,3 +1,5 @@
+# Container
+
 ## Container实例化配置
 
 ### el
@@ -23,8 +25,6 @@
 
   Container在文档中默认的类名,可以由外部传入该字段重新自定义
 
-
-
 ### global
 
 - type: `CustomLayoutsOption`
@@ -44,4 +44,5 @@
 - type: `GridPlugin[]`
 - required: `false`
 -
+
 详见 [plugins](plugins.md)

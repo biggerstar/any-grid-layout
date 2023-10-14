@@ -170,7 +170,7 @@ export class Item extends ItemGeneralImpl {
       container.bus.emit('itemUnmounted', {item: this})
     } else {
       this.container.bus.emit('error', {
-        type: 'ItemAlreadyRemove',
+        type: 'ItemAlreadyRemoved',
         message: '该Item对应的element未在文档中挂载，可能已经被移除',
         from: this
       })

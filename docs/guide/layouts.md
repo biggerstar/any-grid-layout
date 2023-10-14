@@ -1,3 +1,5 @@
+# layouts
+
 ## 示例
 
 ```javascript
@@ -38,15 +40,21 @@ const container = new Container({
   使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,
   假设px=1024表示Container宽度1024像素以下执行该布局方案
 
-### layouts.autoGrow
+### layouts.autoGrow.vertical
 
-- type: `   autoGrow: { vertical: boolean, horizontal: boolean }`
+- type: `boolean`
 - required: `false`
-- default `{ vertical: false, horizontal: false }`
+- default `false`
 
-  <br/>响应式下resize和drag是否自动撑开容器
-  <br/>`vertical` 允许自动撑开垂直方向的容器
-  <br/>`horizontal` 允许自动撑开水平方向的容器
+  响应式下resize和drag是否自动撑开垂直方向的容器
+
+### layouts.autoGrow.horizontal
+
+- type: `boolean`
+- required: `false`
+- default `false`
+
+  响应式下resize和drag是否自动撑开水平方向的容器
 
 ### layouts.col
 

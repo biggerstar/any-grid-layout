@@ -203,5 +203,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   text-align: start;
+  z-index: 1;
+  position: relative;
 }
 </style>
