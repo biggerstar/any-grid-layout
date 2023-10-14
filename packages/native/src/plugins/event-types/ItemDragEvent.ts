@@ -150,8 +150,8 @@ export class ItemDragEvent extends ItemLayoutEvent {
     } = tempStore
     if (!fromItem) return
     const bus = this.container.bus
-    const X = this.shadowItemInfo.offsetRelativeW
-    const Y = this.shadowItemInfo.offsetRelativeH
+    const X = this.offsetGridX
+    const Y = this.offsetGridY
     // console.log(X, Y)
     if (X === 0 && Y === 0) return
     // console.log(111111111111111111)
