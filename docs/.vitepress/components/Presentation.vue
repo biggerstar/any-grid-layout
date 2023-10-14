@@ -50,7 +50,7 @@
           <div class="items-options-view">
             <div>
               <a-button @click="containerDetail.handler">
-                {{!containerDetail.showItemsDetail ? '显示Items详情': '隐藏Items详情' }}
+                {{!containerDetail.showItemsDetail ? '显示完整配置': '隐藏完整配置' }}
               </a-button>
             </div>
             <a-scrollbar style="min-height: 200px; max-height: 360px; overflow: auto">

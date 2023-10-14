@@ -75,8 +75,9 @@ export function allMouseup(ev) {
 
 let running = false
 
-export function startGlobalEvent() {
+export function startGlobalEvent(targetWindow?: WindowProxy) {
   if (running) return
+  const document = (targetWindow || window).document
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
   document.addEventListener('mousedown', allMousedown, {passive: true})
   document.addEventListener('touchstart', allMousedown, {passive: false})

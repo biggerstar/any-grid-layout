@@ -1,12 +1,13 @@
 {
   "name": "any-grid-layout-docs",
-  "version": "0.0.31-Beta",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
   },
   "dependencies": {
   },
   "devDependencies": {
+    "@arco-design/web-vue": "^2.52.0",
     "@biggerstar/layout": "workspace:*"
   },
   "author": "biggerstar",

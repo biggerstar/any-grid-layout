@@ -118,7 +118,6 @@ export class Container {
     this._define()
     this.options = options    // 拿到和Container同一份用户传入的配置信息
     this._default = new ContainerGeneralImpl()
-    startGlobalEvent()
     this.initLayoutInfo()
   }
 
@@ -264,6 +263,7 @@ export class Container {
       this.updateContainerSizeStyle()
       this._mounted = true
     }
+    startGlobalEvent()
     mountFn()
   }
 

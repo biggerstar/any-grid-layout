@@ -1,15 +1,15 @@
 ## 安装
 
-yarn
-
-```shell
-yarn add @biggerstar/layout -S
-```
-
 pnpm
 
 ```shell
 pnpm add @biggerstar/layout -S
+```
+
+yarn
+
+```shell
+yarn add @biggerstar/layout -S
 ```
 
 ## 导入

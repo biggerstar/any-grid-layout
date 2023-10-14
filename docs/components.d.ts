@@ -10,17 +10,11 @@ declare module 'vue' {
     AButton: typeof import('@arco-design/web-vue')['Button']
     ACollapse: typeof import('@arco-design/web-vue')['Collapse']
     ACollapseItem: typeof import('@arco-design/web-vue')['CollapseItem']
-    ADivider: typeof import('@arco-design/web-vue')['Divider']
     AInputNumber: typeof import('@arco-design/web-vue')['InputNumber']
-    AOption: typeof import('@arco-design/web-vue')['Option']
     AResizeBox: typeof import('@arco-design/web-vue')['ResizeBox']
     AScrollbar: typeof import('@arco-design/web-vue')['Scrollbar']
     ASelect: typeof import('@arco-design/web-vue')['Select']
     ASpace: typeof import('@arco-design/web-vue')['Space']
     ASwitch: typeof import('@arco-design/web-vue')['Switch']
-    ATypographyParagraph: typeof import('@arco-design/web-vue')['TypographyParagraph']
-    NMessageProvider: typeof import('naive-ui')['NMessageProvider']
-    NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
-    NSwitch: typeof import('naive-ui')['NSwitch']
   }
 }
