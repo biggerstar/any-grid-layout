@@ -150,9 +150,11 @@ export class ItemLayoutEvent extends BaseEvent {
 
   /**
    * 获取要修改的Items并清空当前列表
+   * @param keep 是否获取源修改列表而不清空
    * */
-  public getModifyItems() {
+  public getModifyItems(keep: boolean = false) {
     const _items = this._modifyItems
+    if (keep) return _items
     this._modifyItems = []
     return _items
   }

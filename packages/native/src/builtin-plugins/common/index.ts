@@ -45,13 +45,28 @@ export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent,
     if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
   })
   // console.log(items)
-  const {offsetRelativeW, offsetRelativeH} = ev.shadowItemInfo
+
+  /*
+   * 获取大小到当前所有被覆盖范围内要修改的最大x和y，保证在切换的时候不会因为容器不够大而布局失败
+   * 例如在底部边界一个 4x4 item 向上移动，此时toPos位置小于容器大小，
+   * 而向上被覆盖的4x4所有的item因为没法拓展往下移动而布局被拒绝
+   * */
+  const modifyItems = ev.getModifyItems(true)
+  let maxX = toPos.x
+  let maxY = toPos.y
+  modifyItems.forEach(info => {
+    maxX = Math.max(<number>info.nextPos.x, maxX)
+    maxY = Math.max(<number>info.nextPos.y, maxY)
+  })
+  toPos.x = maxX
+  toPos.y = maxY
 
   manager.expandLineForPos(toPos, {
     row: {force: true},
     col: {force: true}
   })
 
+  const {offsetRelativeW, offsetRelativeH} = ev.shadowItemInfo
   const isSuccess = directUpdateLayout(ev)
   // console.log(isSuccess)
   if (!isSuccess) {
