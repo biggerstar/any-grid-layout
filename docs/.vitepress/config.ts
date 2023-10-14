@@ -5,6 +5,7 @@ import nav from './config/nav'
 import viteConfig from './config/vite'
 
 export default defineConfig({
+  base:'/any-grid-layout/',
   title: 'Any-Grid-Layout',
   description: 'Just playing around.',
   head: [],
