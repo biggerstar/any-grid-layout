@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import {BaseEvent, Container, createResponsiveLayoutPlugin, fillItemLayoutList} from "@biggerstar/layout";
 import {layoutData, layoutSameSizeData} from "../store/layout.js";
-import {onMounted} from "vue";
+import {onMounted, onUnmounted} from "vue";
 import {insertItemContent} from "../../common";
 
 let container1: Container = new Container({
@@ -63,6 +63,11 @@ onMounted(() => {
   })
   container2.use(createResponsiveLayoutPlugin())
   container2.mount()
+
+  onUnmounted(() => {
+    container1.unmount()
+    container2.unmount()
+  })
 })
 
 
