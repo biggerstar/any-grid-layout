@@ -4,6 +4,8 @@ import Automatic from "./Automatic.vue";
 import Stream from "./Stream.vue";
 import Spiral from "./Spiral.vue";
 import ZebraPattern from "./ZebraPattern.vue";
+import CrossContainer from "./CrossContainer.vue";
+import ContainerNesting from "./ContainerNesting.vue";
 
 export default {
   Basic,
@@ -12,4 +14,6 @@ export default {
   Stream,
   Spiral,
   ZebraPattern,
+  CrossContainer,
+  ContainerNesting,
 }

@@ -14,6 +14,14 @@ export default <DefaultTheme.SidebarItem[]>[
         link: '/example/automatic'
       },
       {
+        text: '跨容器交换',
+        link: '/example/crossContainer'
+      },
+      {
+        text: '容器嵌套',
+        link: '/example/containerNesting'
+      },
+      {
         text: '自定义布局算法',
         link: '/example/customLayoutAlgo'
       },
