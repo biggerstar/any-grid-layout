@@ -18,7 +18,7 @@ const container1 = new Container({
       // vertical: false,
       // horizontal: false
       vertical: true,
-      horizontal: true
+      horizontal: false
     },
     exchange: true,
     direction: 'column',

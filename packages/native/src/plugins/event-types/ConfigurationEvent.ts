@@ -43,11 +43,10 @@ export class ConfigurationEvent extends BaseEvent {
     //-------------------如果不是动态的col，则以当前containerW为准------------------//
     if (!data) {  // 未指定col自动设置
       const smartCol = this.smart.smartCol
+      const autoGrowCol = container.autoGrowCol
       const containerW = this.containerW
-      let matrixCol = -Infinity
-      if (!container.autoGrowCol) matrixCol = container.layoutManager.col
-      if (!container._mounted) data = Math.max(smartCol, containerW)
-      else data = Math.max(smartCol, containerW, matrixCol)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
+      if (autoGrowCol) data = smartCol   // 自动增长就以智能计算的为主 ( fix: 解决了挂载点元素自动撑开后回缩一卡一卡的问题 )
+      else if (!autoGrowCol) data = Math.max(smartCol, containerW, container.layoutManager.col)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
     }
     // console.log('col',data)
     return data
@@ -63,15 +62,13 @@ export class ConfigurationEvent extends BaseEvent {
     //-------------------如果不是动态的row，则以当前containerH为准------------------//
     if (!data) {  // 未指定row自动设置
       const smartRow = this.smart.smartRow
+      const autoGrowRow = container.autoGrowRow
       // console.log(smartRow)
       const containerH = this.containerH
       // console.log(containerH)
-      let matrixRow = -Infinity
-      if (!container.autoGrowRow) matrixRow = container.layoutManager.row
-      if (!container._mounted) data = Math.max(smartRow, containerH)
-      else data = Math.max(smartRow, containerH, matrixRow)  // 同上
+      if (autoGrowRow) data = smartRow   // 自动增长就以智能计算的为主
+      else if (!autoGrowRow) data = Math.max(smartRow, containerH, container.layoutManager.row)  // 同上
     }
-    // console.log('row',data,container)
     return data
   }
 }

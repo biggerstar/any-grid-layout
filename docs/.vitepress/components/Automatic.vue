@@ -10,15 +10,16 @@
     :show-container-detail="true"
     :log-controller="logController"
   ></Presentation>
-  <a-resize-box
-    style="margin-top: 50px"
-    :directions="['right', 'bottom']"
-    :style="{ minWidth: '120px',minHeight:'120px'}"
-    v-model:width="resizeBoxSizeWidth"
-    v-model:height="resizeBoxSizeHeight"
-  >
-    <div id="basic-container"></div>
-  </a-resize-box>
+  <div style="margin-top: 50px">
+    <a-resize-box
+      style="  height:100%;width:100%"
+      :directions="['right', 'bottom']"
+      :style="{ minWidth: '120px',minHeight:'120px'}"
+      v-model:width="resizeBoxSizeWidth"
+    >
+      <div id="basic-container"></div>
+    </a-resize-box>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -40,8 +41,8 @@ let logController = createLogController()
 let container: Container = new Container({
   el: '#basic-container',
   layouts: {
-    autoGrow:{
-      vertical:true,
+    autoGrow: {
+      vertical: true,
     },
     // col: 8,
     // row: 6,
@@ -205,5 +206,13 @@ onUnmounted(() => {
   text-align: start;
   z-index: 1;
   position: relative;
+}
+
+:deep(.arco-resizebox-trigger-vertical) {
+  z-index: 2;
+}
+
+:deep(.arco-resizebox-trigger-horizontal) {
+  z-index: 2;
 }
 </style>

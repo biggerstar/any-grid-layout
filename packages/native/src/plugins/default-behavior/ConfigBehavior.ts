@@ -4,6 +4,9 @@ import {definePlugin} from "@/global";
 import {ConfigurationEvent} from "@/plugins";
 import {getContainerConfigs} from "@/utils";
 
+/**
+ * 内置对配置信息操作 默认行为
+ * */
 export const ConfigBehavior = definePlugin({
   $getConfig(ev: ConfigurationEvent) {
     if (ev.configName === 'col') ev.configData = ev.getCol()

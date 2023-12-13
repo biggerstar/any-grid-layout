@@ -28,13 +28,14 @@ let container: Container = new Container({
   layouts: {
     autoGrow: {
       // vertical: true,
-      horizontal: true,
+      // horizontal: true,
     },
     items: fillItemLayoutList(layoutSameSizeData, {
       draggable: true,
       resize: true,
       close: true,
     }),
+    row: 6,
     margin: [5, 5],
     size: [80, 50],
   },

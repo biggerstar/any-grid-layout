@@ -34,7 +34,7 @@ export const EveryBehavior = definePlugin({
       tempStore.preventedDragging = ev.name === 'dragging'
       tempStore.preventedResizing = ev.name === 'resizing'
     }
-    /*-------------检测本次事件之后是否改变了col或者row------------*/
+    /*-------------检测某次事件之后是否改变了col或者row------------*/
     if (!['colChanged', 'rowChanged'].includes(ev.name)) {  // 只有当pos位置发生变化
       const temp = container.__ownTemp__
       const {oldCol, oldRow} = temp

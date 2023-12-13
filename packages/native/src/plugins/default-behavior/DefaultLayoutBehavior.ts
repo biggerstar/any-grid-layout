@@ -8,9 +8,10 @@ import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {GridPlugin} from "@/types";
 import {ContainerSizeChangeEvent} from "@/plugins";
+import {updateStyle} from "@/utils";
 
 /**
- * TODO refactor 弃用flip翻转， 布局方向由 position的 left top right bottom控制，可以紧贴边界更符合直观
+ * TODO 进行重构 弃用flip翻转， 布局方向由 position的 left top right bottom控制，可以紧贴边界更符合直观
  * 内置默认布局，外面没有阻止默认行为的时候执行的函数,默认是静态布局，要实现响应式布局需要自行通过插件实现
  * */
 export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
@@ -45,8 +46,8 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
 
   $containerResizing(ev: ContainerSizeChangeEvent) {
     const STRect = ev.container.STRect
-    STRect.update("containerIns")
-    STRect.update("containerContent")
+    STRect.updateCache("containerIns")
+    STRect.updateCache("containerContent")
   },
 
   containerResizing(ev: ContainerSizeChangeEvent) {
@@ -58,7 +59,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
    * */
   dragging(ev: ItemDragEvent) {
     const {fromContainer, toContainer} = tempStore
-    if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新源容器位置
+    if (toContainer && fromContainer !== toContainer) return   // 如果移动到其他容器上时停止更新触发源容器的事件，转而换成对应目标容器触发
     ev.patchDragDirection()
   },
 

@@ -98,8 +98,10 @@
       </a-collapse>
 
     </div>
-    <div v-if="props.showContainer" :id="props.container.el.substring(1)" class="basic-container"
-         style="margin-top: 50px"></div>
+    <div style="margin-top: 50px"></div>
+    <div v-if="props.showContainer"
+         :id="props.container.el.substring(1)"
+         class="basic-container" ></div>
   </div>
 </template>
 

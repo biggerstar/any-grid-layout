@@ -3,7 +3,10 @@ import {Theme} from 'vitepress'
 import AllComp from '../components'
 import './css/grid-layout.css'
 import './css/reset.css'
+import './css/default.css'
 import '@arco-design/web-vue/dist/arco.css'
+import '@biggerstar/layout/dist/default-style.css'
+
 
 export default {
   extends: DefaultTheme,

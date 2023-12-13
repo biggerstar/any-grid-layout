@@ -11,7 +11,7 @@ import {
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
 import {ContainerInstantiationOptions, CustomItem, CustomLayoutsOption, EventBusType, GridPlugin} from "@/types";
-import {startGlobalEvent} from "@/events/listen";
+import {removeGlobalEvent, startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins/PluginManager";
 import {LayoutManager} from "@/algorithm";
@@ -217,7 +217,7 @@ export class Container {
     this.element.appendChild(this.contentElement)
     this.bus.emit('containerMounted')
     setTimeout(() => {
-      updateStyle({transition: 'all 0.3s'}, this.contentElement)
+      updateStyle({transition: 'all 200ms'}, this.contentElement)
     }, 500)
   }
 
@@ -259,8 +259,8 @@ export class Container {
       this.__ownTemp__.oldCol = this.getConfig("col")
       this.__ownTemp__.oldRow = this.getConfig("row")
       this._observer_()
-      this.bus.emit("updateLayout")
-      this.updateContainerSizeStyle()
+      this.updateLayout()
+      this.updateContainerSizeStyle({force: true})
       this._mounted = true
     }
     startGlobalEvent()
@@ -278,6 +278,7 @@ export class Container {
     if (this.contentElement.isConnected) this.element.removeChild(this.contentElement)
     this._disconnect_()
     this.bus.emit('containerUnmounted')
+    removeGlobalEvent()
   }
 
   /** 将item成员从Container中全部移除，之后重新渲染  */
@@ -299,8 +300,13 @@ export class Container {
   public _observer_() {
     if (this._mounted) return
     let preventFirstResizingCount = 0   // 阻止resize首次加载触发的容器调整大小改变事件
-    const layoutChangeFun = () => preventFirstResizingCount++ > 2 && this.bus.emit('containerResizing') || this._trySwitchLayout()
-    const observerResize = () => layoutChangeFun() || _debounce() // 防抖，保证最后一次执行执行最终布局
+    const layoutChangeFun = () => {
+      preventFirstResizingCount++ > 2 && this.bus.emit('containerResizing') || this._trySwitchLayout()
+    }
+    const observerResize = () => {
+      layoutChangeFun();
+      _debounce()
+    } // 防抖，保证最后一次执行执行最终布局
     const _debounce: Function = debounce(layoutChangeFun, 300)
     const _throttle: Function = throttle(observerResize, 80)
     const resizeObserver = new ResizeObserver(<any>_throttle)  //  ResizeObserver在es6才支持，若要兼容需要外部自行polyfill
@@ -366,14 +372,18 @@ export class Container {
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  public updateContainerSizeStyle({col, row} = {}): void {
+  public updateContainerSizeStyle(opt: { col?: number, row?: number, force?: boolean } = {}): void {
+    let {col, row, force = false} = opt
     const {oldRow, oldCol} = this.__ownTemp__
-    if (oldRow === row && oldCol === col) return
+    col = col || this.getConfig('col')
+    row = row || this.getConfig('row')
+    if (!force && oldRow === row && oldCol === col) return
+    // console.log(force, oldRow, row, oldCol, col)
     updateStyle({
       width: `${this.nowWidth(col)}px`,
       height: `${this.nowHeight(row)}px`,
     }, this.contentElement)
-    this.STRect.update("containerContent")
+    this.STRect.updateCache("containerContent")
   }
 
   /** 计算当前Items所占用的Container宽度  */

@@ -18,7 +18,6 @@ export function isAnimating(item: Item) {
   ) > 2
 }
 
-
 export function createModifyPosInfo(item: Item, pos: Partial<CustomItemPos>): LayoutItemInfo {
   return {
     item,

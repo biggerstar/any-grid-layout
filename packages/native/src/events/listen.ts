@@ -21,8 +21,12 @@ import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
 import {itemClick_mousedown} from "@/events/other/itemClick_mousedown";
+import {
+  clearCloneEl_mousedown,
+} from "@/events/item-clone-el/itemCloneElRemove_mousedown";
 
 export function allMousedown(ev) {
+  clearCloneEl_mousedown(ev)   // 点击时清除克隆元素
   /* cursor */
   cursor_mousedown(ev)
   /* compatible */
@@ -74,39 +78,30 @@ export function allMouseup(ev) {
 }
 
 let running = false
+let containerCount = 0
 
 export function startGlobalEvent(targetWindow?: WindowProxy) {
+  containerCount++
   if (running) return
   const document = (targetWindow || window).document
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
   document.addEventListener('mousedown', allMousedown, {passive: true})
   document.addEventListener('touchstart', allMousedown, {passive: false})
-
-  // document.addEventListener('dragstart', prevent.false)
-  // document.addEventListener('selectstart', prevent.defaultAndFalse, false)
-  //
-  // //-------------------------------原来的必须挂dom上的事件-----------------------------//
+  //-------------------------------原来的必须挂dom上的事件-----------------------------//
   document.addEventListener('mousemove', allMousemove, {passive: true})
   document.addEventListener('touchmove', allMousemove, {passive: false})
-  //
   document.addEventListener('mouseup', allMouseup, {passive: true})
   document.addEventListener('touchend', allMouseup, {passive: false})
   running = true
 }
 
-
-// function removeGlobalEvent() {
-//   document.removeEventListener('mousedown', touchstartOrMousedown)
-//   document.removeEventListener('touchstart', touchstartOrMousedown)
-//
-//   document.removeEventListener('dragstart', prevent.false)
-//   document.removeEventListener('selectstart', prevent.defaultAndFalse)
-//
-//   //-----------------------------------------------------------------------------//
-//   document.removeEventListener('mousemove', touchmoveOrMousemove)
-//   document.removeEventListener('touchmove', touchmoveOrMousemove)
-//
-//   document.removeEventListener('mouseup', touchendOrMouseup)
-//   document.removeEventListener('touchend', touchendOrMouseup)
-//
-// }
+export function removeGlobalEvent() {
+  if (containerCount > 1) return
+  document.removeEventListener('mousedown', allMousedown)
+  document.removeEventListener('touchstart', allMousedown)
+  //-------------------------------原来的必须挂dom上的事件-----------------------------//
+  document.removeEventListener('mousemove', allMousemove)
+  document.removeEventListener('touchmove', allMousemove)
+  document.removeEventListener('mouseup', allMouseup)
+  document.removeEventListener('touchend', allMouseup)
+}

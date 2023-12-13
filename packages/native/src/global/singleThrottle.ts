@@ -7,7 +7,9 @@ export const singleThrottleCrossContainerRule = () => {  // 用于跨容器后�
   return fromContainer && toContainer && fromContainer === toContainer
 }
 
-
+/**
+ * 节流获取某个变量，减少重复计算
+ * */
 export function createSTRect(container) {
   const STRect = new SingleThrottle<{
     containerIns: DOMRect,

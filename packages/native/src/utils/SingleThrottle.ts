@@ -5,7 +5,7 @@ import {throttle} from "@/utils/tool";
 
 /**
  * 单通道节流,可使用new创建多个通道,不支持函数参数，只是单纯运行函数
- * 第一次运行do会直接先运行一次函数
+ * 第一次运行使用do会直接先运行一次函数
  * */
 export class SingleThrottle<T extends Record<any, any>> {
   public do: (func: () => void, wait?: number) => void
@@ -43,6 +43,9 @@ export class SingleThrottle<T extends Record<any, any>> {
     return this
   }
 
+  /**
+   * 添加更新函数
+   * */
   public addUpdateMethod(name: keyof T, updateMethod: (...args: any[]) => any, wait?: number): this {
     if (isFunction(updateMethod)) {
       this._updateMethods[name] = <any>updateMethod
@@ -53,20 +56,28 @@ export class SingleThrottle<T extends Record<any, any>> {
 
   /**
    * @param name 名称
-   * @param args 传入 addUpdateMethod 所添加回调函数参数的的变量
+   * @param args 传入剩余参数将会映射传入带 updateMethod 回调函数作为形参
    * */
   public getCache<Name extends keyof T>(name: Name, ...args: any[]): T[Name] {
-    return this.update(name, true, ...args)
+    return this._updateCycleCache(name, false, ...args)
   }
 
   /**
    * @param name 名称
-   * @param getCache 是否获取并返回缓存
+   * @param force 是否获取并返回缓存
    * @param args
    * */
-  public update<Name extends keyof T>(name: Name, getCache: boolean = false, ...args): T[Name] {
-    const fn: Function = getCache ? this.updateMethods[name] : this._updateMethods[name]
+  public updateCache<Name extends keyof T>(name: Name, force: boolean = false, ...args): T[Name] {
+    return this._updateCycleCache(name, true, ...args)
+  }
+
+  /**
+   * 尝试更新缓存
+   * */
+  private _updateCycleCache<Name extends keyof T>(name: Name, force: boolean = false, ...args) {
+    const fn: Function = force ? this._updateMethods[name] : this.updateMethods[name]
     let data = fn.apply(null, args)
     return !data ? this.cache[name] : this.cache[name] = data
   }
 }
+
