@@ -25,6 +25,10 @@ export default <DefaultTheme.SidebarItem[]>[
         text: '自定义布局算法',
         link: '/example/customLayoutAlgo'
       },
+      {
+        text: '动画',
+        link: '/example/animation'
+      },
     ]
   },
   {

@@ -45,8 +45,8 @@ export class ConfigurationEvent extends BaseEvent {
       const smartCol = this.smart.smartCol
       const autoGrowCol = container.autoGrowCol
       const containerW = this.containerW
-      if (autoGrowCol) data = smartCol   // 自动增长就以智能计算的为主 ( fix: 解决了挂载点元素自动撑开后回缩一卡一卡的问题 )
-      else if (!autoGrowCol) data = Math.max(smartCol, containerW, container.layoutManager.col)  // 以最大col为主，smartCol超出用smartCol，小于则用containerW
+      if (autoGrowCol) data = smartCol   // 自动增长就以智能计算的为主 ( fix: 修复了挂载点元素自动撑开后回缩一卡一卡的问题 )
+      else if (!autoGrowCol) data = Math.max(smartCol, containerW, container.layoutManager.col)  // 非自动增长以最大col为主，超出用smartCol，小于则用containerW
     }
     // console.log('col',data)
     return data

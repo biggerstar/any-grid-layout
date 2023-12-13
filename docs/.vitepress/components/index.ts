@@ -6,6 +6,7 @@ import Spiral from "./Spiral.vue";
 import ZebraPattern from "./ZebraPattern.vue";
 import CrossContainer from "./CrossContainer.vue";
 import ContainerNesting from "./ContainerNesting.vue";
+import AnimationSupport from "./AnimationSupport.vue";
 
 export default {
   Basic,
@@ -16,4 +17,5 @@ export default {
   ZebraPattern,
   CrossContainer,
   ContainerNesting,
+  AnimationSupport,
 }
