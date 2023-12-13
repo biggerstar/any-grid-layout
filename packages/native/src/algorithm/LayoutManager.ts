@@ -25,14 +25,14 @@ export class LayoutManager extends Finder {
    * 最小的矩阵尺寸是container容器盒子的尺寸
    * */
   public get minCol(): number {
-    return this.container.containerW
+    return this.container.autoGrowCol ? 1 : this.container.containerW
   }
 
   /**
    * 最小的矩阵尺寸是container容器盒子的尺寸
    * */
   public get minRow(): number {
-    return this.container.containerH
+    return this.container.autoGrowRow ? 1 : this.container.containerH
   }
 
   protected _layoutMatrix: Array<Array<Item | null>> = []   // 布局矩阵

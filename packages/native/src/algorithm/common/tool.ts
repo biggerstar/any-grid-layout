@@ -43,10 +43,11 @@ export function analysisCurLocationInfo(container: Container): {
   if (!mousemoveEvent) return
   const result: any = {}
   const {left: containerLeft, top: containerTop} = container.STRect.getCache("containerContent")
-  const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft
-  const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop
+  const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft - tempStore.lastOffsetM_left * tempStore.mousedownItemOffsetLeftProportion
+  const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop - tempStore.lastOffsetM_left * tempStore.mousedownItemOffsetTopProportion
   const margin = container.getConfig('margin')
   const size = container.getConfig('size')
+  // console.log(relativeLeftTopX4Container, relativeLeftTopY4Container)
   result.relativeX = Math.ceil(Math.abs(relativeLeftTopX4Container) / (margin[0] * 2 + size[0])) * Math.sign(relativeLeftTopX4Container)
   result.relativeY = Math.ceil(Math.abs(relativeLeftTopY4Container) / (margin[1] * 2 + size[1])) * Math.sign(relativeLeftTopY4Container)
   const contentBoxW = container.contentBoxW

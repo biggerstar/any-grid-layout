@@ -10,8 +10,6 @@ export class ConfigurationEvent extends BaseEvent {
   public readonly configName: keyof ContainerGeneralImpl
   public configData: any
   private _smart
-  private _containerW
-  private _containerH
 
   /**
    * 当获取的col 和 row 时，获取的当前已经布局的items中(x,y,w,h)计算的占用尺寸
@@ -25,14 +23,6 @@ export class ConfigurationEvent extends BaseEvent {
     super(opt);
   }
 
-  public get containerW() {
-    return this._containerW || (this._containerW = this.container.containerW)
-  }
-
-  public get containerH() {
-    return this._containerH || (this._containerH = this.container.containerH)
-  }
-
   /**
    * 获取默认算法计算出来的 col 值
    * [用于静态布局,动态布局由插件自由实现]
@@ -44,11 +34,14 @@ export class ConfigurationEvent extends BaseEvent {
     if (!data) {  // 未指定col自动设置
       const smartCol = this.smart.smartCol
       const autoGrowCol = container.autoGrowCol
-      const containerW = this.containerW
       if (autoGrowCol) data = smartCol   // 自动增长就以智能计算的为主 ( fix: 修复了挂载点元素自动撑开后回缩一卡一卡的问题 )
-      else if (!autoGrowCol) data = Math.max(smartCol, containerW, container.layoutManager.col)  // 非自动增长以最大col为主，超出用smartCol，小于则用containerW
+      else if (!autoGrowCol && !container._mounted) {
+        data = Math.max(smartCol, container.containerW) // 首次加载以容器大小为主，后面则智能计算
+      } else {
+        data = container.layoutManager.col
+      }
     }
-    // console.log('col',data)
+    // console.log('col', data)
     return data
   }
 
@@ -63,11 +56,14 @@ export class ConfigurationEvent extends BaseEvent {
     if (!data) {  // 未指定row自动设置
       const smartRow = this.smart.smartRow
       const autoGrowRow = container.autoGrowRow
-      // console.log(smartRow)
-      const containerH = this.containerH
+      // console.log(autoGrowRow,smartRow)
       // console.log(containerH)
       if (autoGrowRow) data = smartRow   // 自动增长就以智能计算的为主
-      else if (!autoGrowRow) data = Math.max(smartRow, containerH, container.layoutManager.row)  // 同上
+      else if (!autoGrowRow && !container._mounted) {
+        data = Math.max(smartRow, container.containerH)
+      } else {
+        data = container.layoutManager.row
+      }
     }
     return data
   }

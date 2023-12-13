@@ -20,12 +20,12 @@ export const ConfigBehavior = definePlugin({
     let {configName, configData} = ev
     //-----------------------------Col限制确定---------------------------------//
     if (configName === 'col') {
-      const curMinCol = getContainerConfigs(ev.container,"minCol")
+      const curMinCol = getContainerConfigs(ev.container, "minCol")
       if (curMinCol && configData < curMinCol) ev.configData = curMinCol
     }
     //-----------------------------Row限制确定---------------------------------//
     if (configName === 'row') {
-      const curMinRow =  getContainerConfigs(ev.container,"minRow")
+      const curMinRow = getContainerConfigs(ev.container, "minRow")
       if (curMinRow && configData < curMinRow) ev.configData = curMinRow
       // console.log(ev.configData)
     }

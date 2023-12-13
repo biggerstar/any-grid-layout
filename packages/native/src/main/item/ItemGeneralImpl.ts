@@ -48,7 +48,7 @@ export class ItemGeneralImpl {
    *           }
    *  */
   transition?: ItemTransition = {
-    time: 180,
+    time: 120,
     field: 'top,left,width,height'
   }
 

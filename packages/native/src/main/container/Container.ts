@@ -260,7 +260,7 @@ export class Container {
       this.__ownTemp__.oldRow = this.getConfig("row")
       this._observer_()
       this.updateLayout()
-      this.updateContainerSizeStyle({force: true})
+      this.updateContainerSizeStyle()
       this._mounted = true
     }
     startGlobalEvent()
@@ -372,13 +372,8 @@ export class Container {
   }
 
   /** 执行后会只能根据当前items占用的位置更新 container 的大小 */
-  public updateContainerSizeStyle(opt: { col?: number, row?: number, force?: boolean } = {}): void {
-    let {col, row, force = false} = opt
-    const {oldRow, oldCol} = this.__ownTemp__
-    col = col || this.getConfig('col')
-    row = row || this.getConfig('row')
-    if (!force && oldRow === row && oldCol === col) return
-    // console.log(force, oldRow, row, oldCol, col)
+  public updateContainerSizeStyle(opt: { col?: number, row?: number } = {}): void {
+    let {col, row} = opt
     updateStyle({
       width: `${this.nowWidth(col)}px`,
       height: `${this.nowHeight(row)}px`,

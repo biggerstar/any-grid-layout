@@ -72,7 +72,7 @@
 
 /* 所有Item的默认样式,定义宽高会被忽略 */
 .grid-item {
-  background-color: rgb(148, 145, 145);
+  background-color: rgb(159, 158, 158);
 }
 
 /* 拖动(drag)时克隆出来跟随鼠标移动的对应元素 */
@@ -89,7 +89,7 @@
 
 /* 重置大小(resize)时克隆出来跟随鼠标移动的对应元素 */
 .grid-resizing-clone-el {
-  background-color: red;
+  background-color: rgba(140, 140, 139, 0.5);
 }
 
 /* 点击进行重置大小(resize)的来源元素，也就是容器内的Item，正在拖动时候的样式*/

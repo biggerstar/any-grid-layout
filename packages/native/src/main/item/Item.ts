@@ -199,7 +199,8 @@ export class Item extends ItemGeneralImpl {
       // gridRow: `${this.pos.y} / span ${this.pos.h}`,
 
       // transform
-      // transform:`translate(${this.offsetLeft()+'px'},${this.offsetTop()+'px'})`,
+      // position:'none',
+      // transform: `translate3d(${this.offsetLeft() + 'px'},${this.offsetTop() + 'px'},0)`,
     }, this.element)
   }
 
@@ -388,7 +389,7 @@ export class Item extends ItemGeneralImpl {
       style.transition = 'unset'
       style.transitionTimingFunction = 'ease-out'
       style.transitionDuration = transition.time + 'ms'
-      style.transitionProperty = transition.field
+      style.transitionProperty = transition.field + ', transform'
     } else if (transition.time === 0) {
       style.transition = 'none'
     }

@@ -40,6 +40,7 @@ export const EveryBehavior = definePlugin({
       const {oldCol, oldRow} = temp
       const col = container.getConfig("col")
       const row = container.getConfig("row")
+      // console.log(col, row)
       if (isNumber(oldCol) && isNumber(oldRow) && isNumber(col) && isNumber(row)) {
         const isColChanged = oldCol !== col
         const isRowChanged = oldRow !== row
