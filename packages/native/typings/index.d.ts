@@ -11,5 +11,4 @@ declare global {
     _isGridContainer_: boolean
     _gridContainer_: Container
   }
-  export {}
 }

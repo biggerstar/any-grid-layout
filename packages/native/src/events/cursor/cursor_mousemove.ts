@@ -1,8 +1,12 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
 import {
-  cursor_type_default, cursor_type_drag_to_item_no_drop,
-  cursor_type_in_container, cursor_type_item_close,
-  cursor_type_item_resize, cursor_type_mousedown, cursor_type_no_drop,
+  cursor_type_default,
+  cursor_type_drag_to_item_no_drop,
+  cursor_type_in_container,
+  cursor_type_item_close,
+  cursor_type_item_resize,
+  cursor_type_mousedown,
+  cursor_type_no_drop,
   cursor_type_static_no_drop,
   grid_item_close_btn,
   grid_item_resizable_handle

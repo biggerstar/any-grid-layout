@@ -98,15 +98,16 @@ const _updateLocation: Function = () => {
     lastOffsetM_Top: offsetM_top,
   } = tempStore
   if (!isDragging || !fromItem || !fromContainer || !cloneElement || !mousemoveEvent) return
-  let nextWidth, nextHeight
+  let nextWidth: number, nextHeight: number
   const targetContainer = toContainer || fromContainer
   const exchange = canExchange()
   const {adaption, keepBaseSize} = getContainerConfigs(targetContainer, 'cloneElement')
-
-  nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
-  nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
+  if (cloneElScaleMultipleX && cloneElScaleMultipleY) {
+    nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
+    nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
+  }
   const allowChange = adaption && exchange && toContainer!.parentItem !== fromItem
-  let isKeepOffset
+  let isKeepOffset: boolean
   let sizeStyle = {}
   if (allowChange) {  // 不允许交换
     isKeepOffset = !adaption || !exchange || toContainer === fromItem.container || !toContainer // 如果移出container，恢复源容器item尺寸
@@ -121,6 +122,16 @@ const _updateLocation: Function = () => {
   // )
 
   function reset() {
+    if (
+      !mousedownItemWidth
+      || !cloneElScaleMultipleX
+      || !mousedownItemOffsetLeftProportion
+      || !mousedownItemHeight
+      || !cloneElScaleMultipleY
+      || !mousedownItemOffsetTopProportion
+    ) {
+      return
+    }
     offsetM_left = mousedownItemWidth * cloneElScaleMultipleX * mousedownItemOffsetLeftProportion
     offsetM_top = mousedownItemHeight * cloneElScaleMultipleY * mousedownItemOffsetTopProportion
     const width = keepBaseSize || isKeepOffset ? mousedownItemWidth : fromItem!.nowWidth()
@@ -132,6 +143,9 @@ const _updateLocation: Function = () => {
   }
 
   function change() {
+    if (!mousedownItemOffsetLeftProportion || !mousedownItemOffsetTopProportion) {
+      return
+    }
     offsetM_left = nextWidth * mousedownItemOffsetLeftProportion
     offsetM_top = nextHeight * mousedownItemOffsetTopProportion
     sizeStyle = {
@@ -151,6 +165,16 @@ const _updateLocation: Function = () => {
     tempStore.lastOffsetM_Top = offsetM_top
   }
 
+  if (
+    !mousedownItemWidth
+    || !cloneElScaleMultipleX
+    || !mousedownItemOffsetLeftProportion
+    || !mousedownItemHeight
+    || !cloneElScaleMultipleY
+    || !mousedownItemOffsetTopProportion
+  ) {
+    return
+  }
   if (!offsetM_left || !offsetM_top) {
     offsetM_left = mousedownItemWidth * cloneElScaleMultipleX * mousedownItemOffsetLeftProportion
     offsetM_top = mousedownItemHeight * cloneElScaleMultipleY * mousedownItemOffsetTopProportion

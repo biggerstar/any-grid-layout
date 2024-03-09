@@ -1,5 +1,5 @@
 import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
-import {CustomEventOptions, EventMapType} from "@/types";
+import {CustomEventOptions} from "@/types";
 import {BaseEvent} from "@/plugins/event-types/BaseEvent";
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
@@ -23,8 +23,7 @@ export * from './InitOptionsEvent'
 export * from './MatrixEvent'
 export * from './GridClickEvent'
 
-
-export const EventMap: EventMapType<CustomEventOptions> = {
+export const EventMap: Record<keyof CustomEventOptions | string, any> = {
   '*': BaseEvent,
   //-------------throw-message-----------
   error: ThrowMessageEvent,

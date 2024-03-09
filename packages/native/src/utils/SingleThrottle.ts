@@ -7,18 +7,21 @@ import {throttle} from "@/utils/tool";
  * 单通道节流,可使用new创建多个通道,不支持函数参数，只是单纯运行函数
  * 第一次运行使用do会直接先运行一次函数
  * */
-export class SingleThrottle<T extends Record<any, any>> {
+export class SingleThrottle<T extends Record<string, any>> {
   public do: (func: () => void, wait?: number) => void
   public rules: (() => boolean)[] = []
-  private updateMethods: Record<keyof T, (...args: any[]) => any> = {}     // 包装后的节流函数
-  private _updateMethods: Record<keyof T, (...args: any[]) => any> = {}    // 直接更新的原函数
+  private readonly updateMethods: Record<keyof T, (...args: any[]) => any> | Record<any, any>    // 包装后的节流函数
+  private readonly _updateMethods: Record<keyof T, (...args: any[]) => any> | Record<any, any>    // 直接更新的原函数
   public wait: number = 320
-  public cache: T & {} = {}
+  public cache: T | Record<any, any>
 
   constructor(wait?: number) {
     if (isNumber(wait) && wait > 0) this.wait = wait
     let old = 0;
-    this.do = (func, wait) => {
+    this.updateMethods = {}
+    this._updateMethods = {}
+    this.cache = {}
+    this.do = (func: Function, wait) => {
       const isDirectExec = this.rules.length && !this.rules.every(rule => rule())  // 只要一个不符合，则直接更新
       let now = new Date().valueOf();
       if (!isDirectExec && now - old < (wait || this.wait)) return
@@ -30,7 +33,7 @@ export class SingleThrottle<T extends Record<any, any>> {
   /**
    * 直接运行函数
    * */
-  public direct(func: Function): this {
+  public direct(func: () => void): this {
     this.do(func, 0)
     return this
   }
@@ -67,14 +70,14 @@ export class SingleThrottle<T extends Record<any, any>> {
    * @param force 是否获取并返回缓存
    * @param args
    * */
-  public updateCache<Name extends keyof T>(name: Name, force: boolean = false, ...args): T[Name] {
-    return this._updateCycleCache(name, true, ...args)
+  public updateCache<Name extends keyof T>(name: Name, force: boolean = false, ...args: any[]): T[Name] {
+    return this._updateCycleCache(name, force || true, ...args)
   }
 
   /**
    * 尝试更新缓存
    * */
-  private _updateCycleCache<Name extends keyof T>(name: Name, force: boolean = false, ...args) {
+  private _updateCycleCache<Name extends keyof T>(name: Name, force: boolean = false, ...args: any[]) {
     const fn: Function = force ? this._updateMethods[name] : this.updateMethods[name]
     let data = fn.apply(null, args)
     return !data ? this.cache[name] : this.cache[name] = data

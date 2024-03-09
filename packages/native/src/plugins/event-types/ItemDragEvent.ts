@@ -1,13 +1,13 @@
 import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
 import {isFunction} from "is-what";
 import {Item} from "@/main";
-import {CustomItemPos} from "@/types";
+import {ContainerInstantiationOptions, CustomItemPos} from "@/types";
 import {clamp, spiralTraversal} from "@/utils";
 import {tempStore} from "@/global";
 
 
 export class ItemDragEvent extends ItemLayoutEvent {
-  public readonly toItem: Item | null
+  public toItem: Item | null
   public readonly toPos: CustomItemPos
   public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格X位置,和resize解释一样
   public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格Y位置,和resize解释一样
@@ -17,7 +17,7 @@ export class ItemDragEvent extends ItemLayoutEvent {
   public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
   public readonly offsetRelativeX: number // 当前拖动位置相对源item偏移
   public readonly offsetRelativeY: number // 当前拖动位置相对源item偏移
-  constructor(opt) {
+  constructor(opt: ContainerInstantiationOptions) {
     super(opt);
     const {
       toItem,
@@ -92,7 +92,10 @@ export class ItemDragEvent extends ItemLayoutEvent {
       x: this.startRelativeX,
       y: this.startRelativeY,
     })
-    if (isSuccess) return  // 如果当前位置有空位则直接移动过去，不进行周边空位检测
+    if (isSuccess) {
+      return false
+      // 如果当前位置有空位则直接移动过去，不进行周边空位检测
+    }
     //---------------------------开始判定移动到周边空位了逻辑----------------------------------//
     const rangeMinX = this.gridX - fromItem.pos.w * radius
     const rangeMinY = this.gridY - fromItem.pos.h * radius

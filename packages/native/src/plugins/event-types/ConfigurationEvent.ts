@@ -7,20 +7,23 @@ import {SmartRowAndColType} from "@/types";
  * 设置和获取配置的事件对象
  * */
 export class ConfigurationEvent extends BaseEvent {
-  public readonly configName: keyof ContainerGeneralImpl
+  public readonly configName: keyof ContainerGeneralImpl | string
   public configData: any
-  private _smart
+  private _smart: any
 
   /**
    * 当获取的col 和 row 时，获取的当前已经布局的items中(x,y,w,h)计算的占用尺寸
    * */
   public get smart(): SmartRowAndColType {
-    if (this._smart) return this._smart
+    if (this._smart) {
+      return this._smart
+    }
     return this._smart = computeSmartRowAndCol(this.container)
   }
 
-  constructor(opt) {
+  constructor(opt: any) {
     super(opt);
+    this.configName = ''
   }
 
   /**

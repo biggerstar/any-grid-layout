@@ -13,7 +13,7 @@ export class ContainerSizeChangeEvent extends BaseEvent {
   public readonly curCol: number
   public readonly curRow: number
 
-  constructor(opt) {
+  constructor(opt:any) {
     super(opt);
     const container = this.container
     this.col = container.getConfig("col")

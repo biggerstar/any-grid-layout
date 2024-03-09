@@ -8,7 +8,7 @@ export class ItemPos extends ItemPosGeneralImpl {
   public _default?: ItemPosGeneralImpl  // 框架默认配置
   public customPos?: CustomItemPos
 
-  constructor(pos) {
+  constructor(pos: CustomItemPos) {
     super()
     this._default = new ItemPosGeneralImpl() // 必须在_defineXXX 之前
     this.customPos = pos

@@ -1,7 +1,7 @@
 import {parseContainer, singleTouchToCommonEvent} from "@/utils";
 import {Container} from "@/main";
 import {tempStore} from "@/global";
-import {  prevent} from "@/events";
+import {prevent} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchstart_mousedown(ev) {

@@ -105,7 +105,7 @@ export class LayoutManager extends Finder {
    * 为包含static item优先排序
    * 返回一个所有static都在数组前面的新数组
    * */
-  public sortStatic(items): Record<'sortItems' | 'staticItems' | 'ordinaryItems', Item[]> {
+  public sortStatic(items: Item[]): Record<'sortItems' | 'staticItems' | 'ordinaryItems', Item[]> {
     const staticItems = []   // 静态items
     const ordinaryItems = []  // 普通items
     items.forEach((item) => {
@@ -338,7 +338,7 @@ export class LayoutManager extends Finder {
     const row = this.row
     const isAuto = num === 'auto'
     if (isAuto || num === void 0) num = (row - 1) * -1  // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
-    const isSlice = num && num < 0   // 是否开启删除
+    const isSlice = typeof num === 'number' && num < 0   // 是否开启删除
     if (isSlice) num = Math.max(this.minRow - row, <number>num)   // 负数，限制最少为容器row宽度
     const matrix = this._layoutMatrix
     for (let i = 0; num && i < Math.abs(<number>num); i++) {
@@ -435,7 +435,7 @@ export class LayoutManager extends Finder {
     const {autoGrowCol, autoGrowRow} = this.container
     let cont = 20   // 一次最多expand添加二十行供于检测
     while (cont--) {
-      const found = <boolean>this.findBlank(pos)
+      const found = this.findBlank(pos)
       if (found) return found
       this.expandLine({
         col: autoGrowCol ? 1 : 0,
@@ -453,7 +453,7 @@ export class LayoutManager extends Finder {
   public findBlank(pos: CustomItemPos): CustomItemPos | null {
     let resPos = null
     if (this.isStaticPos(pos)) return this.isBlank(pos) ? pos : null
-    this.each((curRow, curCol) => {  // 没有x,y则遍历矩阵找空位
+    this.each((curRow: number, curCol: number): any => {  // 没有x,y则遍历矩阵找空位
       const tryPos = {
         w: pos.w,
         h: pos.h,
@@ -472,7 +472,7 @@ export class LayoutManager extends Finder {
     const {w, h, x, y} = this.toMatrixPos(pos)
     if ((this.row - h - y) < 0 || (this.col - w - x) < 0) return false // 如果指定的x,y超出矩阵直接返回false
     let isBlank = true
-    this.each((curRow, curCol) => {
+    this.each((curRow: number, curCol: number): any => {
       const line = this._layoutMatrix[curRow]
       if (!line || line[curCol] !== this.place) {
         isBlank = false
@@ -657,7 +657,7 @@ export class LayoutManager extends Finder {
    * */
   public horizontalMirrorFlip(posList: CustomItemPos[] | CustomItemPos) {
     if (!Array.isArray(posList)) posList = [posList]
-    posList.forEach(pos => {
+    posList.forEach((pos: CustomItemPos) => {
       const y = this.row - pos.y - (pos.h - 1) + 1
       pos.y = y <= 0 ? 1 : y
     })
@@ -696,12 +696,13 @@ export class LayoutManager extends Finder {
    * 遍历任意方向的矩阵，point1和point2必须是对角点
    * */
   public each(
-    fn: (x, y) => any,
-    {
+    fn: (x: number, y: number) => any,
+    opt?: EachOptions)
+    : void {
+    const {
       point1 = this.leftTopPoint,
       point2 = this.rightBottomPoint,
-    }?: EachOptions = {})
-    : void {
+    } = opt || {}
     this.container.bus.emit('each', {
       point1,
       point2,

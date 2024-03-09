@@ -7,4 +7,10 @@ export class InitOptionsEvent extends BaseEvent {
    * 外部创建插件时也可以通过 createXXX(插件自有配置) 创建
    * */
   public readonly options: ContainerInstantiationOptions
+
+  constructor(opt: ContainerInstantiationOptions) {
+    super(opt);
+    //@ts-ignore
+    this.options = opt
+  }
 }

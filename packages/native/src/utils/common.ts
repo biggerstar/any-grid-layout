@@ -60,7 +60,7 @@ export function canExchange() {
 /**
  * 获取container中的配置
  * */
-export const _getConfig = (container, name) => {
+export const _getConfig = (container: Container, name: string) => {
   const has = (obj: object, name: string) => obj.hasOwnProperty(name)
   if (has(container.useLayout, name)) return container.useLayout[name]
   if (has(container.layout, name)) return container.layout[name]
@@ -72,15 +72,15 @@ export const _getConfig = (container, name) => {
 /**
  * 批量获取container的配置信息，不会发起getContainer事件
  * */
-export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name)
+export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name)
   : Exclude<CustomLayoutsOption[Name], undefined>
-export declare function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[])
+export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[])
   : { [Key in Name]: CustomLayoutsOption[Key] }
 export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(
   container: Container,
   nameInfo: Name[] | Name
 ): any {
-  let result
+  let result: any
   //@ts-ignore
   if (!Array.isArray(nameInfo)) {
     result = _getConfig(container, nameInfo)

@@ -126,7 +126,7 @@ export class ItemLayoutEvent extends BaseEvent {
     // console.log(this.shadowItemInfo.offsetRelativeW, this.shadowItemInfo.offsetRelativeH)
 
     /*------------- spaceInfo ----------------*/
-    const spaceInfo: ItemLayoutEvent["spaceInfo"] = this.spaceInfo = {}
+    const spaceInfo: Partial<ItemLayoutEvent["spaceInfo"]> = this.spaceInfo = {} as any
     spaceInfo.clampWidth = clamp(itemInfo.offsetX, itemInfo.minWidth, itemInfo.maxWidth)
     spaceInfo.clampHeight = clamp(itemInfo.offsetY, itemInfo.minHeight, itemInfo.maxHeight)
     spaceInfo.clampW = container.pxToW(spaceInfo.clampWidth)
@@ -161,7 +161,7 @@ export class ItemLayoutEvent extends BaseEvent {
 
   /**
    * 尝试更新当前Item的大小或位置
-   * @param item？ 当前要移动的item
+   * @param item 当前要移动的item
    * @param pos  当前移动到新位置的pos
    * */
   public setItemPos(item: Item, pos: Partial<Pick<CustomItemPos, 'w' | 'h' | 'x' | 'y'>>): boolean {

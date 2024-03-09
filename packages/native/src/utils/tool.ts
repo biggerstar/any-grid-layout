@@ -2,16 +2,16 @@
 
 import {Container, Item} from "@/main";
 import {isNumber} from "is-what";
-
+import "../../typings";
 
 /**
  * 节流
  * */
-export function throttle<T extends Function>(func: T, wait: number = 350): () => ReturnType<T> {  // 全局共用节流函数通道：返回的是函数，记得再执行
-  let self
+export function throttle<T extends (...args: any[]) => any>(func: T, wait: number = 350): () => ReturnType<T> {  // 全局共用节流函数通道：返回的是函数，记得再执行
+  let self: any
   let old = 0;
   return function () {
-    let res
+    let res: any
     self = this;
     let now = new Date().valueOf();
     if (now - old > wait) {
@@ -41,7 +41,7 @@ export function debounce(fn: Function, delay: number = 500) {
 /**
  * 转首字母大写
  * */
-export function capitalizeFirstLetter(string) {
+export function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
@@ -68,7 +68,7 @@ export const cloneDeep = (obj: any) => {  // 使用lodash.cloneDeep在lib模式�
 /**
  * 深度合并对象
  * */
-export function mergeDeep(target, source) {
+export function mergeDeep<T extends Record<any, any>, S extends Record<any, any>>(target: T, source: S): T & S {
   if (typeof target !== 'object' || typeof source !== 'object') return source
   for (const key in source) {  // 判断属性是否是源对象自身的属性（非继承）
     if (source.hasOwnProperty(key)) {
@@ -84,7 +84,7 @@ export function mergeDeep(target, source) {
 /**
  * 螺旋遍历矩阵数组,使用回调手动处理
  * */
-export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: number, col: number, val: any) => any) {
+export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: number, col: number, val: any) => any): void | any[] {
   if (matrix.length === 0) return []
   let rows = matrix.length
   let columns = matrix[0].length
@@ -131,7 +131,7 @@ export function getKebabCase(str: string) {
 /**
  * 获取传入args参数中第一个是数字类型的值并返回该值
  * */
-export const getFirstNumber = (...args) => args.find(val => isNumber(val))
+export const getFirstNumber = (...args: any[]) => args.find(val => isNumber(val))
 
 /**
  * 从一个新的对象合并到另一个原有对象中且 [ 只合并原有存在对象中的值 ],参数位置和Object.assign一样
@@ -141,7 +141,7 @@ export const getFirstNumber = (...args) => args.find(val => isNumber(val))
  * @param {Boolean} clone 是否浅克隆(浅拷贝), true: 浅克隆  false: 直接合并到目标对象
  * @param {Array} exclude  排除合并的字段
  * */
-export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
+export const merge = (to: Record<any, any> = {}, from: Record<any, any> = {}, clone: boolean = false, exclude: any[] = []) => {
   const cloneData = {}
   Object.keys(from).forEach((name) => {
     if (Object.keys(to).includes(name) && !exclude.includes(name)) {
@@ -159,7 +159,7 @@ export const merge = (to = {}, from = {}, clone = false, exclude = []) => {
  * 用于将target Element在原型链中对象中往root方向最新的的Path链解析出来
  * 用于适配移动端获取target的目标不正确的问题
  * */
-const genPrototypeToRootPath = (target: HTMLElement, touchEvent) => {
+const genPrototypeToRootPath = (target: HTMLElement, touchEvent: any) => {
   const path = []
   if (touchEvent.touchTarget) target = touchEvent.touchTarget
   else {
@@ -194,15 +194,15 @@ export function getContainerFromElement(el): Container | null {
 /**
  * [parentNode方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
  * */
-export const parseContainerFromPrototypeChain = (target): Container | null => {
-  let container
+export const parseContainerFromPrototypeChain = (target: Element): Container | null => {
+  let container: Container
   if (target instanceof Element) {
     do {
       if (target._isGridContainer_) {
         container = target._gridContainer_
         break
       }
-      target = target.parentNode
+      target = <Element>target.parentNode
     } while (target && target.parentNode)
   }
   return container
@@ -256,7 +256,7 @@ export const parseItem = (ev): Item | null => {
 /**
  * 检测某个item 要放置的HTML元素目标是否被嵌套
  * */
-export function parseItemFromPrototypeChain(target): Item | null {
+export function parseItemFromPrototypeChain(target: Element): Item | null {
   if (target instanceof Element) {
     do {
       if (target._isGridItem_) return target._gridItem_

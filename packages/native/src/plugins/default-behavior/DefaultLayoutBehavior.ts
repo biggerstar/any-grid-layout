@@ -8,7 +8,6 @@ import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
 import {definePlugin, tempStore} from "@/global";
 import {GridPlugin} from "@/types";
 import {ContainerSizeChangeEvent} from "@/plugins";
-import {updateStyle} from "@/utils";
 
 /**
  * TODO 进行重构 弃用flip翻转， 布局方向由 position的 left top right bottom控制，可以紧贴边界更符合直观
@@ -18,7 +17,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
   /**
    * 用于作为主布局算法时，「初次加载」Item到容器时初始化，用于设置容器的大小或其他操作
    * 内置已经实现，支持用户阻止init默认行为自行实现
-   * @return {AnalysisResult | void} 返回结果，如果failed长度不为0，表明有item没添加成功则会抛出警告事件
+   * 返回结果: 如果failed长度不为0，表明有item没添加成功则会抛出警告事件
    * */
   containerMounted(ev: ItemDragEvent) {
     const {container} = ev

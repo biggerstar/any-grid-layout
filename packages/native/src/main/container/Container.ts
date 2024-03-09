@@ -76,17 +76,17 @@ export class Container {
   private readonly options: ContainerInstantiationOptions
   public items: Item[] = []
   public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
-  public element: HTMLElement   //  container的挂载节点
-  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
+  public element?: HTMLElement   //  container的挂载节点
+  public contentElement?: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public parentItem: Item | null = null
   public parent: Container | null = null
-  public STRect: ReturnType<typeof createSTRect>
+  public STRect?: ReturnType<typeof createSTRect>
   // //----------------vue 支持---------------------//
   // // TODO 后面在vue的layout模块使用declare module进行声明合并
   // public vue: any
   // public _VueEvents: object
   //----------------保持状态所用参数---------------------//
-  public _mounted: boolean
+  public _mounted?: boolean
   public readonly _default: CustomLayoutsOption
   // private __store__ = tempStore
   public readonly __ownTemp__ = {
@@ -127,7 +127,7 @@ export class Container {
     Object.defineProperties(<object>this, {
       layout: {
         get() {
-          let layoutItem
+          let layoutItem: any
           const layouts = self.layouts.sort((a, b) => a.px - b.px)
           const containerWidth = self.element?.clientWidth
 
@@ -137,7 +137,7 @@ export class Container {
             if (layouts.length === 1) break
             // 此时 layoutItem.px循环结束后 大于 containerWidth,表示该Container在该布局方案中符合px以下的设定,
             // 接上行: 如果实际Container大小还大于layoutItem.px，此时是最后一个，将跳出直接使用最后也就是px最大对应的那个布局方案
-            if (layoutItem.px < containerWidth) continue
+            if (containerWidth && layoutItem.px < containerWidth) continue
             break
           }
           return layoutItem
@@ -161,7 +161,7 @@ export class Container {
    * */
   public get autoGrowCol() {
     const {col, autoGrow} = getContainerConfigs(this, ["col", "autoGrow"])
-    return !col && autoGrow.horizontal
+    return !col && autoGrow?.horizontal
   }
 
   /**
@@ -169,7 +169,7 @@ export class Container {
    * */
   public get autoGrowRow() {
     const {row, autoGrow} = getContainerConfigs(this, ["row", "autoGrow"])
-    return !row && autoGrow.vertical
+    return !row && autoGrow?.vertical
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
@@ -290,7 +290,7 @@ export class Container {
   /** 移除对容器的resize监听  */
   private _disconnect_() {
     const observers = this.__ownTemp__.observers || {}
-    Object.values(observers).forEach(observer => observer && observer.disconnect())
+    Object.values(observers).forEach(observer => observer && observer['disconnect']())
   }
 
   /**
@@ -301,7 +301,10 @@ export class Container {
     if (this._mounted) return
     let preventFirstResizingCount = 0   // 阻止resize首次加载触发的容器调整大小改变事件
     const layoutChangeFun = () => {
-      preventFirstResizingCount++ > 2 && this.bus.emit('containerResizing') || this._trySwitchLayout()
+      if (preventFirstResizingCount++ > 2) {
+        this.bus.emit('containerResizing')
+        this._trySwitchLayout()
+      }
     }
     const observerResize = () => {
       layoutChangeFun();
@@ -313,7 +316,7 @@ export class Container {
     resizeObserver.observe(this.element)
     this.__ownTemp__.observers.resize = resizeObserver
     //---------------------------------------------------------------------
-    const mutationOb = (mutations) => {
+    const mutationOb = (mutations: any[]) => {
       // 如果[container | item]节点被任何方式移除，则触发unmount卸载并触发其unmourned事件
       const removedNodes = mutations.map(mutation => [...mutation.removedNodes]).flat(1)
       // console.log(removedNodes)
@@ -461,7 +464,11 @@ export class Container {
    *
    * @return {Item | null} 成功返回Item，失败返回 null
    * */
-  public addItem(itemOptions: CustomItem | Item, options: { addForce?: boolean, syncCustomItems?: boolean, findBlank?: boolean } = {}): Item | void {   //  html收集的元素和js生成添加的成员都使用该方法添加
+  public addItem(itemOptions: CustomItem | Item, options: {
+    addForce?: boolean,
+    syncCustomItems?: boolean,
+    findBlank?: boolean
+  } = {}): Item | void {   //  html收集的元素和js生成添加的成员都使用该方法添加
     const {syncCustomItems = true, findBlank = false, addForce = false} = options
     if (!this._mounted && !addForce) {
       this.bus.emit('error', {
@@ -506,7 +513,7 @@ export class Container {
    *
    * @return {Item | null} 移除成功返回Item，失败返回 null
    * */
-  public removeItem(removeItem): Item | null {
+  public removeItem(removeItem: Item): Item | null {
     let target = null
     for (let i = 0; i < this.items.length; i++) {
       if (removeItem === this.items[i]) {
@@ -528,44 +535,41 @@ export class Container {
     this.items.splice(0, this.items.length)
   }
 
-  /**
-   * @param pxNum
-   * @param opt
-   * @param opt.floor 是否往下取整
-   * @param opt.keepSymbol  是否保持符号，比如传入pxNum是负数，返回也是负数
-   * @return {number} px像素转栅格单位 w
-   * */
-  public pxToW = (pxNum: number, {floor, keepSymbol}
-    : { floor?: boolean, keepSymbol?: boolean }
-    = {
-    floor: false,
-    keepSymbol: false
-  }) => {
+  /**  px像素转栅格单位 w */
+  public pxToW = (
+    pxNum: number,
+    {floor, keepSymbol}: {
+      /** 是否往下取整 */
+      floor?: boolean,
+      /** 是否保持符号，比如传入pxNum是负数，返回也是负数 */
+      keepSymbol?: boolean
+    } = {
+      floor: false,
+      keepSymbol: false
+    }): number => {
     const toInteger = floor ? Math.floor : Math.ceil
     const {margin, size} = getContainerConfigs(this, ["margin", "size"])
-    let res
+    let res: number
     if (size[0] >= Math.abs(pxNum)) res = 1
     else res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
     if (keepSymbol) res = res * Math.sign(pxNum)
     return res
   }
-
-  /**
-   * @param pxNum
-   * @param opt
-   * @param opt.floor 是否往下取整
-   * @param opt.keepSymbol  是否保持符号，比如传入pxNum是负数，返回也是负数
-   * @return {number} px像素转栅格单位 h
-   * */
-  public pxToH = (pxNum: number, {floor, keepSymbol}
-    : { floor?: boolean, keepSymbol?: boolean }
-    = {
-    floor: false,
-    keepSymbol: false
-  }) => {
+  /**  px像素转栅格单位 h */
+  public pxToH = (
+    pxNum: number,
+    {floor, keepSymbol}: {
+      /** 是否往下取整 */
+      floor?: boolean,
+      /** 是否保持符号，比如传入pxNum是负数，返回也是负数 */
+      keepSymbol?: boolean
+    } = {
+      floor: false,
+      keepSymbol: false
+    }) => {
     const toInteger = floor ? Math.floor : Math.ceil
     const {margin, size} = getContainerConfigs(this, ["margin", "size"])
-    let res
+    let res: number
     if (size[1] >= Math.abs(pxNum)) res = 1
     else res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
     if (keepSymbol) res = res * Math.sign(pxNum)

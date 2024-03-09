@@ -21,9 +21,7 @@ import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
 import {itemClick_mousedown} from "@/events/other/itemClick_mousedown";
-import {
-  clearCloneEl_mousedown,
-} from "@/events/item-clone-el/itemCloneElRemove_mousedown";
+import {clearCloneEl_mousedown,} from "@/events/item-clone-el/itemCloneElRemove_mousedown";
 
 export function allMousedown(ev) {
   clearCloneEl_mousedown(ev)   // 点击时清除克隆元素

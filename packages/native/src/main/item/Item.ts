@@ -28,7 +28,7 @@ export class Item extends ItemGeneralImpl {
   public classList: string[] = []
   public parentElement: HTMLElement
   public contentElement: HTMLElement
-  public pos: ItemPos
+  public declare pos: ItemPos
   //----------------保持状态所用参数---------------------//
   public customOptions: ItemGeneralImpl
   private readonly _default: ItemGeneralImpl
@@ -55,7 +55,7 @@ export class Item extends ItemGeneralImpl {
   }
 
   //----------------------------------------------------------
-  constructor(itemOption: CustomItem | Item) {
+  constructor(itemOption: CustomItem) {
     super()
     if (itemOption instanceof Item) return itemOption  // 如果已经是item，则直接返回
     if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
@@ -69,10 +69,10 @@ export class Item extends ItemGeneralImpl {
    * 对item 所有操作只要键值在 ItemGeneralImpl 中的，则会根据一定规则同步到当前item状态到container.layout中
    * 若当前值和 ItemGeneralImpl 中默认值一样，则不会同步，保证用户配置最简化
    * */
-  private _define(itemOption) {
+  private _define(itemOption: CustomItem) {
     const self = this
     const _default = this._default
-    const _customOptions = itemOption
+    const _customOptions: Record<any, any> = itemOption
     const pos = new ItemPos(itemOption.pos)
     const get = (k: keyof ItemGeneralImpl) => {
       if (k === 'pos') return pos
@@ -82,7 +82,7 @@ export class Item extends ItemGeneralImpl {
           ? cloneDeep(_default[k])
           : _default[k]
     }
-    const set = (k: keyof ItemGeneralImpl, v: any) => {
+    const set = (k: keyof CustomItem, v: any): any => {
       if (k === 'pos') return  // 不允许更改pos
       !equal(v, _default[k]) ? _customOptions[k] = v : null
       !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
@@ -111,7 +111,10 @@ export class Item extends ItemGeneralImpl {
       transition: {
         get: () => get('transition'),
         set(v) {
-          const transition = v === true ? {...self._default.transition} : get('transition')
+          const transition =
+            v === true && typeof self._default.transition === "object"
+              ? {...self._default.transition}
+              : get('transition')
           if (v === false) transition['time'] = 0
           if (typeof v === 'number') transition['time'] = v
           if (typeof v === 'object') {
@@ -302,7 +305,7 @@ export class Item extends ItemGeneralImpl {
     let minOffsetRight = this.offsetRight()
     coverRightItems.forEach((item) => {
       const offsetCol = item.pos.x - (this.pos.x + this.pos.w - 1) - 1
-      let offsetRight
+      let offsetRight: number
       if (offsetCol === 0) offsetRight = margin[0] * 2
       else offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
       if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
@@ -324,7 +327,7 @@ export class Item extends ItemGeneralImpl {
     let minOffsetBottom = this.offsetBottom()
     coverBottomItems.forEach((item) => {
       const offsetRow = item.pos.y - (this.pos.y + this.pos.h - 1) - 1
-      let offsetBottom
+      let offsetBottom: number
       if (offsetRow === 0) offsetBottom = margin[1] * 2
       else offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
       if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
@@ -376,7 +379,7 @@ export class Item extends ItemGeneralImpl {
    * 对该Item开启位置变化过渡动画
    * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
    * */
-  private _animation(transition) {
+  private _animation(transition: any) {
     if (typeof transition !== "object") {
       this.container.bus.emit('warn', {
         message: '参数应该是对象形式{ time: number, field: string }'
@@ -384,7 +387,7 @@ export class Item extends ItemGeneralImpl {
       return
     }
     const style = <CSSStyleDeclaration>{}
-    if (transition === true) transition = {...this._default.transition}
+    if (transition === true && typeof this._default.transition === "object") transition = {...this._default.transition}
     if (transition.time > 0) {
       style.transition = 'unset'
       style.transitionTimingFunction = 'ease-out'

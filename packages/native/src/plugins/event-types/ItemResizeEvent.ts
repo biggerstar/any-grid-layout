@@ -13,7 +13,7 @@ export class ItemResizeEvent extends ItemLayoutEvent {
   public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角的限制在容器内的相对栅格X位置,和drag解释一样
   public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角的限制在容器内的相对栅格Y位置,和drag解释一样
 
-  constructor(opt) {
+  constructor(opt:any) {
     super(opt);
     const {
       isResizing,

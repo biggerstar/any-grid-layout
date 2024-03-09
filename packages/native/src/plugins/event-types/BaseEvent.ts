@@ -3,15 +3,17 @@ import {CustomEventOptions} from "@/types";
 import {tempStore} from "@/global";
 
 export class BaseEvent {
-  public readonly name: keyof CustomEventOptions
+  public readonly name: keyof CustomEventOptions | null
 
-  constructor(options) {
+  constructor(options: any) {
     this.item = tempStore.fromItem
+    this.name = null
     Object.assign(<object>this, options || {})   // 合并外部emit发射的参数2对象
   }
 
-  public readonly container: Container  // 当前操作所在的container
-  public readonly item: Item | null = null  // 操作item的时候的目标item
+  // @ts-ignore
+  public readonly container: Container   // 当前操作所在的container
+  public item: Item | null = null  // 操作item的时候的目标item
   public prevented: boolean = false   // 是否调用了prevent阻止了默认事件
 
   // public shared: object   // 事件组对象流传播共享数据的对象，比如dragging -> dragToXXX -> dragend

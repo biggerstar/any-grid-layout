@@ -1,11 +1,12 @@
 import {autoComputeSizeInfo} from "@/algorithm/common";
 import {MarginOrSizeDesc} from "@/types";
 import {getFirstNumber} from "@/utils";
+import {Container} from "@/main";
 
 /**
  * 自动计算size和margin并设置到container上
  * */
-export function autoSetSizeAndMargin(container, isSetConfig: boolean = false): {
+export function autoSetSizeAndMargin(container: Container, isSetConfig: boolean = false): {
   margin: MarginOrSizeDesc,
   size: MarginOrSizeDesc,
 } {

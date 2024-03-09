@@ -26,7 +26,7 @@ export class PluginManager {
   public container: Container
   public plugins: CustomEventOptions[] = []
   public DefaultBehavior: Record<any, any>   // 所有的内置事件，给了外部拓展内置事件的可能性
-  constructor(container) {
+  constructor(container:Container) {
     this.container = container
     this.DefaultBehavior = DefaultBehavior
     container.bus.on('*', (eventName, options) => this.call(<any>eventName, options))

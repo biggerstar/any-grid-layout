@@ -1,6 +1,7 @@
 import {getClientRect} from "@/utils";
 import {tempStore} from "@/global/TempStore";
 import {SingleThrottle} from "@/utils/SingleThrottle";
+import {Container} from "@/main";
 
 export const singleThrottleCrossContainerRule = () => {  // 用于跨容器后获取到及时更新新容器缓存
   const {fromContainer, toContainer} = tempStore
@@ -10,7 +11,7 @@ export const singleThrottleCrossContainerRule = () => {  // 用于跨容器后�
 /**
  * 节流获取某个变量，减少重复计算
  * */
-export function createSTRect(container) {
+export function createSTRect(container:Container) {
   const STRect = new SingleThrottle<{
     containerIns: DOMRect,
     containerContent: DOMRect,

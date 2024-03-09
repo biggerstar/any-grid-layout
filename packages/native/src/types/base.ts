@@ -87,17 +87,17 @@ export type ContainerInstantiationOptions = {
 }
 
 
-export type EventMapType<T> = {
+export type EventMapType<T extends Record<any, any>> = {
   [Key in keyof T]: Parameters<T[Key]>[0]
 } & Record<'*', BaseEvent>
 
-export type BaseEmitData<T> = {
+export type BaseEmitData<T extends Record<any, any>> = {
   [Key in keyof T]:
   Partial<Parameters<T[Key]>[0]>
   // & { callback?(ev: Parameters<T[Key]>[0]): void }
   & {
   /** 回调最终经过插件和内置处理后的事件对象 */
-  callback?(ev): void
+  callback?(ev: any): void
 }
 }
 
@@ -279,7 +279,7 @@ export type AnalysisResult = {
   /** 允许添加的item信息 */
   successInfo: Array<LayoutItemInfo> | null
   /** 允许添加的item列表 */
-  get successItems: Item[]
+  get successItems(): Item[]
   /** 失败的的item列表 */
   failedItems: Item[]
   /**

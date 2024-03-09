@@ -11,7 +11,7 @@ export class ItemPosChangeEvent extends BaseEvent {
   public readonly oldY: number    // 未改变之前的y，可能和原来相同
   public readonly oldW: number    // 未改变之前的w，可能和原来相同
   public readonly oldH: number    // 未改变之前的h，可能和原来相同
-  constructor(opt) {
+  constructor(opt: any) {
     super(opt);
     const {fromItem, lastPosX, lastPosY, lastPosW, lastPosH} = tempStore
     if (!fromItem) return

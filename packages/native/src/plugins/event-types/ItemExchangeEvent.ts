@@ -2,7 +2,7 @@
 
 import {ItemDragEvent} from "@/plugins";
 import {Container, Item} from "@/main";
-import {CustomItem, CustomItemPos} from "@/types";
+import {ContainerInstantiationOptions, CustomItem, CustomItemPos} from "@/types";
 import {analysisCurLocationInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 import {getClientRect} from "@/utils";
@@ -10,7 +10,6 @@ import {getClientRect} from "@/utils";
 export class ItemExchangeEvent extends ItemDragEvent {
   public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
   public readonly mousePos: CustomItemPos | null = null   // 当前鼠标所在位置的pos
-  public readonly toItem: Item | null
   public readonly newItem: Item | null
   public readonly fromContainer: Container
   public readonly toContainer: Container
@@ -21,7 +20,7 @@ export class ItemExchangeEvent extends ItemDragEvent {
   public readonly toStartY: number // 克隆元素当前位于新容器目标网格左上角相对的栅格Y位置
   public isExchange: boolean
 
-  constructor(options) {
+  constructor(options: ContainerInstantiationOptions) {
     super(options);
     const {fromContainer, fromItem, newItem, toItem, toContainer} = tempStore
     this.fromContainer = <Container>fromContainer

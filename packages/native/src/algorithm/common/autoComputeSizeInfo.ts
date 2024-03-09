@@ -2,13 +2,24 @@ import {isNumber} from "is-what";
 
 /**
  * 自动计算 margin，size 并设置到container上
- * @param direction {Number}  col | row 的值
- * @param containerBoxLen {Number}  element width or height
- * @param size {Number}  set custom size value
- * @param margin {Number} set custom margin value
- * @param ratio {Number} set custom ratio value, default value from container built-in param
  * */
-export function autoComputeSizeInfo(direction, containerBoxLen, size = null, margin = null, ratio) {
+export function autoComputeSizeInfo(
+  /** col | row 的值 */
+  direction: number,
+  /** element width or height */
+  containerBoxLen: number,
+  /** set custom size value */
+  size = null,
+  /** set custom margin value */
+  margin = null,
+  /** set custom ratio value, default value from container built-in param */
+  ratio: number
+):
+  {
+    direction: number,
+    size: number,
+    margin: number
+  } {
   const hasSize = isNumber(size)
   const hasMargin = isNumber(margin)
   if (hasSize && size < 0) size = 0

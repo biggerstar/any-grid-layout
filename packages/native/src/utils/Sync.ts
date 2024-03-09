@@ -34,7 +34,7 @@ export class Sync {
     }
   }
 
-  static run(obj, ...args) {   // 等待dom加载完成后执行，无返回值
+  static run(obj: Record<any, any>, ...args: any[]): void | boolean{   // 等待dom加载完成后执行，无返回值
     Sync.init()
     let maxCount = 0
     let timeout = typeof obj["timeout"] === 'number' ? obj["timeout"] : Sync.timeout

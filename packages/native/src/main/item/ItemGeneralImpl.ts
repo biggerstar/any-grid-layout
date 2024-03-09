@@ -13,7 +13,7 @@ export class ItemGeneralImpl {
   /**
    * 可以传入class或者element元素，如果有目标元素会自动载入到到item中
    *  */
-  el?: HTMLElement | Node | string
+  el?: HTMLElement | string
 
   /**
    * 给item命名
@@ -91,5 +91,5 @@ export class ItemGeneralImpl {
   /**
    *  pos位置对象
    * */
-  pos?: CustomItemPos
+  pos: CustomItemPos
 }

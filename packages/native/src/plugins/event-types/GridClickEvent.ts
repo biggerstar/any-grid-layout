@@ -12,7 +12,7 @@ export class GridClickEvent extends BaseEvent {
    * */
   public action: typeof tempStore.handleMethod
 
-  constructor(opt) {
+  constructor(opt:any) {
     super(opt);
     const {handleMethod, toItem} = tempStore
     this.action = handleMethod
