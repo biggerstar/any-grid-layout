@@ -7,8 +7,8 @@ declare global {
 
   interface Element {
     _isGridItem_: boolean
-    _gridItem_: Item
+    _gridItem_: Item | null
     _isGridContainer_: boolean
-    _gridContainer_: Container
+    _gridContainer_: Container | null
   }
 }

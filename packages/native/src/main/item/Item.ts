@@ -5,8 +5,6 @@ import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
 import {isObject, isString} from "is-what";
 import {
-  grid_item_close_btn,
-  grid_item_close_text,
   grid_item_content,
   grid_item_resizable_handle,
   grid_item_resize_text
@@ -34,7 +32,6 @@ export class Item extends ItemGeneralImpl {
   private readonly _default: ItemGeneralImpl
   private _mounted: boolean = false
   private _resizeTabEl: HTMLElement | null
-  private _closeEl: HTMLElement | null
   public __temp__: Record<any, any> = {
     isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
   }
@@ -104,26 +101,6 @@ export class Item extends ItemGeneralImpl {
         get: () => get('resize'),
         set: (v) => set('resize', Boolean(v)) || self._handleResize(v)
       },
-      close: {
-        get: () => get('close'),
-        set: (v) => set('close', Boolean(v)) || self._closeBtn(v)
-      },
-      transition: {
-        get: () => get('transition'),
-        set(v) {
-          const transition =
-            v === true && typeof self._default.transition === "object"
-              ? {...self._default.transition}
-              : get('transition')
-          if (v === false) transition['time'] = 0
-          if (typeof v === 'number') transition['time'] = v
-          if (typeof v === 'object') {
-            if (v.time && v.time !== transition['time']) transition['time'] = v.time
-            if (v.field && v.field !== transition['field']) transition['field'] = v.field
-          }
-          self._animation(transition)
-        }
-      },
     })
   }
 
@@ -150,8 +127,6 @@ export class Item extends ItemGeneralImpl {
     this.updateItemLayout()
     //--------------开启编辑和动画------------------
     this._handleResize(this.resize)
-    this._closeBtn(this.close)
-    this._animation(this.transition)
     //--------------------------------------------
     this.element['_gridItem_'] = this
     this.element['_isGridItem_'] = true
@@ -353,50 +328,6 @@ export class Item extends ItemGeneralImpl {
       this._resizeTabEl.parentElement.removeChild(this._resizeTabEl)
       this._resizeTabEl = null
     }
-  }
-
-  /**
-   * 手动生成close关闭按钮，可以将close字段设置成false
-   * q: 如何自定义close按钮?
-   * a: Item元素包裹下，创建一个包含class名为grid-item-close-handle的元素即可，用户点击该元素将会被判定为close动作
-   * */
-  private _closeBtn(isDisplayBtn = false) {
-    if (isDisplayBtn && !this._closeEl) {
-      const _closeEl = document.createElement('div')
-      this._closeEl = _closeEl
-      _closeEl.classList.add(grid_item_close_btn)
-      _closeEl.innerHTML = grid_item_close_text
-      this.element.appendChild(_closeEl)
-    }
-    if (this._closeEl && !isDisplayBtn) {
-      // this._closeEl.remove()
-      this._closeEl.parentElement.removeChild(this._closeEl)
-      this._closeEl = null
-    }
-  }
-
-  /**
-   * 对该Item开启位置变化过渡动画
-   * @param {Object} transition  Item移动或者大小要进行变化过渡的时间，单位ms,可以传入true使用默认时间180ms,或者传入false关闭动画
-   * */
-  private _animation(transition: any) {
-    if (typeof transition !== "object") {
-      this.container.bus.emit('warn', {
-        message: '参数应该是对象形式{ time: number, field: string }'
-      })
-      return
-    }
-    const style = <CSSStyleDeclaration>{}
-    if (transition === true && typeof this._default.transition === "object") transition = {...this._default.transition}
-    if (transition.time > 0) {
-      style.transition = 'unset'
-      style.transitionTimingFunction = 'ease-out'
-      style.transitionDuration = transition.time + 'ms'
-      style.transitionProperty = transition.field + ', transform'
-    } else if (transition.time === 0) {
-      style.transition = 'none'
-    }
-    updateStyle(style, this.element, false)
   }
 }
 

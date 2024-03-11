@@ -34,7 +34,8 @@
   "include": [
     "src",
     "test",
-    "types"
+    "typings",
+    "../plugins"
   ],
   "exclude": [
     "dist",

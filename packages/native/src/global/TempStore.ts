@@ -6,7 +6,7 @@ import {Container, Item} from "@/main";
 import {canExchange} from "@/utils";
 
 class TempStore {
-  handleMethod: 'drag' | 'resize' | 'close' | null
+  handleMethod: 'drag' | 'resize' | null
 
   get isDragging(): boolean {
     return this.handleMethod === 'drag'
@@ -14,10 +14,6 @@ class TempStore {
 
   get isResizing(): boolean {
     return this.handleMethod === 'resize'
-  }
-
-  get isClosing(): boolean {
-    return this.handleMethod === 'close'
   }
 
   get isFree() {

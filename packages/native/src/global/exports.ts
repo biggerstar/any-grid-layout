@@ -13,10 +13,10 @@ import {cloneDeep, mergeDeep} from "@/utils";
  *      pos:{w:h}
  *    }]
  *    // 调用函数
- *    fillInItemLayoutList(items,{ close:true })
- *    //  items结果: [{  pos:{w:h},close:true }]
+ *    fillInItemLayoutList(items, { xxx:true })
+ *    //  items结果: [{ pos:{w:h}, xxx:true }]
  * */
-export function fillItemLayoutList(items: CustomItems = [], fillFields: CustomItem, isDeepClone: boolean = true): CustomItems {
+export function fillItemLayoutList(items: CustomItems = [], fillFields: Omit<CustomItem, 'pos'>, isDeepClone: boolean = true): CustomItems {
   return items.map((item: CustomItem) => {
     if (isDeepClone) item = cloneDeep(item)
     item = mergeDeep(item, fillFields || {})

@@ -4,7 +4,6 @@ import {
   cursor_type_default,
   cursor_type_drag_to_item_no_drop,
   cursor_type_in_container,
-  cursor_type_item_close,
   cursor_type_item_resize,
   cursor_type_mousedown,
   cursor_type_no_drop,
@@ -13,7 +12,6 @@ import {
   grid_cursor_default,
   grid_cursor_drag_to_item,
   grid_cursor_in_container,
-  grid_cursor_item_close,
   grid_cursor_item_resize,
   grid_cursor_mousedown,
   grid_cursor_no_drop,
@@ -69,11 +67,6 @@ export const cursor = {
     this.removeAllCursors()
     document.body.classList.add(grid_cursor_drag_to_item)
     this.cursor = cursor_type_drag_to_item_no_drop
-  },
-  itemClose: function () {
-    this.removeAllCursors()
-    document.body.classList.add(grid_cursor_item_close)
-    this.cursor = cursor_type_item_close
   },
   itemResize: function () {
     this.removeAllCursors()

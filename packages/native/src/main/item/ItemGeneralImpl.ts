@@ -1,4 +1,4 @@
-import {CustomItemPos, ItemTransition} from "@/types";
+import {CustomItemPos} from "@/types";
 import {grid_item_class_name} from "@/constant";
 
 
@@ -40,19 +40,6 @@ export class ItemGeneralImpl {
   //----------被_define函数通过 defineProperties代理的字段-------------//
 
   /**
-   * time:动画过渡时长 ms, field: 要过渡的css字段
-   * 可通过Container.animation函数修改全部Item,通过Item.animation函数修改单个Item
-   * @default {
-   *              time: 180,
-   *              field: 'top,left,width,height'
-   *           }
-   *  */
-  transition?: ItemTransition = {
-    time: 120,
-    field: 'top,left,width,height'
-  }
-
-  /**
    * item自身是否可以拖动
    *
    * @default false
@@ -65,13 +52,6 @@ export class ItemGeneralImpl {
    * @default false
    * */
   resize?: boolean = false
-
-  /**
-   * 是否有关闭按钮，建议开发者自己实现按钮或者更改按钮样式
-   *
-   * @default false
-   * */
-  close?: boolean = false
 
   /**
    * 该item是否是静态布局，如果为true，则该item将会固定在外部指定的某行某列中

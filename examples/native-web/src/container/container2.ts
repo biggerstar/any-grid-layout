@@ -1,6 +1,5 @@
 import {Container, fillItemLayoutList} from "@biggerstar/layout";
 import {layoutData11} from "@/stores/layout";
-import {layoutData2, layoutData3} from "../../../../docs/.vitepress/store/layout";
 
 const container2 = new Container({
   el: '#container2',
@@ -50,12 +49,12 @@ const container2 = new Container({
         resize: true,
         close: true,
         exchange: true,
-        pos: {
-          // minH:2,
-          // maxH:1,
-          // minW:2,
-          // maxW:1
-        }
+        // pos: {
+        //   // minH:2,
+        //   // maxH:1,
+        //   // minW:2,
+        //   // maxW:1
+        // }
       }),
       // minCol: 5,
     },

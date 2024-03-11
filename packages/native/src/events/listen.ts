@@ -8,7 +8,6 @@ import {
   cursor_mouseup,
   endWork_mouseup,
   itemCloneEl_mousemove,
-  itemClose_mouseup,
   itemDrag_mousedown,
   itemResize_mousedown,
   itemResize_mouseup
@@ -16,7 +15,6 @@ import {
 import {itemResize_mousemove} from "@/events/item-resize/itemResize_mousemove";
 import {itemDrag_mousemove} from "@/events/item-drag/itemDrag_mousemove";
 import {itemCloneElRemove_mouseup} from "@/events/item-clone-el/itemCloneElRemove_mouseup";
-import {itemClose_mousedown} from "@/events/item-close/itemClose_mousedown";
 import {startMove_mousemove} from "@/events/other/startMove_mousemove";
 import {startWork_mousedown} from "@/events/other/startWork_mousedown";
 import {itemDrag_mouseup} from "@/events/item-drag/itemDrag_mouseup";
@@ -33,8 +31,6 @@ export function allMousedown(ev) {
   startWork_mousedown(ev)
   /* ItemResize */
   itemResize_mousedown(ev)
-  /* close */
-  itemClose_mousedown(ev)
   /* itemDrag */
   itemDrag_mousedown(ev)  // drag必须在后面，前面没有被其他操作方式(handleMethod)接管则默认是drag
   /* click event */
@@ -65,8 +61,6 @@ export function allMouseup(ev) {
   cursor_mouseup(ev)
   /*  itemResize */
   itemResize_mouseup(ev)
-  /*  itemClose */
-  itemClose_mouseup(ev)
   /*  itemDrag */
   itemDrag_mouseup(ev)
   /* remove clone */

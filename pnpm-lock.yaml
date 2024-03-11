@@ -82,8 +82,8 @@ importers:
         specifier: ^3.7.3
         version: 3.7.3(@types/node@20.11.25)(typescript@5.4.2)(vite@4.5.2)
       vite-run:
-        specifier: ^1.5.16
-        version: 1.5.16
+        specifier: ^1.5.17
+        version: 1.5.17
       vitepress:
         specifier: 1.0.0-rc.10
         version: 1.0.0-rc.10(@algolia/client-search@4.22.1)(@types/node@20.11.25)(less@4.2.0)(search-insights@2.13.0)(typescript@5.4.2)
@@ -105,10 +105,19 @@ importers:
       '@biggerstar/layout':
         specifier: workspace:*
         version: link:../../packages/native
+      '@biggerstar/layout-plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
 
   examples/vue3-web: {}
 
   packages/native: {}
+
+  packages/plugins:
+    dependencies:
+      '@biggerstar/layout':
+        specifier: workspace:*
+        version: link:../native
 
   packages/vue3:
     dependencies:
@@ -2978,8 +2987,8 @@ packages:
       - supports-color
     dev: true
 
-  /vite-run@1.5.16:
-    resolution: {integrity: sha512-faewg3cndlgGbevWuufZBD6+v54LMCweEgITjWf4zGqpyP2Dcl+IpPQtm1Qn3QLGY5fWPDxZFehpzXzcZNTYSA==}
+  /vite-run@1.5.17:
+    resolution: {integrity: sha512-PjmLH/9uFaRuLuBDWfltxA/puegUo02UI9+xdrNOORC8glYr7rtM620ZAmFEuM7yCrGScaTzA9Ynvb0hIwMTAA==}
     hasBin: true
     dependencies:
       '@types/inquirer': 9.0.7

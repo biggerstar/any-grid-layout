@@ -3,12 +3,10 @@ import {
   cursor_type_default,
   cursor_type_drag_to_item_no_drop,
   cursor_type_in_container,
-  cursor_type_item_close,
   cursor_type_item_resize,
   cursor_type_mousedown,
   cursor_type_no_drop,
   cursor_type_static_no_drop,
-  grid_item_close_btn,
   grid_item_resizable_handle
 } from "@/constant";
 import {tempStore} from "@/global";
@@ -42,9 +40,7 @@ export const cursor_mousemove: Function = throttle((ev) => {
     // 鼠标抬起状态的样式
     if (overItem) {
       const evClassList = ev.target.classList
-      if (evClassList.contains(grid_item_close_btn)) {
-        if (cursor.cursor !== cursor_type_item_close) cursor.itemClose()
-      } else if (evClassList.contains(grid_item_resizable_handle)) {
+      if (evClassList.contains(grid_item_resizable_handle)) {
         if (cursor.cursor !== cursor_type_item_resize) cursor.itemResize()
       } else if (overItem.static && container) {
         if (cursor.cursor !== cursor_type_static_no_drop) cursor.staticItemNoDrop()   // 静态模式才notDrop

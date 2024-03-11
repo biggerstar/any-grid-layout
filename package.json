@@ -43,7 +43,7 @@
     "vite": "^4.5.2",
     "vite-plugin-copy-dts": "^0.0.5",
     "vite-plugin-dts": "^3.7.3",
-    "vite-run": "^1.5.16",
+    "vite-run": "^1.5.17",
     "vitepress": "1.0.0-rc.10",
     "vue": "^3.4.21"
   },

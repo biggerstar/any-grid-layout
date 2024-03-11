@@ -1,0 +1,34 @@
+{
+  "name": "@biggerstar/layout-plugins",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {},
+  "author": "biggerstar",
+  "license": "GPL-3.0-or-later",
+  "description": "",
+  "eslintIgnore": [
+    "dist"
+  ],
+  "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
+  "main": "./dist/index.es.js",
+  "exports": {
+    ".": {
+      "default": "./dist/index.es.js",
+      "import": "./dist/index.es.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./plugins/*": {
+      "default": "./dist/plugins/*",
+      "import": "./dist/plugins/*",
+      "types": "./dist/plugins/*.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@biggerstar/layout": "workspace:*"
+  }
+}

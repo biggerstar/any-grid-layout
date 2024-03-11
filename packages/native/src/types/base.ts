@@ -2,17 +2,17 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
-import {ItemLayoutEvent} from "@/plugins/event-types/ItemLayoutEvent";
-import {BaseEvent} from "@/plugins/event-types/BaseEvent";
-import {ItemDragEvent} from "@/plugins/event-types/ItemDragEvent";
-import {ItemResizeEvent} from "@/plugins/event-types/ItemResizeEvent";
-import {ThrowMessageEvent} from "@/plugins/event-types/ThrowMessageEvent";
-import {ItemPosChangeEvent} from "@/plugins/event-types/ItemPosChangeEvent";
-import {ContainerSizeChangeEvent} from "@/plugins/event-types/ContainerSizeChangeEvent";
-import {ConfigurationEvent} from "@/plugins/event-types/ConfigurationEvent";
+import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
+import {BaseEvent} from "@/plugins-src/event-types/BaseEvent";
+import {ItemDragEvent} from "@/plugins-src/event-types/ItemDragEvent";
+import {ItemResizeEvent} from "@/plugins-src/event-types/ItemResizeEvent";
+import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
+import {ItemPosChangeEvent} from "@/plugins-src/event-types/ItemPosChangeEvent";
+import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
+import {ConfigurationEvent} from "@/plugins-src/event-types/ConfigurationEvent";
 import {Container} from "@/main";
-import {InitOptionsEvent} from "@/plugins/event-types/InitOptionsEvent";
-import {CloneElementStyleEvent, GridClickEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins";
+import {InitOptionsEvent} from "@/plugins-src/event-types/InitOptionsEvent";
+import {CloneElementStyleEvent, GridClickEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins-src";
 
 export type CustomItemPos = ItemPosGeneralImpl
 export type CustomItem = ItemGeneralImpl
@@ -24,13 +24,6 @@ export type MarginOrSizeDesc = [number | null, number | null]
 /** Container 实例化配置选项 */
 export type CustomLayoutsOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
 export type CustomLayoutsOption = ContainerGeneralImpl
-
-export type ItemTransition = ItemTransitionObject | number | boolean
-
-export type ItemTransitionObject = {
-  time: number,
-  field: 'top,left,width,height'
-}
 
 export type ItemLimitType = {
   maxW?: number,
@@ -211,10 +204,6 @@ export type CustomEventOptions = {
   resizeToRight?(ev: ItemResizeEvent): void,
   resizeToBottom?(ev: ItemResizeEvent): void,
   resizeToLeft?(ev: ItemResizeEvent): void,
-
-  //------------------close事件---------------------
-  closing?(ev: ItemLayoutEvent): void,
-  closed?(ev: ItemLayoutEvent): void,
 
   //------------------exchange------------------
   /**

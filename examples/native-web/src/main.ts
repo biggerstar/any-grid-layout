@@ -3,8 +3,6 @@ import {
   BaseEvent,
   CloneElementStyleEvent,
   ContainerSizeChangeEvent,
-  createResponsiveLayoutPlugin,
-  definePlugin,
   ItemDragEvent,
   ItemExchangeEvent,
   ItemLayoutEvent,
@@ -12,10 +10,15 @@ import {
   ItemResizeEvent,
   MatrixEvent,
   ThrowMessageEvent,
+  definePlugin,
   updateStyle,
 } from '@biggerstar/layout'
-import '@biggerstar/layout/dist/default-style.css'
-import '@biggerstar/layout/dist/scroll-bar.css'
+import {
+  createResponsiveLayoutPlugin,
+  createCloseBtnPlugin
+} from '@biggerstar/layout-plugins'
+import '@biggerstar/layout/dist/css/default-style.css'
+import '@biggerstar/layout/dist/css/scroll-bar.css'
 import container2 from "@/container/container2";
 import container3 from "@/container/container3";
 
@@ -129,7 +132,6 @@ const plugin = definePlugin({
   flip(ev: MatrixEvent) {
     // ev.prevent()
   },
-
 })
 
 
@@ -147,11 +149,12 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(createResponsiveLayoutPlugin())
+  .use(createCloseBtnPlugin())
+  // .use(createResponsiveLayoutPlugin())
 
 container2
   .use(plugin)
-  // .use(createResponsiveLayoutPlugin())
+// .use(createResponsiveLayoutPlugin())
 
 container3
   .use(plugin)

@@ -5,14 +5,10 @@ const container1 = new Container({
   el: '#container1',
   // el: document.getElementById('container1'),
   global: {
-    responsive: true,
-    dragOut: true,
     exchange: true,
     // ratioCol: 0.2,
-    from1: '来自global',
   },
   layouts: {
-    from: '来自layout',
     // exchange: false,
     autoGrow: {
       // vertical: false,
@@ -21,9 +17,9 @@ const container1 = new Container({
       horizontal: false
     },
     exchange: true,
-    direction: 'column',
+    // direction: 'column',
     // direction: 'row-reverse',
-    align: 'end',
+    // align: 'end',
     items: fillItemLayoutList(layoutData11, {
       draggable: true,
       resize: true,

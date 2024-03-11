@@ -24,13 +24,24 @@ export default defineViteRunConfig({
       ],
       build: [
         ['build_lib', 'es_lib', 'minify'],
-        ['build_lib', 'umd_lib', 'minify']
+        ['build_lib', 'umd_lib', 'minify'],
       ],
       types: [
-        ['build_lib', 'es_lib', 'types']
+        ['build_lib', 'es_lib', 'types'],
       ],
       size: [
         ['build_lib', 'es_lib', 'minify', 'bundleAnalyzer']
+      ],
+    },
+    plugins: {
+      dev: [
+        ['build_plugins', 'watch_lib', 'es_lib', 'sourcemap'],
+      ],
+      build: [
+        ['build_plugins', 'es_lib'],
+      ],
+      types: [
+        ['build_plugins', 'es_lib', 'plugins_types'],
       ],
     },
     // 'vue3': {
@@ -80,7 +91,7 @@ export default defineViteRunConfig({
         lib: {
           entry: resolve(options.packagePath, 'src', `index.ts`),
           name: name,
-          fileName: (format) => `index.${format}.js`,
+          fileName: (format: string) => `index.${format}.js`,
         },
         rollupOptions: {
           external: [
@@ -96,6 +107,36 @@ export default defineViteRunConfig({
         },
       }
     },
+    /** 单独编译处理框架提供的内置插件 */
+    build_plugins: (options) => {
+      return {
+        lib: {
+          entry: resolve(options.packagePath, 'src', `index.ts`),
+          name: options.name,
+          fileName: (format: string) => `index.${format}.js`,
+        },
+        rollupOptions: {
+          external: [
+            '@biggerstar/layout',
+            'is-what'
+          ],
+          output: {
+            chunkFileNames: '[name].js',
+            manualChunks(id) {
+              // console.log(id)
+              if (id.startsWith(`${options.packagePath}/src`)) {
+                const pluginsPartPathName = id
+                  .replace(`${options.packagePath}/src/`, '')
+                  .replace('.ts', '')
+                // console.log(pluginsPartPathName)
+                return `${pluginsPartPathName}.es`
+              }
+              return ''
+            },
+          }
+        },
+      }
+    },
     build_web: (options) => {
       return {
         rollupOptions: {
@@ -106,7 +147,7 @@ export default defineViteRunConfig({
             'vue-router',
           ],
           output: {
-            entryFileNames: (format) => `index.${format}.js`,
+            entryFileNames: (format: string) => `index.${format}.js`,
             format: 'umd',
             exports: 'named',
             globals: {
@@ -154,7 +195,15 @@ export default defineViteRunConfig({
           ]
         })
       ]
-    }
+    },
+    plugins_types:[
+      dts({
+        copyDtsFiles: false,
+        declarationOnly: true,
+        rollupTypes: false,
+        clearPureImport: true,
+      }),
+    ]
   }
 })
 

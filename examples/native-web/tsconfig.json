@@ -13,7 +13,7 @@
     "strict": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "noUnusedParameters": true,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,

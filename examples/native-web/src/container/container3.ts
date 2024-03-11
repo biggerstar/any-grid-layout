@@ -5,7 +5,7 @@ const container3 = new Container({
   el: '#container3',
   // el: document.getElementById('container'),
   layouts: {
-    from: '来自layout2',
+    // from: '来自layout2',
     ratioCol: 0.1,
     // col: 9,
     // row: 4,
@@ -19,12 +19,12 @@ const container3 = new Container({
       resize: true,
       close: true,
       exchange:true,
-      pos: {
-        // minH:2,
-        // maxH:1,
-        // minW:2,
-        // maxW:1
-      }
+      // pos: {
+      //   // minH:2,
+      //   // maxH:1,
+      //   // minW:2,
+      //   // maxW:1
+      // }
     }),
   },
 })

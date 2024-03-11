@@ -13,12 +13,12 @@ import {Item} from "@/main/item/Item";
 import {ContainerInstantiationOptions, CustomItem, CustomLayoutsOption, EventBusType, GridPlugin} from "@/types";
 import {removeGlobalEvent, startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
-import {PluginManager} from "@/plugins/PluginManager";
+import {PluginManager} from "@/plugins-src/PluginManager";
 import {LayoutManager} from "@/algorithm";
 import {isNumber, isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {getContainerConfigs, updateStyle} from "@/utils";
-import {ConfigurationEvent} from "@/plugins";
+import {ConfigurationEvent} from "@/plugins-src";
 import {ContainerGeneralImpl} from "@/main";
 import {createSTRect} from "@/global/singleThrottle";
 import deepmerge from "deepmerge";
@@ -218,7 +218,7 @@ export class Container {
     this.bus.emit('containerMounted')
     setTimeout(() => {
       updateStyle({transition: 'all 200ms'}, this.contentElement)
-    }, 500)
+    }, 360)
   }
 
   /** 手动添加item渲染 */
