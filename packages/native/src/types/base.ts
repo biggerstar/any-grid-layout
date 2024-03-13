@@ -140,11 +140,6 @@ export type CustomEventOptions = {
    * */
   updateLayout?(ev: ItemLayoutEvent): void,
 
-  /**
-   * 更新克隆元素的尺寸,移动位置，可以用于跨容器移动同步适配item尺寸
-   * */
-  updateCloneElementStyle?(ev: CloneElementStyleEvent): void,
-
   /** 获取配置事件，设置过程可被拦截(configName,configData)修改 */
   getConfig?(ev: ConfigurationEvent): void,
   /** 设置配置事件，设置过程可被拦截(configName,configData)修改 */
@@ -258,6 +253,11 @@ export type CustomEventOptions = {
    * 点击容器或者item触发的事件
    * */
   click?(ev: GridClickEvent): void;
+
+  mousedown?(ev: BaseEvent): void;
+  mousemove?(ev: BaseEvent): void;
+  mouseup?(ev: BaseEvent): void;
+
 }
 
 export type AnalysisResult = {

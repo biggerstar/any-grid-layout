@@ -4,7 +4,7 @@ import {tempStore} from "@/global";
 import {prevent} from "@/events";
 
 /** 做触屏和桌面端兼容 */
-export function compatible_touchstart_mousedown(ev) {
+export function compatible_touchstart_mousedown(ev: any) {
   // touch 和 drag效果是一样的
   ev = ev || window['event']
   tempStore.isLeftMousedown = true

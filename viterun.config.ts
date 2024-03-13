@@ -19,8 +19,7 @@ export default defineViteRunConfig({
   targets: {
     native: {
       dev: [
-        ['build_lib', 'watch_lib', 'es_lib', 'sourcemap'],
-        ['build_lib', 'es_lib', 'types']
+        ['build_lib', 'watch_lib', 'es_lib', 'sourcemap', 'dev_types'],
       ],
       build: [
         ['build_lib', 'es_lib', 'minify'],
@@ -35,10 +34,11 @@ export default defineViteRunConfig({
     },
     plugins: {
       dev: [
-        ['build_plugins', 'watch_lib', 'es_lib', 'sourcemap'],
+        ['build_plugins', 'watch_lib', 'es_lib', 'sourcemap', 'dev_types'],
       ],
       build: [
         ['build_plugins', 'es_lib'],
+        ['build_plugins', 'umd_lib'],
       ],
       types: [
         ['build_plugins', 'es_lib', 'plugins_types'],
@@ -196,7 +196,25 @@ export default defineViteRunConfig({
         })
       ]
     },
-    plugins_types:[
+    dev_types: (options) => {
+      return [
+        dts({
+          copyDtsFiles: true,
+          rollupTypes: true,
+          clearPureImport: true,
+        }),
+        copyDtsPlugin({
+          delayMerge: 1200,
+          files: [
+            {
+              from: `${options.packagePath}/typings/*.ts`,
+              to: `${options.packagePath}/dist/index.d.ts`
+            }
+          ]
+        })
+      ]
+    },
+    plugins_types: [
       dts({
         copyDtsFiles: false,
         declarationOnly: true,

@@ -15,7 +15,8 @@ import {
 } from '@biggerstar/layout'
 import {
   createResponsiveLayoutPlugin,
-  createCloseBtnPlugin
+  createCloseBtnPlugin,
+  createShadowElementPlugin
 } from '@biggerstar/layout-plugins'
 import '@biggerstar/layout/dist/css/default-style.css'
 import '@biggerstar/layout/dist/css/scroll-bar.css'
@@ -150,6 +151,7 @@ function insertItemContent(ev: BaseEvent) {
 container1
   .use(plugin)
   .use(createCloseBtnPlugin())
+  .use(createShadowElementPlugin())
   // .use(createResponsiveLayoutPlugin())
 
 container2

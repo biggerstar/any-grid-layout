@@ -28,8 +28,8 @@ export class Item extends ItemGeneralImpl {
   public contentElement: HTMLElement
   public declare pos: ItemPos
   //----------------保持状态所用参数---------------------//
-  public customOptions: ItemGeneralImpl
-  private readonly _default: ItemGeneralImpl
+  public customOptions: CustomItem
+  private readonly _default: CustomItem
   private _mounted: boolean = false
   private _resizeTabEl: HTMLElement | null
   public __temp__: Record<any, any> = {

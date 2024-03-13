@@ -5,7 +5,7 @@ import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
 import {ItemResizeEvent} from "@/plugins-src/event-types/ItemResizeEvent";
 import {ItemDragEvent} from "@/plugins-src/event-types/ItemDragEvent";
 import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
-import {CloneElementStyleEvent, GridClickEvent, InitOptionsEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins-src";
+import {GridClickEvent, InitOptionsEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins-src";
 import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins-src/event-types/ConfigurationEvent";
 
@@ -18,7 +18,6 @@ export * from './ItemExchangeEvent'
 export * from './ItemPosChangeEvent'
 export * from './ContainerSizeChangeEvent'
 export * from './ConfigurationEvent'
-export * from './CloneElementStyleEvent'
 export * from './InitOptionsEvent'
 export * from './MatrixEvent'
 export * from './GridClickEvent'
@@ -32,7 +31,6 @@ export const EventMap: Record<keyof CustomEventOptions | string, any> = {
   config: InitOptionsEvent,
   configResolved: InitOptionsEvent,
   updateLayout: ItemLayoutEvent,
-  updateCloneElementStyle: CloneElementStyleEvent,
   getConfig: ConfigurationEvent,
   setConfig: ConfigurationEvent,
   //-----------------container------------------
@@ -75,4 +73,8 @@ export const EventMap: Record<keyof CustomEventOptions | string, any> = {
   everyDone: BaseEvent,
   //--------------click------------------
   click: GridClickEvent,
+
+  mousedown: BaseEvent,
+  mousemove: BaseEvent,
+  mouseup: BaseEvent,
 }
