@@ -3,36 +3,18 @@
  * 每次鼠标操作之后(mouseup)所有的非getter字段都会被清理重置成null
  * */
 import {Container, Item} from "@/main";
-import {canExchange} from "@/utils";
 
 class TempStore {
-  handleMethod: 'drag' | 'resize' | null
-
-  get isDragging(): boolean {
-    return this.handleMethod === 'drag'
-  }
-
-  get isResizing(): boolean {
-    return this.handleMethod === 'resize'
-  }
-
-  get isFree() {
-    return this.handleMethod === void 0
-  }
-
   //----------通用可写变量-----------//
   fromContainer: Container | null     //  当前Item的初始来源
   toContainer: Container | null     //  当前鼠标移动位置下是哪个容器，移动到容器外为null
-  get exchangeContainer(): Container | null {  //  当前可以允许交换的容器
-    return canExchange() ? this.toContainer : this.fromContainer
-  }
 
   fromItem: Item | null    // 表示在Container中的鼠标初次按下未抬起的Item, 除Item类型外的元素不会被赋值到这里
   toItem: Item | null       // 表示在Container中的鼠标按下后抬起的正下方位置的Item, 除Item类型外的元素不会被赋值到这里
   newItem: Item | null    // 跨容器时创建在目标容器且未挂载的Item
   cloneElement: HTMLElement | null      // 表示在用户拖动点击拖动的瞬间克隆出来的文档
   mousedownEvent: MouseEvent | null   //  鼠标点击瞬间mousedown触发的对应的dom元素触发的事件
-  mousemoveEvent: MouseEvent | null     //  鼠标resize | drag期间实时更新触发的事件对象
+  mousemoveEvent: MouseEvent | null     //   期间会实时更新触发的事件对象
   mousedownItemOffsetLeftProportion: number | null   // 鼠标点击某个Item的时候距离该Item左边界占总宽比例
   mousedownItemOffsetTopProportion: number | null   // 同上
   mousedownItemWidth: number | null   // 鼠标首次按下的item宽度
@@ -52,12 +34,10 @@ class TempStore {
   lastPosH: number | null
   lastPosX: number | null
   lastPosY: number | null
-  preventedDragging: boolean | null   // 是否阻止了dragging 事件标记，如果阻止了便不会执行dragend
-  preventedResizing: boolean | null    // 是否阻止了resizing 事件标记，如果阻止了便不会执行resized
   cloneElScaleMultipleX: number | null  // 克隆元素X方向的放大倍数
   cloneElScaleMultipleY: number | null  // 克隆元素Y方向的放大倍数
-  mousedownResizeStartX: number | null  // 鼠标resize的时候克隆元素固定距离左上角的X位置
-  mousedownResizeStartY: number | null  // 鼠标resize的时候克隆元素固定距离左上角的Y位置
+  // mousedownResizeStartX: number | null  // 鼠标resize的时候克隆元素固定距离左上角的X位置
+  // mousedownResizeStartY: number | null  // 鼠标resize的时候克隆元素固定距离左上角的Y位置
 }
 
 export const tempStore: TempStore = new TempStore()

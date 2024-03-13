@@ -49,7 +49,9 @@ export function capitalizeFirstLetter(string: string) {
  * 深度克隆对象,支持克隆数组
  * */
 export const cloneDeep = (obj: any) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
-  if (typeof obj !== 'object') return obj
+  if (typeof obj !== 'object') {
+    return obj
+  }
   let objClone = Array.isArray(obj) ? [] : {};
   if (obj && typeof obj === "object") {
     for (let key in obj) {
@@ -69,13 +71,20 @@ export const cloneDeep = (obj: any) => {  // 使用lodash.cloneDeep在lib模式�
  * 深度合并对象
  * */
 export function mergeDeep<T extends Record<any, any>, S extends Record<any, any>>(target: T, source: S): T & S {
-  if (typeof target !== 'object' || typeof source !== 'object') return source
+  if (typeof target !== 'object' || typeof source !== 'object') {
+    return source
+  }
   for (const key in source) {  // 判断属性是否是源对象自身的属性（非继承）
     if (source.hasOwnProperty(key)) {
       if (typeof source[key] === 'object') {    // 判断源对象的属性是否是对象
-        if (!target.hasOwnProperty(key)) target[key] = source[key]   // 如果目标对象没有该属性，直接赋值
-        else target[key] = mergeDeep(target[key], source[key])    // 递归合并
-      } else target[key] = source[key]
+        if (target.hasOwnProperty(key)) {
+          target[key] = mergeDeep(target[key], source[key]) // 递归合并
+        } else {
+          target[key] = source[key] // 如果目标对象没有该属性，直接赋值
+        }
+      } else {
+        target[key] = source[key]
+      }
     }
   }
   return target;
@@ -85,7 +94,9 @@ export function mergeDeep<T extends Record<any, any>, S extends Record<any, any>
  * 螺旋遍历矩阵数组,使用回调手动处理
  * */
 export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: number, col: number, val: any) => any): void | any[] {
-  if (matrix.length === 0) return []
+  if (matrix.length === 0) {
+    return []
+  }
   let rows = matrix.length
   let columns = matrix[0].length
   let top = 0, bottom = rows - 1, left = 0, right = columns - 1
@@ -113,7 +124,9 @@ export function spiralTraversal(matrix: Array<Array<any>>, callback: (row: numbe
       }
       left++
     }
-    if (isBreak) break
+    if (isBreak) {
+      break
+    }
     direction = (direction + 1) % 4  // 改变方向
   }
 }
@@ -146,9 +159,9 @@ export const merge = (to: Record<any, any> = {}, from: Record<any, any> = {}, cl
   Object.keys(from).forEach((name) => {
     if (Object.keys(to).includes(name) && !exclude.includes(name)) {
       if (clone) {
-        cloneData[name] = from[name] !== undefined ? from[name] : to[name]
+        cloneData[name] = from[name] === undefined ? to[name] : from[name]
       } else {
-        to[name] = from[name] !== undefined ? from[name] : to[name]
+        to[name] = from[name] === undefined ? to[name] : from[name]
       }
     }
   })
@@ -161,10 +174,12 @@ export const merge = (to: Record<any, any> = {}, from: Record<any, any> = {}, cl
  * */
 const genPrototypeToRootPath = (target: HTMLElement, touchEvent: any) => {
   const path = []
-  if (touchEvent.touchTarget) target = touchEvent.touchTarget
-  else {
-    if (touchEvent.composedPath) return touchEvent.composedPath()
-    else {
+  if (touchEvent.touchTarget) {
+    target = touchEvent.touchTarget
+  } else {
+    if (touchEvent.composedPath) {
+      return touchEvent.composedPath()
+    } else {
       target = <HTMLElement>document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
     }
   }
@@ -224,7 +239,9 @@ export const parseContainer = (ev, reverse = false): Container | null => {
       if (path[i]._isGridContainer_) {
         container = path[i]._gridContainer_
         // console.log(ev.path[i]);
-        if (!reverse) break
+        if (!reverse) {
+          break
+        }
       }
     }
   }
@@ -245,8 +262,12 @@ export const parseItem = (ev): Item | null => {
     const path = genPrototypeToRootPath(target, ev)
     for (let i = 0; i < path.length; i++) {
       const el = path[i]
-      if (el._isGridContainer_) return null  // 嵌套情况下如果没有item但是找到了container，则直接返回null
-      if (el._isGridItem_) return el._gridItem_
+      if (el._isGridContainer_) {
+        return null    // 嵌套情况下如果没有item但是找到了container，则直接返回null
+      }
+      if (el._isGridItem_) {
+        return el._gridItem_
+      }
     }
   }
   return item
@@ -259,7 +280,9 @@ export const parseItem = (ev): Item | null => {
 export function parseItemFromPrototypeChain(target: Element): Item | null {
   if (target instanceof Element) {
     do {
-      if (target._isGridItem_) return target._gridItem_
+      if (target._isGridItem_) {
+        return target._gridItem_
+      }
       target = <HTMLElement>target.parentNode
     } while (target && target.parentNode)
   }
@@ -272,11 +295,17 @@ export function parseItemFromPrototypeChain(target: Element): Item | null {
  * */
 export const singleTouchToCommonEvent = (touchEvent) => {
   let useTouchKey = 'touches'
-  if (touchEvent.touches && touchEvent.touches.length === 0) useTouchKey = 'changedTouches'  // 正常用于touchEnd获取最后改变的point
+  if (touchEvent.touches && touchEvent.touches.length === 0) {
+    useTouchKey = 'changedTouches'    // 正常用于touchEnd获取最后改变的point
+  }
   if (touchEvent[useTouchKey] && touchEvent[useTouchKey].length) {
     for (let k in touchEvent[useTouchKey][0]) {
-      if (['target'].includes(k)) continue
-      if (touchEvent[k] === undefined) touchEvent[k] = touchEvent[useTouchKey][0][k]
+      if (['target'].includes(k)) {
+        continue
+      }
+      if (touchEvent[k] === undefined) {
+        touchEvent[k] = touchEvent[useTouchKey][0][k]
+      }
     }
     touchEvent.touchTarget = document.elementFromPoint(touchEvent.clientX, touchEvent.clientY)
   }

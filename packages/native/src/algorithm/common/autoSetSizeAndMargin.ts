@@ -12,7 +12,9 @@ export function autoSetSizeAndMargin(container: Container, isSetConfig: boolean 
 } {
   const {clientWidth: containerWidth, clientHeight: containerHeight} = container.element || {}
   // console.log(containerWidth,containerHeight)
-  if (containerWidth === 0) throw new Error("请为Container设置一个宽高")
+  if (containerWidth === 0) {
+    throw new Error("请为Container设置一个宽高")
+  }
   const curLayout = container.layout
   let {
     col = null,   //  缺省值必须为null才能触发自动计算col
@@ -45,10 +47,18 @@ export function autoSetSizeAndMargin(container: Container, isSetConfig: boolean 
   const sizeRowInfo = autoComputeSizeInfo(row, containerHeight, size[1], margin[1], ratioRow)
   margin[1] = sizeRowInfo.margin
   size[1] = sizeRowInfo.size
-  if (margin[0] === null) margin[0] = margin[1] || 10   // ||后面的默认值是防御性编程，在理想模型下是永远不会执行到，但是还是需要防止可能的千奇百怪的可能
-  if (margin[1] === null) margin[1] = margin[0] || 10
-  if (size[0] === null) size[0] = size[1] || 50
-  if (size[1] === null) size[1] = size[0] || 50
+  if (margin[0] === null) {
+    margin[0] = margin[1] || 10
+  }   // ||后面的默认值是防御性编程，在理想模型下是永远不会执行到，但是还是需要防止可能的千奇百怪的可能
+  if (margin[1] === null) {
+    margin[1] = margin[0] || 10
+  }
+  if (size[0] === null) {
+    size[0] = size[1] || 50
+  }
+  if (size[1] === null) {
+    size[1] = size[0] || 50
+  }
 
   if (isSetConfig) {
     container.setConfig('margin', margin)

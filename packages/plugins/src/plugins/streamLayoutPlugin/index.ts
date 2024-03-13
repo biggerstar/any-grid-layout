@@ -41,7 +41,7 @@ export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
  * 缺点: 在固定宽高的时候想移动到某位置时正好布局后容器会溢出，此时移动会失败
  * 建议: 1.建议Item大小都一致，否则容易出现各种问题
  *      2.建议只用于不固定宽高的容器中
- *      3.不要使用static item
+ *      3.不要使用静态 item
  * */
 
 export default function createStreamLayoutPlugin(): GridPlugin {

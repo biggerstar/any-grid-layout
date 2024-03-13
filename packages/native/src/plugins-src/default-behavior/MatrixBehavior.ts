@@ -56,7 +56,9 @@ export const MatrixBehavior = definePlugin({
       for (let curRow = alignInfo.startRow; Math.abs(curRow - alignInfo.endRow - alignInfo.stepRow); curRow += alignInfo.stepRow) {
         for (let curCol = alignInfo.startCol; Math.abs(curCol - alignInfo.endCol - alignInfo.stepCol); curCol += alignInfo.stepCol) {
           const isBreak = isColumn ? ev.next(curCol, curRow) : ev.next(curRow, curCol)
-          if (isBreak) break Label
+          if (isBreak) {
+            break Label
+          }
         }
       }
   },
@@ -69,11 +71,19 @@ export const MatrixBehavior = definePlugin({
   flip(ev: MatrixEvent) {
     const layoutManager = ev.container.layoutManager
     if (['row', 'row-reverse'].includes(ev.direction)) {
-      if (ev.direction === 'row-reverse') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
-      if (ev.align === 'end') layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.direction === 'row-reverse') {
+        layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
+      }
+      if (ev.align === 'end') {
+        layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
+      }
     } else if (['column', 'column-reverse'].includes(ev.direction)) {
-      if (ev.direction === 'column-reverse') layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
-      if (ev.align === 'end') layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
+      if (ev.direction === 'column-reverse') {
+        layoutManager.horizontalMirrorFlip(ev.flipInfo.nextPos)
+      }
+      if (ev.align === 'end') {
+        layoutManager.verticalMirrorFlip(ev.flipInfo.nextPos)
+      }
     }
   },
 })

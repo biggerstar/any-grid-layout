@@ -33,7 +33,9 @@ export abstract class Finder {
     const resItemList = []
     for (let i = 0; i < items.length; i++) {
       let item = items[i]
-      if (excludes.includes(item)) continue
+      if (excludes.includes(item)) {
+        continue
+      }
       //------------------------要找的域----------------------------//
       const xBoundaryStart = x       // 左边界
       const yBoundaryStart = y       // 上边界
@@ -51,7 +53,7 @@ export abstract class Finder {
         && (yItemEnd >= yBoundaryStart && yItemEnd <= yBoundaryEnd      // 左边界碰撞
           || yItemStart >= yBoundaryStart && yItemStart <= yBoundaryEnd  // Y轴中间部分碰撞
           || yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)      // 下边界碰撞
-        || (xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须要)
+        || (xBoundaryStart >= xItemStart && xBoundaryEnd <= xItemEnd     // 全包含,目标区域只被某个超大Item包裹住的情况(必须需要)
           && yBoundaryStart >= yItemStart && yBoundaryEnd <= yItemEnd)
       ) {
         resItemList.push(item)
@@ -78,10 +80,16 @@ export abstract class Finder {
     let minH = maxH  // Y轴最小活动宽度
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
-      if (!item.static) continue   // 响应式布局中只找限定static的Item空间
-      if (itemPoint === item) continue
+      if (!item.static) {
+        continue
+      }   // 响应式布局中只找限定static的Item空间
+      if (itemPoint === item) {
+        continue
+      }
       const pos = item.pos
-      if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) continue   // 上和左在x,y点外的Item不考虑
+      if (pos.x + pos.w - 1 < x || pos.y + pos.h - 1 < y) {
+        continue
+      }   // 上和左在x,y点外的Item不考虑
       //  思路：右方向最大(maxW && minH) :上方向最大(minW && maxH)
       // if (pos.x === x && pos.y === y) continue
       if (pos.x >= x && pos.x - x < maxW) {

@@ -13,7 +13,9 @@ export class Sync {
     }
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       readystatechange()
-    } else document.addEventListener('readystatechange', readystatechange)
+    } else {
+      document.addEventListener('readystatechange', readystatechange)
+    }
   }
 
   /** 接受一个函数或者包含obj = {
@@ -34,19 +36,24 @@ export class Sync {
     }
   }
 
-  static run(obj: Record<any, any>, ...args: any[]): void | boolean{   // 等待dom加载完成后执行，无返回值
+  static run(obj: Record<any, any>, ...args: any[]): void | boolean {   // 等待dom加载完成后执行，无返回值
     Sync.init()
     let maxCount = 0
     let timeout = typeof obj["timeout"] === 'number' ? obj["timeout"] : Sync.timeout
     let intervalTime = typeof obj["intervalTime"] === 'number' ? obj["intervalTime"] : Sync.intervalTime
     let doSync = () => {
-      let result
-      if (typeof obj === "function") result = obj.call(obj, ...args)   // 只传入一个函数的情况
-      else if (typeof obj === "object") {  // 对象形式传入
-        if (!obj["func"]) throw new Error("func函数必须传入")
+      let result: any
+      if (typeof obj === "function") {
+        result = obj.call(obj, ...args)   // 只传入一个函数的情况
+      } else if (typeof obj === "object") {  // 对象形式传入
+        if (!obj["func"]) {
+          throw new Error("func函数必须传入")
+        }
         result = obj["func"].call(obj['func'], ...args) || undefined  // 通过rule函数校验或者无rule限制情况正常执行
       }
-      if (obj["callback"]) obj["callback"](result)
+      if (obj["callback"]) {
+        obj["callback"](result)
+      }
     }
     let isObeyRule = () => {
       // console.log(Boolean(obj["rule"]));

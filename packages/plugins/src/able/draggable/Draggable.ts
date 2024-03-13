@@ -1,12 +1,16 @@
-import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
 import {isFunction} from "is-what";
-import {Item} from "@/main";
-import {ContainerInstantiationOptions, CustomItemPos} from "@/types";
-import {clamp, spiralTraversal} from "@/utils";
-import {tempStore} from "@/global";
+import {
+  clamp,
+  ContainerInstantiationOptions,
+  CustomItemPos,
+  Item,
+  ItemLayoutEvent,
+  spiralTraversal,
+  tempStore
+} from "@biggerstar/layout";
 
 
-export class ItemDragEvent extends ItemLayoutEvent {
+export class Draggable extends ItemLayoutEvent {
   public toItem: Item | null
   public readonly toPos: CustomItemPos
   public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格X位置,和resize解释一样
@@ -176,3 +180,16 @@ export class ItemDragEvent extends ItemLayoutEvent {
     }
   }
 }
+
+
+
+// //-----------------拖动开始和结束事件-----------------------
+// dragging?(ev: ItemDragEvent): void,
+//   dragend?(ev: ItemDragEvent): void,
+//
+//   //-----------------拖动到十字线方向的事件---------------------
+//   dragToTop?(ev: ItemDragEvent): void,
+//   dragToLeft?(ev: ItemDragEvent): void,
+//   dragToBottom?(ev: ItemDragEvent): void,
+//   dragToRight?(ev: ItemDragEvent): void,
+//   dragToBlank?(ev: ItemDragEvent): void,

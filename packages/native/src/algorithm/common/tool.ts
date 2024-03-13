@@ -40,7 +40,9 @@ export function analysisCurLocationInfo(container: Container): {
   gridY: number,
 } {
   const {mousemoveEvent} = tempStore
-  if (!mousemoveEvent) return void 0
+  if (!mousemoveEvent) {
+    return void 0
+  }
   const result: any = {}
   const {left: containerLeft, top: containerTop} = container.STRect.getCache("containerContent")
   const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft - tempStore.lastOffsetM_left * tempStore.mousedownItemOffsetLeftProportion

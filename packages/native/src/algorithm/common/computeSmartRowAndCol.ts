@@ -9,10 +9,18 @@ export function computeSmartRowAndCol(container: Container): SmartRowAndColType 
   const items = container.items
   items.forEach((item: Item) => {
     const {x, y, w, h} = item.pos as Required<ItemPos>
-    if ((x + w - 1) > smartCol) smartCol = x + w - 1
-    if ((y + h - 1) > smartRow) smartRow = y + h - 1
-    if (w > maxItemW) maxItemW = w
-    if (h > maxItemH) maxItemH = h
+    if ((x + w - 1) > smartCol) {
+      smartCol = x + w - 1
+    }
+    if ((y + h - 1) > smartRow) {
+      smartRow = y + h - 1
+    }
+    if (w > maxItemW) {
+      maxItemW = w
+    }
+    if (h > maxItemH) {
+      maxItemH = h
+    }
   })
   return {
     smartCol,

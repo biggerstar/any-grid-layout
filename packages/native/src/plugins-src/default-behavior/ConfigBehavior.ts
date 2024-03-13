@@ -9,8 +9,12 @@ import {getContainerConfigs} from "@/utils";
  * */
 export const ConfigBehavior = definePlugin({
   $getConfig(ev: ConfigurationEvent) {
-    if (ev.configName === 'col') ev.configData = ev.getCol()
-    if (ev.configName === 'row') ev.configData = ev.getRow()
+    if (ev.configName === 'col') {
+      ev.configData = ev.getCol()
+    }
+    if (ev.configName === 'row') {
+      ev.configData = ev.getRow()
+    }
   },
   /**
    * 做经过插件之后的最终工作
@@ -21,12 +25,16 @@ export const ConfigBehavior = definePlugin({
     //-----------------------------Col限制确定---------------------------------//
     if (configName === 'col') {
       const curMinCol = getContainerConfigs(ev.container, "minCol")
-      if (curMinCol && configData < curMinCol) ev.configData = curMinCol
+      if (curMinCol && configData < curMinCol) {
+        ev.configData = curMinCol
+      }
     }
     //-----------------------------Row限制确定---------------------------------//
     if (configName === 'row') {
       const curMinRow = getContainerConfigs(ev.container, "minRow")
-      if (curMinRow && configData < curMinRow) ev.configData = curMinRow
+      if (curMinRow && configData < curMinRow) {
+        ev.configData = curMinRow
+      }
       // console.log(ev.configData)
     }
   },

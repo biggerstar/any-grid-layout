@@ -18,7 +18,9 @@ import {cloneDeep, mergeDeep} from "@/utils";
  * */
 export function fillItemLayoutList(items: CustomItems = [], fillFields: Omit<CustomItem, 'pos'>, isDeepClone: boolean = true): CustomItems {
   return items.map((item: CustomItem) => {
-    if (isDeepClone) item = cloneDeep(item)
+    if (isDeepClone) {
+      item = cloneDeep(item)
+    }
     item = mergeDeep(item, fillFields || {})
     return item
   })

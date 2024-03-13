@@ -21,25 +21,33 @@ export function createSTRect(container:Container) {
   STRect.addRules(singleThrottleCrossContainerRule)
     /**  container 实例挂载的元素rect */
     .addUpdateMethod("containerIns", (el: any) => { // 节流获取rect减少回流的可能，itemRect，containerRect是比较固定的元素，变化不大
-      if (!el) el = container.element
+      if (!el) {
+        el = container.element
+      }
       return getClientRect(el, true)
     }, 1024)
 
     /**  container内容区域 实例挂载的元素rect  */
     .addUpdateMethod("containerContent", (el: any) => {
-      if (!el) el = container.contentElement
+      if (!el) {
+        el = container.contentElement
+      }
       return getClientRect(el, true)
     }, 1024)
 
     /** 影子元素挂载的元素rect  */
     .addUpdateMethod("shadow", (el: any) => {
-      if (!el) el = tempStore.cloneElement
+      if (!el) {
+        el = tempStore.cloneElement
+      }
       return getClientRect(el, true)
     }, 67)
 
     /**  fromItem挂载的元素rect  */
     .addUpdateMethod("fromItem", (el: any) => {
-      if (!el) el = tempStore.fromItem?.element
+      if (!el) {
+        el = tempStore.fromItem?.element
+      }
       return getClientRect(el, true)
     }, 1024)
 

@@ -5,8 +5,6 @@ import {
   grid_dragging_clone_el,
   tempStore,
   grid_dragging_source_el,
-  grid_resizing_clone_el,
-  grid_resizing_source_el,
   updateStyle,
   throttle,
   SingleThrottle,
@@ -23,18 +21,17 @@ const createResizingCloneElSize: Function = throttle(() => {
   const {
     mousedownEvent,
     fromItem,
-    isResizing,
     cloneElement,
     fromContainer,
   } = tempStore
-  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem || !isResizing) return
+  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem) return
   const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
   finallyRemoveEls.forEach(node => node.remove())   // 防止高频点击
 
   const newNode = <HTMLElement>fromItem.element.cloneNode(true)
-  newNode.classList.add(grid_clone_el, grid_resizing_clone_el)
-  newNode.classList.remove(grid_resizing_source_el)
-  fromItem.element.classList.add(grid_resizing_source_el)
+  // newNode.classList.add(grid_clone_el, grid_resizing_clone_el)
+  // newNode.classList.remove(grid_resizing_source_el)
+  // fromItem.element.classList.add(grid_resizing_source_el)
   updateStyle({
     transition: 'none',
     pointerEvents: 'none'
@@ -62,9 +59,9 @@ const createDraggingClonePosition: Function = throttle(() => {
 
   const sourceEl = fromItem.element
   const newNode = <HTMLElement>sourceEl.cloneNode(true)
-  newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
-  newNode.classList.remove(grid_dragging_source_el)
-  fromItem.element.classList.add(grid_dragging_source_el)
+  // newNode.classList.add(grid_clone_el, grid_dragging_clone_el)
+  // newNode.classList.remove(grid_dragging_source_el)
+  // fromItem.element.classList.add(grid_dragging_source_el)
   const {left, top} = getClientRect(sourceEl)
   updateStyle({
     pointerEvents: 'none',   // 指定克隆元素不会触发事件成为ev.target值
@@ -238,7 +235,7 @@ export default function createShadowElementPlugin() {
       }
 
       function delayRemoveCloneEl(gridCloneEl: HTMLElement) {
-        const {fromItem, isDragging, isResizing} = tempStore
+        const {fromItem, isDragging} = tempStore
         //----------移除Drag或者Resize创建的克隆备份-------------//
         //  清除对Item拖动或者调整大小产生的克隆对象
         let timer = null
@@ -265,7 +262,7 @@ export default function createShadowElementPlugin() {
               top: `${top}px`
             }, gridCloneEl)
           }, delayUpdateAnimationTime)
-        } else if (isResizing) {
+        } else {
           setTimeout(() => {
             updateStyle({
               ...baseStyle,
@@ -281,7 +278,7 @@ export default function createShadowElementPlugin() {
             gridCloneEl.parentNode.removeChild(gridCloneEl)
           } catch (e) {
           }
-          fromItem.element.classList.remove(grid_dragging_source_el, grid_resizing_source_el)
+          // fromItem.element.classList.remove(grid_dragging_source_el, grid_resizing_source_el)
           clearTimeout(timer)
           timer = null
         }

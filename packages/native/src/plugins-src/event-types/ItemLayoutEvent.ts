@@ -76,7 +76,9 @@ export class ItemLayoutEvent extends BaseEvent {
       mousedownItemOffsetTopProportion: PT,
       mousedownItemOffsetLeftProportion: PL
     } = tempStore
-    if (!fromItem || !mousemoveEvent || !cloneElement) return
+    if (!fromItem || !mousemoveEvent || !cloneElement) {
+      return
+    }
     const container = this.container
     /*------------------ Base Info --------------------*/
     merge(this, analysisCurLocationInfo(fromItem.container)) // 合并 relativeX，relativeY， gridX， gridY
@@ -154,7 +156,9 @@ export class ItemLayoutEvent extends BaseEvent {
    * */
   public getModifyItems(keep: boolean = false) {
     const _items = this._modifyItems
-    if (keep) return _items
+    if (keep) {
+      return _items
+    }
     this._modifyItems = []
     return _items
   }
@@ -169,7 +173,9 @@ export class ItemLayoutEvent extends BaseEvent {
       fromItem,
     } = tempStore
     const targetItem = item || fromItem
-    if (!targetItem) return false
+    if (!targetItem) {
+      return false
+    }
     const targetItemPos = targetItem.pos
     const targetPos = {
       ...targetItemPos,
@@ -184,16 +190,15 @@ export class ItemLayoutEvent extends BaseEvent {
     if (targetItemPos.w === targetPos.w
       && targetItemPos.h === targetPos.h
       && targetItemPos.x === targetPos.x
-      && targetItemPos.y === targetPos.y) return true   // pos 没变化则直接不进行修改
+      && targetItemPos.y === targetPos.y) {
+      return true
+    }   // pos 没变化则直接不进行修改
     //-------------------------------------
     // console.log(targetPos)
     manager.expandLineForPos(targetPos)
     const isBlank = manager.unmark(targetItem.pos).isBlank(targetPos)   // 先移除原本标记再看是否有空位
 
-    if (!isBlank) {
-      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
-      return false
-    } else {
+    if (isBlank) {
       manager.mark(targetPos, targetItem)
       targetItemPos.w = targetPos.w
       targetItemPos.h = targetPos.h
@@ -201,6 +206,9 @@ export class ItemLayoutEvent extends BaseEvent {
       targetItemPos.y = targetPos.y
       targetItem.updateItemLayout()
       return true
+    } else {
+      manager.mark(targetItem.pos, targetItem)  // 如果失败，标记回去
+      return false
     }
   }
 }

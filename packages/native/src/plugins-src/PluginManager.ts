@@ -26,7 +26,7 @@ export class PluginManager {
   public container: Container
   public plugins: CustomEventOptions[] = []
   public DefaultBehavior: Record<any, any>   // 所有的内置事件，给了外部拓展内置事件的可能性
-  constructor(container:Container) {
+  constructor(container: Container) {
     this.container = container
     this.DefaultBehavior = DefaultBehavior
     container.bus.on('*', (eventName, options) => this.call(<any>eventName, options))
@@ -36,7 +36,7 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options: Record<any, any> = {}) {
-    // if (!['getConfig', 'setConfig', 'dragging', 'resizing', 'updateCloneElementStyle', 'each', 'flip', 'dragToBlank'].includes(eventName)) {
+    // if (!['getConfig', 'setConfig', 'updateCloneElementStyle', 'each', 'flip'].includes(eventName)) {
     //   console.log(eventName)
     // }
     const container = this.container
@@ -50,7 +50,9 @@ export class PluginManager {
     const defaultActionFn$$: Function = DefaultBehavior[`${eventName}$$`]   // [内置用] 默认事件被执行后调用,不可被阻止
 
     // 事件对象实例化之前的事件，不可被用户插件阻止
-    if (isFunction($$defaultActionFn)) $$defaultActionFn.call(null, options)
+    if (isFunction($$defaultActionFn)) {
+      $$defaultActionFn.call(null, options)
+    }
     const ev = new (<any>GEvent)({
       name: eventName,
       container: container,
@@ -75,10 +77,14 @@ export class PluginManager {
     this.plugins.forEach((plugin) => {
       const callFunc: Function = <any>plugin[eventName]
       // 为所有用户插件事件触发every事件，不可被用户插件阻止
-      if (isFunction(every)) every.call(plugin, ev)
+      if (isFunction(every)) {
+        every.call(plugin, ev)
+      }
 
       // 为所有用户插件事件触发，支持被用户插件阻止
-      if (isFunction(callFunc)) callFunc.call(plugin, ev)
+      if (isFunction(callFunc)) {
+        callFunc.call(plugin, ev)
+      }
     })
 
     // 插件执行之后的内置事件，不可被用户插件阻止
@@ -106,10 +112,15 @@ export class PluginManager {
    * 添加一个自定义插件，是一个普通js对象而不是一个类
    * */
   public use(plugin: GridPlugin) {
-    if (isFunction(plugin)) plugin.call(null, this.container)
-    else if (isObject(plugin)) {
-      if (isFunction(plugin.install)) plugin.install.call(null, this.container)
-      this.plugins.push(plugin)
+    if (isFunction(plugin)) {
+      plugin.call(null, this.container)
+    } else {
+      if (isObject(plugin)) {
+        if (isFunction(plugin.install)) {
+          plugin.install.call(null, this.container)
+        }
+        this.plugins.push(plugin)
+      }
     }
   }
 

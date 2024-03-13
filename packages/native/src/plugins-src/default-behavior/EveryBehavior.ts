@@ -27,12 +27,12 @@ export const EveryBehavior = definePlugin({
   every(_: BaseEvent & Record<any, any>) {
   },
   everyDone(ev: BaseEvent & Record<any, any>) {
-    if (excludeNames.includes(ev.name)) return
+    if (excludeNames.includes(ev.name)) {
+      return
+    }
     const {container} = ev
     const bus = container.bus
     if (ev.prevented) {
-      tempStore.preventedDragging = ev.name === 'dragging'
-      tempStore.preventedResizing = ev.name === 'resizing'
     }
     /*-------------检测某次事件之后是否改变了col或者row------------*/
     if (!['colChanged', 'rowChanged'].includes(ev.name)) {  // 只有当pos位置发生变化

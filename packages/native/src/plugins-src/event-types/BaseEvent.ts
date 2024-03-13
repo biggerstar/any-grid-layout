@@ -16,8 +16,6 @@ export class BaseEvent {
   public item: Item | null = null  // 操作item的时候的目标item
   public prevented: boolean = false   // 是否调用了prevent阻止了默认事件
 
-  // public shared: object   // 事件组对象流传播共享数据的对象，比如dragging -> dragToXXX -> dragend
-
   /**
    * 阻止内置的默认行为
    * */

@@ -16,7 +16,7 @@ import {
 import {
   createResponsiveLayoutPlugin,
   createCloseBtnPlugin,
-  createShadowElementPlugin
+  createShadowElementPlugin, createResizeBtnPlugin
 } from '@biggerstar/layout-plugins'
 import '@biggerstar/layout/dist/css/default-style.css'
 import '@biggerstar/layout/dist/css/scroll-bar.css'
@@ -152,6 +152,7 @@ container1
   .use(plugin)
   .use(createCloseBtnPlugin())
   .use(createShadowElementPlugin())
+  .use(createResizeBtnPlugin())
   // .use(createResponsiveLayoutPlugin())
 
 container2

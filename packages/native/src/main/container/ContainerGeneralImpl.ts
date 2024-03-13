@@ -107,7 +107,6 @@ export class ContainerGeneralImpl {
 
   /**
    * 是否在响应布局的交叉轴方向上自动拓展矩阵大小
-   * 只适用于 drag 和 resize
    * */
   autoGrow?: {
     // 垂直方向,若设置了row将不会自动增长
@@ -119,7 +118,7 @@ export class ContainerGeneralImpl {
     horizontal: false
   }
   /**
-   * 对dragging或者resizing的元素进行配置
+   * 对拖动或者调整尺寸的元素进行配置
    * */
   cloneElement?: {
     /**

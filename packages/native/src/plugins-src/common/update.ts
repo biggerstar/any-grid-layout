@@ -1,5 +1,4 @@
 import {updateStyle} from "@/utils";
-import {ItemResizeEvent} from "@/plugins-src/event-types/ItemResizeEvent";
 import {tempStore} from "@/global";
 import {Container} from "@/main";
 
@@ -14,9 +13,11 @@ export function updateContainerSize(container?: Container) {
 /**
  * 更新水平方向的item克隆元素尺寸和尝试更新源item的大小
  * */
-export function updateHorizontalResize(ev: ItemResizeEvent) {
+export function updateHorizontalResize(ev: any) {
   const {fromItem, cloneElement} = tempStore
-  if (!fromItem || !cloneElement) return
+  if (!fromItem || !cloneElement) {
+    return
+  }
   const width = Math.min(ev.spaceInfo.clampWidth, ev.spaceInfo.spaceRight)
   updateStyle({
     width: `${width}px`,
@@ -27,9 +28,11 @@ export function updateHorizontalResize(ev: ItemResizeEvent) {
 /**
  * 更新垂直方向的item克隆元素尺寸和尝试更新源item的大小
  * */
-export function updateVerticalResize(ev: ItemResizeEvent) {
+export function updateVerticalResize(ev: any) {
   const {fromItem, cloneElement} = tempStore
-  if (!fromItem || !cloneElement) return
+  if (!fromItem || !cloneElement) {
+    return
+  }
   const height = Math.min(ev.spaceInfo.clampHeight, ev.spaceInfo.spaceBottom)
   updateStyle({
     height: `${height}px`,

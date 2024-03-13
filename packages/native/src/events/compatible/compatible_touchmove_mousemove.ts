@@ -7,11 +7,15 @@ export function compatible_touchmove_mousemove(ev) {
   if (ev.touches) {
     tempStore.deviceEventMode = 'touch'
     if (tempStore.allowTouchMoveItem) {
-      if (ev.preventDefault) ev.preventDefault()
+      if (ev.preventDefault) {
+        ev.preventDefault()
+      }
     } else {
       clearTimeout(tempStore.timeOutEvent)
       return
     }
     singleTouchToCommonEvent(ev)
-  } else tempStore.deviceEventMode = 'mouse'
+  } else {
+    tempStore.deviceEventMode = 'mouse'
+  }
 }

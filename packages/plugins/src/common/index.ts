@@ -3,9 +3,7 @@ import {
   throttle,
   tempStore,
   BaseEvent,
-  ItemDragEvent,
   ItemLayoutEvent,
-  ItemResizeEvent,
   Item,
   autoSetSizeAndMargin,
 } from "@biggerstar/layout";
@@ -14,7 +12,7 @@ import {isFunction, isObject} from "is-what";
 /**
  * 更新最新resize后的尺寸
  * */
-export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
+export const updateResponsiveResizeLayout = (ev: any) => {
   const fromItem = tempStore.fromItem || ev.fromItem
   const toPos = {
     x: ev.startGridX,
@@ -32,7 +30,7 @@ export const updateResponsiveResizeLayout = (ev: ItemResizeEvent) => {
  * @param ev 事件对象
  * @param callback 处理当前影子item覆盖的item
  * */
-export const updateResponsiveDragLayout: Function = throttle((ev: ItemDragEvent, callback: Function) => {
+export const updateResponsiveDragLayout: Function = throttle((ev: any, callback: Function) => {
   const {fromItem} = tempStore
   if (!fromItem || !isFunction(callback)) return
   // console.log(ev.name)

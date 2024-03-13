@@ -10,7 +10,6 @@ export class InitOptionsEvent extends BaseEvent {
 
   constructor(opt: ContainerInstantiationOptions) {
     super(opt);
-    //@ts-ignore
     this.options = opt
   }
 }

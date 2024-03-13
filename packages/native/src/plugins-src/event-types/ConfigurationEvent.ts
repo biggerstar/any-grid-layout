@@ -37,11 +37,15 @@ export class ConfigurationEvent extends BaseEvent {
     if (!data) {  // 未指定col自动设置
       const smartCol = this.smart.smartCol
       const autoGrowCol = container.autoGrowCol
-      if (autoGrowCol) data = smartCol   // 自动增长就以智能计算的为主 ( fix: 修复了挂载点元素自动撑开后回缩一卡一卡的问题 )
-      else if (!autoGrowCol && !container._mounted) {
-        data = Math.max(smartCol, container.containerW) // 首次加载以容器大小为主，后面则智能计算
-      } else {
-        data = container.layoutManager.col
+      if (autoGrowCol) {
+        data = smartCol
+      }   // 自动增长就以智能计算的为主 ( fix: 修复了挂载点元素自动撑开后回缩会一顿一顿的问题 )
+      else {
+        if (!autoGrowCol && !container._mounted) {
+          data = Math.max(smartCol, container.containerW) // 首次加载以容器大小为主，后面则智能计算
+        } else {
+          data = container.layoutManager.col
+        }
       }
     }
     // console.log('col', data)
@@ -61,11 +65,15 @@ export class ConfigurationEvent extends BaseEvent {
       const autoGrowRow = container.autoGrowRow
       // console.log(autoGrowRow,smartRow)
       // console.log(containerH)
-      if (autoGrowRow) data = smartRow   // 自动增长就以智能计算的为主
-      else if (!autoGrowRow && !container._mounted) {
-        data = Math.max(smartRow, container.containerH)
-      } else {
-        data = container.layoutManager.row
+      if (autoGrowRow) {
+        data = smartRow
+      }   // 自动增长就以智能计算的为主
+      else {
+        if (!autoGrowRow && !container._mounted) {
+          data = Math.max(smartRow, container.containerH)
+        } else {
+          data = container.layoutManager.row
+        }
       }
     }
     return data

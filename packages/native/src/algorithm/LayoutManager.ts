@@ -54,10 +54,14 @@ export class LayoutManager extends Finder {
    * @param {Number} toItem 目标item位置，fromItem插入toItem位置，而fromItem与其后续成员都将索引加1
    * */
   public move(items: Item[], fromItem: Item, toItem: Item) {
-    if (!fromItem || !toItem) return
+    if (!fromItem || !toItem) {
+      return
+    }
     let fromIndex = items.findIndex((v) => fromItem === v)
     let toIndex = items.findIndex((v) => toItem === v)
-    if (fromIndex < 0 || toIndex < 0) return
+    if (fromIndex < 0 || toIndex < 0) {
+      return
+    }
     items.splice(fromIndex, 1)
     items.splice(toIndex, 0, fromItem)
   }
@@ -66,7 +70,9 @@ export class LayoutManager extends Finder {
    * 交换在items中两个Item的位置
    * */
   public exchange(items: Item[], fromItem: Item, toItem: Item) {
-    if (!fromItem || !toItem) return
+    if (!fromItem || !toItem) {
+      return
+    }
     const indexA = items.findIndex((item) => fromItem === item)
     const indexB = items.findIndex((item) => toItem === item)
     if (indexA > -1 && indexB > -1) {
@@ -109,8 +115,11 @@ export class LayoutManager extends Finder {
     const staticItems = []   // 静态items
     const ordinaryItems = []  // 普通items
     items.forEach((item) => {
-      if (this.isStaticPos(item.pos.getComputedCustomPos())) staticItems.push(item)
-      else ordinaryItems.push(item)
+      if (this.isStaticPos(item.pos.getComputedCustomPos())) {
+        staticItems.push(item)
+      } else {
+        ordinaryItems.push(item)
+      }
     })
     return {
       sortItems: [...staticItems, ...ordinaryItems],  // 静态优先排序后的数组
@@ -211,16 +220,27 @@ export class LayoutManager extends Finder {
    * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
    * */
   public trimCol(num: number = 0, opt: { head?: boolean } = {}) {
-    if (!this.container.autoGrowCol) return
-    if (num < 0) return
+    if (!this.container.autoGrowCol) {
+      return
+    }
+    if (num < 0) {
+      return
+    }
     const force = num > 0
-    if (num === 0) num = this.col - this.minCol
+    if (num === 0) {
+      num = this.col - this.minCol
+    }
     for (let i = 0; i < num; i++) {
       let colindex = this.col - 1
-      if (this.hasEmptyCol(colindex)) this.removeCol(colindex)
-      else if (opt.head && this.hasEmptyCol(0)) this.removeCol(0)   // 只适用于响应式，需要在响应式插件进行添加相关逻辑
-      else if (force) this.removeCol()
-      else break
+      if (this.hasEmptyCol(colindex)) {
+        this.removeCol(colindex)
+      } else if (opt.head && this.hasEmptyCol(0)) {
+        this.removeCol(0)   // 只适用于响应式，需要在响应式插件进行添加相关逻辑
+      } else if (force) {
+        this.removeCol()
+      } else {
+        break
+      }
     }
   }
 
@@ -234,16 +254,27 @@ export class LayoutManager extends Finder {
    * @param opt.head     是否允许删除矩阵头部，正常只用于响应式
    * */
   public trimRow(num: number = 0, opt: { head?: boolean } = {}) {
-    if (!this.container.autoGrowRow) return
-    if (num < 0) return
+    if (!this.container.autoGrowRow) {
+      return
+    }
+    if (num < 0) {
+      return
+    }
     const force = num > 0
-    if (num === 0) num = this.row - this.minRow
+    if (num === 0) {
+      num = this.row - this.minRow
+    }
     for (let i = 0; i < num; i++) {
       let rowindex = this.row - 1
-      if (this.hasEmptyRow(rowindex)) this.removeRow(rowindex)
-      else if (opt.head && this.hasEmptyRow(0)) this.removeRow(0)    // 只适用于响应式，需要在响应式插件进行添加相关逻辑
-      else if (force) this.removeRow()
-      else break
+      if (this.hasEmptyRow(rowindex)) {
+        this.removeRow(rowindex)
+      } else if (opt.head && this.hasEmptyRow(0)) {
+        this.removeRow(0) // 只适用于响应式，需要在响应式插件进行添加相关逻辑
+      } else if (force) {
+        this.removeRow()
+      } else {
+        break
+      }
     }
   }
 
@@ -252,7 +283,9 @@ export class LayoutManager extends Finder {
    * @param {number} index 删除的col index，默认最后一列
    * */
   public removeCol = (index?: number) => {
-    if (!isNumber(index)) index = this.col - 1
+    if (!isNumber(index)) {
+      index = this.col - 1
+    }
     const row = this.row
     for (let i = 0; i < row; i++) {
       this._layoutMatrix[i].splice(index, 1)
@@ -268,7 +301,9 @@ export class LayoutManager extends Finder {
    * @param {number} index 删除的row index，默认最后一行
    * */
   public removeRow = (index?: number) => {
-    if (!isNumber(index)) index = this.row - 1
+    if (!isNumber(index)) {
+      index = this.row - 1
+    }
     this._layoutMatrix.splice(index, 1)
   }
 
@@ -295,7 +330,9 @@ export class LayoutManager extends Finder {
    * */
   public hasEmptyRow(index: number) {
     const line = this._layoutMatrix[index]
-    if (!Array.isArray(line)) return false
+    if (!Array.isArray(line)) {
+      return false
+    }
     return line.every(node => node === this.place)
   }
 
@@ -305,10 +342,18 @@ export class LayoutManager extends Finder {
    * */
   public changeCol(num?: number | 'auto', force: boolean = false) {
     const row = this.row
-    if (!num) num = 'auto'
-    if (num === 'auto' || num === void 0) num = (this.col - 1) * -1  // 设置成要删除最大的空白列的col列数，下方运算后最少保留minCol列数
+    if (!num) {
+      num = 'auto'
+    }
+    if (num === 'auto' || num === void 0) {
+      // 设置成要删除最大的空白列的col列数，下方运算后最少保留minCol列数
+      num = (this.col - 1) * -1
+    }
     const isSlice = num && num < 0   // 是否开启删除
-    if (isSlice) num = Math.max(this.minCol - this.col, num)   // 负数，限制最少为容器col宽度
+    if (isSlice) {
+      // 负数，限制最少为容器col宽度
+      num = Math.max(this.minCol - this.col, num)
+    }
     // console.log(isSlice, num, maxColindex)
     const matrix = this._layoutMatrix
 
@@ -334,12 +379,20 @@ export class LayoutManager extends Finder {
    * @param force  遇到num为负数时是否强制删除某一列，正常用于响应式等高频变化无关持久占位的布局
    * */
   public changeRow = (num?: number | 'auto', force: boolean = false) => {
-    if (!num) num = 'auto'
+    if (!num) {
+      num = 'auto'
+    }
     const row = this.row
     const isAuto = num === 'auto'
-    if (isAuto || num === void 0) num = (row - 1) * -1  // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
+    if (isAuto || num === void 0) {
+      // 设置成要删除最大的空白行的row行数，下方运算后最少保留minRow行数
+      num = (row - 1) * -1
+    }
     const isSlice = typeof num === 'number' && num < 0   // 是否开启删除
-    if (isSlice) num = Math.max(this.minRow - row, <number>num)   // 负数，限制最少为容器row宽度
+    if (isSlice) {
+      // 负数，限制最少为容器row宽度
+      num = Math.max(this.minRow - row, <number>num)
+    }
     const matrix = this._layoutMatrix
     for (let i = 0; num && i < Math.abs(<number>num); i++) {
       /* 增加一行操作 */
@@ -402,15 +455,29 @@ export class LayoutManager extends Finder {
     //------------------------参数归一化-----------------------------
     let colOpt: Partial<ExpandLineOptType>
     let rowOpt: Partial<ExpandLineOptType>
-    if (isObject(col)) colOpt = col
-    else colOpt = {len: col}
-    if (!colOpt.hasOwnProperty('force')) colOpt.force = false
-    if (isNumber(colOpt.len) && (isNaN(colOpt.len)) || !isNumber(colOpt.len)) colOpt.len = 0
+    if (isObject(col)) {
+      colOpt = col
+    } else {
+      colOpt = {len: col}
+    }
+    if (!colOpt.hasOwnProperty('force')) {
+      colOpt.force = false
+    }
+    if (isNumber(colOpt.len) && (isNaN(colOpt.len)) || !isNumber(colOpt.len)) {
+      colOpt.len = 0
+    }
     //--------
-    if (isObject(row)) rowOpt = row
-    else rowOpt = {len: row}
-    if (!rowOpt.hasOwnProperty('force')) rowOpt.force = false
-    if (isNumber(rowOpt.len) && (isNaN(rowOpt.len)) || !isNumber(rowOpt.len)) rowOpt.len = 0
+    if (isObject(row)) {
+      rowOpt = row
+    } else {
+      rowOpt = {len: row}
+    }
+    if (!rowOpt.hasOwnProperty('force')) {
+      rowOpt.force = false
+    }
+    if (isNumber(rowOpt.len) && (isNaN(rowOpt.len)) || !isNumber(rowOpt.len)) {
+      rowOpt.len = 0
+    }
 
     //-------------------------------------------------------------
     const curCol = this.col
@@ -436,7 +503,9 @@ export class LayoutManager extends Finder {
     let cont = 20   // 一次最多expand添加二十行供于检测
     while (cont--) {
       const found = this.findBlank(pos)
-      if (found) return found
+      if (found) {
+        return found
+      }
       this.expandLine({
         col: autoGrowCol ? 1 : 0,
         row: autoGrowRow ? 1 : 0
@@ -452,7 +521,9 @@ export class LayoutManager extends Finder {
    * */
   public findBlank(pos: CustomItemPos): CustomItemPos | null {
     let resPos = null
-    if (this.isStaticPos(pos)) return this.isBlank(pos) ? pos : null
+    if (this.isStaticPos(pos)) {
+      return this.isBlank(pos) ? pos : null
+    }
     this.each((curRow: number, curCol: number): any => {  // 没有x,y则遍历矩阵找空位
       const tryPos = {
         w: pos.w,
@@ -460,7 +531,9 @@ export class LayoutManager extends Finder {
         x: curCol + 1,  // 加1是因为isBlank接受的是CustomItemPos栅格单位,传入的x,y最低的值为1
         y: curRow + 1,
       }
-      if (this.isBlank(tryPos)) return resPos = tryPos
+      if (this.isBlank(tryPos)) {
+        return resPos = tryPos
+      }
     })
     return resPos
   }
@@ -470,7 +543,10 @@ export class LayoutManager extends Finder {
    * */
   public isBlank(pos: CustomItemPos): boolean {
     const {w, h, x, y} = this.toMatrixPos(pos)
-    if ((this.row - h - y) < 0 || (this.col - w - x) < 0) return false // 如果指定的x,y超出矩阵直接返回false
+    if ((this.row - h - y) < 0 || (this.col - w - x) < 0) {
+      // 如果指定的x,y超出矩阵直接返回false
+      return false
+    }
     let isBlank = true
     this.each((curRow: number, curCol: number): any => {
       const line = this._layoutMatrix[curRow]
@@ -492,11 +568,15 @@ export class LayoutManager extends Finder {
    * @return {CustomItemPos} 传入的pos原样返回
    * */
   public mark(pos: CustomItemPos | ItemPos, markSymbol: Item): this {
-    if (pos.x + pos.w - 1 > this.col || pos.y + pos.h - 1 > this.row) return this
+    if (pos.x + pos.w - 1 > this.col || pos.y + pos.h - 1 > this.row) {
+      return this
+    }
     const {w, h, x, y} = this.toMatrixPos(pos)
     this.each((curRow, curCol) => {
       this._layoutMatrix[curRow][curCol] = markSymbol
-      if (this.notEqualLastCol()) debugger
+      // if (this.notEqualLastCol()) {
+      //   debugger
+      // }
     }, {
       point1: [x, y],
       point2: [x + w - 1, y + h - 1],
@@ -517,7 +597,9 @@ export class LayoutManager extends Finder {
    * */
   public analysis(modifyList: LayoutItemsInfo = []): AnalysisResult {
     const items = this.container.items
-    if (!Array.isArray(modifyList)) modifyList = []
+    if (!Array.isArray(modifyList)) {
+      modifyList = []
+    }
     const modifyItems = modifyList.map(({item}) => item)
     const remainItem = items.filter((member) => !modifyItems.includes(member))  // 将当前要移动的item过滤出去
     let isSuccess: any = true
@@ -637,7 +719,9 @@ export class LayoutManager extends Finder {
       const {item, nextPos} = info
       Object.assign(item.pos, nextPos)
       this.mark(nextPos, item)
-      if (typeof handler === 'function') handler(item)
+      if (typeof handler === 'function') {
+        handler(item)
+      }
     })
   }
 
@@ -645,7 +729,9 @@ export class LayoutManager extends Finder {
    * 垂直镜像翻转某个item或者一组item
    * */
   public verticalMirrorFlip(posList: CustomItemPos[] | CustomItemPos) {
-    if (!Array.isArray(posList)) posList = [posList]
+    if (!Array.isArray(posList)) {
+      posList = [posList]
+    }
     posList.forEach(pos => {
       const x = this.col - pos.x - (pos.w - 1) + 1
       pos.x = x <= 0 ? 1 : x
@@ -656,7 +742,9 @@ export class LayoutManager extends Finder {
    * 水平镜像翻转某个item或者一组item
    * */
   public horizontalMirrorFlip(posList: CustomItemPos[] | CustomItemPos) {
-    if (!Array.isArray(posList)) posList = [posList]
+    if (!Array.isArray(posList)) {
+      posList = [posList]
+    }
     posList.forEach((pos: CustomItemPos) => {
       const y = this.row - pos.y - (pos.h - 1) + 1
       pos.y = y <= 0 ? 1 : y

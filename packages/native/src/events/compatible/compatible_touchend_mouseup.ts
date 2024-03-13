@@ -1,6 +1,5 @@
 import {singleTouchToCommonEvent} from "@/utils";
 import {tempStore} from "@/global";
-import {prevent} from "@/events";
 
 /** 做触屏和桌面端兼容 */
 export function compatible_touchend_mouseup(ev) {
@@ -10,6 +9,8 @@ export function compatible_touchend_mouseup(ev) {
     tempStore.allowTouchMoveItem = false
     tempStore.deviceEventMode = 'touch'
     singleTouchToCommonEvent(ev)
-    document.removeEventListener('contextmenu', prevent.contextmenu)
-  } else tempStore.deviceEventMode = 'mouse'
+    document.removeEventListener('contextmenu', (ev=> ev.preventDefault()))
+  } else {
+    tempStore.deviceEventMode = 'mouse'
+  }
 }

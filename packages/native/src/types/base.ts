@@ -4,19 +4,17 @@ import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
 import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
 import {BaseEvent} from "@/plugins-src/event-types/BaseEvent";
-import {ItemDragEvent} from "@/plugins-src/event-types/ItemDragEvent";
-import {ItemResizeEvent} from "@/plugins-src/event-types/ItemResizeEvent";
 import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
 import {ItemPosChangeEvent} from "@/plugins-src/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
 import {ConfigurationEvent} from "@/plugins-src/event-types/ConfigurationEvent";
 import {Container} from "@/main";
 import {InitOptionsEvent} from "@/plugins-src/event-types/InitOptionsEvent";
-import {CloneElementStyleEvent, GridClickEvent, ItemExchangeEvent, MatrixEvent} from "@/plugins-src";
+import {MatrixEvent} from "@/plugins-src";
 
-export type CustomItemPos = ItemPosGeneralImpl
-export type CustomItem = ItemGeneralImpl
-export type CustomItems = ItemGeneralImpl[]
+export type CustomItemPos = ItemPosGeneralImpl & Record<any, any>
+export type CustomItem = ItemGeneralImpl & Record<any, any>
+export type CustomItems = CustomItem[]
 
 export type BasePosType = 'x' | 'y' | 'w' | 'h'
 export type MarginOrSizeDesc = [number | null, number | null]
@@ -80,9 +78,9 @@ export type ContainerInstantiationOptions = {
 }
 
 
-export type EventMapType<T extends Record<any, any>> = {
-  [Key in keyof T]: Parameters<T[Key]>[0]
-} & Record<'*', BaseEvent>
+// export type EventMapType<T extends Record<any, any>> = {
+//   [Key in keyof T]: Parameters<T[Key]>[0]
+// } & Record<'*', BaseEvent>
 
 export type BaseEmitData<T extends Record<any, any>> = {
   [Key in keyof T]:
@@ -179,49 +177,6 @@ export type CustomEventOptions = {
   /** item 位置变化 或  尺寸变化 时响应的事件,pos变化才触发 */
   itemPosChanged?(ev: ItemPosChangeEvent): void
 
-  //-----------------拖动开始和结束事件-----------------------
-  dragging?(ev: ItemDragEvent): void,
-  dragend?(ev: ItemDragEvent): void,
-
-  //-----------------拖动到十字线方向的事件---------------------
-  dragToTop?(ev: ItemDragEvent): void,
-  dragToLeft?(ev: ItemDragEvent): void,
-  dragToBottom?(ev: ItemDragEvent): void,
-  dragToRight?(ev: ItemDragEvent): void,
-  dragToBlank?(ev: ItemDragEvent): void,
-
-  //---------------resize开始和结束事件-------------------
-  resizing?(ev: ItemResizeEvent): void,
-  resized?(ev: ItemResizeEvent): void,
-
-  //-------------resize到十字线方向的事件------------------
-  resizeToTop?(ev: ItemResizeEvent): void,
-  resizeToRight?(ev: ItemResizeEvent): void,
-  resizeToBottom?(ev: ItemResizeEvent): void,
-  resizeToLeft?(ev: ItemResizeEvent): void,
-
-  //------------------exchange------------------
-  /**
-   * 跨容器交换前的验证，只有验证通过才执行交换
-   * */
-  exchangeVerification?(ev: ItemExchangeEvent): void;
-
-  /**
-   * 跨容器移动时Item提供者，在提供的Container上触发
-   * */
-  exchangeProvide?(ev: ItemExchangeEvent): void;
-
-  /**
-   * 跨容器移动时Item过程，主要用于处理如何挂载Item到新容器中
-   * 通过provideItem添加要移动到目标容器的新item
-   * */
-  exchangeProcess?(ev: ItemExchangeEvent): void;
-
-  /**
-   * 跨容器移动时Item接受者，在接收的Container上触发
-   * */
-  exchangeReceive?(ev: ItemExchangeEvent): void;
-
   /**
    * 用作遍历矩阵的控制函数，可以自行实现遍历矩阵逻辑，比如螺旋遍历，交叉遍历...各种花里胡哨的功能，
    * 只需关心:
@@ -252,7 +207,7 @@ export type CustomEventOptions = {
   /**
    * 点击容器或者item触发的事件
    * */
-  click?(ev: GridClickEvent): void;
+  click?(ev: BaseEvent): void;
 
   mousedown?(ev: BaseEvent): void;
   mousemove?(ev: BaseEvent): void;

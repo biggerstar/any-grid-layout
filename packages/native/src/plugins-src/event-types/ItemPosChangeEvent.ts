@@ -14,7 +14,9 @@ export class ItemPosChangeEvent extends BaseEvent {
   constructor(opt: any) {
     super(opt);
     const {fromItem, lastPosX, lastPosY, lastPosW, lastPosH} = tempStore
-    if (!fromItem) return
+    if (!fromItem) {
+      return
+    }
     const {w, h, x, y} = <Required<CustomItemPos>>fromItem.pos
     this.item = fromItem
     this.oldW = w

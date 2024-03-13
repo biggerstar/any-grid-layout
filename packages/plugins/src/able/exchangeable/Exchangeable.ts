@@ -1,11 +1,15 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {ItemDragEvent} from "@/plugins-src";
-import {Container, Item} from "@/main";
-import {ContainerInstantiationOptions, CustomItem, CustomItemPos} from "@/types";
-import {analysisCurLocationInfo} from "@/algorithm/common/tool";
-import {tempStore} from "@/global";
-import {getClientRect} from "@/utils";
+
+import {
+  analysisCurLocationInfo,
+  Container,
+  ContainerInstantiationOptions, CustomItem,
+  CustomItemPos, definePlugin, getClientRect, grid_dragging_source_el, grid_item_content,
+  Item,
+  ItemDragEvent, tempStore
+} from "@biggerstar/layout";
+import {a} from "../../../dist/common/index.es";
 
 export class ItemExchangeEvent extends ItemDragEvent {
   public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
@@ -109,3 +113,79 @@ export class ItemExchangeEvent extends ItemDragEvent {
     setTimeout(() => toContainer.updateContainerSizeStyle())
   }
 }
+
+
+
+export const itemExchangeBehavior = definePlugin({
+  /**
+   * 控制是否可以移动到新容器
+   * */
+  exchangeVerification(ev: ItemExchangeEvent) {
+    const toPos = {
+      w: ev.fromItem.pos.w,
+      h: ev.fromItem.pos.h,
+      x: ev.toStartX,
+      y: ev.toStartY,
+    }
+    if (ev.fromItem && ev.toContainer.layoutManager.isBlank(toPos)) {
+      ev.doExchange()
+    }
+  },
+
+  exchangeVerification$$(ev: ItemExchangeEvent) {
+    ev.isExchange && ev.fromContainer.bus.emit('exchangeProvide')
+  },
+
+  /**
+   * 一旦exchangeVerification验证通过，跨容器移动过程便不可阻止，只能在 exchangeProvide 或 exchangeReceive 事件里面更改要新添加的item信息
+   * */
+  exchangeProvide$$(ev: ItemExchangeEvent) {
+    if (!ev.fromItem || ev.newItem) return
+    const gridItemContent = ev.fromItem.element.querySelector(`.${grid_item_content}`)
+    const newOptions = {
+      ...ev.fromItem.customOptions,
+      el: gridItemContent,
+    }
+    ev.provideItem(ev.createNewItem(newOptions as any))
+    ev.toContainer.bus.emit('exchangeReceive')
+  },
+
+  exchangeReceive$$(ev: ItemExchangeEvent) {
+    ev.receiveNewItem()
+    ev.removeSourceItem()
+    if (ev.newItem) ev.newItem.element.classList.add(grid_dragging_source_el)
+    ev.fromContainer.layoutManager.trim({
+      row: {head: true},
+      col: {head: true},
+    })
+    tempStore.fromContainer = ev.toContainer
+    tempStore.fromItem = ev.newItem
+    tempStore.newItem = null
+    ev.container.STRect.updateCache("fromItem")
+    ev.container.STRect.updateCache("shadow")
+    ev.container.STRect.updateCache("containerContent")
+  },
+})
+
+
+// //------------------exchange------------------
+// /**
+//  * 跨容器交换前的验证，只有验证通过才执行交换
+//  * */
+// exchangeVerification?(ev: ItemExchangeEvent): void;
+//
+// /**
+//  * 跨容器移动时Item提供者，在提供的Container上触发
+//  * */
+// exchangeProvide?(ev: ItemExchangeEvent): void;
+//
+// /**
+//  * 跨容器移动时Item过程，主要用于处理如何挂载Item到新容器中
+//  * 通过provideItem添加要移动到目标容器的新item
+//  * */
+// exchangeProcess?(ev: ItemExchangeEvent): void;
+//
+// /**
+//  * 跨容器移动时Item接受者，在接收的Container上触发
+//  * */
+// exchangeReceive?(ev: ItemExchangeEvent): void;

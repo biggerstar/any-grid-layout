@@ -16,15 +16,19 @@ export class SingleThrottle<T extends Record<string, any>> {
   public cache: T | Record<any, any>
 
   constructor(wait?: number) {
-    if (isNumber(wait) && wait > 0) this.wait = wait
+    if (isNumber(wait) && wait > 0) {
+      this.wait = wait
+    }
     let old = 0;
     this.updateMethods = {}
     this._updateMethods = {}
     this.cache = {}
-    this.do = (func: Function, wait) => {
+    this.do = (func: Function, wait: number): any => {
       const isDirectExec = this.rules.length && !this.rules.every(rule => rule())  // 只要一个不符合，则直接更新
       let now = new Date().valueOf();
-      if (!isDirectExec && now - old < (wait || this.wait)) return
+      if (!isDirectExec && now - old < (wait || this.wait)) {
+        return
+      }
       old = now
       return func.apply(<object>this)
     }
@@ -80,7 +84,7 @@ export class SingleThrottle<T extends Record<string, any>> {
   private _updateCycleCache<Name extends keyof T>(name: Name, force: boolean = false, ...args: any[]) {
     const fn: Function = force ? this._updateMethods[name] : this.updateMethods[name]
     let data = fn.apply(null, args)
-    return !data ? this.cache[name] : this.cache[name] = data
+    return data ? this.cache[name] = data : this.cache[name]
   }
 }
 

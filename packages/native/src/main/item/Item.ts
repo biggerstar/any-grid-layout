@@ -4,11 +4,7 @@ import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import equal from 'fast-deep-equal'
 import {isObject, isString} from "is-what";
-import {
-  grid_item_content,
-  grid_item_resizable_handle,
-  grid_item_resize_text
-} from "@/constant";
+import {grid_item_content} from "@/constant";
 import {cloneDeep, getContainerConfigs, updateStyle} from "@/utils";
 
 
@@ -31,7 +27,6 @@ export class Item extends ItemGeneralImpl {
   public customOptions: CustomItem
   private readonly _default: CustomItem
   private _mounted: boolean = false
-  private _resizeTabEl: HTMLElement | null
   public __temp__: Record<any, any> = {
     isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
   }
@@ -53,9 +48,13 @@ export class Item extends ItemGeneralImpl {
 
   //----------------------------------------------------------
   constructor(itemOption: CustomItem) {
-    super()
-    if (itemOption instanceof Item) return itemOption  // 如果已经是item，则直接返回
-    if (itemOption.el instanceof Element) this.element = this.el = itemOption.el
+    super();
+    if (itemOption instanceof Item) {
+      return itemOption
+    }  // 如果已经是item，则直接返回
+    if (itemOption.el instanceof Element) {
+      this.element = this.el = itemOption.el
+    }
     this.customOptions = itemOption
     this._default = new ItemGeneralImpl()
     this._define(itemOption)
@@ -67,12 +66,13 @@ export class Item extends ItemGeneralImpl {
    * 若当前值和 ItemGeneralImpl 中默认值一样，则不会同步，保证用户配置最简化
    * */
   private _define(itemOption: CustomItem) {
-    const self = this
     const _default = this._default
     const _customOptions: Record<any, any> = itemOption
     const pos = new ItemPos(itemOption.pos)
     const get = (k: keyof ItemGeneralImpl) => {
-      if (k === 'pos') return pos
+      if (k === 'pos') {
+        return pos
+      }
       return _customOptions.hasOwnProperty(k)
         ? _customOptions[k]
         : isObject(_default[k])
@@ -80,9 +80,11 @@ export class Item extends ItemGeneralImpl {
           : _default[k]
     }
     const set = (k: keyof CustomItem, v: any): any => {
-      if (k === 'pos') return  // 不允许更改pos
-      !equal(v, _default[k]) ? _customOptions[k] = v : null
-      !equal(_customOptions[k], _default[k]) ? _customOptions[k] = v : null
+      if (k === 'pos') {
+        return
+      }  // 不允许更改pos
+      equal(v, _default[k]) ? null : _customOptions[k] = v
+      equal(_customOptions[k], _default[k]) ? null : _customOptions[k] = v
     }
 
     for (const k in _default) {
@@ -92,23 +94,17 @@ export class Item extends ItemGeneralImpl {
       })
     }
 
-    Object.defineProperties(<object>this, {
-      draggable: {
-        get: () => get('draggable'),
-        set: (v) => set('draggable', Boolean(v))
-      },
-      resize: {
-        get: () => get('resize'),
-        set: (v) => set('resize', Boolean(v)) || self._handleResize(v)
-      },
-    })
+    // Object.defineProperties(<object>this, {
+    // })
   }
 
   /**
    * 渲染, 直接渲染添加到 Container 中
    * */
   public mount() {
-    if (this._mounted) return
+    if (this._mounted) {
+      return
+    }
     if (this.container.platform === 'native') {
       this.element = document.createElement(this.tagName)
       if (isString(this.el)) {
@@ -116,17 +112,19 @@ export class Item extends ItemGeneralImpl {
       } else if (this.el) {
         this.contentElement = this.el.isConnected ? <HTMLElement>document.adoptNode(this.el) : <HTMLElement>this.el
       }
-      if (!this.contentElement) this.contentElement = document.createElement("div")
+      if (!this.contentElement) {
+        this.contentElement = document.createElement("div")
+      }
       this.contentElement.classList.add(grid_item_content)
-      if (this.id && isString(this.id)) this.contentElement.id = this.id
+      if (this.id && isString(this.id)) {
+        this.contentElement.id = this.id
+      }
       this.element.appendChild(this.contentElement)
       this.container.contentElement.appendChild(this.element)
     }
     this.element.classList.add(this.className)
     this.classList = Array.from(this.element.classList)
     this.updateItemLayout()
-    //--------------开启编辑和动画------------------
-    this._handleResize(this.resize)
     //--------------------------------------------
     this.element['_gridItem_'] = this
     this.element['_isGridItem_'] = true
@@ -141,7 +139,9 @@ export class Item extends ItemGeneralImpl {
   public unmount() {
     if (this._mounted) {
       const container = this.container
-      if (this.element.isConnected) container.contentElement.removeChild(this.element)
+      if (this.element.isConnected) {
+        container.contentElement.removeChild(this.element)
+      }
       this.remove()
       container.layoutManager.unmark(this.pos)
       this._mounted = false
@@ -254,7 +254,9 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大宽度的像素大小
    * */
   public maxWidth(): number | typeof Infinity {
-    if (!isFinite(this.pos.maxW)) return Infinity
+    if (!isFinite(this.pos.maxW)) {
+      return Infinity
+    }
     return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0] * 2
   }
 
@@ -262,7 +264,9 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最大的高度像素大小
    * */
   public maxHeight(): number | typeof Infinity {
-    if (!isFinite(this.pos.maxH)) return Infinity
+    if (!isFinite(this.pos.maxH)) {
+      return Infinity
+    }
     return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1] * 2
   }
 
@@ -276,14 +280,22 @@ export class Item extends ItemGeneralImpl {
       ...this.pos,
       w: this.container.getConfig("col") - this.pos.x + 1
     }, [this])
-    if (!coverRightItems.length && this.container.autoGrowCol) return Infinity
+    if (!coverRightItems.length && this.container.autoGrowCol) {
+      return Infinity
+    }
     let minOffsetRight = this.offsetRight()
     coverRightItems.forEach((item) => {
       const offsetCol = item.pos.x - (this.pos.x + this.pos.w - 1) - 1
       let offsetRight: number
-      if (offsetCol === 0) offsetRight = margin[0] * 2
-      else offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
-      if (minOffsetRight > offsetRight) minOffsetRight = offsetRight
+      if (offsetCol === 0) {
+        offsetRight = margin[0] * 2
+      }
+      else {
+        offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
+      }
+      if (minOffsetRight > offsetRight) {
+        minOffsetRight = offsetRight
+      }
     })
     return minOffsetRight + this.nowWidth()
   }
@@ -298,36 +310,24 @@ export class Item extends ItemGeneralImpl {
       ...this.pos,
       h: this.container.getConfig("row") - this.pos.y + 1
     }, [this])
-    if (!coverBottomItems.length && this.container.autoGrowRow) return Infinity
+    if (!coverBottomItems.length && this.container.autoGrowRow) {
+      return Infinity
+    }
     let minOffsetBottom = this.offsetBottom()
     coverBottomItems.forEach((item) => {
       const offsetRow = item.pos.y - (this.pos.y + this.pos.h - 1) - 1
       let offsetBottom: number
-      if (offsetRow === 0) offsetBottom = margin[1] * 2
-      else offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
-      if (minOffsetBottom > offsetBottom) minOffsetBottom = offsetBottom
+      if (offsetRow === 0) {
+        offsetBottom = margin[1] * 2
+      }
+      else {
+        offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
+      }
+      if (minOffsetBottom > offsetBottom) {
+        minOffsetBottom = offsetBottom
+      }
     })
     return minOffsetBottom + this.nowHeight()
-  }
-
-  /**
-   * 手动生成resize元素，可以将resize字段设置成false
-   * q: 如何自定义resize按钮?
-   * a: Item元素包裹下，创建一个包含class名为grid-item-resizable-handle的元素即可，用户点击该元素将会被判定为resize动作
-   * */
-  private _handleResize(isResize = false) {
-    if (isResize && !this._resizeTabEl) {
-      const handleResizeEls = this.element.querySelectorAll('.' + grid_item_resizable_handle)
-      if (handleResizeEls.length > 0) return;
-      const resizeTabEl = document.createElement('span')
-      resizeTabEl.innerHTML = grid_item_resize_text
-      this.element.appendChild(resizeTabEl)
-      resizeTabEl.classList.add(grid_item_resizable_handle)
-      this._resizeTabEl = resizeTabEl
-    } else if (this._resizeTabEl && !isResize) {
-      this._resizeTabEl.parentElement.removeChild(this._resizeTabEl)
-      this._resizeTabEl = null
-    }
   }
 }
 

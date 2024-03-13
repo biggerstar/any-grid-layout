@@ -19,9 +19,13 @@ export class ItemPos extends ItemPosGeneralImpl {
 
   /** 传入一个值，返回经过限制值边界大小后的结果 */
   public filterLimit(newVal: number, min: number, max: number): number {
-    if (min >= max) newVal = max // 1. 先看min,max如果min > max 则此时新值永远等于 max 对应的值
-    else if (newVal > max) newVal = max  // 2. 限制不大于max
-    else if (newVal < min) newVal = min   // 3. 限制不小于min
+    if (min >= max) {
+      newVal = max // 1. 先看min,max如果min > max 则此时新值永远等于 max 对应的值
+    } else if (newVal > max) {
+      newVal = max  // 2. 限制不大于max
+    } else if (newVal < min) {
+      newVal = min   // 3. 限制不小于min
+    }
     return newVal
   }
 
@@ -40,7 +44,9 @@ export class ItemPos extends ItemPosGeneralImpl {
     }
     const get = (k: keyof ItemPosGeneralImpl) => {
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
-      if (k === 'w') return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minW, self.maxW)
+      if (k === 'w') {
+        return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minW, self.maxW)
+      }
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
       if (k === 'h') {
         return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minH, self.maxH)
@@ -60,7 +66,9 @@ export class ItemPos extends ItemPosGeneralImpl {
       if (['w', 'h', 'x', 'y'].includes(<string>k)) {  // 如果是x,y,w,h外面没有指定则不会修改用户传入配置
         curCustomPos.hasOwnProperty(k) ? curCustomPos[k] = v : _tempPos[k] = v
       } else {  // 如果是minX,maxX等,不等于默认值则会直接修改用户传入的配置
-        if (v !== _default?.[k]) curCustomPos[k] = v
+        if (v !== _default?.[k]) {
+          curCustomPos[k] = v
+        }
       }
     }
     for (const k in _default) {
@@ -80,44 +88,5 @@ export class ItemPos extends ItemPosGeneralImpl {
       result[name] = this[name]
     }
     return result
-  }
-
-  _define() {
-    let tempW = null
-    let tempH = null
-
-    Object.defineProperties(<object>this, {
-      tempW: {
-        get: () => {
-          // if (this.w === tempW) tempW = null // 只要原本的宽度和临时的宽度相等，说明已经复位，重置tempW为null
-          // if (this.w > 8)console.log(tempW);
-          return tempW
-        },
-        set: (v) => {
-          if (typeof v !== 'number' || !isFinite(v)) return
-          if (v === this.w) {
-            tempW = null
-            return
-          }
-          if (v <= 0) tempW = 1
-          else tempW = v
-        }
-      },
-      tempH: {
-        get: () => {
-          // if (this.h === tempH) tempH = null
-          return tempH
-        },
-        set: (v) => {
-          if (typeof v !== 'number' || !isFinite(v)) return
-          if (v === this.h) {
-            tempH = null
-            return
-          }
-          if (v <= 0) tempH = 1
-          else tempH = v
-        }
-      },
-    })
   }
 }

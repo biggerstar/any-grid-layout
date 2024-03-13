@@ -101,7 +101,9 @@ export class Container {
   }
 
   constructor(options: ContainerInstantiationOptions) {
-    if (!options.el) new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
+    if (!options.el) {
+      new Error('请指定需要绑定的el,是一个id或者class值或者原生的element')
+    }
     this.pluginManager = new PluginManager(this)
     this.layoutManager = new LayoutManager()
     this.layoutManager.container = this;
@@ -133,11 +135,17 @@ export class Container {
 
           for (let i = 0; i < layouts.length; i++) {
             layoutItem = layouts[i]
-            if (!Array.isArray(layoutItem.items)) layoutItem.items = []
-            if (layouts.length === 1) break
+            if (!Array.isArray(layoutItem.items)) {
+              layoutItem.items = []
+            }
+            if (layouts.length === 1) {
+              break
+            }
             // 此时 layoutItem.px循环结束后 大于 containerWidth,表示该Container在该布局方案中符合px以下的设定,
             // 接上行: 如果实际Container大小还大于layoutItem.px，此时是最后一个，将跳出直接使用最后也就是px最大对应的那个布局方案
-            if (containerWidth && layoutItem.px < containerWidth) continue
+            if (containerWidth && layoutItem.px < containerWidth) {
+              continue
+            }
             break
           }
           return layoutItem
@@ -181,7 +189,9 @@ export class Container {
       configData: data,
       callback: (e: ConfigurationEvent) => ev = e
     })
-    if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
+    if (ev && ![undefined, void 0, null].includes(ev.configData)) {
+      data = ev.configData
+    }
     return data
   }
 
@@ -192,19 +202,31 @@ export class Container {
    * */
   public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name], sync: boolean = false): void {
     let ev: ConfigurationEvent
-    if (['col', 'row'].includes(name)) this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
+    if (['col', 'row'].includes(name)) {
+      this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
+    }
     this.bus.emit('setConfig', {
       configName: name,
       configData: data,
       callback: (e: ConfigurationEvent) => ev = e
     })
-    if (ev && ![undefined, void 0, null].includes(ev.configData)) data = ev.configData
-    const mergeConfig = (name: string, to: object, from: any) => {
-      if (isObject(to[name]) && isObject(from)) deepmerge(to[name], from, {clone: true})
-      else to[name] = from
+    if (ev && ![undefined, void 0, null].includes(ev.configData)) {
+      data = ev.configData
     }
-    if (sync) mergeConfig(name, this.layout, data)
-    else mergeConfig(name, this.useLayout, data)
+    const mergeConfig = (name: string, to: object, from: any) => {
+      if (isObject(to[name]) && isObject(from)) {
+        deepmerge(to[name], from, {clone: true})
+      }
+      else {
+        to[name] = from
+      }
+    }
+    if (sync) {
+      mergeConfig(name, this.layout, data)
+    }
+    else {
+      mergeConfig(name, this.useLayout, data)
+    }
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
@@ -223,11 +245,15 @@ export class Container {
 
   /** 手动添加item渲染 */
   public render(renderCallback: (item: CustomItem[], layout: CustomLayoutsOption, element: HTMLElement) => void) {
-    if (this.element && this.element.clientWidth <= 0) throw new Error('请指定容器宽高')
+    if (this.element && this.element.clientWidth <= 0) {
+      throw new Error('请指定容器宽高')
+    }
     if (typeof renderCallback === 'function') {
       renderCallback.call(<object>this, this.layout.items, this.layout, this.element)
     }
-    if (!this._mounted) this.mount()  // 第一次Container没挂载则挂载，后续添加后自动更新布局
+    if (!this._mounted) {
+      this.mount()
+    }  // 第一次Container没挂载则挂载，后续添加后自动更新布局
   }
 
   /**
@@ -236,17 +262,23 @@ export class Container {
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   public mount(): void {
-    const mountFn = () => {
-      if (this._mounted) return this.bus.emit('error', {
-        type: 'RepeatedContainerMounting',
-        message: '重复挂载容器被阻止',
-        from: this,
-      })
+    const mountFn = ():any => {
+      if (this._mounted) {
+        return this.bus.emit('error', {
+          type: 'RepeatedContainerMounting',
+          message: '重复挂载容器被阻止',
+          from: this,
+        })
+      }
       //-----------------------容器dom初始化-----------------------//
-      if (this.el instanceof Element) this.element = this.el
+      if (this.el instanceof Element) {
+        this.element = this.el
+      }
       if (!this.element) {
         this.element = <HTMLElement>document.querySelector(<string>this.el)
-        if (!this.element) throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+        if (!this.element) {
+          throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+        }
       }
       //-----------------容器布局信息初始化与检测--------------------//
       this.STRect = createSTRect(this)
@@ -254,7 +286,9 @@ export class Container {
       this._createGridContainerBox()
       //-------------------------其他操作--------------------------//
       this.parentItem = parseItemFromPrototypeChain(this.element)
-      if (this.parentItem) this.parentItem.container.childContainer.push(this)
+      if (this.parentItem) {
+        this.parentItem.container.childContainer.push(this)
+      }
       this.parent = this.parentItem?.container || null
       this.__ownTemp__.oldCol = this.getConfig("col")
       this.__ownTemp__.oldRow = this.getConfig("row")
@@ -271,11 +305,15 @@ export class Container {
    * 将item成员从Container中全部移除
    * */
   public unmount(): void {
-    if (!this._mounted) return
+    if (!this._mounted) {
+      return
+    }
     Array.from(this.items).forEach((item: Item) => item.unmount()) // 使用Array.from是不会被卸载过程影响到原数组导致卸载不干净
     this.reset()
     this._mounted = false
-    if (this.contentElement.isConnected) this.element.removeChild(this.contentElement)
+    if (this.contentElement.isConnected) {
+      this.element.removeChild(this.contentElement)
+    }
     this._disconnect_()
     this.bus.emit('containerUnmounted')
     removeGlobalEvent()
@@ -298,7 +336,9 @@ export class Container {
    * 监听container，item元素卸载
    * */
   public _observer_() {
-    if (this._mounted) return
+    if (this._mounted) {
+      return
+    }
     let preventFirstResizingCount = 0   // 阻止resize首次加载触发的容器调整大小改变事件
     const layoutChangeFun = () => {
       if (preventFirstResizingCount++ > 2) {
@@ -329,7 +369,9 @@ export class Container {
             .forEach(container => container?.unmount())
         }
         const container = getContainerFromElement(node)
-        if (container) container.unmount()
+        if (container) {
+          container.unmount()
+        }
       })
     }
     const mutationObserver = new MutationObserver(mutationOb)
@@ -349,8 +391,12 @@ export class Container {
   private _trySwitchLayout(): void {
     const useLayout = this.useLayout
     const px = getContainerConfigs(this, 'px')
-    if (!px || !useLayout.px) return
-    if (px === useLayout.px) return
+    if (!px || !useLayout.px) {
+      return
+    }
+    if (px === useLayout.px) {
+      return
+    }
     if (this.platform === 'native') {
       this.unmount()
       this.clear();
@@ -431,13 +477,23 @@ export class Container {
   public initLayoutInfo() {
     const options: Record<any, any> = this.options
     let layoutInfo = []
-    if (Array.isArray(options.layouts)) layoutInfo = options.layouts         // 传入的layouts字段Array形式
-    else if (typeof options.layouts === "object") layoutInfo.push(options.layouts)     // 传入的layouts字段Object形式
-    else throw new Error("请传入layout配置信息")
+    if (Array.isArray(options.layouts)) {
+      layoutInfo = options.layouts
+    }         // 传入的layouts字段Array形式
+    else {
+      if (typeof options.layouts === "object") {
+        layoutInfo.push(options.layouts)
+      }     // 传入的layouts字段Object形式
+      else {
+        throw new Error("请传入layout配置信息")
+      }
+    }
     if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
       let isBreak = false
       layoutInfo.sort((a, b) => {
-        if (isBreak) return 0
+        if (isBreak) {
+          return 0
+        }
         if (typeof a.px !== "number" || typeof b.px !== "number") {
           this.bus.emit("warn", {
             message: `未指定layout的px值,传入的layout为${b}`
@@ -479,9 +535,15 @@ export class Container {
     }
     let item = <Item>itemOptions
     let customOpt = itemOptions
-    if (itemOptions instanceof Item) customOpt = itemOptions.customOptions
-    else item = new Item(customOpt)
-    if (syncCustomItems) this.layout.items.push(customOpt)
+    if (itemOptions instanceof Item) {
+      customOpt = itemOptions.customOptions
+    }
+    else {
+      item = new Item(customOpt)
+    }
+    if (syncCustomItems) {
+      this.layout.items.push(customOpt)
+    }
     // console.log(item === itemOptions)
     if (findBlank && itemOptions.pos) {
       const manager = this.layoutManager
@@ -550,9 +612,15 @@ export class Container {
     const toInteger = floor ? Math.floor : Math.ceil
     const {margin, size} = getContainerConfigs(this, ["margin", "size"])
     let res: number
-    if (size[0] >= Math.abs(pxNum)) res = 1
-    else res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
-    if (keepSymbol) res = res * Math.sign(pxNum)
+    if (size[0] >= Math.abs(pxNum)) {
+      res = 1
+    }
+    else {
+      res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
+    }
+    if (keepSymbol) {
+      res *= Math.sign(pxNum)
+    }
     return res
   }
   /**  px像素转栅格单位 h */
@@ -570,9 +638,15 @@ export class Container {
     const toInteger = floor ? Math.floor : Math.ceil
     const {margin, size} = getContainerConfigs(this, ["margin", "size"])
     let res: number
-    if (size[1] >= Math.abs(pxNum)) res = 1
-    else res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
-    if (keepSymbol) res = res * Math.sign(pxNum)
+    if (size[1] >= Math.abs(pxNum)) {
+      res = 1
+    }
+    else {
+      res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
+    }
+    if (keepSymbol) {
+      res *= Math.sign(pxNum)
+    }
     return res
   }
 

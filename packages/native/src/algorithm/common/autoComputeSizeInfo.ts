@@ -22,8 +22,12 @@ export function autoComputeSizeInfo(
   } {
   const hasSize = isNumber(size)
   const hasMargin = isNumber(margin)
-  if (hasSize && size < 0) size = 0
-  if (hasMargin && margin < 0) margin = 0
+  if (hasSize && size < 0) {
+    size = 0
+  }
+  if (hasMargin && margin < 0) {
+    margin = 0
+  }
   // console.log(margin, size);
   if (direction) {   //  col指定通常是执行静态布局，主算 size 和 margin
     if (!hasSize && !hasMargin) {   // 自动分配size和margin
@@ -46,13 +50,23 @@ export function autoComputeSizeInfo(
         // console.log(size * col + (margin * (col - 1)));
       }
     } else if (hasSize && !hasMargin) {   // size[0]固定，自动分配margin
-      if (parseInt(direction.toString()) === 1) margin = 0
-      else margin = (containerBoxLen - (direction * size)) / (direction - 1) / 2
-      if (margin <= 0) margin = 0
+      if (parseInt(direction.toString()) === 1) {
+        margin = 0
+      }
+      else {
+        margin = (containerBoxLen - (direction * size)) / (direction - 1) / 2
+      }
+      if (margin <= 0) {
+        margin = 0
+      }
     } else if (!hasSize && hasMargin) {  // margin固定，自动分配size
-      if (parseInt(direction.toString()) === 1) margin = 0
+      if (parseInt(direction.toString()) === 1) {
+        margin = 0
+      }
       size = (containerBoxLen - ((direction - 1) * margin) * 2) / direction
-      if (size <= 0) size = margin / ratio
+      if (size <= 0) {
+        size = margin / ratio
+      }
     } else if (hasSize && hasMargin) {
     } // margin和size都固定,啥事都不做，用户给的已知数太多,都不用计算了
   } else if (!direction) {   // col不指定执行动态布局， 主算 col数量，次算margin,size中的一个,缺啥算啥

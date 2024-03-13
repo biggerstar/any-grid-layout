@@ -28,38 +28,15 @@ export class ItemGeneralImpl {
    * */
   className?: string = grid_item_class_name
 
-  /**
-   *【不允许】 点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
-   * */
-  dragIgnoreEls?: Array<HTMLElement | string> = []
-
-  /**
-   *【只允许】 点击该范围内的元素拖动Item,数组内的值为css选择器或者目标子元素(Element)
-   * */
-  dragAllowEls?: Array<HTMLElement | string> = []
   //----------被_define函数通过 defineProperties代理的字段-------------//
 
-  /**
-   * item自身是否可以拖动
-   *
-   * @default false
-   * */
-  draggable?: boolean = false
-
-  /**
-   * 自身是否可以调整大小
-   *
-   * @default false
-   * */
-  resize?: boolean = false
-
-  /**
-   * 该item是否是静态布局，如果为true，则该item将会固定在外部指定的某行某列中
-   * 优先级比autoOnce高，但是只有pos中指定x和y才生效
-   *
-   * @default false
-   * */
-  static?: boolean = false
+  // /**
+  //  * 该item是否是静态布局，如果为true，则该item将会固定在外部指定的某行某列中
+  //  * 优先级比autoOnce高，但是只有pos中指定x和y才生效
+  //  *
+  //  * @default false
+  //  * */
+  // static?: boolean = false
 
   /**
    * 该Item是否可以参与跨容器交换，和container的exchange不同的是该参数只控制Item自身，并且在要前往的container如果关闭了exchange则同时不会进行交换
