@@ -5,13 +5,24 @@ import {
   analysisCurLocationInfo,
   Container,
   ContainerInstantiationOptions, CustomItem,
-  CustomItemPos, definePlugin, getClientRect, grid_dragging_source_el, grid_item_content,
+  CustomItemPos, definePlugin, getClientRect, grid_item_content,
   Item,
-  ItemDragEvent, tempStore
+   tempStore
 } from "@biggerstar/layout";
-import {a} from "../../../dist/common/index.es";
+/**
+ * 判断当前操作行为是否允许跨容器移动
+ * */
+export function canExchange() {
+  const {fromContainer, fromItem, toContainer} = tempStore;
+  if (!fromContainer || !fromItem || !toContainer) {
+    return false
+  }
+  return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
+    && toContainer.getConfig('exchange')
+    && fromContainer.getConfig('exchange')
+}
 
-export class ItemExchangeEvent extends ItemDragEvent {
+export class ItemExchangeEvent  {
   public readonly spacePos: CustomItemPos | null = null   // 当前跨容器移动目标容器有空位的pos
   public readonly mousePos: CustomItemPos | null = null   // 当前鼠标所在位置的pos
   public readonly newItem: Item | null
@@ -25,11 +36,12 @@ export class ItemExchangeEvent extends ItemDragEvent {
   public isExchange: boolean
 
   constructor(options: ContainerInstantiationOptions) {
-    super(options);
     const {fromContainer, fromItem, newItem, toItem, toContainer} = tempStore
     this.fromContainer = <Container>fromContainer
     this.toContainer = <Container>toContainer
-    if (!toContainer || !fromItem) return
+    if (!toContainer || !fromItem) {
+      return
+    }
     this.isExchange = false
     const res = analysisCurLocationInfo(toContainer)
     this.toItem = toItem
@@ -103,13 +115,17 @@ export class ItemExchangeEvent extends ItemDragEvent {
    * */
   public receiveNewItem() {
     const {toContainer} = tempStore
-    if (!this.newItem || !toContainer) return
+    if (!this.newItem || !toContainer) {
+      return
+    }
     toContainer.addItem(this.newItem)
     let toPos: CustomItemPos = this.newItem.pos
     // console.log('receive', toPos.x, toPos.y)
     toContainer.layoutManager.mark(toPos, this.newItem)
     this.newItem.mount()
-    if (this.toItem) toContainer.bus.emit('updateLayout')
+    if (this.toItem) {
+      toContainer.bus.emit('updateLayout')
+    }
     setTimeout(() => toContainer.updateContainerSizeStyle())
   }
 }

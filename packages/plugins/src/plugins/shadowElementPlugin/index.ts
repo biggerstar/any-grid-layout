@@ -5,13 +5,23 @@ import {
   updateStyle,
   throttle,
   SingleThrottle,
-  canExchange,
   getContainerConfigs
 } from "@biggerstar/layout";
 
 
 const grid_clone_el = 'grid-clone-el'
-
+/**
+ * 判断当前操作行为是否允许跨容器移动
+ * */
+export function canExchange() {
+  const {fromContainer, fromItem, toContainer} = tempStore;
+  if (!fromContainer || !fromItem || !toContainer) {
+    return false
+  }
+  return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
+    && toContainer.getConfig('exchange')
+    && fromContainer.getConfig('exchange')
+}
 /**
  * [resizing] 创建resize的克隆元素
  * 如果已存在，不会重复创建

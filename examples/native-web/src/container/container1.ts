@@ -4,11 +4,7 @@ import {layoutData11} from "@/stores/layout";
 const container1 = new Container({
   el: '#container1',
   // el: document.getElementById('container1'),
-  global: {
-    exchange: true,
-    // ratioCol: 0.2,
-  },
-  layouts: {
+  layout: {
     // exchange: false,
     autoGrow: {
       // vertical: false,

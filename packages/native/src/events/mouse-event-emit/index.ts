@@ -1,3 +1,4 @@
-export * from './mouseEventEmit_mousedown'
-export * from './mouseEventEmit_mousemove'
-export * from './mouseEventEmit_mouseup'
+export * from './nativeEventEmit_mousedown'
+export * from './nativeEventEmit_mousemove'
+export * from './nativeEventEmit_mouseup'
+export * from './nativeEventEmit_click'

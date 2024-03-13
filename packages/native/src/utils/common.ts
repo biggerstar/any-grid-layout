@@ -1,9 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {CustomItemPos, CustomLayoutsOption} from "@/types";
+import {CustomItemPos, CustomLayoutOption} from "@/types";
 import {Container, Item} from "@/main";
 import {cloneDeep, getKebabCase} from "@/utils/tool";
-import {tempStore} from "@/global";
 
 
 /**
@@ -57,19 +56,6 @@ export function updateStyle<EL extends HTMLElement>(
 }
 
 /**
- * 判断当前操作行为是否允许跨容器移动
- * */
-export function canExchange() {
-  const {fromContainer, fromItem, toContainer} = tempStore;
-  if (!fromContainer || !fromItem || !toContainer) {
-    return false
-  }
-  return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
-    && toContainer.getConfig('exchange')
-    && fromContainer.getConfig('exchange')
-}
-
-/**
  * 获取container中的配置
  * */
 export const _getConfig = (container: Container, name: string) => {
@@ -80,9 +66,6 @@ export const _getConfig = (container: Container, name: string) => {
   if (has(container.layout, name)) {
     return container.layout[name]
   }
-  if (has(container.global, name)) {
-    return container.global[name]
-  }
   if (has(container._default, name)) {
     return cloneDeep(container._default[name])
   }
@@ -92,11 +75,11 @@ export const _getConfig = (container: Container, name: string) => {
 /**
  * 批量获取container的配置信息，不会发起getContainer事件
  * */
-export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name)
-  : Exclude<CustomLayoutsOption[Name], undefined>
-export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(container: Container, nameInfo: Name[])
-  : { [Key in Name]: CustomLayoutsOption[Key] }
-export function getContainerConfigs<Name extends keyof CustomLayoutsOption>(
+export function getContainerConfigs<Name extends keyof CustomLayoutOption>(container: Container, nameInfo: Name)
+  : Exclude<CustomLayoutOption[Name], undefined>
+export function getContainerConfigs<Name extends keyof CustomLayoutOption>(container: Container, nameInfo: Name[])
+  : { [Key in Name]: CustomLayoutOption[Key] }
+export function getContainerConfigs<Name extends keyof CustomLayoutOption>(
   container: Container,
   nameInfo: Name[] | Name
 ): any {

@@ -187,8 +187,8 @@ const genPrototypeToRootPath = (target: HTMLElement, touchEvent: any) => {
   if (target instanceof HTMLElement) {
     do {
       path.push(target)
-      target = <HTMLElement>target.parentNode
-    } while (target && target.parentNode)
+      target = <HTMLElement>target.parentElement
+    } while (target && target.parentElement)
   }
   // console.log(path);
   return path
@@ -207,9 +207,9 @@ export function getContainerFromElement(el): Container | null {
 }
 
 /**
- * [parentNode方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
+ * [parentElement方式] 用于将在原型链中对象中往root方向最新的的Container解析出来
  * */
-export const parseContainerFromPrototypeChain = (target: Element): Container | null => {
+export const parseContainerFromPrototypeChain = (target: HTMLElement): Container | null => {
   let container: Container
   if (target instanceof Element) {
     do {
@@ -217,8 +217,8 @@ export const parseContainerFromPrototypeChain = (target: Element): Container | n
         container = target._gridContainer_
         break
       }
-      target = <Element>target.parentNode
-    } while (target && target.parentNode)
+      target = <HTMLElement>target.parentElement
+    } while (target && target.parentElement)
   }
   return container
 }
@@ -277,14 +277,14 @@ export const parseItem = (ev): Item | null => {
 /**
  * 检测某个item 要放置的HTML元素目标是否被嵌套
  * */
-export function parseItemFromPrototypeChain(target: Element): Item | null {
+export function parseItemFromPrototypeChain(target: HTMLElement): Item | null {
   if (target instanceof Element) {
     do {
       if (target._isGridItem_) {
         return target._gridItem_
       }
-      target = <HTMLElement>target.parentNode
-    } while (target && target.parentNode)
+      target = <HTMLElement>target.parentElement
+    } while (target && target.parentElement)
   }
   return null
 }
@@ -293,7 +293,7 @@ export function parseItemFromPrototypeChain(target: Element): Item | null {
  * 触屏模式下点击屏幕触发的触屏事件转成和鼠标事件类似的通用事件，只支持一个手指
  * 会将相关信息挂载到ev上并通过事件流分发到各个事件中
  * */
-export const singleTouchToCommonEvent = (touchEvent) => {
+export const singleTouchToCommonEvent = (touchEvent: any) => {
   let useTouchKey = 'touches'
   if (touchEvent.touches && touchEvent.touches.length === 0) {
     useTouchKey = 'changedTouches'    // 正常用于touchEnd获取最后改变的point

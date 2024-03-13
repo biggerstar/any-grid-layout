@@ -3,11 +3,7 @@ import {layoutData11} from "@/stores/layout";
 
 const container2 = new Container({
   el: '#container2',
-  global: {
-    ratioCol: 0.1,
-    // ratioRow: 0.1,
-  },
-  layouts: [
+  layout: [
     // {
     //   px: 1300,
     //   col:9,

@@ -2,44 +2,44 @@ import {
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown,
-  container_click,
-  endWork_mouseup,
-  mouseEventEmit_mousedown,
-  mouseEventEmit_mousemove,
-  mouseEventEmit_mouseup,
-  startMove_mousemove,
-  startWork_mousedown
+  nativeEventEmit_click,
+  nativeEventEmit_mousedown,
+  nativeEventEmit_mousemove,
+  nativeEventEmit_mouseup,
+  start_move,
+  start_down,
+  end_work
 } from "@/events";
 
-export function allMousedown(ev) {
+export function doMousedown(ev: any) {
   /* compatible */
   compatible_touchstart_mousedown(ev)
   /* startWork */
-  startWork_mousedown(ev)
-
-  mouseEventEmit_mousedown(ev)   // 点击时清除克隆元素
+  start_down(ev)
+  /*  native event emit */
+  nativeEventEmit_mousedown(ev)   // 点击时清除克隆元素
 }
 
-export function allMousemove(ev) {
+export function doMousemove(ev: any) {
   /* compatible */
   compatible_touchmove_mousemove(ev)
   /* start init */
-  startMove_mousemove(ev)
-
-  mouseEventEmit_mousemove(ev)  // 必须在前面先创建克隆元素
+  start_move(ev)
+  /*  native event emit */
+  nativeEventEmit_mousemove(ev)  // 必须在前面先创建克隆元素
 }
 
-export function allMouseup(ev) {
+export function doMouseup(ev: any) {
   /* compatible */
   compatible_touchend_mouseup(ev)
-
-  mouseEventEmit_mouseup(ev)
+  /*  native event emit */
+  nativeEventEmit_mouseup(ev)
   /*  endWork */
-  endWork_mouseup(ev)
+  end_work(ev)
 }
 
-export function allClick(ev) {
-  container_click(ev)
+export function doClick(ev: any) {
+  nativeEventEmit_click(ev)
 }
 
 let running = false
@@ -52,14 +52,14 @@ export function startGlobalEvent(targetWindow?: WindowProxy) {
   }
   const document = (targetWindow || window).document
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
-  document.addEventListener('mousedown', allMousedown, {passive: true})
-  document.addEventListener('touchstart', allMousedown, {passive: false})
+  document.addEventListener('mousedown', doMousedown, {passive: true})
+  document.addEventListener('touchstart', doMousedown, {passive: false})
   //-------------------------------原来的必须挂dom上的事件-----------------------------//
-  document.addEventListener('mousemove', allMousemove, {passive: true})
-  document.addEventListener('touchmove', allMousemove, {passive: false})
-  document.addEventListener('mouseup', allMouseup, {passive: true})
-  document.addEventListener('touchend', allMouseup, {passive: false})
-  document.addEventListener('click', allClick, {passive: false})
+  document.addEventListener('mousemove', doMousemove, {passive: true})
+  document.addEventListener('touchmove', doMousemove, {passive: false})
+  document.addEventListener('mouseup', doMouseup, {passive: true})
+  document.addEventListener('touchend', doMouseup, {passive: false})
+  document.addEventListener('click', doClick)
   running = true
 }
 
@@ -67,11 +67,11 @@ export function removeGlobalEvent() {
   if (containerCount > 1) {
     return
   }
-  document.removeEventListener('mousedown', allMousedown)
-  document.removeEventListener('touchstart', allMousedown)
+  document.removeEventListener('mousedown', doMousedown)
+  document.removeEventListener('touchstart', doMousedown)
   //-------------------------------原来的必须挂dom上的事件-----------------------------//
-  document.removeEventListener('mousemove', allMousemove)
-  document.removeEventListener('touchmove', allMousemove)
-  document.removeEventListener('mouseup', allMouseup)
-  document.removeEventListener('touchend', allMouseup)
+  document.removeEventListener('mousemove', doMousemove)
+  document.removeEventListener('touchmove', doMousemove)
+  document.removeEventListener('mouseup', doMouseup)
+  document.removeEventListener('touchend', doMouseup)
 }

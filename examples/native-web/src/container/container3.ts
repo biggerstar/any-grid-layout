@@ -4,7 +4,7 @@ import {layoutData, layoutData11} from "@/stores/layout";
 const container3 = new Container({
   el: '#container3',
   // el: document.getElementById('container'),
-  layouts: {
+  layout: {
     // from: '来自layout2',
     ratioCol: 0.1,
     // col: 9,

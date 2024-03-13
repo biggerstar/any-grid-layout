@@ -10,7 +10,12 @@ import {
   throttle
 } from "@/utils/tool";
 import {Item} from "@/main/item/Item";
-import {ContainerInstantiationOptions, CustomItem, CustomLayoutsOption, EventBusType, GridPlugin} from "@/types";
+import {
+  ContainerInstantiationOptions,
+  CustomItem, CustomLayoutOption,
+  EventBusType,
+  GridPlugin
+} from "@/types";
 import {removeGlobalEvent, startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins-src/PluginManager";
@@ -31,7 +36,7 @@ import deepmerge from "deepmerge";
  *   ```javascript{
  *    col: 8,
  *    size:[80,80],
- *    layouts:[{
+ *    layout:[{
  *          px:1024,
  *          size:[100,100]
  *        },
@@ -61,29 +66,19 @@ export class Container {
   public className: string = grid_container_class_name
   public platform: 'native' | 'vue' = 'native'
   public el: HTMLElement | string = ''
-  public global: CustomLayoutsOption = {} as any
-  public layouts: CustomLayoutsOption[] = [] as any
   //----------------内部需要的参数---------------------//
-  /**
-   * 当前正在使用的布局，为layouts中的某一个适合当前屏幕的布局配置的地址引用
-   * 该布局会信息会在切换布局的时候被修改，原因是为了同步当前最新布局保存到layouts中
-   * */
   public bus: Emitter<EventBusType> = Bus()
   public pluginManager: PluginManager
   public layoutManager: LayoutManager
-  public readonly layout: CustomLayoutsOption = {} as any
-  public readonly useLayout: CustomLayoutsOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
-  private readonly options: ContainerInstantiationOptions
+  public readonly layout: CustomLayoutOption = {} as any
+  public readonly useLayout: CustomLayoutOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
   public items: Item[] = []
-  public childContainer: Container[] = [] // 所有该Container的直接子嵌套容器
   public element?: HTMLElement   //  container的挂载节点
   public contentElement?: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
-  public parentItem: Item | null = null
-  public parent: Container | null = null
   public STRect?: ReturnType<typeof createSTRect>
   //----------------保持状态所用参数---------------------//
   public _mounted?: boolean
-  public readonly _default: CustomLayoutsOption
+  public readonly _default: CustomLayoutOption
   // private __store__ = tempStore
   public readonly __ownTemp__ = {
     //-----内部可写外部只读变量------//
@@ -93,7 +88,6 @@ export class Container {
       resize: void 0,
       mutation: void 0,
     },
-    //----------可写变量-----------//
   }
 
   constructor(options: ContainerInstantiationOptions) {
@@ -114,39 +108,13 @@ export class Container {
     })
     merge(this, resOption)
     this._define()
-    this.options = options    // 拿到和Container同一份用户传入的配置信息
-    this._default = new ContainerGeneralImpl()
-    this.initLayoutInfo()
+    this._default = Object.freeze(new ContainerGeneralImpl())
+    this.layout = cloneDeep(options.layout)
   }
 
   private _define() {
-    const self = this
     const useLayout = {}
     Object.defineProperties(<object>this, {
-      layout: {
-        get() {
-          let layoutItem: any
-          const layouts = self.layouts.sort((a, b) => a.px - b.px)
-          const containerWidth = self.element?.clientWidth
-
-          for (let i = 0; i < layouts.length; i++) {
-            layoutItem = layouts[i]
-            if (!Array.isArray(layoutItem.items)) {
-              layoutItem.items = []
-            }
-            if (layouts.length === 1) {
-              break
-            }
-            // 此时 layoutItem.px循环结束后 大于 containerWidth,表示该Container在该布局方案中符合px以下的设定,
-            // 接上行: 如果实际Container大小还大于layoutItem.px，此时是最后一个，将跳出直接使用最后也就是px最大对应的那个布局方案
-            if (containerWidth && layoutItem.px < containerWidth) {
-              continue
-            }
-            break
-          }
-          return layoutItem
-        }
-      },
       useLayout: {
         get() {
           return useLayout
@@ -158,6 +126,13 @@ export class Container {
   public use(plugin: GridPlugin): this {
     this.pluginManager.use(plugin)
     return this
+  }
+
+  /**
+   * 修改布局配置
+   * */
+  public setState(options: CustomLayoutOption) {
+    Object.assign(this.layout, options)
   }
 
   /**
@@ -177,7 +152,7 @@ export class Container {
   }
 
   /** 传入配置名获取当前正在使用的配置值 */
-  public getConfig<Name extends keyof CustomLayoutsOption>(name: Name): Exclude<CustomLayoutsOption[Name], undefined> {
+  public getConfig<Name extends keyof CustomLayoutOption>(name: Name): Exclude<CustomLayoutOption[Name], undefined> {
     let data = getContainerConfigs(this, name)
     let ev: ConfigurationEvent
     this.bus.emit('getConfig', {
@@ -196,7 +171,7 @@ export class Container {
    * 将值设置到当前使用的配置信息中,只是临时设置
    * sync 是否同步到用户配置，转成非临时配置，建议您使用container.layout获取用户配置对象直接修改替代该操作
    * */
-  public setConfig<Name extends keyof CustomLayoutsOption>(name: Name, data: CustomLayoutsOption[Name], sync: boolean = false): void {
+  public setConfig<Name extends keyof CustomLayoutOption>(name: Name, data: CustomLayoutOption[Name], sync: boolean = false): void {
     let ev: ConfigurationEvent
     if (['col', 'row'].includes(name)) {
       this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
@@ -212,15 +187,13 @@ export class Container {
     const mergeConfig = (name: string, to: object, from: any) => {
       if (isObject(to[name]) && isObject(from)) {
         deepmerge(to[name], from, {clone: true})
-      }
-      else {
+      } else {
         to[name] = from
       }
     }
     if (sync) {
       mergeConfig(name, this.layout, data)
-    }
-    else {
+    } else {
       mergeConfig(name, this.useLayout, data)
     }
   }
@@ -240,7 +213,7 @@ export class Container {
   }
 
   /** 手动添加item渲染 */
-  public render(renderCallback: (item: CustomItem[], layout: CustomLayoutsOption, element: HTMLElement) => void) {
+  public render(renderCallback: (item: CustomItem[], layout: CustomLayoutOption, element: HTMLElement) => void) {
     if (this.element && this.element.clientWidth <= 0) {
       throw new Error('请指定容器宽高')
     }
@@ -258,43 +231,35 @@ export class Container {
    * 如果实例化不传入 items 可以在后面自行创建item之后手动渲染
    * */
   public mount(): void {
-    const mountFn = ():any => {
-      if (this._mounted) {
-        return this.bus.emit('error', {
-          type: 'RepeatedContainerMounting',
-          message: '重复挂载容器被阻止',
-          from: this,
-        })
-      }
-      //-----------------------容器dom初始化-----------------------//
-      if (this.el instanceof Element) {
-        this.element = this.el
-      }
-      if (!this.element) {
-        this.element = <HTMLElement>document.querySelector(<string>this.el)
-        if (!this.element) {
-          throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
-        }
-      }
-      //-----------------容器布局信息初始化与检测--------------------//
-      this.STRect = createSTRect(this)
-      this._init()
-      this._createGridContainerBox()
-      //-------------------------其他操作--------------------------//
-      this.parentItem = parseItemFromPrototypeChain(this.element)
-      if (this.parentItem) {
-        this.parentItem.container.childContainer.push(this)
-      }
-      this.parent = this.parentItem?.container || null
-      this.__ownTemp__.oldCol = this.getConfig("col")
-      this.__ownTemp__.oldRow = this.getConfig("row")
-      this._observer_()
-      this.updateLayout()
-      this.updateContainerSizeStyle()
-      this._mounted = true
+    if (this._mounted) {
+      return this.bus.emit('error', {
+        type: 'RepeatedContainerMounting',
+        message: '重复挂载容器被阻止',
+        from: this,
+      })
     }
-    startGlobalEvent()
-    mountFn()
+    startGlobalEvent()  // 开启全局事件监听， 多容器下只会开启一次
+    //-----------------------容器dom初始化-----------------------//
+    if (this.el instanceof Element) {
+      this.element = this.el
+    }
+    if (!this.element) {
+      this.element = <HTMLElement>document.querySelector(<string>this.el)
+      if (!this.element) {
+        throw new Error('在DOM中未找到指定ID对应的:' + this.el + '元素')
+      }
+    }
+    //-----------------容器布局信息初始化与检测--------------------//
+    this.STRect = createSTRect(this)
+    this._init()
+    this._createGridContainerBox()
+    //-------------------------其他操作--------------------------//
+    this.__ownTemp__.oldCol = this.getConfig("col")
+    this.__ownTemp__.oldRow = this.getConfig("row")
+    this._observer_()
+    this.updateLayout()
+    this.updateContainerSizeStyle()
+    this._mounted = true
   }
 
   /**
@@ -315,12 +280,6 @@ export class Container {
     removeGlobalEvent()
   }
 
-  /** 将item成员从Container中全部移除，之后重新渲染  */
-  public remount() {
-    this.unmount()
-    this.mount()
-  }
-
   /** 移除对容器的resize监听  */
   private _disconnect_() {
     const observers = this.__ownTemp__.observers || {}
@@ -339,7 +298,6 @@ export class Container {
     const layoutChangeFun = () => {
       if (preventFirstResizingCount++ > 2) {
         this.bus.emit('containerResizing')
-        this._trySwitchLayout()
       }
     }
     const observerResize = () => {
@@ -382,37 +340,18 @@ export class Container {
   }
 
   /**
-   * 尝试切换并渲染布局  // TODO getter layout 里面判断窗口大小并返回对应布局数据
-   * */
-  private _trySwitchLayout(): void {
-    const useLayout = this.useLayout
-    const px = getContainerConfigs(this, 'px')
-    if (!px || !useLayout.px) {
-      return
-    }
-    if (px === useLayout.px) {
-      return
-    }
-    if (this.platform === 'native') {
-      this.unmount()
-      this.clear();
-      (useLayout.items as Item[]).forEach((item) => this.addItem(item))
-    }
-  }
-
-  /**
    * 使用css class 或者 Item的对应name, 或者 Element元素 或者 item.i的值 找到该对应的Item，并返回所有符合条件的Item
    * name的值在创建 Item的时候可以传入 或者直接在标签属性上使用name键值，在这边也能获取到
-   * @param { String,Element } nameOrClassOrElementOrIndex
+   * @param { String,Element } nameOrElementOrIndex
    * @return {Array} 所有符合条件的Item
    * */
-  public find(nameOrClassOrElementOrIndex: string | number | HTMLElement): Item[] {
-    const identity = nameOrClassOrElementOrIndex
+  public find(nameOrElementOrIndex: string | number | HTMLElement): Item[] {
+    const identity = nameOrElementOrIndex
     return this.items.filter((item) => {
       return isNumber(identity) && item.i === identity
         || isString(identity) && item.name === identity
         || item.element === identity
-        || isString(identity) && item.classList.includes(identity)
+        || isString(identity)
     })
   }
 
@@ -464,43 +403,7 @@ export class Container {
 
   private _init() {
     let items = getContainerConfigs(this, 'items')
-    items.forEach((item) => this.addItem(item, {syncCustomItems: false, addForce: true}))
-  }
-
-  /**
-   * 用于提取用户传入的[所有]布局配置文件到 container.layouts
-   * */
-  public initLayoutInfo() {
-    const options: Record<any, any> = this.options
-    let layoutInfo = []
-    if (Array.isArray(options.layouts)) {
-      layoutInfo = options.layouts
-    }         // 传入的layouts字段Array形式
-    else {
-      if (typeof options.layouts === "object") {
-        layoutInfo.push(options.layouts)
-      }     // 传入的layouts字段Object形式
-      else {
-        throw new Error("请传入layout配置信息")
-      }
-    }
-    if (Array.isArray(layoutInfo) && layoutInfo.length > 1) {
-      let isBreak = false
-      layoutInfo.sort((a, b) => {
-        if (isBreak) {
-          return 0
-        }
-        if (typeof a.px !== "number" || typeof b.px !== "number") {
-          this.bus.emit("warn", {
-            message: `未指定layout的px值,传入的layout为${b}`
-          })
-          isBreak = true
-        }
-        return a.px - b.px
-      })
-    }
-    this.layouts = cloneDeep(layoutInfo)   // items 可能用的通个引用源，这里独立给内存地址，这里包括所有的屏幕适配布局，也可能只有一种默认实例化未通过挂载layouts属性传入的一种布局
-    // console.log(layoutInfo);
+    items.forEach((item: Item) => this.addItem(item, {syncCustomItems: false, addForce: true}))
   }
 
   /**
@@ -533,8 +436,7 @@ export class Container {
     let customOpt = itemOptions
     if (itemOptions instanceof Item) {
       customOpt = itemOptions.customOptions
-    }
-    else {
+    } else {
       item = new Item(customOpt)
     }
     if (syncCustomItems) {
@@ -610,8 +512,7 @@ export class Container {
     let res: number
     if (size[0] >= Math.abs(pxNum)) {
       res = 1
-    }
-    else {
+    } else {
       res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
     }
     if (keepSymbol) {
@@ -636,8 +537,7 @@ export class Container {
     let res: number
     if (size[1] >= Math.abs(pxNum)) {
       res = 1
-    }
-    else {
+    } else {
       res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
     }
     if (keepSymbol) {

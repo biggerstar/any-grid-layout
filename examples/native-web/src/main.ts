@@ -72,13 +72,19 @@ const plugin = definePlugin({
   itemPositionChanged(ev: ItemPosChangeEvent) {
     // console.log(ev);
   },
-
-  //--------------close------------------
-  closing(ev: ItemLayoutEvent) {
+  click(ev) {
+    console.log('click')
   },
-  closed(ev: ItemLayoutEvent) {
+  mousedown(ev) {
+    console.log('mousedown')
   },
+  mousemove(ev) {
+    console.log('mousemove')
+  },
+  mouseup(ev) {
+    console.log('mouseup')
 
+  },
   each(ev: MatrixEvent) {
     // ev.prevent()
   },
@@ -86,7 +92,6 @@ const plugin = definePlugin({
     // ev.prevent()
   },
 })
-
 
 function insertItemContent(ev: BaseEvent) {
   const item = ev.item
@@ -109,7 +114,7 @@ container1
   // .use(createCloseBtnPlugin())
   // .use(createShadowElementPlugin())
   .use(createResizeBtnPlugin())
-  // .use(createResponsiveLayoutPlugin())
+// .use(createResponsiveLayoutPlugin())
 
 container2
   .use(plugin)

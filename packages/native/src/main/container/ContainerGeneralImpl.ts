@@ -1,7 +1,7 @@
 import {AlignEnumType, CustomItems, DirectionEnumType, MarginOrSizeDesc} from "@/types";
 
 /**
- * Container实例化的时候可以在Layout配置中使用的字段
+ * Container实例化的时候可以在 Layout 配置中使用的字段
  * 包含默认配置信息，用户配置找不到则会找该类的默认配置
  * */
 export class ContainerGeneralImpl {

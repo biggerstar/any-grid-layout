@@ -9,8 +9,8 @@ export const OtherEventBehavior = definePlugin({
   containerMounted$$(ev: InitOptionsEvent) {
     const container = ev.container
     const layout = ev.container.layout
-    const col = container.layout.col || container.global.col
-    const row = container.layout.row || container.global.row
+    const col = container.layout.col
+    const row = container.layout.row
     const autoGrow = getContainerConfigs(ev.container, "autoGrow")
     let msg = ''
     if (isNumber(col) && autoGrow?.horizontal) {

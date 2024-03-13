@@ -20,8 +20,7 @@ export type BasePosType = 'x' | 'y' | 'w' | 'h'
 export type MarginOrSizeDesc = [number | null, number | null]
 
 /** Container 实例化配置选项 */
-export type CustomLayoutsOptions = ContainerGeneralImpl | ContainerGeneralImpl[]
-export type CustomLayoutsOption = ContainerGeneralImpl
+export type CustomLayoutOption = ContainerGeneralImpl
 
 export type ItemLimitType = {
   maxW?: number,
@@ -68,12 +67,8 @@ export type ContainerInstantiationOptions = {
   /**
    * 当前的布局配置，可以是一个配置对象或者配置对象数组
    * */
-  layouts?: CustomLayoutsOptions,
+  layout?: CustomLayoutOption,
 
-  /**
-   * 当前的全局布局配置，该配置最终会和layouts中不同px下的配置合并作为最终使用的配置
-   * */
-  global?: CustomLayoutsOption,
   plugins?: GridPlugin[],
 }
 

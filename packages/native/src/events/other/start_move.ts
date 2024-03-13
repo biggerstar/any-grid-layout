@@ -1,7 +1,7 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
 import {tempStore} from "@/global";
 
-export const startMove_mousemove: Function = throttle((ev) => {
+export const start_move: Function = throttle((ev) => {
   const {
     fromItem,
     isLeftMousedown,

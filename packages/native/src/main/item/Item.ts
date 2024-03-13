@@ -2,24 +2,21 @@ import {Container} from "@/main/container/Container";
 import {CustomItem, MarginOrSizeDesc} from "@/types";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
-import equal from 'fast-deep-equal'
-import {isObject, isString} from "is-what";
+import {isString} from "is-what";
 import {grid_item_content} from "@/constant";
-import {cloneDeep, getContainerConfigs, updateStyle} from "@/utils";
+import {getContainerConfigs, updateStyle} from "@/utils";
 
 
 /** 栅格成员, 所有对 DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  * @param {Element} el 传入的原生Element
  * @param {Object} pos 一个包含Item位置信息的对象
  * */
-
 export class Item extends ItemGeneralImpl {
   //----------------内部需要的参数---------------------//
   public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
   public element: HTMLElement
   public container: Container   // 挂载在哪个container上
   public tagName: string = 'div'
-  public classList: string[] = []
   public parentElement: HTMLElement
   public contentElement: HTMLElement
   public declare pos: ItemPos
@@ -27,9 +24,7 @@ export class Item extends ItemGeneralImpl {
   public customOptions: CustomItem
   private readonly _default: CustomItem
   private _mounted: boolean = false
-  public __temp__: Record<any, any> = {
-    isDelayLoadAnimation: false,  // 是否延迟附加动画效果，否则当item一个个加入时会有初始加载过程的变化动画，可保留，但个人觉得不好看
-  }
+  public __temp__: Record<any, any> = {}
 
   //-------------------------getter---------------------------
   /**
@@ -50,49 +45,14 @@ export class Item extends ItemGeneralImpl {
   constructor(itemOption: CustomItem) {
     super();
     if (itemOption instanceof Item) {
-      return itemOption
-    }  // 如果已经是item，则直接返回
+      return itemOption  // 如果传入的已经是Item实例，则直接返回
+    }
     if (itemOption.el instanceof Element) {
       this.element = this.el = itemOption.el
     }
     this.customOptions = itemOption
-    this._default = new ItemGeneralImpl()
-    this._define(itemOption)
-  }
-
-  /**
-   * 用于代理中转用户配置和支持获取默认配置
-   * 对item 所有操作只要键值在 ItemGeneralImpl 中的，则会根据一定规则同步到当前item状态到container.layout中
-   * 若当前值和 ItemGeneralImpl 中默认值一样，则不会同步，保证用户配置最简化
-   * */
-  private _define(itemOption: CustomItem) {
-    const _default = this._default
-    const _customOptions: Record<any, any> = itemOption
-    const pos = new ItemPos(itemOption.pos)
-    const get = (k: keyof ItemGeneralImpl) => {
-      if (k === 'pos') {
-        return pos
-      }
-      return _customOptions.hasOwnProperty(k)
-        ? _customOptions[k]
-        : isObject(_default[k])
-          ? cloneDeep(_default[k])
-          : _default[k]
-    }
-    const set = (k: keyof CustomItem, v: any): any => {
-      if (k === 'pos') {
-        return
-      }  // 不允许更改pos
-      equal(v, _default[k]) ? null : _customOptions[k] = v
-      equal(_customOptions[k], _default[k]) ? null : _customOptions[k] = v
-    }
-
-    for (const k in _default) {
-      Object.defineProperty(<object>this, k, {
-        get: () => get(<any>k),      /* 优先获取用户配置,没有的话则获取item默认配置 */
-        set: (v) => set(<any>k, v)   /* 如果该值等于默认值，则不需要同步到用户配置上  */
-      })
-    }
+    this.pos = new ItemPos(itemOption.pos)
+    this._default = Object.freeze(new ItemGeneralImpl())
   }
 
   /**
@@ -120,7 +80,6 @@ export class Item extends ItemGeneralImpl {
       this.container.contentElement.appendChild(this.element)
     }
     this.element.classList.add(this.className)
-    this.classList = Array.from(this.element.classList)
     this.updateItemLayout()
     //--------------------------------------------
     this.element._gridItem_ = this

@@ -6,12 +6,12 @@ import {isNumber} from "is-what";
 export class ItemPos extends ItemPosGeneralImpl {
   public i?: number
   public _default?: ItemPosGeneralImpl  // 框架默认配置
-  public customPos?: CustomItemPos
+  public customOptions?: CustomItemPos
 
   constructor(pos: CustomItemPos) {
     super()
-    this._default = new ItemPosGeneralImpl() // 必须在_defineXXX 之前
-    this.customPos = pos
+    this._default = Object.freeze(new ItemPosGeneralImpl()) // 必须在_defineXXX 之前
+    this.customOptions = pos
     this.defineSyncCustomOptions(pos)
     merge(this, pos, false, ['x', 'y', 'w', 'h'])   // 1.先排除w, h先加载minX,maxX...等限制后
     merge(this, pos)  //  2. 再合并所有
@@ -32,16 +32,15 @@ export class ItemPos extends ItemPosGeneralImpl {
   /**
    * 定义如何将最新状态的配置同步到用户传入的原始配置上
    * */
-  public defineSyncCustomOptions(_customPos: CustomItemPos
-  ) {
+  public defineSyncCustomOptions(_customOptions: CustomItemPos) {
     const self = this
     const _default = this._default
 
     const _tempPos = {}  // 用于部分无法设置到用户pos上的状态保留对象，在get的时候能获取
-    const getCurPos = () => _customPos || {}  // 防止直接替换原本用户外部pos引用
+    const getCurPos = () => _customOptions || {}  // 防止直接替换原本用户外部pos引用
     const getCurPosValue = (k) => {
-      const curCustomPos = getCurPos()
-      return curCustomPos.hasOwnProperty(k) ? curCustomPos[k] : (_tempPos[k] || _default?.[k])
+      const curCustomOptions = getCurPos()
+      return curCustomOptions.hasOwnProperty(k) ? curCustomOptions[k] : (_tempPos[k] || _default?.[k])
     }
     const get = (k: keyof ItemPosGeneralImpl) => {
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
@@ -63,12 +62,12 @@ export class ItemPos extends ItemPosGeneralImpl {
       // if (k === 'w') v = self.limitSize(v, self.minW, self.maxW)
       // /* 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
       // if (k === 'h') v = self.limitSize(v, self.minH, self.maxH)
-      const curCustomPos = getCurPos()
+      const curCustomOptions = getCurPos()
       if (['w', 'h', 'x', 'y'].includes(<string>k)) {  // 如果是x,y,w,h外面没有指定则不会修改用户传入配置
-        curCustomPos.hasOwnProperty(k) ? curCustomPos[k] = v : _tempPos[k] = v
+        curCustomOptions.hasOwnProperty(k) ? curCustomOptions[k] = v : _tempPos[k] = v
       } else {  // 如果是minX,maxX等,不等于默认值则会直接修改用户传入的配置
         if (v !== _default?.[k]) {
-          curCustomPos[k] = v
+          curCustomOptions[k] = v
         }
       }
     }
@@ -83,7 +82,7 @@ export class ItemPos extends ItemPosGeneralImpl {
   /**
    * 获取计算后受minX，maxX限制的pos
    * */
-  getComputedCustomPos() {
+  public getComputedCustomPos() {
     const result = {}
     for (const name in this.customPos) {
       result[name] = this[name]
