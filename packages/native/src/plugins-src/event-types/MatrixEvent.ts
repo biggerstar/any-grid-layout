@@ -44,7 +44,7 @@ export class MatrixEvent extends BaseEvent {
    * */
   public readonly expandRowNumber: number | null
 
-  constructor(opt) {
+  constructor(opt:any) {
     super(opt);
     const {align, direction} = getContainerConfigs(this.container, ["direction", 'align'])
     this.direction = direction

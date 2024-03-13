@@ -1,5 +1,4 @@
 // noinspection JSUnusedGlobalSymbols
-
 import {definePlugin} from "@/global";
 import {ConfigurationEvent} from "@/plugins-src";
 import {getContainerConfigs} from "@/utils";

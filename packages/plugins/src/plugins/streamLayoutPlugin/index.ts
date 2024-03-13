@@ -3,9 +3,6 @@
 import {
   BaseEvent,
   ContainerSizeChangeEvent,
-  ItemExchangeEvent,
-  ItemDragEvent,
-  ItemResizeEvent,
   ItemLayoutEvent,
   definePlugin,
   tempStore,
@@ -20,10 +17,14 @@ import {directUpdateLayout, updateResponsiveResizeLayout} from "@/common";
  * 拖动Item到Items列表中的toItem的索引位置,拖动过程中保持有序
  * TODO 还有很大优化空间,比如拖动到容器外或空白处会出现一些问题
  * */
-export const moveToIndexForItems: Function = throttle((ev: ItemDragEvent) => {
+export const moveToIndexForItems: Function = throttle((ev: any) => {
   const {fromItem} = tempStore
-  if (!fromItem) return
-  if (isItemAnimating(fromItem)) return
+  if (!fromItem) {
+    return
+  }
+  if (isItemAnimating(fromItem)) {
+    return
+  }
   const container = ev.container
   const manager = container.layoutManager
   const toItem = manager.findItemFromXY(ev.items, ev.startGridX, ev.startGridY)
@@ -56,15 +57,17 @@ export default function createStreamLayoutPlugin(): GridPlugin {
       }
     },
 
-    exchangeVerification(ev: ItemExchangeEvent) {
+    exchangeVerification(ev: any) {
       ev.prevent()
-      if (!ev.fromItem) return
+      if (!ev.fromItem) {
+        return
+      }
       if (ev.container.autoGrowCol || ev.container.autoGrowRow) {
         ev.doExchange()
       }
     },
 
-    exchangeReceive(ev: ItemExchangeEvent) {
+    exchangeReceive(ev: any) {
       if (ev.newItem) {
         ev.addModifyItem(ev.newItem, {
           x: ev.toStartX,
@@ -84,7 +87,7 @@ export default function createStreamLayoutPlugin(): GridPlugin {
         manager.reset(ev.col || container.getConfig("col"), ev.row || container.getConfig("row"))
       }
     },
-    dragend(ev: ItemDragEvent) {
+    dragend(ev: any) {
       directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
       ev.container.layoutManager.trim({
         row: {head: true},
@@ -93,24 +96,24 @@ export default function createStreamLayoutPlugin(): GridPlugin {
       directUpdateLayout(ev)
     },
 
-    dragToTop(ev: ItemDragEvent) {
+    dragToTop(ev: any) {
       moveToIndexForItems(ev)
     },
 
-    dragToBottom(ev: ItemDragEvent) {
+    dragToBottom(ev: any) {
       moveToIndexForItems(ev)
     },
 
-    dragToLeft(ev: ItemDragEvent) {
+    dragToLeft(ev: any) {
       moveToIndexForItems(ev)
     },
 
-    dragToRight(ev: ItemDragEvent) {
+    dragToRight(ev: any) {
       moveToIndexForItems(ev)
     },
 
     /*------------------------------------------------------------------*/
-    resized(ev: ItemResizeEvent) {
+    resized(ev: any) {
       directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
       ev.container.layoutManager.trim({
         row: {head: true},
@@ -119,19 +122,19 @@ export default function createStreamLayoutPlugin(): GridPlugin {
       directUpdateLayout(ev)
     },
 
-    resizeToTop(ev: ItemResizeEvent) {
+    resizeToTop(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToBottom(ev: ItemResizeEvent) {
+    resizeToBottom(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToLeft(ev: ItemResizeEvent) {
+    resizeToLeft(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToRight(ev: ItemResizeEvent) {
+    resizeToRight(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 

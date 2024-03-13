@@ -1,8 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {autoSetSizeAndMargin} from "@/algorithm/common";
-import {updateContainerSize} from "@/plugins-src/common";
-import {definePlugin} from "@/global";
+import {definePlugin, tempStore} from "@/global";
 import {GridPlugin} from "@/types";
 import {ContainerSizeChangeEvent} from "@/plugins-src";
 import {Item} from "@/main";
@@ -27,7 +26,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     container.updateContainerSizeStyle(res)  // 4.将当前所有最终items的col,row最终容器大小设置到container
     autoSetSizeAndMargin(container, true)  // 5.根据最终容器大小配置最终margin和size
     container.items = res.successItems
-    container.items.forEach(item => item.mount())   // 6. 挂载item到dom上
+    container.items.forEach((item: Item) => item.mount())   // 6. 挂载item到dom上
     ev.patchStyle(res.successItems)  // 7.更新item在容器中的最终位置
     if (!res.isSuccess) {
       container.bus.emit('error', {
@@ -63,9 +62,9 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
    * */
   updateLayout(ev: any) {
     const container = ev.container
-    autoSetSizeAndMargin(container, true)
-    updateContainerSize(container)
-    container.items.forEach((item:Item) => item.updateItemLayout())
+    autoSetSizeAndMargin(container, true);
+    (container || tempStore.fromContainer)?.updateContainerSizeStyle?.()
+    container.items.forEach((item: Item) => item.updateItemLayout())
   }
 })
 

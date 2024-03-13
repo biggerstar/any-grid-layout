@@ -81,10 +81,6 @@ export class Container {
   public parentItem: Item | null = null
   public parent: Container | null = null
   public STRect?: ReturnType<typeof createSTRect>
-  // //----------------vue 支持---------------------//
-  // // TODO 后面在vue的layout模块使用declare module进行声明合并
-  // public vue: any
-  // public _VueEvents: object
   //----------------保持状态所用参数---------------------//
   public _mounted?: boolean
   public readonly _default: CustomLayoutsOption

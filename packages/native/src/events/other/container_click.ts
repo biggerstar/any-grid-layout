@@ -1,6 +1,6 @@
 import {tempStore} from "@/global";
 
-export function itemClick_mousedown(_) {
+export function container_click(_) {
   const {fromContainer} = tempStore
   if (fromContainer) {
     fromContainer.bus.emit("click")

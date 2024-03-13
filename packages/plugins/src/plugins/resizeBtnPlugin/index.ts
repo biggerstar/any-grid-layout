@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {
   definePlugin,
   GridPlugin,
@@ -31,7 +33,9 @@ export default function createResizeBtnPlugin(): GridPlugin {
       const grid_item_resizable_handle = 'grid-item-resizable-handle'
       if (isOpenResize) {
         const handleResizeEls = ev.item.element.querySelectorAll('.' + grid_item_resizable_handle)
-        if (handleResizeEls.length > 0) return;
+        if (handleResizeEls.length > 0) {
+          return;
+        }
         const resizeTabEl = document.createElement('span')
         resizeTabEl.innerHTML = grid_item_resize_text
         ev.item.element.appendChild(resizeTabEl)

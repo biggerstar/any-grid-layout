@@ -2,20 +2,20 @@ import {
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown,
+  container_click,
   endWork_mouseup,
-  mouseEventEmit_mousedown, mouseEventEmit_mousemove, mouseEventEmit_mouseup
+  mouseEventEmit_mousedown,
+  mouseEventEmit_mousemove,
+  mouseEventEmit_mouseup,
+  startMove_mousemove,
+  startWork_mousedown
 } from "@/events";
-import {startMove_mousemove} from "@/events/other/startMove_mousemove";
-import {startWork_mousedown} from "@/events/other/startWork_mousedown";
-import {itemClick_mousedown} from "@/events/other/itemClick_mousedown";
 
 export function allMousedown(ev) {
   /* compatible */
   compatible_touchstart_mousedown(ev)
   /* startWork */
   startWork_mousedown(ev)
-  /* click event */
-  itemClick_mousedown(ev)
 
   mouseEventEmit_mousedown(ev)   // 点击时清除克隆元素
 }
@@ -38,6 +38,10 @@ export function allMouseup(ev) {
   endWork_mouseup(ev)
 }
 
+export function allClick(ev) {
+  container_click(ev)
+}
+
 let running = false
 let containerCount = 0
 
@@ -55,6 +59,7 @@ export function startGlobalEvent(targetWindow?: WindowProxy) {
   document.addEventListener('touchmove', allMousemove, {passive: false})
   document.addEventListener('mouseup', allMouseup, {passive: true})
   document.addEventListener('touchend', allMouseup, {passive: false})
+  document.addEventListener('click', allClick, {passive: false})
   running = true
 }
 

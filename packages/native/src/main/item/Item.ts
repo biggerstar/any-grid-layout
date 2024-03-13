@@ -93,9 +93,6 @@ export class Item extends ItemGeneralImpl {
         set: (v) => set(<any>k, v)   /* 如果该值等于默认值，则不需要同步到用户配置上  */
       })
     }
-
-    // Object.defineProperties(<object>this, {
-    // })
   }
 
   /**
@@ -126,12 +123,11 @@ export class Item extends ItemGeneralImpl {
     this.classList = Array.from(this.element.classList)
     this.updateItemLayout()
     //--------------------------------------------
-    this.element['_gridItem_'] = this
-    this.element['_isGridItem_'] = true
+    this.element._gridItem_ = this
+    this.element._isGridItem_ = true
     this._mounted = true
     this.container.bus.emit('itemMounted', {item: this})
   }
-
 
   /**
    * 自身调用从container中移除,未删除Items中的占位,若要删除可以遍历删除或者直接调用clear清除全部Item,或者使用isForce参数设为true
@@ -289,8 +285,7 @@ export class Item extends ItemGeneralImpl {
       let offsetRight: number
       if (offsetCol === 0) {
         offsetRight = margin[0] * 2
-      }
-      else {
+      } else {
         offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
       }
       if (minOffsetRight > offsetRight) {
@@ -319,8 +314,7 @@ export class Item extends ItemGeneralImpl {
       let offsetBottom: number
       if (offsetRow === 0) {
         offsetBottom = margin[1] * 2
-      }
-      else {
+      } else {
         offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
       }
       if (minOffsetBottom > offsetBottom) {

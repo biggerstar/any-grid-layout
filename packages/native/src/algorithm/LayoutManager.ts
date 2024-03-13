@@ -42,7 +42,7 @@ export class LayoutManager extends Finder {
    * 判断该pos是否超出当前的矩阵范围,通常用于静态模式
    * @return {Boolean} 超过：true  未超过：false
    * */
-  public isOverFlowMatrix(pos: CustomItemPos) {
+  public isOverFlowMatrix(pos: CustomItemPos): boolean {
     return (pos.x + pos.w - 1) > this.col
       || (pos.y + pos.h - 1) > this.row
   }
@@ -732,7 +732,7 @@ export class LayoutManager extends Finder {
     if (!Array.isArray(posList)) {
       posList = [posList]
     }
-    posList.forEach(pos => {
+    posList.forEach((pos: CustomItemPos) => {
       const x = this.col - pos.x - (pos.w - 1) + 1
       pos.x = x <= 0 ? 1 : x
     })

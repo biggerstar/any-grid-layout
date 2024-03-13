@@ -18,7 +18,7 @@ export class ItemPos extends ItemPosGeneralImpl {
   }
 
   /** 传入一个值，返回经过限制值边界大小后的结果 */
-  public filterLimit(newVal: number, min: number, max: number): number {
+  private limitSize(newVal: number, min: number, max: number): number {
     if (min >= max) {
       newVal = max // 1. 先看min,max如果min > max 则此时新值永远等于 max 对应的值
     } else if (newVal > max) {
@@ -32,7 +32,8 @@ export class ItemPos extends ItemPosGeneralImpl {
   /**
    * 定义如何将最新状态的配置同步到用户传入的原始配置上
    * */
-  public defineSyncCustomOptions(_customPos) {
+  public defineSyncCustomOptions(_customPos: CustomItemPos
+  ) {
     const self = this
     const _default = this._default
 
@@ -45,11 +46,11 @@ export class ItemPos extends ItemPosGeneralImpl {
     const get = (k: keyof ItemPosGeneralImpl) => {
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
       if (k === 'w') {
-        return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minW, self.maxW)
+        return self.limitSize(_tempPos[k] || getCurPos()[k], self.minW, self.maxW)
       }
       /* 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
       if (k === 'h') {
-        return self.filterLimit(_tempPos[k] || getCurPos()[k], self.minH, self.maxH)
+        return self.limitSize(_tempPos[k] || getCurPos()[k], self.minH, self.maxH)
       }
       if (k === 'x' || k === 'y') {
         const val = getCurPosValue(k)
@@ -59,9 +60,9 @@ export class ItemPos extends ItemPosGeneralImpl {
     }
     const set = (k: keyof ItemPosGeneralImpl, v: any) => {
       // /* 限制宽度设置和获取，获取到的宽度已经是经过maxW和minW限制过的最终结果，可以安全获取 */
-      // if (k === 'w') v = self.filterLimit(v, self.minW, self.maxW)
+      // if (k === 'w') v = self.limitSize(v, self.minW, self.maxW)
       // /* 限制宽度设置和获取，获取到的宽度已经是经过maxH和minH限制过的最终结果，可以安全获取 */
-      // if (k === 'h') v = self.filterLimit(v, self.minH, self.maxH)
+      // if (k === 'h') v = self.limitSize(v, self.minH, self.maxH)
       const curCustomPos = getCurPos()
       if (['w', 'h', 'x', 'y'].includes(<string>k)) {  // 如果是x,y,w,h外面没有指定则不会修改用户传入配置
         curCustomPos.hasOwnProperty(k) ? curCustomPos[k] = v : _tempPos[k] = v

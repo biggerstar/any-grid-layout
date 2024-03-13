@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {definePlugin, GridPlugin, parseItemFromPrototypeChain} from "@biggerstar/layout";
 
 const grid_item_close_btn = 'grid-item-close-btn'
