@@ -1,17 +1,16 @@
 import {
   definePlugin,
   getClientRect,
-  grid_clone_el,
-  grid_dragging_clone_el,
   tempStore,
-  grid_dragging_source_el,
   updateStyle,
   throttle,
   SingleThrottle,
-  BaseEvent,
   canExchange,
   getContainerConfigs
 } from "@biggerstar/layout";
+
+
+const grid_clone_el = 'grid-clone-el'
 
 /**
  * [resizing] 创建resize的克隆元素
@@ -24,7 +23,9 @@ const createResizingCloneElSize: Function = throttle(() => {
     cloneElement,
     fromContainer,
   } = tempStore
-  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem) return
+  if (cloneElement || !mousedownEvent || !fromContainer || !fromItem) {
+    return
+  }
   const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
   finallyRemoveEls.forEach(node => node.remove())   // 防止高频点击
 
@@ -48,12 +49,15 @@ const createDraggingClonePosition: Function = throttle(() => {
   const {
     mousedownEvent,
     fromItem,
-    isDragging,
     cloneElement,
     isLeftMousedown,
   } = tempStore
-  if (!mousedownEvent || !fromItem || !isDragging || !isLeftMousedown) return
-  if (cloneElement) return
+  if (!mousedownEvent || !fromItem || !isLeftMousedown) {
+    return
+  }
+  if (cloneElement) {
+    return
+  }
   const finallyRemoveEls = document.querySelectorAll<HTMLElement>(`.${grid_clone_el}`)
   finallyRemoveEls.forEach(node => node.remove())   // 防止高频点击
 
@@ -87,7 +91,6 @@ const _updateLocation: Function = () => {
     fromItem,
     fromContainer,
     toContainer,
-    isDragging,
     mousemoveEvent,
     cloneElement,
     cloneElScaleMultipleX = 1,
@@ -99,7 +102,9 @@ const _updateLocation: Function = () => {
     lastOffsetM_left: offsetM_left,
     lastOffsetM_Top: offsetM_top,
   } = tempStore
-  if (!isDragging || !fromItem || !fromContainer || !cloneElement || !mousemoveEvent) return
+  if (!fromItem || !fromContainer || !cloneElement || !mousemoveEvent) {
+    return
+  }
   let nextWidth: number, nextHeight: number
   const targetContainer = toContainer || fromContainer
   const exchange = canExchange()
@@ -235,7 +240,8 @@ export default function createShadowElementPlugin() {
       }
 
       function delayRemoveCloneEl(gridCloneEl: HTMLElement) {
-        const {fromItem, isDragging} = tempStore
+        const {fromItem} = tempStore
+        const isDragging = true
         //----------移除Drag或者Resize创建的克隆备份-------------//
         //  清除对Item拖动或者调整大小产生的克隆对象
         let timer = null
@@ -273,7 +279,9 @@ export default function createShadowElementPlugin() {
         }
 
         function removeCloneEl() {
-          if (!fromItem) return
+          if (!fromItem) {
+            return
+          }
           try {    // 拖拽
             gridCloneEl.parentNode.removeChild(gridCloneEl)
           } catch (e) {

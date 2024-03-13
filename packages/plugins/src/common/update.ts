@@ -1,6 +1,4 @@
-import {updateStyle} from "@/utils";
-import {tempStore} from "@/global";
-import {Container} from "@/main";
+import {Container, tempStore, updateStyle} from "@biggerstar/layout";
 
 
 /**

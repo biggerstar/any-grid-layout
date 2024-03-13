@@ -3,12 +3,9 @@
 import {
   definePlugin,
   tempStore,
-  ItemDragEvent,
-  ItemResizeEvent,
   ItemLayoutEvent,
   BaseEvent,
   ContainerSizeChangeEvent,
-  ItemExchangeEvent,
   getContainerConfigs,
   GridPlugin
 } from "@biggerstar/layout";
@@ -29,15 +26,17 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       }
     },
 
-    exchangeVerification(ev: ItemExchangeEvent) {
+    exchangeVerification(ev: any) {
       ev.prevent()
-      if (!ev.fromItem) return
+      if (!ev.fromItem) {
+        return
+      }
       if (ev.container.autoGrowCol || ev.container.autoGrowRow) {
         ev.doExchange()
       }
     },
 
-    exchangeReceive(ev: ItemExchangeEvent) {
+    exchangeReceive(ev: any) {
       if (ev.newItem) {
         ev.addModifyItem(ev.newItem, {
           x: ev.toStartX,
@@ -58,7 +57,7 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       }
     },
 
-    dragend(ev: ItemDragEvent) {
+    dragend(ev: any) {
       directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
       ev.container.layoutManager.trim({
         row: {head: true},
@@ -67,44 +66,60 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       directUpdateLayout(ev)
     },
 
-    dragToTop(ev: ItemDragEvent) {
+    dragToTop(ev: any) {
       // console.log('dragToTop')
       ev.prevent()
       const {fromItem} = tempStore
-      if (!fromItem) return
-      if (fromItem.pos.y <= 1) return
+      if (!fromItem) {
+        return
+      }
+      if (fromItem.pos.y <= 1) {
+        return
+      }
       updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y + fromItem.pos.h}))
     },
 
-    dragToRight(ev: ItemDragEvent) {
+    dragToRight(ev: any) {
       // console.log('dragToRight')
       ev.prevent()
       const {fromItem} = tempStore
-      if (!fromItem) return
-      if (fromItem.pos.x + fromItem.pos.w - 1 >= ev.col && !ev.container.autoGrowCol) return
+      if (!fromItem) {
+        return
+      }
+      if (fromItem.pos.x + fromItem.pos.w - 1 >= ev.col && !ev.container.autoGrowCol) {
+        return
+      }
       updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x - fromItem.pos.w}))
     },
 
-    dragToBottom(ev: ItemDragEvent) {
+    dragToBottom(ev: any) {
       // console.log('dragToBottom')
       ev.prevent()
       const {fromItem} = tempStore
-      if (!fromItem) return
-      if (fromItem.pos.y + fromItem.pos.h - 1 >= ev.row && !ev.container.autoGrowRow) return
+      if (!fromItem) {
+        return
+      }
+      if (fromItem.pos.y + fromItem.pos.h - 1 >= ev.row && !ev.container.autoGrowRow) {
+        return
+      }
       updateResponsiveDragLayout(ev, (item) => ({y: item.pos.y - fromItem.pos.h}))
     },
 
-    dragToLeft(ev: ItemDragEvent) {
+    dragToLeft(ev: any) {
       // console.log('dragToLeft')
       ev.prevent()
       const {fromItem} = tempStore
-      if (!fromItem) return
-      if (fromItem.pos.x <= 1) return
+      if (!fromItem) {
+        return
+      }
+      if (fromItem.pos.x <= 1) {
+        return
+      }
       updateResponsiveDragLayout(ev, (item) => ({x: item.pos.x + fromItem.pos.w}))
     },
 
     /*------------------------------------------------------------------*/
-    resized(ev: ItemResizeEvent) {
+    resized(ev: any) {
       directUpdateLayout(ev)   // 防御性编程，保证最后布局矩阵中是当前所有item正确的位置，用于后面trim裁剪
       ev.container.layoutManager.trim({
         row: {head: true},
@@ -113,19 +128,19 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       directUpdateLayout(ev)
     },
 
-    resizeToTop(ev: ItemResizeEvent) {
+    resizeToTop(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToBottom(ev: ItemResizeEvent) {
+    resizeToBottom(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToLeft(ev: ItemResizeEvent) {
+    resizeToLeft(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 
-    resizeToRight(ev: ItemResizeEvent) {
+    resizeToRight(ev: any) {
       updateResponsiveResizeLayout(ev)
     },
 

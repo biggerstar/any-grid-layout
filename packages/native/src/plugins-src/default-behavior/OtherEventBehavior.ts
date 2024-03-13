@@ -1,8 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {definePlugin} from "@/global";
+import {definePlugin, tempStore} from "@/global";
 import {ContainerSizeChangeEvent, InitOptionsEvent} from "@/plugins-src";
-import {updateContainerSize} from "@/plugins-src/common";
 import {isNumber} from "is-what";
 import {getContainerConfigs} from "@/utils";
 
@@ -28,13 +27,13 @@ export const OtherEventBehavior = definePlugin({
     }
   },
   colChanged(ev: ContainerSizeChangeEvent) {
-    updateContainerSize(ev.container)
+    (ev.container || tempStore.fromContainer)?.updateContainerSizeStyle?.()
   },
   colChanged$$(ev: ContainerSizeChangeEvent) {
     ev.container.__ownTemp__.oldCol = ev.curCol
   },
   rowChanged(ev: ContainerSizeChangeEvent) {
-    updateContainerSize(ev.container)
+    (ev.container || tempStore.fromContainer)?.updateContainerSizeStyle?.()
   },
   rowChanged$$(ev: ContainerSizeChangeEvent) {
     ev.container.__ownTemp__.oldRow = ev.curRow

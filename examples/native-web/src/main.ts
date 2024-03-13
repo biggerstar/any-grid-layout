@@ -1,13 +1,9 @@
 import container1 from "@/container/container1";
 import {
   BaseEvent,
-  CloneElementStyleEvent,
   ContainerSizeChangeEvent,
-  ItemDragEvent,
-  ItemExchangeEvent,
   ItemLayoutEvent,
   ItemPosChangeEvent,
-  ItemResizeEvent,
   MatrixEvent,
   ThrowMessageEvent,
   definePlugin,
@@ -36,7 +32,7 @@ const plugin = definePlugin({
   warn(ev: ThrowMessageEvent) {
     console.warn(ev.message)
   },
-  updateCloneElementStyle(ev: CloneElementStyleEvent) {
+  updateCloneElementStyle(ev: any) {
     // ev.prevent()
   },
   //-----------------container------------------
@@ -77,56 +73,12 @@ const plugin = definePlugin({
     // console.log(ev);
   },
 
-  //--------------drag-------------------
-  dragging(ev: ItemDragEvent) {
-    // ev.prevent()
-    // console.log('container2',222222222222)
-  },
-  dragend(ev: ItemDragEvent) {
-  },
-  dragToTop(ev: ItemDragEvent) {
-  },
-  dragToRight(ev: ItemDragEvent) {
-  },
-  dragToBottom(ev: ItemDragEvent) {
-    // ev.prevent()
-  },
-  dragToLeft(ev: ItemDragEvent) {
-  },
-
-  //--------------resize-----------------
-  resizing(ev: ItemResizeEvent) {
-    // ev.prevent()
-    // console.log(ev);
-    // console.log(111111111111111111)
-  },
-  resized(ev: ItemResizeEvent) {
-  },
-  resizeToTop(ev: ItemResizeEvent) {
-    // ev.prevent()
-  },
-  resizeToRight(ev: ItemResizeEvent) {
-    // ev.prevent()
-  },
-  resizeToBottom(ev: ItemResizeEvent) {
-    // ev.prevent()
-  },
-  resizeToLeft(ev: ItemResizeEvent) {
-    // ev.prevent()
-  },
   //--------------close------------------
   closing(ev: ItemLayoutEvent) {
   },
   closed(ev: ItemLayoutEvent) {
   },
 
-  //-------------cross-container-exchange-----------
-  exchangeProvide(ev: ItemExchangeEvent) {
-  },
-  exchangeProcess(ev: ItemExchangeEvent) {
-  },
-  exchangeReceive(ev: ItemExchangeEvent) {
-  },
   each(ev: MatrixEvent) {
     // ev.prevent()
   },
@@ -138,8 +90,12 @@ const plugin = definePlugin({
 
 function insertItemContent(ev: BaseEvent) {
   const item = ev.item
-  if (!item) return
-  if (item.contentElement.innerHTML) return
+  if (!item) {
+    return
+  }
+  if (item.contentElement.innerHTML) {
+    return
+  }
   item.contentElement.innerHTML = item.i.toString()
   updateStyle({
     fontSize: `${Math.max(30, <number>item.size[0] / 4)}px`,
@@ -150,8 +106,8 @@ function insertItemContent(ev: BaseEvent) {
 
 container1
   .use(plugin)
-  .use(createCloseBtnPlugin())
-  .use(createShadowElementPlugin())
+  // .use(createCloseBtnPlugin())
+  // .use(createShadowElementPlugin())
   .use(createResizeBtnPlugin())
   // .use(createResponsiveLayoutPlugin())
 
