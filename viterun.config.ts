@@ -203,15 +203,6 @@ export default defineViteRunConfig({
           rollupTypes: true,
           clearPureImport: true,
         }),
-        copyDtsPlugin({
-          delayMerge: 1200,
-          files: [
-            {
-              from: `${options.packagePath}/typings/*.ts`,
-              to: `${options.packagePath}/dist/index.d.ts`
-            }
-          ]
-        })
       ]
     },
     plugins_types: [

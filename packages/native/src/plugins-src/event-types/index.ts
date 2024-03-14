@@ -5,14 +5,12 @@ import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
 import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
 import {InitOptionsEvent, MatrixEvent} from "@/plugins-src";
 import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
-import {ConfigurationEvent} from "@/plugins-src/event-types/ConfigurationEvent";
 
 export * from './BaseEvent'
 export * from './ItemLayoutEvent'
 export * from './ThrowMessageEvent'
 export * from './ItemPosChangeEvent'
 export * from './ContainerSizeChangeEvent'
-export * from './ConfigurationEvent'
 export * from './InitOptionsEvent'
 export * from './MatrixEvent'
 
@@ -25,8 +23,6 @@ export const EventMap: Record<keyof CustomEventOptions | string, any> = {
   config: InitOptionsEvent,
   configResolved: InitOptionsEvent,
   updateLayout: ItemLayoutEvent,
-  getConfig: ConfigurationEvent,
-  setConfig: ConfigurationEvent,
   //-----------------container------------------
   containerMountBefore: BaseEvent,
   containerMounted: ItemLayoutEvent,

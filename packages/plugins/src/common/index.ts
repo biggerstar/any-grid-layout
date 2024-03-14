@@ -1,11 +1,11 @@
 import {
-  clamp,
-  throttle,
-  tempStore,
   BaseEvent,
-  ItemLayoutEvent,
+  calculateContainerParameters,
+  clamp,
   Item,
-  autoSetSizeAndMargin,
+  ItemLayoutEvent,
+  tempStore,
+  throttle,
 } from "@biggerstar/layout";
 import {isFunction, isObject} from "is-what";
 
@@ -32,7 +32,9 @@ export const updateResponsiveResizeLayout = (ev: any) => {
  * */
 export const updateResponsiveDragLayout: Function = throttle((ev: any, callback: Function) => {
   const {fromItem} = tempStore
-  if (!fromItem || !isFunction(callback)) return
+  if (!fromItem || !isFunction(callback)) {
+    return
+  }
   // console.log(ev.name)
   //--------------------------------------------------------------------
   const manager = ev.container.layoutManager
@@ -46,7 +48,9 @@ export const updateResponsiveDragLayout: Function = throttle((ev: any, callback:
   ev.addModifyItem(fromItem, toPos) // 指定修改当前鼠标拖动item的位置
   ev.findDiffCoverItem(null, (item: Item) => {
     const changePos = callback(item)
-    if (changePos && isObject(changePos)) ev.addModifyItem(item, changePos)  // 添加被当前cloneEl覆盖item的移动方式
+    if (changePos && isObject(changePos)) {
+      ev.addModifyItem(item, changePos)
+    }  // 添加被当前cloneEl覆盖item的移动方式
   })
   // console.log(items)
 
@@ -93,16 +97,20 @@ export const updateResponsiveDragLayout: Function = throttle((ev: any, callback:
  * */
 export const directUpdateLayout = (ev: BaseEvent | ItemLayoutEvent): boolean => {
   const {container} = ev
-  if (!container._mounted) return false
+  if (!container._mounted) {
+    return false
+  }
   const {layoutManager: manager} = container
-  autoSetSizeAndMargin(container, true)
+  calculateContainerParameters(container, true)
   //-------------------------------------------------------------//
   container.reset()
   const getModifyItemsFn: Function = ev['getModifyItems']
   const modifyList = isFunction(getModifyItemsFn) ? getModifyItemsFn.call(ev) : []
   let res = manager.analysis(modifyList)
   // console.log(res.isSuccess)
-  if (!res.isSuccess) return false
+  if (!res.isSuccess) {
+    return false
+  }
   res.patch()
   container.items.forEach((item) => item.updateItemLayout())
   container.updateContainerSizeStyle()

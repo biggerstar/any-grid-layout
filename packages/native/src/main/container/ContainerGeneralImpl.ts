@@ -1,4 +1,4 @@
-import {AlignEnumType, CustomItems, DirectionEnumType, MarginOrSizeDesc} from "@/types";
+import {CustomItems} from "@/types";
 
 /**
  * Container实例化的时候可以在 Layout 配置中使用的字段
@@ -6,11 +6,6 @@ import {AlignEnumType, CustomItems, DirectionEnumType, MarginOrSizeDesc} from "@
  * */
 export class ContainerGeneralImpl {
   //----------------Container实例化传进的的参数---------------------//
-  /**
-   * 使用多个layout预设布局方案请必须指定对应的像素px,单位为数字,假设px=1024表示Container宽度1024像素以下执行该布局方案
-   * */
-  px?: number
-
   /** 当前布局使用的数据*/
   items?: CustomItems = []
 
@@ -20,27 +15,21 @@ export class ContainerGeneralImpl {
   /** 行数， 响应模式下row由引擎管理且row不可固定，用户指定的row永远不会生效 */
   row?: number
 
-  /** 禁止传入的数组内出现单个null */
-  margin?: MarginOrSizeDesc = [null, null]
+  /** 左右间隔距离之和，单位px，如果和gap[0]优先级大于 gapX */
+  gapX?: any = null
 
-  /** 左右margin距离之和，单位px，如果和margin[0]优先级大于 marginX */
-  marginX?: any = null
+  /** 上下间隔距离之和，单位px，如果和gap[1]优先级大于 gapY*/
+  gapY?: any = null
 
-  /** 上下margin距离之和，单位px，如果和margin[1]优先级大于 marginY*/
-  marginY?: any = null
-
-  /** 成员大小 [width, height]，size[1]如果不传入的话长度将和size[1]一样， 禁止传入的数组内出现单个null */
-  size?: MarginOrSizeDesc = [null, null]
-
-  /** 成员宽度  TODO  合并到size配置对象 比如 {sizeWidth，sizeHeight}  或者  [xx,xx] ,margin也进行改造
-   *  sizeWidth优先级大于 size[0],在sizeWidth,col,marginX都未指定的情况下将和sizeHeight大小一致
+  /**
+   * item成员的宽度
    * */
-  sizeWidth?: number | null = null
+  itemWidth?: number | null = null
 
-  /** 成员高度
-   *  sizeHeight优先级大于 size[1]，sizeHeight,row,marginY都未指定的情况下将和sizeWidth大小一致
+  /**
+   * item成员的高度
    * */
-  sizeHeight?: number | null = null
+  itemHeight?: number | null = null
 
   /** 最小列数 */
   minCol?: number | null = null
@@ -62,48 +51,28 @@ export class ContainerGeneralImpl {
   maxRow?: number | null = null
 
   /**
-   * 在没有指定col的情况下， 假设margin和size自动分配margin/size的比例 10:100 ratioCol值为0.1
+   * 在没有指定col的情况下， 假设 gap 和size自动分配 gap/size的比例 10:100 ratioCol值为0.1
    *
-   * 注意: 必须为container所挂载的元素指定宽高,且col方向没有指定size和margin才能生效
+   * 注意: 必须为container所挂载的元素指定宽高,且col方向没有指定size和 gap 才能生效
    *
    * @default  0.1
    * */
   ratioCol?: number = 0.1
 
   /**
-   * 在没有指定row的情况下， 假设margin和size自动分配margin/size的比例 10:100 ratioRow值为0.1
+   * 在没有指定row的情况下， 假设 gap 和size自动分配 gap/size的比例 10:100 ratioRow值为0.1
    *
-   * 注意: 必须为container所挂载的元素指定宽高，,且row方向没有指定size和margin才能生效
+   * 注意: 必须为container所挂载的元素指定宽高，,且row方向没有指定size和 gap 才能生效
    *
    * @default  0.1
    * */
   ratioRow?: number = 0.1
 
   /**
-   * 该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
-   * @default 0.45
-   * */
-  exchange?: boolean = false   //  该容器是否可以参与跨容器交换，和Item的exchange不同的是container的控制整个自身容器
-
-  /**
    * 触屏下长按多久响应拖拽事件,默认360ms
    * @default 360
    * */
   pressTime?: number = 360   // 触屏下长按多久响应拖拽事件,默认360ms
-
-  /**
-   * 排布的主轴方向
-   *
-   * @default 'row'
-   * */
-  direction?: DirectionEnumType = 'row'
-
-  /**
-   * 排布的交叉轴起点
-   *
-   * @default 'start'
-   * */
-  align?: AlignEnumType = 'start'
 
   /**
    * 是否在响应布局的交叉轴方向上自动拓展矩阵大小
@@ -118,6 +87,7 @@ export class ContainerGeneralImpl {
     horizontal: false
   }
   /**
+   * TODO 后续根据情况决定是否弃用
    * 对拖动或者调整尺寸的元素进行配置
    * */
   cloneElement?: {

@@ -36,7 +36,7 @@ export class PluginManager {
    * 调用当前插件列表中的插件回调函数
    * */
   public call(eventName: keyof CustomEventOptions, options: Record<any, any> = {}) {
-    // if (!['getConfig', 'setConfig', 'updateCloneElementStyle', 'each', 'flip'].includes(eventName)) {
+    // if (!['updateCloneElementStyle', 'each', 'flip'].includes(eventName)) {
     //   console.log(eventName)
     // }
     const container = this.container

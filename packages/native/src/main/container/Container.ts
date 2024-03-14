@@ -1,21 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {
-  cloneDeep,
-  debounce,
-  getContainerFromElement,
-  getItemFromElement,
-  merge,
-  parseItemFromPrototypeChain,
-  throttle
-} from "@/utils/tool";
+import {cloneDeep, debounce, getContainerFromElement, getItemFromElement, merge, throttle} from "@/utils/tool";
 import {Item} from "@/main/item/Item";
-import {
-  ContainerInstantiationOptions,
-  CustomItem, CustomLayoutOption,
-  EventBusType,
-  GridPlugin
-} from "@/types";
+import {ContainerInstantiationOptions, CustomItem, CustomLayoutOption, EventBusType, GridPlugin} from "@/types";
 import {removeGlobalEvent, startGlobalEvent} from "@/events/listen";
 import Bus, {Emitter} from 'mitt'
 import {PluginManager} from "@/plugins-src/PluginManager";
@@ -23,40 +10,30 @@ import {LayoutManager} from "@/algorithm";
 import {isNumber, isObject, isString} from "is-what";
 import {grid_container_class_name} from "@/constant";
 import {getContainerConfigs, updateStyle} from "@/utils";
-import {ConfigurationEvent} from "@/plugins-src";
 import {ContainerGeneralImpl} from "@/main";
 import {createSTRect} from "@/global/singleThrottle";
-import deepmerge from "deepmerge";
 
 
 /**
- * #栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
- *   Container中所有对外部可以设置的属性都是在不同的布局方案下全局生效，如若有设定layout布局数组或者单对象的情况下,
- *   该数组内的配置信息设置优先于Container中设定的全局设置，比如 实例化传进
- *   ```javascript{
- *    col: 8,
- *    size:[80,80],
- *    layout:[{
- *          px:1024,
- *          size:[100,100]
- *        },
- *    ]}
- *    ```
- *    此时该col生效数值是8，来自全局设置属性，size的生效值是[100,100],来自layout中指定的局部属性
+ *  # 栅格容器, 所有对DOM的操作都是安全异步执行且无返回值，无需担心获取不到document
  *    注：
  *    1.暂不支持iframe嵌套
  *    2.使用原生js开发的时候如果首屏加载网页中元素会一闪而过或者布局错误然后才生成网格布局,出现这种情况可以对Container挂载的那个元素点进行display:'none',
  *      框架处理会自动显示出来，出现这个的原因是因为html加载渲染比js对dom的渲染快
- *  # size,margin, [col | row](后面简称CR) 在传入后的响应结果,
+ *  #
+ *    [gapX, gapY]( 下面称为 gap ) ,
+ *    [itemWidth, itemHeight]( 下面称为 siz )
+ *    [col | row]( 下面称为CR ) 在传入后的响应结果
+ *  #
  *    所有参数是通过LayoutConfig算法类以当前容器最大可视区域进行计算，
- * -  CR   size   margin   所见即所得
- * -  CR  !size   margin   自动通过容器剩余空间设定size尺寸
- * -  CR   size  !margin   自动通过容器剩余空间margin尺寸
- * -  CR  !size  !margin   通过传入的radio自动设定size和margin尺寸
- * - !CR   size   margin   自动设定CR的栅格数
- * - !CR  !size   margin   自动通过容器剩余空间设定size尺寸
- * - !CR   size  !margin   自动通过容器剩余空间设定margin尺寸
- * - !CR  !size  !margin   会自动通过传入 items 列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
+ * -  CR   size   gap   所见即所得
+ * -  CR  !size   gap   自动通过容器剩余空间设定 size 尺寸
+ * -  CR   size  !gap   自动通过容器剩余空间 gap 尺寸
+ * -  CR  !size  !gap   通过传入的radio自动设定 size 和 gap 尺寸
+ * - !CR   size   gap   自动设定CR的栅格数
+ * - !CR  !size   gap   自动通过容器剩余空间设定 size 尺寸
+ * - !CR   size  !gap   自动通过容器剩余空间设定 gap 尺寸
+ * - !CR  !size  !gap   会自动通过传入 items 列表的pos信息计算合适尺寸(必须提供w,h,x,y的值),加载是顺序加载的，
  *                        如果 items 顺序加载过程中，遇到没有指定x,y的pos且当前容器放不下该Item将会将其抛弃，如果放得下将顺序添加进容器中
  *
  * */
@@ -71,7 +48,7 @@ export class Container {
   public pluginManager: PluginManager
   public layoutManager: LayoutManager
   public readonly layout: CustomLayoutOption = {} as any
-  public readonly useLayout: CustomLayoutOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,margin,size等等必要构建容器字段
+  public readonly useLayout: CustomLayoutOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,gap,size等等必要构建容器字段
   public items: Item[] = []
   public element?: HTMLElement   //  container的挂载节点
   public contentElement?: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
@@ -79,7 +56,6 @@ export class Container {
   //----------------保持状态所用参数---------------------//
   public _mounted?: boolean
   public readonly _default: CustomLayoutOption
-  // private __store__ = tempStore
   public readonly __ownTemp__ = {
     //-----内部可写外部只读变量------//
     oldCol: void 0,   // 容器大小改变之前的col
@@ -153,49 +129,14 @@ export class Container {
 
   /** 传入配置名获取当前正在使用的配置值 */
   public getConfig<Name extends keyof CustomLayoutOption>(name: Name): Exclude<CustomLayoutOption[Name], undefined> {
-    let data = getContainerConfigs(this, name)
-    let ev: ConfigurationEvent
-    this.bus.emit('getConfig', {
-      configName: name,
-      configData: data,
-      callback: (e: ConfigurationEvent) => ev = e
-    })
-    if (ev && ![undefined, void 0, null].includes(ev.configData)) {
-      data = ev.configData
-    }
-    return data
+    return getContainerConfigs(this, name)
   }
 
   /**
-   * ！！！ 暂时未支持值为对象形式的配置，如需对象配置请使用container.layout进行修改设置
    * 将值设置到当前使用的配置信息中,只是临时设置
-   * sync 是否同步到用户配置，转成非临时配置，建议您使用container.layout获取用户配置对象直接修改替代该操作
    * */
-  public setConfig<Name extends keyof CustomLayoutOption>(name: Name, data: CustomLayoutOption[Name], sync: boolean = false): void {
-    let ev: ConfigurationEvent
-    if (['col', 'row'].includes(name)) {
-      this.bus.emit("warn", {message: '不支持设置col和row，只支持修改定义实例化时传入的配置'})
-    }
-    this.bus.emit('setConfig', {
-      configName: name,
-      configData: data,
-      callback: (e: ConfigurationEvent) => ev = e
-    })
-    if (ev && ![undefined, void 0, null].includes(ev.configData)) {
-      data = ev.configData
-    }
-    const mergeConfig = (name: string, to: object, from: any) => {
-      if (isObject(to[name]) && isObject(from)) {
-        deepmerge(to[name], from, {clone: true})
-      } else {
-        to[name] = from
-      }
-    }
-    if (sync) {
-      mergeConfig(name, this.layout, data)
-    } else {
-      mergeConfig(name, this.useLayout, data)
-    }
+  public setConfig<Name extends keyof CustomLayoutOption>(name: Name, data: CustomLayoutOption[Name]): void {
+    this.useLayout[name] = data
   }
 
   /** 生成真实的item挂载父级容器元素，并将挂到外层根容器上 */
@@ -254,11 +195,11 @@ export class Container {
     this._init()
     this._createGridContainerBox()
     //-------------------------其他操作--------------------------//
-    this.__ownTemp__.oldCol = this.getConfig("col")
-    this.__ownTemp__.oldRow = this.getConfig("row")
-    this._observer_()
-    this.updateLayout()
-    this.updateContainerSizeStyle()
+    // this.__ownTemp__.oldCol = this.getConfig("col")
+    // this.__ownTemp__.oldRow = this.getConfig("row")
+    // this._observer_()
+    // this.updateLayout()
+    // this.updateContainerSizeStyle()
     this._mounted = true
   }
 
@@ -368,17 +309,17 @@ export class Container {
   /** 计算当前Items所占用的Container宽度  */
   public nowWidth(nowCol?: number): number {
     nowCol = nowCol || this.getConfig("col")
-    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
-    const marginWidth = nowCol > 1 ? (nowCol - 1) * margin[0] * 2 : 0
-    return (nowCol * size[0]) + marginWidth
+    const {gapX, itemWidth} = getContainerConfigs(this, ["gapX", "itemWidth"])
+    const allGapWidth = nowCol > 1 ? (nowCol - 1) * gapX : 0
+    return (nowCol * itemWidth) + allGapWidth
   }
 
   /** 计算当前Items所占用的Container高度   */
   public nowHeight(nowRow?: number): number {
     nowRow = nowRow || this.getConfig("row")
-    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
-    const marginHeight = nowRow > 1 ? (nowRow - 1) * margin[1] * 2 : 0
-    return (nowRow * size[1]) + marginHeight
+    const {gapY, itemHeight} = getContainerConfigs(this, ["gapY", "itemHeight"])
+    const allGapHeight = nowRow > 1 ? (nowRow - 1) * gapY : 0
+    return (nowRow * itemHeight) + allGapHeight
   }
 
   /** 获取外容器可视范围可容纳的col  */
@@ -461,7 +402,6 @@ export class Container {
     }
     item.customOptions = customOpt
     item.container = this
-    item.parentElement = this.contentElement
     item.i = this.items.length
     this.items.push(item)
     this.bus.emit('addItemSuccess', {item})
@@ -508,12 +448,12 @@ export class Container {
       keepSymbol: false
     }): number => {
     const toInteger = floor ? Math.floor : Math.ceil
-    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    const {gapX, itemWidth} = getContainerConfigs(this, ["gapX", "itemWidth"])
     let res: number
-    if (size[0] >= Math.abs(pxNum)) {
+    if (itemWidth >= Math.abs(pxNum)) {
       res = 1
     } else {
-      res = toInteger(Math.abs(pxNum) / (margin[0] * 2 + size[0]))
+      res = toInteger(Math.abs(pxNum) / (gapX + itemWidth))
     }
     if (keepSymbol) {
       res *= Math.sign(pxNum)
@@ -533,12 +473,12 @@ export class Container {
       keepSymbol: false
     }) => {
     const toInteger = floor ? Math.floor : Math.ceil
-    const {margin, size} = getContainerConfigs(this, ["margin", "size"])
+    const {gapY, itemHeight} = getContainerConfigs(this, ["gapY", "itemHeight"])
     let res: number
-    if (size[1] >= Math.abs(pxNum)) {
+    if (itemHeight >= Math.abs(pxNum)) {
       res = 1
     } else {
-      res = toInteger(Math.abs(pxNum) / (margin[1] * 2 + size[1]))
+      res = toInteger(Math.abs(pxNum) / (gapY + itemHeight))
     }
     if (keepSymbol) {
       res *= Math.sign(pxNum)

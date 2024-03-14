@@ -6,6 +6,7 @@
 import {Container, Item} from "@/main";
 import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {tempStore} from "@/global";
+import {getContainerConfigs} from "@/utils";
 
 
 /**
@@ -47,11 +48,16 @@ export function analysisCurLocationInfo(container: Container): {
   const {left: containerLeft, top: containerTop} = container.STRect.getCache("containerContent")
   const relativeLeftTopX4Container = mousemoveEvent.clientX - containerLeft - tempStore.lastOffsetM_left * tempStore.mousedownItemOffsetLeftProportion
   const relativeLeftTopY4Container = mousemoveEvent.clientY - containerTop - tempStore.lastOffsetM_left * tempStore.mousedownItemOffsetTopProportion
-  const margin = container.getConfig('margin')
-  const size = container.getConfig('size')
+  const {
+    gapX,
+    gapY,
+    itemWidth,
+    itemHeight
+  } = getContainerConfigs(this.container, ["gapX", "gapY", "itemWidth", "itemHeight"])
+
   // console.log(relativeLeftTopX4Container, relativeLeftTopY4Container)
-  result.relativeX = Math.ceil(Math.abs(relativeLeftTopX4Container) / (margin[0] * 2 + size[0])) * Math.sign(relativeLeftTopX4Container)
-  result.relativeY = Math.ceil(Math.abs(relativeLeftTopY4Container) / (margin[1] * 2 + size[1])) * Math.sign(relativeLeftTopY4Container)
+  result.relativeX = Math.ceil(Math.abs(relativeLeftTopX4Container) / (gapX * 2 + itemWidth)) * Math.sign(relativeLeftTopX4Container)
+  result.relativeY = Math.ceil(Math.abs(relativeLeftTopY4Container) / (gapY * 2 + itemHeight)) * Math.sign(relativeLeftTopY4Container)
   const contentBoxW = container.contentBoxW
   const contentBoxH = container.contentBoxH
   result.gridX = result.relativeX < 1 ? 1 : (result.relativeX > contentBoxW ? contentBoxW : result.relativeX)

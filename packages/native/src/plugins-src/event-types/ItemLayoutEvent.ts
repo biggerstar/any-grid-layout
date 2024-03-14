@@ -1,6 +1,6 @@
 import {BaseEvent} from "@/plugins-src/event-types/BaseEvent";
 import {Item} from "@/main";
-import {CustomItemPos, LayoutItemInfo, MarginOrSizeDesc} from "@/types";
+import {CustomItemPos, LayoutItemInfo} from "@/types";
 import {analysisCurLocationInfo, createModifyPosInfo} from "@/algorithm/common/tool";
 import {tempStore} from "@/global";
 import {clamp, getClientRect, getContainerConfigs, merge} from "@/utils";
@@ -10,8 +10,10 @@ export class ItemLayoutEvent extends BaseEvent {
   public readonly fromItem: Item
   public readonly col: number // 当前容器的col
   public readonly row: number // 当前容器的row
-  public readonly size: MarginOrSizeDesc // 当前容器的row
-  public readonly margin: MarginOrSizeDesc // 当前容器的row
+  public readonly gapX: number
+  public readonly gapY: number
+  public readonly itemWidth: number
+  public readonly itemHeight: number
   public readonly gridX: number // 当前[鼠标位置]以容器左上角为准限制在容器内的x栅格值
   public readonly gridY: number // 当前[鼠标位置]以容器左上角为准限制在容器内的y栅格值
   public readonly relativeX: number   // 当前[鼠标位置]以容器左上角为准距离源容器的真实x栅格值
@@ -86,11 +88,18 @@ export class ItemLayoutEvent extends BaseEvent {
     const itemRect = container.STRect.getCache("fromItem")
     const containerRect = container.STRect.getCache("containerContent")
     const shadowItemRect = container.STRect.getCache('shadow')
-    const {size, margin} = getContainerConfigs(fromItem.container, ["size", "margin"])
+    const {
+      gapX,
+      gapY,
+      itemWidth,
+      itemHeight
+    } = getContainerConfigs(fromItem.container, ["gapX", "gapY", "itemWidth", "itemHeight"])
     this.col = container.getConfig("col")
     this.row = container.getConfig("row")
-    this.size = size
-    this.margin = margin
+    this.gapX = gapX
+    this.gapY = gapY
+    this.itemWidth = itemWidth
+    this.itemHeight = itemHeight
     this.fromItem = fromItem
     this.inOuter = !!(!toContainer && fromItem)
 

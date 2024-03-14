@@ -1,5 +1,5 @@
 import {Container} from "@/main/container/Container";
-import {CustomItem, MarginOrSizeDesc} from "@/types";
+import {CustomItem} from "@/types";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPos} from "@/main";
 import {isString} from "is-what";
@@ -16,8 +16,6 @@ export class Item extends ItemGeneralImpl {
   public i: number   //  每次重新布局给的自动正整数编号,对应的是Item的len
   public element: HTMLElement
   public container: Container   // 挂载在哪个container上
-  public tagName: string = 'div'
-  public parentElement: HTMLElement
   public contentElement: HTMLElement
   public declare pos: ItemPos
   //----------------保持状态所用参数---------------------//
@@ -25,21 +23,6 @@ export class Item extends ItemGeneralImpl {
   private readonly _default: CustomItem
   private _mounted: boolean = false
   public __temp__: Record<any, any> = {}
-
-  //-------------------------getter---------------------------
-  /**
-   * Item间距 [左右, 上下]
-   * */
-  public get margin(): MarginOrSizeDesc {  //
-    return getContainerConfigs(this.container, "margin")
-  }
-
-  /**
-   * Item宽高 [宽度, 高度]
-   * */
-  public get size(): MarginOrSizeDesc {  //
-    return getContainerConfigs(this.container, "size")
-  }
 
   //----------------------------------------------------------
   constructor(itemOption: CustomItem) {
@@ -63,7 +46,7 @@ export class Item extends ItemGeneralImpl {
       return
     }
     if (this.container.platform === 'native') {
-      this.element = document.createElement(this.tagName)
+      this.element = document.createElement('div')
       if (isString(this.el)) {
         this.contentElement = <HTMLElement>document.querySelector(this.el)
       } else if (this.el) {
@@ -141,32 +124,36 @@ export class Item extends ItemGeneralImpl {
    * @return  根据当前自身的this.pos 生成当前Item 距离容器左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetLeft(): number {
-    const marginWidth = this.pos.x > 1 ? (this.pos.x - 1) * this.margin[0] * 2 : 0
-    return ((this.pos.x - 1) * this.size[0]) + marginWidth
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ["gapX", "itemWidth"])
+    const allGapWidth = this.pos.x > 1 ? (this.pos.x - 1) * gapX : 0
+    return ((this.pos.x - 1) * itemWidth) + allGapWidth
   }
 
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离容器顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetTop(): number {
-    const marginHeight = this.pos.y > 1 ? (this.pos.y - 1) * this.margin[1] * 2 : 0
-    return ((this.pos.y - 1) * this.size[1]) + marginHeight
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ["gapY", "itemHeight"])
+    const allGapHeight = this.pos.y > 1 ? (this.pos.y - 1) * gapY : 0
+    return ((this.pos.y - 1) * itemHeight) + allGapHeight
   }
 
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离容器左边的距离, Item左边框 ---->  父元素左边框
    * */
   public offsetRight(): number {
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ["gapX", "itemWidth"])
     const col = this.container.getConfig("col")
-    return (col - this.pos.x - this.pos.w + 1) * (this.size[0] + this.margin[0] * 2)
+    return (col - this.pos.x - this.pos.w + 1) * (itemWidth + gapX)
   }
 
   /**
    * @return  根据当前自身的this.pos 生成当前Item 距离容器顶部边的距离, Item上边框 ---->  父元素上边框
    * */
   public offsetBottom(): number {
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ["gapY", "itemHeight"])
     const row = this.container.getConfig("row")
-    return (row - this.pos.y - this.pos.h + 1) * (this.size[1] + this.margin[1] * 2)
+    return (row - this.pos.y - this.pos.h + 1) * (itemHeight + gapY)
   }
 
   /**
@@ -174,9 +161,10 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  获取该Item 当前的宽度
    * */
   public nowWidth(w?: number): number {
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ["gapX", "itemWidth"])
     const nowW = w ? w : this.pos.w
-    const marginWidth = nowW > 1 ? (nowW - 1) * this.margin[0] * 2 : 0
-    return (nowW * this.size[0]) + marginWidth
+    const allGapWidth = nowW > 1 ? (nowW - 1) * gapX : 0
+    return (nowW * itemWidth) + allGapWidth
   }
 
   /**
@@ -184,25 +172,28 @@ export class Item extends ItemGeneralImpl {
    * @return {number}  获取该Item 当前的高度
    * */
   public nowHeight(h?: number): number {
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ["gapY", "itemHeight"])
     const nowH = h ? h : this.pos.h
-    const marginHeight = nowH > 1 ? (nowH - 1) * this.margin[1] * 2 : 0
-    return (nowH * this.size[1]) + marginHeight
+    const allGapHeight = nowH > 1 ? (nowH - 1) * gapY : 0
+    return (nowH * itemHeight) + allGapHeight
   }
 
   /**
    * @return  {number}  根据当前自身的this.pos 生成Item当前必须占用最小宽度的像素大小
    * */
   public minWidth(): number {
-    const marginWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * this.margin[0] * 2 : 0
-    return (this.pos.minW * this.size[0]) + marginWidth
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ["gapX", "itemWidth"])
+    const allGapWidth = this.pos.minW > 1 ? (this.pos.minW - 1) * gapX : 0
+    return (this.pos.minW * itemWidth) + allGapWidth
   }
 
   /**
    * @return {number}  根据当前自身的this.pos 生成Item当前必须占用最小的高度像素大小
    * */
   public minHeight(): number {
-    const marginHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * this.margin[1] * 2 : 0
-    return (this.pos.minH * this.size[1]) + marginHeight
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ["gapY", "itemHeight"])
+    const allGapHeight = this.pos.minH > 1 ? (this.pos.minH - 1) * gapY : 0
+    return (this.pos.minH * itemHeight) + allGapHeight
   }
 
   /**
@@ -212,7 +203,8 @@ export class Item extends ItemGeneralImpl {
     if (!isFinite(this.pos.maxW)) {
       return Infinity
     }
-    return this.pos.maxW * this.size[0] + (this.pos.maxW - 1) * this.margin[0] * 2
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ["gapX", "itemWidth"])
+    return this.pos.maxW * itemWidth + (this.pos.maxW - 1) * gapX
   }
 
   /**
@@ -222,14 +214,15 @@ export class Item extends ItemGeneralImpl {
     if (!isFinite(this.pos.maxH)) {
       return Infinity
     }
-    return this.pos.maxH * this.size[1] + (this.pos.maxH - 1) * this.margin[1] * 2
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ["gapY", "itemHeight"])
+    return this.pos.maxH * itemHeight + (this.pos.maxH - 1) * gapY
   }
 
   /**
    * 距离right方向上最近的可调整距离(包含item的width)
    * */
   public spaceRight(): number | typeof Infinity {
-    const {size, margin} = getContainerConfigs(this.container, ['size', 'margin'])
+    const {gapX, itemWidth} = getContainerConfigs(this.container, ['gapX', 'itemWidth'])
     const manager = this.container.layoutManager
     const coverRightItems = manager.findCoverItemsFromPosition(this.container.items, {
       ...this.pos,
@@ -243,9 +236,9 @@ export class Item extends ItemGeneralImpl {
       const offsetCol = item.pos.x - (this.pos.x + this.pos.w - 1) - 1
       let offsetRight: number
       if (offsetCol === 0) {
-        offsetRight = margin[0] * 2
+        offsetRight = itemWidth
       } else {
-        offsetRight = (size[0] + margin[0] * 2) * offsetCol + margin[0] * 2
+        offsetRight = (gapX + itemWidth) * offsetCol + itemWidth
       }
       if (minOffsetRight > offsetRight) {
         minOffsetRight = offsetRight
@@ -258,7 +251,7 @@ export class Item extends ItemGeneralImpl {
    * 距离bottom方向上最近的最大可调整距离(包含item的height)
    * */
   public spaceBottom(): number | typeof Infinity {
-    const {size, margin} = getContainerConfigs(this.container, ['size', 'margin'])
+    const {gapY, itemHeight} = getContainerConfigs(this.container, ['gapY', 'itemHeight'])
     const manager = this.container.layoutManager
     const coverBottomItems = manager.findCoverItemsFromPosition(this.container.items, {
       ...this.pos,
@@ -272,9 +265,9 @@ export class Item extends ItemGeneralImpl {
       const offsetRow = item.pos.y - (this.pos.y + this.pos.h - 1) - 1
       let offsetBottom: number
       if (offsetRow === 0) {
-        offsetBottom = margin[1] * 2
+        offsetBottom = itemHeight
       } else {
-        offsetBottom = (size[1] + margin[1] * 2) * offsetRow + margin[1] * 2
+        offsetBottom = (gapY + itemHeight) * offsetRow + itemHeight
       }
       if (minOffsetBottom > offsetBottom) {
         minOffsetBottom = offsetBottom

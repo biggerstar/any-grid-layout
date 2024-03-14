@@ -1,13 +1,12 @@
 import {
   definePlugin,
   getClientRect,
-  tempStore,
-  updateStyle,
-  throttle,
+  getContainerConfigs,
   SingleThrottle,
-  getContainerConfigs
+  tempStore,
+  throttle,
+  updateStyle
 } from "@biggerstar/layout";
-
 
 const grid_clone_el = 'grid-clone-el'
 /**

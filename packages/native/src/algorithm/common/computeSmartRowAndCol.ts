@@ -9,6 +9,7 @@ export function computeSmartRowAndCol(container: Container): SmartRowAndColType 
   const items = container.items
   items.forEach((item: Item) => {
     const {x, y, w, h} = item.pos as Required<ItemPos>
+    // console.log({x, y, w, h})
     if ((x + w - 1) > smartCol) {
       smartCol = x + w - 1
     }

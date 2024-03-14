@@ -1,7 +1,10 @@
 import {parseContainer} from "@/utils";
+import {tempStore} from "@/global";
 
 export const nativeEventEmit_mousemove = (ev: MouseEvent) => {
-  const mousemoveContainer = parseContainer(ev)
+  // console.log(ev.clientX, ev.clientY)
+  const mousemoveContainer = tempStore.fromContainer || parseContainer(ev)
+  tempStore.mousemoveEvent = ev
   if (mousemoveContainer) {
     mousemoveContainer.bus.emit('mousemove')
   }

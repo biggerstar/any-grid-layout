@@ -15,8 +15,6 @@ const excludeNames: (keyof CustomEventOptions)[] = [
   "containerMounted",
   "containerUnmounted",
   "addItemSuccess",
-  "getConfig",
-  "setConfig",
   "each",
 ]
 

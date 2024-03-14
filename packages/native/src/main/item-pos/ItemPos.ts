@@ -84,7 +84,7 @@ export class ItemPos extends ItemPosGeneralImpl {
    * */
   public getComputedCustomPos() {
     const result = {}
-    for (const name in this.customPos) {
+    for (const name in this.customOptions) {
       result[name] = this[name]
     }
     return result

@@ -67,7 +67,7 @@ export const _getConfig = (container: Container, name: string) => {
     return container.layout[name]
   }
   if (has(container._default, name)) {
-    return cloneDeep(container._default[name])
+    return container._default[name]
   }
   return void 0
 };

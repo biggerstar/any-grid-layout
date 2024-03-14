@@ -7,7 +7,6 @@ import {BaseEvent} from "@/plugins-src/event-types/BaseEvent";
 import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
 import {ItemPosChangeEvent} from "@/plugins-src/event-types/ItemPosChangeEvent";
 import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
-import {ConfigurationEvent} from "@/plugins-src/event-types/ConfigurationEvent";
 import {Container} from "@/main";
 import {InitOptionsEvent} from "@/plugins-src/event-types/InitOptionsEvent";
 import {MatrixEvent} from "@/plugins-src";
@@ -17,7 +16,6 @@ export type CustomItem = ItemGeneralImpl & Record<any, any>
 export type CustomItems = CustomItem[]
 
 export type BasePosType = 'x' | 'y' | 'w' | 'h'
-export type MarginOrSizeDesc = [number | null, number | null]
 
 /** Container 实例化配置选项 */
 export type CustomLayoutOption = ContainerGeneralImpl
@@ -132,11 +130,6 @@ export type CustomEventOptions = {
    * @default 无
    * */
   updateLayout?(ev: ItemLayoutEvent): void,
-
-  /** 获取配置事件，设置过程可被拦截(configName,configData)修改 */
-  getConfig?(ev: ConfigurationEvent): void,
-  /** 设置配置事件，设置过程可被拦截(configName,configData)修改 */
-  setConfig?(ev: ConfigurationEvent): void,
 
   //-----------------container------------------
   /**

@@ -4,11 +4,12 @@ import {tempStore} from "@/global";
 
 export class BaseEvent {
   public readonly name: keyof CustomEventOptions | null
-
+  public mousemoveEvent: MouseEvent
   constructor(options: any) {
     this.item = tempStore.fromItem
     this.name = null
     Object.assign(<object>this, options || {})   // 合并外部emit发射的参数2对象
+    this.mousemoveEvent = tempStore.mousemoveEvent
   }
 
   // @ts-ignore
