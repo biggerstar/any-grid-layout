@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transform3d</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    .page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .box {
+      padding: 16px;
+      width: 302px;
+      height: 400px;
+      overflow: hidden;
+      background-color: white;
+      border: 1px solid #ccc;
+      transform: matrix3d(1.29553, -0.189981, 0, -0.0007823, 0.294963, 1.37654, 0, 0.0003941, 0, 0, 1, 0, -152, -54, 0, 1);
+      transform-origin: 0 0;
+    }
+
+    img {
+      width: 100%;
+    }
+
+    .form-item {
+      margin-bottom: 10px;
+    }
+
+    .submit {
+      text-align: right;
+    }
+
+    .handle {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
+      width: 20px;
+      height: 20px;
+      border-radius: 100%;
+      background-color: rgba(255, 0, 0, .5);
+    }
+
+  </style>
+  <script src='//cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js'></script>
+</head>
+<body>
+<div class="page">
+  <div class="box" id="box">
+    <form action="#">
+      <div class="form-item">
+        <label for="name">
+          姓名
+          <input type="text" id="name">
+        </label>
+      </div>
+      <div class="form-item">
+        <label for="address">
+          地址
+          <textarea id="address" cols="30" rows="10"></textarea>
+        </label>
+      </div>
+      <div class="form-item">
+        <label for="range">
+          年龄
+          <input type="range" min="10" max="100" step="1" value="18" id="range">
+        </label>
+      </div>
+      <div class="submit">
+        <button>submit</button>
+      </div>
+    </form>
+  </div>
+  <div class="handle"></div>
+  <div class="handle"></div>
+  <div class="handle"></div>
+  <div class="handle"></div>
+</div>
+<script>
+  function init() {
+    const box = document.querySelector('#box');
+    const handles = document.querySelectorAll('.handle')
+
+    function getFromPoints(points) {
+      // 映射前四个点坐标
+      const result = [];
+      const len = points.length;
+      for (let k = 0; k < len; k++) {
+        let p = points[k];
+        result.push({
+          x: p[0] - points[0][0],
+          y: p[1] - points[0][1]
+        });
+      }
+      /**
+       result
+       [
+       {x1, y1},
+       {x2, y2},
+       {x3, y3},
+       {x4, y4},
+       ]
+       */
+      return result;
+    }
+
+    function getToPoints(origin, target) {
+      // 映射后四个点坐标
+      const result = [];
+      for (let k = 0, len = target.length; k < len; k++) {
+        const p = target[k];
+        result.push({
+          x: p[0] - origin[0][0],
+          y: p[1] - origin[0][1]
+        });
+      }
+      return result
+    }
+
+    function getTransform(from, to) {
+      let A, H, b, h;
+      A = []; // 8x8
+      // 四个点的坐标
+      for (let i = 0; i < 4; i++) {
+        A.push([from[i].x, from[i].y, 1, 0, 0, 0, -from[i].x * to[i].x, -from[i].y * to[i].x]);
+        A.push([0, 0, 0, from[i].x, from[i].y, 1, -from[i].x * to[i].y, -from[i].y * to[i].y]);
+      }
+      b = []; // 8x1
+      for (let i = 0; i < 4; i++) {
+        b.push(to[i].x);
+        b.push(to[i].y);
+      }
+      // Solve A * h = b for h
+      // 即矩阵中常见的 Ax=b
+      // numeric.solve eg:
+      // IN> numeric.solve([[1,2],[3,4]],[17,39])
+      // OUT> [5,6]
+      // https://ccc-js.github.io/numeric2/documentation.html
+      h = numeric.solve(A, b);
+
+      /**
+       解得: h matrix
+       [
+       h0, h1, 0 h2
+       h3, h4, 0 h5
+       0,  0, 0, 1
+       h6, h7, 0 h8
+       ]
+       */
+      H = [
+        [h[0], h[1], 0, h[2]],
+        [h[3], h[4], 0, h[5]],
+        [0, 0, 1, 0],
+        [h[6], h[7], 0, 1]
+      ];
+      return H;
+    }
+
+    function getMatrixCSSParameters(H) {
+      console.log(H)
+      // 获取 css matrix3d(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, tx, ty, 0, 1) 参数
+      const result = [];
+      for (let i = 0; i < 4; i++) {
+        const result1 = [];
+        for (let j = 0; j < 4; j++) {
+          result1.push(H[j][i].toFixed(20));
+        }
+        result.push(result1);
+      }
+      return result.join(',');
+    }
+
+    function applyTransform(element, origin, target) {
+      const from = getFromPoints(origin);
+      const to = getToPoints(origin, target);
+      const H = getTransform(from, to);
+      // console.log(from, to, H)
+      element.style.transform = `matrix3d(${getMatrixCSSParameters(H)})`;
+    }
+
+    function getPoints(element) {
+      let offsetLeft = 0
+      let offsetTop = 0
+      let curElement = element
+      while (curElement) {
+        offsetLeft += curElement.offsetLeft
+        offsetTop += curElement.offsetTop
+        curElement = curElement.offsetParent
+      }
+      const offsetRight = offsetLeft + element.clientWidth
+      const offsetBottom = offsetTop + element.clientHeight
+      // console.log(offsetLeft, offsetTop, offsetRight, offsetBottom)
+
+      const style = getComputedStyle(element)
+      const matrix = new DOMMatrix(style.transform)
+      const point = matrix.transformPoint({
+        x: offsetLeft,
+        y: offsetTop
+      })
+
+      console.log(point)
+      console.log(matrix)
+      matrix.invertSelf()
+
+      console.log(matrix)
+      const point1 = matrix.transformPoint({
+        x: offsetLeft,
+        y: offsetTop
+      })
+
+      return [
+        [offsetLeft, offsetTop],
+        [offsetLeft, offsetBottom],
+        [offsetRight, offsetTop],
+        [offsetRight, offsetBottom],
+      ]
+    }
+
+    function getControlPoints() {
+      const result = [];
+      for (let handle of handles) {
+        const rect = handle.getBoundingClientRect()
+        result.push([rect.x + 10, rect.y + 10]);
+      }
+      return result;
+    }
+
+    function initControlHandles() {
+      originalPoints.forEach((p, i) => {
+        handles[i].style.left = `${p[0] - 10}px`
+        handles[i].style.top = `${p[1] - 10}px`
+      })
+    }
+
+    const originalPoints = getPoints(box);
+
+    const initEvent = () => {
+      for (let i = 0; i < 4; i++) {
+
+        handles[i].addEventListener('mousedown', (e) => {
+          const handle = e.target;
+          const startX = e.x;
+          const startY = e.y;
+          const rect = handle.getBoundingClientRect();
+
+          const mousemove = (e) => {
+            handle.style.left = `${e.x - (startX - rect.x)}px`;
+            handle.style.top = `${e.y - (startY - rect.y)}px`;
+            applyTransform(box, originalPoints, getControlPoints())
+
+          }
+          const mouseup = () => {
+            applyTransform(box, originalPoints, getControlPoints())
+            document.removeEventListener('mousemove', mousemove)
+            document.removeEventListener('mouseup', mouseup)
+          }
+          document.addEventListener('mousemove', mousemove)
+          document.addEventListener('mouseup', mouseup)
+        })
+      }
+    }
+
+    initEvent();
+    initControlHandles();
+  }
+
+  init();
+</script>
+</body>
+</html>

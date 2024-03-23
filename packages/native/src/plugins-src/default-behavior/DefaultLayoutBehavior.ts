@@ -20,7 +20,7 @@ export const DefaultLayoutBehavior = definePlugin(<GridPlugin>{
     const {container} = ev
     const {layoutManager: manager} = container as Container
     const sizeInfo = calculateContainerParameters(container)  // 1.先初始化配置作为容器创建的元配置
-    console.log(sizeInfo)
+    // console.log(sizeInfo)
     for (const name in sizeInfo) {   // 临时设置容器配置
       container.setConfig(<any>name, sizeInfo[name])
     }

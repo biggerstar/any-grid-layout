@@ -1,6 +1,6 @@
 import {getClientRect} from "@/utils";
 import {tempStore} from "@/global/TempStore";
-import {SingleThrottle} from "@/utils/SingleThrottle";
+import {SingleThrottle} from "@/utils/lib/SingleThrottle";
 import {Container} from "@/main";
 
 export const singleThrottleCrossContainerRule = () => {  // 用于跨容器后获取到及时更新新容器缓存

@@ -8,32 +8,57 @@
 
 </head>
 <body>
-<div style="height: 10vh; width: 100vw;"></div>
-<div id="container1" class="activeContainer  "></div>
+<div style="height: 30vh; width: 100vw;"></div>
+<div id="container1" class="activeContainer transform-test "></div>
 <!--<div id="container2" class="containerBox activeContainer"></div>-->
 <!--<div id="container3" class="containerBox "></div>-->
 <!--<div id="container4" class="containerBox "></div>-->
-<div style="height: 20vh; width: 100vw;"></div>
+<!--<div style="height: 20vh; width: 100vw;"></div>-->
 <script type="module" src="./src/main.ts"></script>
 </body>
 <style>
+  * {
+    padding: 0;
+    margin: 0;
+  }
+
   body {
     height: 100vh;
     width: 100vw;
   }
 
   .activeContainer {
-    margin: 50px auto auto;
+    //position: relative;
+    //margin: 200px auto auto;
+    margin: auto auto;
+    //margin-top: 200px;
     width: 500px;
     height: 200px;
     transition: ease-in;
     background-color: rgba(128, 128, 128, 0.1);
+    overflow: hidden;
+  }
 
+  .transform-test {
+    //margin-top: 200px;
+    //transform-origin: 60px 130px;
+    //transform-origin: center;
+    //transform-origin: 30px 0;
+    //transform-origin: 0 0;
+    //transform-origin: 100px 0;
+    //transform: rotateY(180deg);
+    //transform: perspective(1511px) rotateY(50deg) skewY(-30deg) skewX(20deg) scale(1.2) translate(100px, 100px);
+    //transform: perspective(1500px) rotateY(60deg)  skewY(-30deg) skewX(20deg) scale(1);
+    //transform: rotateY(60deg) skewY(20deg) skewX(10deg) scale(1.5);
+    //transform: rotateY(20deg) skewY(20deg) skewX(20deg) scale(1, 2) ;
     //transform: rotateY(120deg);
-    //transform: skewY(20deg);
-    transform: rotateY(120deg) skewY(-20deg)  ;
-    //transform: rotateY(120deg);
-
+    //transform: rotateZ(45deg) rotateY(180deg);
+    //transform: rotateZ(20deg);
+    //transform: rotateZ(0);
+    //transform: perspective(1500px) rotateX(45deg) scale(2);
+    //transform: perspective(1500px) rotateX(45deg) rotateY(-20deg) scale(2) ;
+    //transform: translate(0px, 0px) rotate(45deg);
+    //transform: matrix3d(2.37957, 0, 0, 0.0026428, 1.1742, 2.29403, 0, -0.0021898, 0, 0, 1, 0, 0, 0, 0, 1);
   }
 
   #container3 {
@@ -51,6 +76,7 @@
     transition-duration: 180ms;
     transition-timing-function: ease-out;
     //transform: rotateY(30deg);
+    //pointer-events: none;
   }
 
   .grid-item:nth-child(1) {

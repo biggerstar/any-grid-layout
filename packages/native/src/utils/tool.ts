@@ -325,6 +325,21 @@ export function getClientRect<T extends Element>(el: T, clone: boolean = false):
 }
 
 /**
+ * 通过一层层找父级的 offsetLeft 和 offsetTop 获取到的元素在 DOM渲染树阶段 中真实位置
+ * */
+export function getOffsetClientRect(element: HTMLElement): DOMRect {
+  let offsetLeft = 0
+  let offsetTop = 0
+  let curElement = element
+  while (curElement) {
+    offsetLeft += curElement.offsetLeft
+    offsetTop += curElement.offsetTop
+    curElement = <HTMLElement>curElement.offsetParent
+  }
+  return new DOMRect(offsetLeft, offsetTop, element.clientWidth, element.clientHeight)
+}
+
+/**
  * 限制数字在某个范围内
  * */
 export function clamp(num: number, min: number, max: number): number {

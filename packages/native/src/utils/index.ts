@@ -1,3 +1,6 @@
 export * from "./tool"
 export * from "./common"
-export * from "./SingleThrottle"
+export * from "./lib/SingleThrottle"
+export * from "./lib/MatrixTransform"
+export * from "./lib/getPerspectiveTransform"
+export * from "./dev-method"

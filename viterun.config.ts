@@ -38,10 +38,14 @@ export default defineViteRunConfig({
       ],
       build: [
         ['build_plugins', 'es_lib'],
-        ['build_plugins', 'umd_lib'],
       ],
       types: [
         ['build_plugins', 'es_lib', 'plugins_types'],
+      ],
+    },
+    'native-web': {
+      dev: [
+        ['10000', 'https']
       ],
     },
     // 'vue3': {
@@ -52,11 +56,6 @@ export default defineViteRunConfig({
     //   types: ['types'],
     //   dev: ['watch']
     // },
-    'native-web': {
-      dev: [
-        ['10000', 'https']
-      ],
-    },
     // 'vue3-web': {
     //   dev: ['11000']
     // },
@@ -95,9 +94,6 @@ export default defineViteRunConfig({
         },
         rollupOptions: {
           external: [
-            'vite',
-            'vue',
-            'vue-router',
           ],
           output: {
             globals: {
@@ -199,9 +195,10 @@ export default defineViteRunConfig({
     dev_types: (options) => {
       return [
         dts({
-          copyDtsFiles: true,
+          copyDtsFiles: false,
           rollupTypes: true,
           clearPureImport: true,
+          logLevel: 'silent'
         }),
       ]
     },
@@ -211,6 +208,7 @@ export default defineViteRunConfig({
         declarationOnly: true,
         rollupTypes: false,
         clearPureImport: true,
+        logLevel: 'silent'
       }),
     ]
   }
@@ -232,11 +230,6 @@ function getBaseConfig(options: ViteRunHandleFunctionOptions): BaseConfigReturnT
       minify: false,
       rollupOptions: {
         external: [
-          "vite",
-          "picocolors",
-          "node:process",
-          "node:path",
-          "node:process",
         ],
         output: {
           sourcemap: false,

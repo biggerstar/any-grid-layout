@@ -50,8 +50,8 @@ export class Container {
   public readonly layout: CustomLayoutOption = {} as any
   public readonly useLayout: CustomLayoutOption = {} as any  //  当前使用的在用户传入layout布局方案的基础上，增加可能未传入的col,gap,size等等必要构建容器字段
   public items: Item[] = []
-  public element?: HTMLElement   //  container的挂载节点
-  public contentElement?: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
+  public element: HTMLElement   //  container的挂载节点
+  public contentElement: HTMLElement     // 放置Item元素的真实容器节点，被外层容器用户指定挂载点的element直接包裹
   public STRect?: ReturnType<typeof createSTRect>
   //----------------保持状态所用参数---------------------//
   public _mounted?: boolean

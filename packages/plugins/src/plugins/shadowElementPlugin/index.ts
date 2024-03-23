@@ -17,9 +17,10 @@ export function canExchange() {
   if (!fromContainer || !fromItem || !toContainer) {
     return false
   }
-  return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
-    && toContainer.getConfig('exchange')
-    && fromContainer.getConfig('exchange')
+  return true
+  // return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
+  //   && toContainer.getConfig('exchange')
+  //   && fromContainer.getConfig('exchange')
 }
 /**
  * [resizing] 创建resize的克隆元素
@@ -122,7 +123,7 @@ const _updateLocation: Function = () => {
     nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
     nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
   }
-  const allowChange = adaption && exchange && toContainer!.parentItem !== fromItem
+  const allowChange = adaption && exchange && toContainer['parentItem'] !== fromItem
   let isKeepOffset: boolean
   let sizeStyle = {}
   if (allowChange) {  // 不允许交换
