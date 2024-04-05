@@ -11,6 +11,7 @@ export class MatrixTransform {
   public transformOrigin: [number, number]   // 变形原点, 基于页面左上角的位置
   public transformAxisOrigin: [number, number]   // 变形原点, 变形原点即2d平面的坐标轴原点， 基于最初始元素的变形原点
   public matrix: DOMMatrix
+  private _oldOffsetRect: DOMRect | null
 
   constructor(element: HTMLElement) {
     if (!element) {
@@ -21,13 +22,13 @@ export class MatrixTransform {
     this.originOffsetPoses = this.getElementOriginPoints()
     this.transformOrigin = [0, 0]
     this.transformAxisOrigin = [0, 0]
+    this._oldOffsetRect = null
   }
 
   /**
    * 根据元素四个角进行仿射变换获得该元素的矩阵，支持2d 和 3d
    * */
-  public updateMatrix(): void {
-    const offsetRect = getOffsetClientRect(this.element)
+  private _updateMatrix(offsetRect: DOMRect): void {
     const elementStyleSheet = getComputedStyle(this.element)
     const transformOriginString = elementStyleSheet.transformOrigin
     const [tox, toy] = <any>transformOriginString.split(' ').map((str: string) => Number(parseFloat(str).toFixed(0)))
@@ -55,6 +56,19 @@ export class MatrixTransform {
    * @param clientY  在窗口中的距离元素左上角的Y坐标
    * */
   public transformCoordinates(clientX: number, clientY: number) {
+    const offsetRect = getOffsetClientRect(this.element)
+    if (
+      !this._oldOffsetRect
+      || this._oldOffsetRect.left !== offsetRect.left
+      || this._oldOffsetRect.top !== offsetRect.top
+      || this._oldOffsetRect.width !== offsetRect.width
+      || this._oldOffsetRect.height !== offsetRect.height
+    ) {
+      // 如果该元素在本次转换时发现是第一次转换或者之前位置或者大小变化过， 则重新更新位置和矩阵信息( 全自动，无需手动更新 )
+      this._updateMatrix(offsetRect)
+      this._oldOffsetRect = offsetRect
+    }
+    // console.log(this._oldOffsetRect)
     const offsetPointX = clientX - this.transformOrigin[0]
     const offsetPointY = clientY - this.transformOrigin[1]
     const inverseMatrix = this.matrix.inverse()
