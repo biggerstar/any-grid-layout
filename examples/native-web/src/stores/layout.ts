@@ -1,9 +1,8 @@
-import {CustomItems} from "@biggerstar/layout";
+import {CustomItem} from "@biggerstar/layout";
 
-export const layoutData11: CustomItems = [
+export const layoutData11: Array<Partial<CustomItem>> = [
   // {pos: {w: 2, h: 2, x: 1, y: 3}},
   // {pos: {w: 2, h: 2, x: 3, y: 6}},
-  // {pos: {w: 2, h: 2, x: 3, y: 4}},
   // {pos: {w: 1, h: 1, x: 5, y: 1}, static: true, close: false},
   {pos: {w: 1, h: 1}},
   // {pos: {w: 1, h: 1, minH: 1, maxW: 2, maxH: 6}},
@@ -11,9 +10,12 @@ export const layoutData11: CustomItems = [
   // {pos: {w: 16, h: 1}},
   // {pos: {w: 2, h: 2, x: 1, y: 3}, static: true, resize: false},
   // {pos: {w: 3, h: 3}},
+  // {pos: {w: 1, h: 1}, key: '0'},
+  // {pos: {w: 1, h: 1}, key: '1'},
   {pos: {w: 1, h: 1}},
-  {pos: {w: 1, h: 1}},
-  {pos: {w: 1, h: 1}},
+  {pos: {w: 1, h: 6, x: 2, y: 9}},
+  {pos: {w: 3, h: 6, x: 2, y: 6}, key: 'haha'},
+  {pos: {w: 1, h: 6, x: 12, y: 9}, key: 'x=12'},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
@@ -32,7 +34,8 @@ export const layoutData11: CustomItems = [
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
   {pos: {w: 1, h: 1}},
-  // {pos: {w: 2, h: 2}},
+  {pos: {w: 1, h: 6}},
+  {pos: {w: 2, h: 2}},
   // {pos: {w: 2, h: 1}},
   // {pos: {w: 2, h: 1}},
   // {pos: {w: 2, h: 1}},
@@ -47,7 +50,7 @@ export const layoutData11: CustomItems = [
 
 ]
 
-export const layoutData22: CustomItems = [
+export const layoutData22: Array<Partial<CustomItem>> = [
   // {pos: {w: 1, h: 1, x: 5, y: 1}, static: true, close: false},
   // {pos: {w: 1, h: 2, x: 2, y: 1}, static: true, draggable: false},
   // {pos: {w: 1, h: 2, x: 1, y: 2}, static: true, resize: false},
@@ -77,7 +80,7 @@ export const layoutData22: CustomItems = [
   {pos: {w: 1, h: 1}},
 ]
 
-export const layoutData: CustomItems = [
+export const layoutData: Array<Partial<CustomItem>> = [
   // {pos: {w: 2, h: 2, x: 8, y: 12}, static: true},
   // {pos: {w: 1, h: 2, x: 7, y: 10}, static: true},
   // {pos: {w: 14, h: 3, x: 3, y: 3}, static: true},

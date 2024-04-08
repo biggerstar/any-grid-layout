@@ -1,4 +1,4 @@
-import {CustomItem, CustomItems, GridPlugin} from "@/types";
+import {CustomItem, GridPlugin} from "@/types";
 import {cloneDeep, mergeDeep} from "@/utils";
 
 /**
@@ -7,7 +7,9 @@ import {cloneDeep, mergeDeep} from "@/utils";
  * 比如
  * @param items  最小可用成员构造对象数组，比如 {pos: {w: 1,h: 1 }}
  * @param fillFields  要为items所有成员添加 填充 的字段
- * @param isDeepClone 是否强制使用fillFields覆盖原本items成员数组，内部使用Object.assign函数实现fillFields覆盖item对象键值
+ * @param opt
+ * @param opt.isDeepClone
+ * @param opt.autoKey
  * @example
  *    const items = [{
  *      pos:{w:h}
@@ -16,12 +18,19 @@ import {cloneDeep, mergeDeep} from "@/utils";
  *    fillInItemLayoutList(items, { xxx:true })
  *    //  items结果: [{ pos:{w:h}, xxx:true }]
  * */
-export function fillItemLayoutList(items: CustomItems = [], fillFields: Omit<CustomItem, 'pos'>, isDeepClone: boolean = true): CustomItems {
-  return items.map((item: CustomItem) => {
+export function fillItemLayoutList(items: Array<Partial<CustomItem>>, fillFields: Omit<CustomItem, 'pos'>, opt: Partial<{
+  isDeepClone: boolean,
+  autoKey: boolean
+}> = {}): CustomItem[] {
+  const {isDeepClone = true, autoKey = true} = opt
+  return items.map((item: CustomItem, index: number) => {
     if (isDeepClone) {
       item = cloneDeep(item)
     }
     item = mergeDeep(item, fillFields || {})
+    if (autoKey && !item.key) {
+      item.key = index.toString()
+    }
     return item
   })
 }

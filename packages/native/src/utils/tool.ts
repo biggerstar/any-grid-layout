@@ -3,6 +3,7 @@
 import {Container, Item} from "@/main";
 import {isNumber} from "is-what";
 import "../../typings";
+import {CustomItemPos} from "@/types";
 
 /**
  * 节流
@@ -46,9 +47,29 @@ export function capitalizeFirstLetter(string: string) {
 }
 
 /**
+ * 找出数组中的重复项
+ * */
+export function findDuplicates(array: any[]) {
+  let counts = {};
+  let duplicates = [];
+  for (let i = 0; i < array.length; i++) {
+    let item = array[i];
+    if (counts[item] === undefined) {
+      counts[item] = 1;
+    } else {
+      if (counts[item] === 1) {
+        duplicates.push(item);
+      }
+      counts[item]++;
+    }
+  }
+  return duplicates;
+}
+
+/**
  * 深度克隆对象,支持克隆数组
  * */
-export const cloneDeep = (obj: any) => {  // 使用lodash.cloneDeep在lib模式下打包体积多了4k
+export const cloneDeep = (obj: any) => {  // 自己写是因为使用lodash.cloneDeep在lib模式下打包体积多了4k
   if (typeof obj !== 'object') {
     return obj
   }
@@ -344,4 +365,26 @@ export function getOffsetClientRect(element: HTMLElement): DOMRect {
  * */
 export function clamp(num: number, min: number, max: number): number {
   return Math.min(Math.max(num, min), max)
+}
+
+/**
+ * 判断是否是静态pos，判断的依据是是否定义了x,y
+ * */
+export function isStaticPos(pos: CustomItemPos): boolean {
+  const {x, y} = pos
+  return (
+    typeof x === 'number'
+    && typeof y === 'number'
+    && x > 0
+    && y > 0
+    && isFinite(x)
+    && isFinite(y)
+  )
+}
+
+/**
+ * 判断数组是否重复
+ * */
+export function hasDuplicateArray(arr: any[]) {
+  return new Set(arr).size !== arr.length;
 }

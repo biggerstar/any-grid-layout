@@ -8,11 +8,11 @@ export function autoComputeSizeInfo(
   direction: number,
   /** element width or height */
   containerBoxLen: number,
-  /** set custom size value */
+  /** custom size value */
   size = null,
-  /** set custom gap value */
+  /** custom gap value */
   gap = null,
-  /** set custom ratio value, default value from container built-in param */
+  /** custom ratio value, default value from container built-in param */
   ratio: number
 ):
   {
@@ -20,15 +20,23 @@ export function autoComputeSizeInfo(
     size: number,
     gap: number
   } {
-  const hasSize = isNumber(size)
-  const hasGap = isNumber(gap)
+  let hasSize = isNumber(size)
+  let hasGap = isNumber(gap)
   if (hasSize && size < 0) {
     size = 0
   }
   if (hasGap && gap < 0) {
     gap = 0
   }
-  // console.log(gap, size);
+  // if (!hasSize && hasGap) {   // 固定 ratio 比例
+  //   size = gap / ratio
+  //   hasSize = true
+  // }
+  // if (!hasGap && hasSize) {   // 固定 ratio 比例
+  //   gap = size * ratio
+  //   hasGap = true
+  // }
+  // console.log(direction, gap, size);
   if (direction) {   //  col指定通常是执行静态布局，主算 size 和 gap
     if (!hasSize && !hasGap) {   // 自动分配size和gap
       if (parseInt(direction.toString()) === 1) {

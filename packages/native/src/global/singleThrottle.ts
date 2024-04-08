@@ -30,7 +30,7 @@ export function createSTRect(container:Container) {
     /**  container内容区域 实例挂载的元素rect  */
     .addUpdateMethod("containerContent", (el: any) => {
       if (!el) {
-        el = container.contentElement
+        el = container.containerElement
       }
       return getClientRect(el, true)
     }, 1024)
