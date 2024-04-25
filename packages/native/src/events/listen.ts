@@ -2,13 +2,13 @@ import {
   compatible_touchend_mouseup,
   compatible_touchmove_mousemove,
   compatible_touchstart_mousedown,
+  end_work,
   nativeEventEmit_click,
   nativeEventEmit_mousedown,
   nativeEventEmit_mousemove,
   nativeEventEmit_mouseup,
-  start_move,
   start_down,
-  end_work
+  start_move
 } from "@/events";
 
 export function doMousedown(ev: any) {
@@ -53,11 +53,10 @@ export function startGlobalEvent(targetWindow?: WindowProxy) {
   const document = (targetWindow || window).document
   //-----------------------------事件委托(debug注销这里可选排查问题出因)------------------------------//
   document.addEventListener('mousedown', doMousedown, {passive: true})
-  document.addEventListener('touchstart', doMousedown, {passive: false})
-  //-------------------------------原来的必须挂dom上的事件-----------------------------//
   document.addEventListener('mousemove', doMousemove, {passive: true})
-  document.addEventListener('touchmove', doMousemove, {passive: false})
   document.addEventListener('mouseup', doMouseup, {passive: true})
+  document.addEventListener('touchstart', doMousedown, {passive: false})
+  document.addEventListener('touchmove', doMousemove, {passive: false})
   document.addEventListener('touchend', doMouseup, {passive: false})
   document.addEventListener('click', doClick)
   running = true
@@ -68,10 +67,9 @@ export function removeGlobalEvent() {
     return
   }
   document.removeEventListener('mousedown', doMousedown)
-  document.removeEventListener('touchstart', doMousedown)
-  //-------------------------------原来的必须挂dom上的事件-----------------------------//
   document.removeEventListener('mousemove', doMousemove)
-  document.removeEventListener('touchmove', doMousemove)
   document.removeEventListener('mouseup', doMouseup)
+  document.removeEventListener('touchstart', doMousedown)
+  document.removeEventListener('touchmove', doMousemove)
   document.removeEventListener('touchend', doMouseup)
 }

@@ -1,27 +1,19 @@
-import {
-  definePlugin,
-  getClientRect,
-  getContainerConfigs,
-  SingleThrottle,
-  tempStore,
-  throttle,
-  updateStyle
-} from "@biggerstar/layout";
+import {definePlugin, getClientRect, SingleThrottle, tempStore, throttle, updateStyle} from "@biggerstar/layout";
 
 const grid_clone_el = 'grid-clone-el'
+
 /**
  * 判断当前操作行为是否允许跨容器移动
  * */
 export function canExchange() {
   const {fromContainer, fromItem, toContainer} = tempStore;
-  if (!fromContainer || !fromItem || !toContainer) {
-    return false
-  }
-  return true
+  return !(!fromContainer || !fromItem || !toContainer);
+
   // return fromItem.exchange                      /* 要求item和容器都允许交换才能继续 */
   //   && toContainer.getConfig('exchange')
   //   && fromContainer.getConfig('exchange')
 }
+
 /**
  * [resizing] 创建resize的克隆元素
  * 如果已存在，不会重复创建
@@ -48,7 +40,7 @@ const createResizingCloneElSize: Function = throttle(() => {
     pointerEvents: 'none'
   }, newNode)
   tempStore.cloneElement = newNode
-  fromContainer.contentElement.appendChild(newNode)
+  fromContainer.element.appendChild(newNode)
 }, 300)
 
 /**
@@ -118,7 +110,7 @@ const _updateLocation: Function = () => {
   let nextWidth: number, nextHeight: number
   const targetContainer = toContainer || fromContainer
   const exchange = canExchange()
-  const {adaption, keepBaseSize} = getContainerConfigs(targetContainer, 'cloneElement')
+  const {adaption, keepBaseSize} = targetContainer.state
   if (cloneElScaleMultipleX && cloneElScaleMultipleY) {
     nextWidth = parseInt(targetContainer.nowWidth(fromItem.pos.w) * cloneElScaleMultipleX + '')
     nextHeight = parseInt(targetContainer.nowHeight(fromItem.pos.h) * cloneElScaleMultipleY + '')
@@ -221,8 +213,9 @@ const throttleChangeCloneSize = new SingleThrottle(180)
 export default function createShadowElementPlugin() {
   return definePlugin({
     name: 'ShadowElementPlugin',
+    cloneElement: null,
     mousedown(_) {
-
+      console.log(_)
     },
     mousemove(_) {
       if (!tempStore.cloneElement) {
@@ -261,7 +254,7 @@ export default function createShadowElementPlugin() {
           gridCloneEl.parentNode.removeChild(gridCloneEl)
           return
         }
-        const containerElOffset = getClientRect(fromItem.container.contentElement)
+        const containerElOffset = getClientRect(fromItem.container.element)
         const baseStyle: Partial<CSSStyleDeclaration> = {
           transitionProperty: `top, left, width, height`,
           transitionDuration: `${backTime}ms`,

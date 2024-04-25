@@ -1,8 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {CustomItemPos, CustomLayoutOption} from "@/types";
-import {Container, Item} from "@/main";
-import {cloneDeep, getKebabCase} from "@/utils/tool";
+import {CustomItemPos} from "@/types";
+import {Item} from "@/main";
+import {getKebabCase} from "@/utils/tool";
 
 
 /**
@@ -11,8 +11,8 @@ import {cloneDeep, getKebabCase} from "@/utils/tool";
 export function createMovableRange(fromItem: Item, pos: CustomItemPos): CustomItemPos {
   const container = fromItem.container;
   let {x, y, w, h} = pos;
-  const maxX = container.getConfig('col') - w + 1;
-  const maxY = container.getConfig('row') - h + 1;
+  const maxX = container.state.col - w + 1;
+  const maxY = container.state.col - h + 1;
   if (x < 1) {
     x = 1;
   }
@@ -54,44 +54,4 @@ export function updateStyle<EL extends HTMLElement>(
     }
   }
 }
-
-/**
- * 获取container中的配置
- * */
-export const _getConfig = (container: Container, name: string) => {
-  const has = (obj: object, name: string) => obj.hasOwnProperty(name);
-  if (has(container.useLayout, name)) {
-    return container.useLayout[name]
-  }
-  if (has(container.layout, name)) {
-    return container.layout[name]
-  }
-  if (has(container._default, name)) {
-    return container._default[name]
-  }
-  return void 0
-};
-
-/**
- * 批量获取container的配置信息，不会发起getContainer事件
- * */
-export function getContainerConfigs<Name extends keyof CustomLayoutOption>(container: Container, nameInfo: Name)
-  : Exclude<CustomLayoutOption[Name], undefined>
-export function getContainerConfigs<Name extends keyof CustomLayoutOption>(container: Container, nameInfo: Name[])
-  : { [Key in Name]: CustomLayoutOption[Key] }
-export function getContainerConfigs<Name extends keyof CustomLayoutOption>(
-  container: Container,
-  nameInfo: Name[] | Name
-): any {
-  let result: any;
-  //@ts-ignore
-  if (Array.isArray(nameInfo)) {
-    result = {};
-    (nameInfo as []).forEach(name => result[name] = _getConfig(container, name))
-  } else {
-    result = _getConfig(container, nameInfo)
-  }
-  return result
-}
-
 

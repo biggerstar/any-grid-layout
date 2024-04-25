@@ -30,18 +30,18 @@ export function createSTRect(container:Container) {
     /**  container内容区域 实例挂载的元素rect  */
     .addUpdateMethod("containerContent", (el: any) => {
       if (!el) {
-        el = container.contentElement
+        el = container.element
       }
       return getClientRect(el, true)
     }, 1024)
 
-    /** 影子元素挂载的元素rect  */
-    .addUpdateMethod("shadow", (el: any) => {
-      if (!el) {
-        el = tempStore.cloneElement
-      }
-      return getClientRect(el, true)
-    }, 67)
+    // /** 影子元素挂载的元素rect  */
+    // .addUpdateMethod("shadow", (el: any) => {
+    //   if (!el) {
+    //     el = tempStore.cloneElement
+    //   }
+    //   return getClientRect(el, true)
+    // }, 67)
 
     /**  fromItem挂载的元素rect  */
     .addUpdateMethod("fromItem", (el: any) => {

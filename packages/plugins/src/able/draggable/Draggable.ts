@@ -1,54 +1,42 @@
 import {isFunction} from "is-what";
-import {
-  clamp,
-  ContainerInstantiationOptions,
-  CustomItemPos,
-  Item,
-  ItemLayoutEvent,
-  spiralTraversal,
-  tempStore
-} from "@biggerstar/layout";
+import {BaseAble, Item, OnMousedown, OnMousemove, OnMouseup, spiralTraversal, tempStore} from "@biggerstar/layout";
+import {DraggableEventBusType, DraggableEventMap} from "@/able/draggable/event-types";
 
+export type DraggableState = {
+  userSelect: boolean
+}
 
-export class Draggable extends ItemLayoutEvent {
-  public toItem: Item | null
-  public readonly toPos: CustomItemPos
-  public readonly startGridX: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格X位置,和resize解释一样
-  public readonly startGridY: number // 克隆元素左上角位于当前网格容器左上角相对限制在容器内的栅格Y位置,和resize解释一样
-  public readonly startRelativeX: number // 克隆元素左上角位于当前网格容器左上角相对在容器的栅格Y位置,和resize解释一样
-  public readonly startRelativeY: number // 克隆元素左上角位于当前网格容器左上角相对在容器的栅格Y位置,和resize解释一样
-  public readonly offsetGridX: number // 当前拖动位置相对源item偏移，限制在容器内
-  public readonly offsetGridY: number // 当前拖动位置相对源item偏移，限制在容器内
-  public readonly offsetRelativeX: number // 当前拖动位置相对源item偏移
-  public readonly offsetRelativeY: number // 当前拖动位置相对源item偏移
-  constructor(opt: ContainerInstantiationOptions) {
-    super(opt);
-    const {
-      toItem,
-      fromItem,
-    } = tempStore
-    const container = this.container
-    const {offsetLeft, offsetTop, scaleMultipleX, scaleMultipleY} = this.shadowItemInfo
-    const {width, height} = this.itemInfo
-    const cloneElStartWidth = Math.max(0, offsetLeft + width * (scaleMultipleX - 1))
-    const cloneElStartHeight = Math.max(0, offsetTop + height * (scaleMultipleY - 1))
-    const hasHalfItemSizeWidth = cloneElStartWidth + (this.size[0] + this.margin[0]) / 2  // Q:为何加上toHalfItemSizeWidth? A:只有克隆元素的边界进入下一个item前往的item空位超过一半的时候才会更变startX
-    const hasHalfItemSizeHeight = cloneElStartHeight + (this.size[1] + this.margin[1]) / 2  // 同上
-    this.startRelativeX = clamp(container.pxToW(hasHalfItemSizeWidth), 1, Infinity)
-    this.startRelativeY = clamp(container.pxToH(hasHalfItemSizeHeight), 1, Infinity)
-    this.startGridX = clamp(this.startRelativeX, 1, this.col - fromItem!.pos.w + 1)
-    this.startGridY = clamp(this.startRelativeY, 1, this.row - fromItem!.pos.h + 1)
-    this.toPos = {
-      w: this.fromItem.pos.w,
-      h: this.fromItem.pos.h,
-      x: this.startGridX,
-      y: this.startGridY,
+export class Draggable extends BaseAble<DraggableEventBusType, DraggableState> {
+  constructor(opt: any) {
+    super(opt, DraggableEventMap)
+    const _this = this
+    this.state = {
+      userSelect: true
     }
-    this.toItem = toItem
-    this.offsetGridX = this.startGridX - fromItem!.pos.x
-    this.offsetGridY = this.startGridY - fromItem!.pos.y
-    this.offsetRelativeX = this.relativeX - fromItem!.pos.x
-    this.offsetRelativeY = this.relativeY - fromItem!.pos.y
+    this.use({
+      mousedown(ev: OnMousedown) {
+
+      },
+      mousemove(ev: OnMousemove) {
+        console.log(ev.offsetGridX, ev.offsetGridY)
+        _this.patchDragDirection(ev)
+      },
+      mouseup(ev: OnMouseup) {
+      },
+
+    })
+  }
+
+  public setState(state: Partial<DraggableState>) {
+    Object.assign(this.state, state)
+    const containerElement: HTMLElement = this.container.element
+    if (state.userSelect === false) {
+      containerElement.style.userSelect = 'none'
+    } else {
+      containerElement.style.userSelect = 'auto'
+    }
+
+
   }
 
   /**
@@ -154,42 +142,41 @@ export class Draggable extends ItemLayoutEvent {
   /**
    * 分析当前鼠标drag操作移动在源item的某个方向，并执行对应方向的钩子
    * */
-  public patchDragDirection() {
-    let {
-      fromItem,
-    } = tempStore
-    if (!fromItem) return
-    const bus = this.container.bus
-    const X = this.offsetRelativeX
-    const Y = this.offsetRelativeY
-    // console.log(X, Y, this.inOuter)
-    if (X === 0 && Y === 0) return
-    // console.log(111111111111111111)
-    const foundItem = this.container.layoutManager.findItemFromXY(this.items, this.gridX, this.gridY)  // 必须要startX,startY
-    if (!this.inOuter && (!foundItem || foundItem === fromItem)) {
-      bus.emit('dragToBlank')
+  private patchDragDirection(ev: OnMousemove) {
+    if (!tempStore.isLeftMousedown) {
+      return
     }
-    if (X !== 0) {
-      if (X < 0) bus.emit("dragToLeft")
-      else if (X > 0) bus.emit("dragToRight")
+    const bus = this.bus
+    const offsetX = ev.offsetLeft - tempStore.lastOffsetLeft
+    const offsetY = ev.offsetTop - tempStore.lastOffsetTop
+    tempStore.lastOffsetLeft = ev.offsetLeft
+    tempStore.lastOffsetTop = ev.offsetTop
+    // console.log(offsetX, offsetY)
+    const eventParam = {
+      offsetLeft: ev.offsetLeft,
+      offsetTop: ev.offsetTop,
+      offsetGridX: ev.offsetGridX,
+      offsetGridY: ev.offsetGridY,
     }
-
-    if (Y !== 0) {
-      if (Y < 0) bus.emit("dragToTop")
-      else if (Y > 0) bus.emit("dragToBottom")
+    /*-------------------------------------------------*/
+    this.bus.emit('dragging', eventParam)
+    if (offsetX !== 0) {
+      if (offsetX < 0) {
+        bus.emit("dragToLeft", eventParam)
+      } else {
+        if (offsetX > 0) {
+          bus.emit("dragToRight", eventParam)
+        }
+      }
+    }
+    if (offsetY !== 0) {
+      if (offsetY < 0) {
+        bus.emit("dragToTop", eventParam)
+      } else {
+        if (offsetY > 0) {
+          bus.emit("dragToBottom", eventParam)
+        }
+      }
     }
   }
 }
-
-
-
-// //-----------------拖动开始和结束事件-----------------------
-// dragging?(ev: ItemDragEvent): void,
-//   dragend?(ev: ItemDragEvent): void,
-//
-//   //-----------------拖动到十字线方向的事件---------------------
-//   dragToTop?(ev: ItemDragEvent): void,
-//   dragToLeft?(ev: ItemDragEvent): void,
-//   dragToBottom?(ev: ItemDragEvent): void,
-//   dragToRight?(ev: ItemDragEvent): void,
-//   dragToBlank?(ev: ItemDragEvent): void,

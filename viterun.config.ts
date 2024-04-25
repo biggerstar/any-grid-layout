@@ -9,6 +9,8 @@ import {
 import dts from "vite-plugin-dts";
 import copyDtsPlugin from 'vite-plugin-copy-dts'
 import {viteCertsPlugin} from "@biggerstar/localhost-certs";
+import {terser} from "rollup-plugin-terser";
+import analyzer from "rollup-plugin-bundle-analyzer";
 
 export default defineViteRunConfig({
   baseConfig: getBaseConfig,
@@ -22,14 +24,14 @@ export default defineViteRunConfig({
         ['build_lib', 'watch_lib', 'es_lib', 'sourcemap', 'dev_types'],
       ],
       build: [
-        ['build_lib', 'es_lib', 'minify'],
-        ['build_lib', 'umd_lib', 'minify'],
+        ['build_lib', 'es_lib'],
+        ['build_lib', 'umd_lib'],
       ],
       types: [
         ['build_lib', 'es_lib', 'types'],
       ],
       size: [
-        ['build_lib', 'es_lib', 'minify', 'bundleAnalyzer']
+        ['build_lib', 'es_lib', 'bundleAnalyzer']
       ],
     },
     plugins: {
@@ -51,7 +53,7 @@ export default defineViteRunConfig({
     // 'vue3': {
     //   build: [
     //     'es',
-    //     ['umd', 'minify']
+    //     ['umd', 'minifyPlugin']
     //   ],
     //   types: ['types'],
     //   dev: ['watch']
@@ -74,9 +76,6 @@ export default defineViteRunConfig({
     watch_lib: {
       watch: {},
     },
-    minify: {
-      minify: true
-    },
     sourcemap: {
       rollupOptions: {
         output: {
@@ -93,8 +92,7 @@ export default defineViteRunConfig({
           fileName: (format: string) => `index.${format}.js`,
         },
         rollupOptions: {
-          external: [
-          ],
+          external: [],
           output: {
             globals: {
               vue: 'Vue'
@@ -210,6 +208,16 @@ export default defineViteRunConfig({
         clearPureImport: true,
         logLevel: 'silent'
       }),
+    ],
+    minifyPlugin: [
+      terser({
+        format: {
+          comments: false,
+        },
+      }) as any
+    ],
+    bundleAnalyzer: [
+      analyzer({}) as any
     ]
   }
 })
@@ -229,8 +237,7 @@ function getBaseConfig(options: ViteRunHandleFunctionOptions): BaseConfigReturnT
       emptyOutDir: false,
       minify: false,
       rollupOptions: {
-        external: [
-        ],
+        external: [],
         output: {
           sourcemap: false,
           globals: {}

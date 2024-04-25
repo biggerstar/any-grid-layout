@@ -1,7 +1,7 @@
 import {parseContainer, parseItem, throttle} from "@/utils";
 import {tempStore} from "@/global";
 
-export const start_move: Function = throttle((ev) => {
+export const start_move: Function = throttle((ev:MouseEvent) => {
   const {
     fromItem,
     isLeftMousedown,
@@ -11,7 +11,6 @@ export const start_move: Function = throttle((ev) => {
   }
   tempStore.toItem = parseItem(ev)
   tempStore.toContainer = parseContainer(ev)
-  tempStore.mousemoveEvent = ev
 }, 10)
 
 

@@ -9,9 +9,9 @@
   "eslintIgnore": [
     "dist"
   ],
+  "main": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
   "typings": "./dist/index.d.ts",
-  "main": "./dist/index.es.js",
   "exports": {
     ".": {
       "default": "./dist/index.es.js",

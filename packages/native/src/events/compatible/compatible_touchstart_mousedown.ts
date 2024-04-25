@@ -6,7 +6,6 @@ import {tempStore} from "@/global";
 export function compatible_touchstart_mousedown(ev: any) {
   ev = ev || window['event']
   tempStore.isLeftMousedown = true
-  tempStore.mousedownEvent = ev
   //----------------------------------------------------
   if (ev.touches) {
     tempStore.deviceEventMode = 'touch'
@@ -18,7 +17,7 @@ export function compatible_touchstart_mousedown(ev: any) {
     tempStore.allowTouchMoveItem = false
     const container: Container | null = parseContainer(ev)
     document.addEventListener('contextmenu', (ev) => ev.preventDefault())  // 禁止长按弹出菜单
-    const pressTime = container ? container.getConfig('pressTime') : 300  // 长按多久响应拖动事件，默认360ms
+    const pressTime = container ? container.state.pressTime : 300  // 长按多久响应拖动事件，默认360ms
     tempStore.timeOutEvent = setTimeout(() => {
       if (ev.preventDefault) {
         ev.preventDefault()

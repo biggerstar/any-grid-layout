@@ -2,23 +2,43 @@ import {ContainerGeneralImpl} from "@/main/container/ContainerGeneralImpl";
 import {Item} from "@/main/item/Item";
 import {ItemGeneralImpl} from "@/main/item/ItemGeneralImpl";
 import {ItemPosGeneralImpl} from "@/main/item-pos/ItemPosGeneralImpl";
-import {ItemLayoutEvent} from "@/plugins-src/event-types/ItemLayoutEvent";
-import {BaseEvent} from "@/plugins-src/event-types/BaseEvent";
-import {ThrowMessageEvent} from "@/plugins-src/event-types/ThrowMessageEvent";
-import {ItemPosChangeEvent} from "@/plugins-src/event-types/ItemPosChangeEvent";
-import {ContainerSizeChangeEvent} from "@/plugins-src/event-types/ContainerSizeChangeEvent";
 import {Container} from "@/main";
-import {InitOptionsEvent} from "@/plugins-src/event-types/InitOptionsEvent";
-import {MatrixEvent} from "@/plugins-src";
+import {OnError} from "@/plugins-src/event-types/throw-message/OnError";
+import {OnContainerMountBefore} from "@/plugins-src/event-types/container/OnContainerMountBefore";
+import {OnContainerMounted} from "@/plugins-src/event-types/container/OnContainerMounted";
+import {OnContainerUnmounted} from "@/plugins-src/event-types/container/OnContainerUnmounted";
+import {OnContainerResizing} from "@/plugins-src/event-types/container/OnContainerResizing";
+import {OnItemMounted} from "@/plugins-src/event-types/item/OnItemMounted";
+import {OnItemUnmounted} from "@/plugins-src/event-types/item/OnItemUnmounted";
+import {OnLayout} from "@/plugins-src/event-types/layout/OnLayout";
+import {OnClick} from "@/plugins-src/event-types/mouse/OnClick";
+import {OnMousedown} from "@/plugins-src/event-types/mouse/OnMousedown";
+import {OnMousemove} from "@/plugins-src/event-types/mouse/OnMousemove";
+import {OnMouseup} from "@/plugins-src/event-types/mouse/OnMouseup";
+import {OnEach} from "@/plugins-src";
 
 export type CustomItemPos = ItemPosGeneralImpl & Record<any, any>
 export type CustomItem = ItemGeneralImpl & Record<any, any>
-export type CustomItems = CustomItem[]
 
 export type BasePosType = 'x' | 'y' | 'w' | 'h'
 
 /** Container 实例化配置选项 */
-export type CustomLayoutOption = ContainerGeneralImpl
+export type CustomLayoutOptions = ContainerGeneralImpl
+export type ComputedLayoutKeys =
+  'gapX'
+  | 'gapY'
+  | 'itemWidth'
+  | 'itemHeight'
+  | 'containerWidth'
+  | 'ratioCol'
+  | 'ratioRow'
+
+export type ComputedLayoutOptions = Pick<ContainerGeneralImpl, ComputedLayoutKeys>  // & { col: number, row: number }
+export type ContainerStateOptions = Omit<ContainerGeneralImpl, 'items'> & {
+  items: Item[],
+  col: number,
+  row: number,
+}
 
 export type ItemLimitType = {
   maxW?: number,
@@ -34,60 +54,17 @@ export type SmartRowAndColType = {
   maxItemH: number,
 }
 
-/** Container 实例化配置选项 */
-export type ContainerInstantiationOptions = {
-  [key: string]: any
-
-  /**
-   * 指定容器Id名或者一个Element网页节点，该节点将作为当前布局数据的根容器
-   * */
-  el: string | HTMLElement,
-
-  /**
-   * 该容器的名称,只是给个命名，不影响执行的行为
-   * */
-  name?: string
-
-  /**
-   * Container在文档中默认的类名,可以由外部传入重新自定义
-   *
-   * @default 'grid-container'
-   * */
-  className?: string
-
-  /**
-   * 指定使用的是原生或者其他常见框架，内部做了一定优化
-   *
-   * @default 'native' | 'vue'
-   * */
-  platform?: 'native' | 'vue'
-
-  /**
-   * 当前的布局配置，可以是一个配置对象或者配置对象数组
-   * */
-  layout?: CustomLayoutOption,
-
-  plugins?: GridPlugin[],
-}
-
-
-// export type EventMapType<T extends Record<any, any>> = {
-//   [Key in keyof T]: Parameters<T[Key]>[0]
-// } & Record<'*', BaseEvent>
-
-export type BaseEmitData<T extends Record<any, any>> = {
+export type BaseEmitData<T extends Record<string, any>> = {
   [Key in keyof T]:
   Partial<Parameters<T[Key]>[0]>
   // & { callback?(ev: Parameters<T[Key]>[0]): void }
-  & {
-  /** 回调最终经过插件和内置处理后的事件对象 */
-  callback?(ev: any): void
-}
 }
 
-export type EventBusType = BaseEmitData<CustomEventOptions>
+export type ContainerEvents = BaseEmitData<CustomEventOptions>
 
-export type GridPlugin = CustomEventOptions & {
+export type GridPlugin = GridPluginEntry<CustomEventOptions>
+
+export type GridPluginEntry<T = {}> = T & {
   /** 安装函数 */
   install?(app: Container): void
 
@@ -101,107 +78,72 @@ export type GridPlugin = CustomEventOptions & {
   version?: string | number,
 } | ((app: Container) => void)
 
-
 export type CustomEventOptions = {
   //------------------throw-message--------------
   /**
-   * 所有框架错误都会在这里接收，您可以通过ev.prevent()进行阻止框架抛出错误
+   * 所有需要手动处理的框架错误都会在这里接收
    *  */
-  error?(ev: ThrowMessageEvent): void,
-
-  /**
-   * 所有框架警告都会在这里接收，您可以通过ev.prevent()进行阻止框架抛出警告
-   * */
-  warn?(ev: ThrowMessageEvent): void,
-
-  //--------------------other--------------------
-  /**
-   * @default 用户传入的配置信息
-   * */
-  config?(ev: InitOptionsEvent): void,
-
-  /**
-   * @default 经过各个插件的config之后的最终配置
-   * */
-  configResolved?(ev: InitOptionsEvent): void,
-
-  /**
-   * 发起一次更新，由当前使用的布局插件自行实现更新逻辑
-   * @default 无
-   * */
-  updateLayout?(ev: ItemLayoutEvent): void,
+  error?(ev: OnError): void,
 
   //-----------------container------------------
   /**
    * @default 初始化载入item成员并挂载
    * */
-  containerMountBefore?(ev: BaseEvent): void,
+  containerMountBefore?(ev: OnContainerMountBefore): void,
 
   /** Container成功挂载事件 */
-  containerMounted?(ev: BaseEvent): void,
+  containerMounted?(ev: OnContainerMounted): void,
 
   /** Container成功卸载事件 */
-  containerUnmounted?(ev: BaseEvent): void,
+  containerUnmounted?(ev: OnContainerUnmounted): void,
 
   /** Container dom盒子大小改变 */
-  containerResizing?(ev: BaseEvent): void,
-
-  /** col列数改变 */
-  colChanged?(ev: ContainerSizeChangeEvent): void,
-
-  /** row列数改变 */
-  rowChanged?(ev: ContainerSizeChangeEvent): void,
+  containerResizing?(ev: OnContainerResizing): void,
 
   //-------------------item---------------------
-  /** Item添加成功事件 */
-  addItemSuccess?(ev: BaseEvent): void,
-
   /** Item成功挂载事件 */
-  itemMounted?(ev: BaseEvent): void,
+  itemMounted?(ev: OnItemMounted): void,
 
   /** Item成功卸载事件 */
-  itemUnmounted?(ev: BaseEvent): void,
-
-  /** item 位置变化 或  尺寸变化 时响应的事件,pos变化才触发 */
-  itemPosChanged?(ev: ItemPosChangeEvent): void
+  itemUnmounted?(ev: OnItemUnmounted): void,
 
   /**
    * 用作遍历矩阵的控制函数，可以自行实现遍历矩阵逻辑，比如螺旋遍历，交叉遍历...各种花里胡哨的功能，
-   * 只需关心:
-   *       xxx(eachName) + start 方向作为遍历的主布局，后面的 xxx-reverse ,end 等相关功能由 flip 钩子实现
+   * @param ev.next 指定如何遍历矩阵,每次按自定义算法传入一个矩阵点，直到手动将整个矩阵的点按顺序传入next函数
+   * @param ev.layoutManager
    * */
-  each?(ev: MatrixEvent): void;
-
+  each?(ev: OnEach): void,
   /**
-   * 翻转矩阵，无需关心实现逻辑，内部已经做了兼容和实现
-   * 只需要关心使用遍历的名称 xxx, xxx-reverse 和 遍历的起点  start, end 在不同情况运行 verticalMirrorFlip 或 horizontalMirrorFlip 就行
-   *
-   * 使用翻转函数:
-   *            layoutManager.verticalMirrorFlip
-   *            layoutManager.horizontalMirrorFlip翻转
+   * 进行自定义布局的钩子
+   * 该事件钩子里面必须为所有的 Items 成员完整指定 w, h, x, y 进行生成布局，
+   * 该事件钩子是自定义布局算法的实现位置
+   * 里面禁止同时使用异步任务包裹 Container.setState 函数， 因为该操作可能会造成无限递归
    * */
-  flip?(ev: MatrixEvent): void;
-
-  /**
-   * 每个事件触发开始时都会执行的钩子
-   * */
-  every?(ev: BaseEvent & Record<any, any>): void;
-
-  /**
-   * 每个事件触发结束时都会执行的钩子
-   * */
-  everyDone?(ev: BaseEvent & Record<any, any>): void;
+  layout?(ev: OnLayout): void;
 
   /**
    * 点击容器或者item触发的事件
    * */
-  click?(ev: BaseEvent): void;
-
-  mousedown?(ev: BaseEvent): void;
-  mousemove?(ev: BaseEvent): void;
-  mouseup?(ev: BaseEvent): void;
-
+  click?(ev: OnClick): void;
+  mousedown?(ev: OnMousedown): void;
+  mousemove?(ev: OnMousemove): void;
+  mouseup?(ev: OnMouseup): void;
 }
+
+export type PartialRecord<T> = {
+  [Key in keyof T]:
+  Partial<T[Key]>
+}
+
+export type LayoutManagerSetStateOptions = CustomLayoutOptions & {
+  col: number,
+  // items: Item[],
+  /**
+   * 每个钩子只支持一个 each 遍历算法, 后面设置的函数会覆盖前面的
+   * */
+  each: (ev: OnEach) => any,
+}
+
 
 export type AnalysisResult = {
   col: number
@@ -214,11 +156,10 @@ export type AnalysisResult = {
   get successItems(): Item[]
   /** 失败的的item列表 */
   failedItems: Item[]
-  /**
-   * 将当前成功的所有列表中的pos信息派发更新到对应的item中
-   * @param handler 传入最新pos的item作为参数
-   * */
-  patch: (handler?: (item: Item) => void) => void
+  /** 计算出来的下一次布局的配置信息, pos 的信息只包含上次 ItemPos.customOptions 存在的键 */
+  get nextCustomsLayoutOptions(): Partial<CustomLayoutOptions>
+  /** 计算出来的下一次布局的配置信息, 包含 x, y, w, h... 等完整位置和大小信息 */
+  get nextLayoutOptions(): Partial<CustomLayoutOptions>
 }
 
 
@@ -261,3 +202,14 @@ export type EachMiddlewareType = {
 }
 
 export type ExpandLineOptType = { len: number, force: boolean }
+
+export type ContainerParameters = {
+  containerWidth: number,
+  ratioCol: number,
+  ratioRow: number,
+  col: number,
+  gapX: number,
+  gapY: number,
+  itemWidth: number,
+  itemHeight: number,
+}

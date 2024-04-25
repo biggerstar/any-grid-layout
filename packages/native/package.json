@@ -36,5 +36,8 @@
   },
   "eslintIgnore": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "@biggerstar/mitt-bus": "^0.0.10"
+  }
 }

@@ -3,10 +3,7 @@
 import {
   definePlugin,
   tempStore,
-  ItemLayoutEvent,
   BaseEvent,
-  ContainerSizeChangeEvent,
-  getContainerConfigs,
   GridPlugin
 } from "@biggerstar/layout";
 import {directUpdateLayout, updateResponsiveDragLayout, updateResponsiveResizeLayout} from "@/common";
@@ -17,13 +14,7 @@ import {directUpdateLayout, updateResponsiveDragLayout, updateResponsiveResizeLa
 export default function createResponsiveLayoutPlugin(): GridPlugin {
   return definePlugin({
     name: 'ResponsiveLayoutPlugin',
-    containerMountBefore(ev: BaseEvent) {
-      const {autoGrow, col, row} = getContainerConfigs(ev.container, ["autoGrow", "col", 'row'])
-      if (!col && !row && autoGrow.horizontal && autoGrow.vertical) {  // 如果col和row都没设置，则只选一边允许增长
-        ev.container.bus.emit("warn", {
-          message: `[${this.name}] autoGrow 的 horizontal 和 vertical 配置不建议都设置为true,建议只保留一边自动增长`
-        })
-      }
+    containerMountBefore(_: BaseEvent) {
     },
 
     exchangeVerification(ev: any) {
@@ -45,7 +36,7 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       }
     },
 
-    containerResizing(ev: ContainerSizeChangeEvent) {
+    containerResizing(ev: any) {
       ev.prevent()
       const container = ev.container
       const manager = container.layoutManager
@@ -144,13 +135,5 @@ export default function createResponsiveLayoutPlugin(): GridPlugin {
       updateResponsiveResizeLayout(ev)
     },
 
-    closed(ev: ItemLayoutEvent) {
-      directUpdateLayout(ev)
-    },
-
-    updateLayout(ev: ItemLayoutEvent) {
-      ev.prevent()
-      directUpdateLayout(<any>ev['event'] || ev)
-    },
   })
 }

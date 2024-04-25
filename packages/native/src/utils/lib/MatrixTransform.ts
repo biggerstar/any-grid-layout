@@ -7,7 +7,6 @@ import {getOffsetClientRect, getPerspectiveTransform} from "@/utils";
  * */
 export class MatrixTransform {
   public readonly element: HTMLElement
-  public readonly originOffsetPoses: number[][]   //
   public transformOrigin: [number, number]   // 变形原点, 基于页面左上角的位置
   public transformAxisOrigin: [number, number]   // 变形原点, 变形原点即2d平面的坐标轴原点， 基于最初始元素的变形原点
   public matrix: DOMMatrix
@@ -19,7 +18,6 @@ export class MatrixTransform {
     }
     this.matrix = new (WebKitCSSMatrix || DOMMatrix)() as any
     this.element = element
-    this.originOffsetPoses = this.getElementOriginPoints()
     this.transformOrigin = [0, 0]
     this.transformAxisOrigin = [0, 0]
     this._oldOffsetRect = null
@@ -34,17 +32,18 @@ export class MatrixTransform {
     const [tox, toy] = <any>transformOriginString.split(' ').map((str: string) => Number(parseFloat(str).toFixed(0)))
     this.transformAxisOrigin = [tox, toy]
     this.transformOrigin = [tox + offsetRect.left, toy + offsetRect.top]
+    // console.log(this.element, elementStyleSheet.transform)
     if (elementStyleSheet.transform && elementStyleSheet.transform !== 'none') {  // 没有使用 transform 的情况下，BFC没有生效，且元素将会是个正矩阵
       const positioningPointElements = MatrixTransform.createPositioningPoints(this.element)  // 创建定位点
       const curPositioningPoints = MatrixTransform.getCurrentPositioningPoints(positioningPointElements)  // 获取当前最新的四个角定位点
       positioningPointElements.forEach((el: HTMLElement) => el.parentElement.removeChild(el))  // 移除临时的定位点
-      const from: number[] = this.transformOffsetPoints(this.originOffsetPoses)
+      const from: number[] = this.transformOffsetPoints(this.getElementOriginPoints())
       const to: number[] = this.transformOffsetPoints(curPositioningPoints);
       const H: number[] = getPerspectiveTransform(...from, ...to)
       const transform = `matrix3d(${H.join(',')})`
       this.matrix.setMatrixValue(transform)
       // console.log(this.matrix)
-      // console.log('\noriginOffsetPoses', this.originOffsetPoses, '\ncurPositioningPoints', curPositioningPoints, '\nfrom', from, '\nto', to)
+      // console.log('\ncurPositioningPoints', curPositioningPoints, '\nfrom', from, '\nto', to)
     }
   }
 
@@ -68,7 +67,6 @@ export class MatrixTransform {
       this._updateMatrix(offsetRect)
       this._oldOffsetRect = offsetRect
     }
-    // console.log(this._oldOffsetRect)
     const offsetPointX = clientX - this.transformOrigin[0]
     const offsetPointY = clientY - this.transformOrigin[1]
     const inverseMatrix = this.matrix.inverse()
@@ -109,8 +107,6 @@ export class MatrixTransform {
     for (let k = 0; k < poses.length; k++) {
       let p = poses[k]
       result.push([
-        // p[0] - this.originOffsetPoses[0][0],   // 所有的变换都将基于最原始元素位置的左上角进行
-        // p[1] - this.originOffsetPoses[0][1],
         p[0] - this.transformOrigin[0],
         p[1] - this.transformOrigin[1]
       ])
